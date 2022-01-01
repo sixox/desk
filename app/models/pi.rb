@@ -56,6 +56,7 @@
   'EMULSION BITUMEN CSS-60',
   'ENGINE OIL',
   'ENGINE OIL SAE 40',
+  'Flexi Tank',
   'FootsOil',
   'HEAVY BEHRAN',
   'HEAVY PARS',
