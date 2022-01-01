@@ -44,31 +44,31 @@ export default class extends Controller {
 
   addMovement(direction) {
     const template =
-    direction === "send"
-    ? this.sendTemplateTarget
-    : this.receiveTemplateTarget
+      direction === "send"
+        ? this.sendTemplateTarget
+        : this.receiveTemplateTarget
 
     const container =
-    direction === "send"
-    ? this.sendContainerTarget
-    : this.receiveContainerTarget
+      direction === "send"
+        ? this.sendContainerTarget
+        : this.receiveContainerTarget
 
     const index =
-    Date.now().toString() +
-    Math.floor(
-      Math.random() * 1000
+      Date.now().toString() +
+      Math.floor(
+        Math.random() * 1000
       ).toString()
 
     const html =
-    template.innerHTML.replace(
-      /NEW_RECORD/g,
-      index
+      template.innerHTML.replace(
+        /NEW_RECORD/g,
+        index
       )
 
     container.insertAdjacentHTML(
       "beforeend",
       html
-      )
+    )
 
     this.recalculateAll()
   }

@@ -7,16 +7,6 @@ class Xtransfer < ApplicationRecord
            as: :movable,
            dependent: :destroy
 
-  has_many :sends,
-           -> { where(direction: "send") },
-           as: :movable,
-           class_name: "MoneyMovement"
-
-  has_many :receives,
-           -> { where(direction: "receive") },
-           as: :movable,
-           class_name: "MoneyMovement"
-
   accepts_nested_attributes_for :money_movements,
                                 allow_destroy: true,
                                 reject_if: :all_blank
@@ -33,10 +23,10 @@ class Xtransfer < ApplicationRecord
            through: :exchange_transfers
 
   accepts_nested_attributes_for :exchange_transfers,
-                              allow_destroy: true,
-                              reject_if: proc { |attributes|
-                                attributes["exchange_id"].blank?
-                              }
+                                allow_destroy: true,
+                                reject_if: proc { |attributes|
+                                  attributes["exchange_id"].blank?
+                                }
 
 
   # ==================================================
@@ -71,7 +61,6 @@ class Xtransfer < ApplicationRecord
 
   validates :status,
             presence: true
-
 
 
   # ==================================================
@@ -172,11 +161,4 @@ class Xtransfer < ApplicationRecord
   def active_money_movements
     money_movements.reject(&:marked_for_destruction?)
   end
-
-
-  # ==================================================
-  # REQUIRE SEND
-  # ==================================================
-
- 
 end

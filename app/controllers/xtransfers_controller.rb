@@ -145,15 +145,22 @@ class XtransfersController < ApplicationController
 
   def create
     ActiveRecord::Base.transaction do
+      attributes =
+        xtransfer_params
+
+      documents =
+        attributes.delete(:documents)
 
       @xtransfer =
         Xtransfer.new(
-          xtransfer_params
+          attributes
         )
 
       @xtransfer.save!
 
-      attach_documents
+      attach_documents(
+        documents
+      )
 
       create_movement_transactions!(
         @xtransfer
@@ -171,7 +178,7 @@ class XtransfersController < ApplicationController
 
     @xtransfer ||=
       Xtransfer.new(
-        xtransfer_params
+        xtransfer_params.except(:documents)
       )
 
     add_base_error(
@@ -222,7 +229,6 @@ class XtransfersController < ApplicationController
 
   def update
     ActiveRecord::Base.transaction do
-
       old_entries =
         capture_movement_entries(
           @xtransfer
@@ -231,13 +237,19 @@ class XtransfersController < ApplicationController
       old_movement_ids =
         old_entries.keys
 
+      attributes =
+        xtransfer_params
+
+      documents =
+        attributes.delete(:documents)
 
       @xtransfer.update!(
-        xtransfer_params
+        attributes
       )
 
-      attach_documents
-
+      attach_documents(
+        documents
+      )
 
       reconcile_movement_transactions!(
         @xtransfer,
@@ -400,8 +412,8 @@ class XtransfersController < ApplicationController
   # ATTACH DOCUMENTS
   # ==================================================
 
-  def attach_documents
-    documents =
+  def attach_documents(documents = nil)
+    documents ||=
       params.dig(
         :xtransfer,
         :documents
@@ -434,7 +446,6 @@ class XtransfersController < ApplicationController
         movement: movement,
         user: current_user
       )
-
     end
   end
 
@@ -449,20 +460,22 @@ class XtransfersController < ApplicationController
       .reload
       .each_with_object({}) do |movement, entries|
 
+        entry =
+          movement.accounting_entry
+
         entries[movement.id] = {
           xaccount_id:
-            movement.xaccount_id,
+            entry[:xaccount_id],
 
           currency_id:
-            movement.currency_id,
+            entry[:currency_id],
 
           debit_amount:
-            movement.debit_amount,
+            entry[:debit_amount],
 
           credit_amount:
-            movement.credit_amount
+            entry[:credit_amount]
         }
-
       end
   end
 
@@ -483,7 +496,6 @@ class XtransfersController < ApplicationController
 
 
     current_movements.each do |movement|
-
       old_entry =
         old_entries[
           movement.id
@@ -495,7 +507,6 @@ class XtransfersController < ApplicationController
       # ------------------------------------------------
 
       if old_entry.blank?
-
         Xtransaction.sync_movement!(
           movement: movement,
           user: current_user
@@ -520,8 +531,11 @@ class XtransfersController < ApplicationController
     # ------------------------------------------------
     # REMOVED MOVEMENTS
     #
-    # We do not silently remove accounting history.
-    # The surrounding transaction rolls everything back.
+    # Movements that already have accounting history
+    # must not silently disappear.
+    #
+    # If nested attributes attempted to destroy one,
+    # the surrounding transaction must fail and roll back.
     # ------------------------------------------------
 
     current_movement_ids =
@@ -653,8 +667,7 @@ class XtransfersController < ApplicationController
       .permit(
         :status,
         :pending,
-        :documents,
-
+        documents: [],
         money_movements_attributes: [
           :id,
           :direction,
@@ -668,7 +681,6 @@ class XtransfersController < ApplicationController
           :total,
           :_destroy
         ],
-
         exchange_transfers_attributes: [
           :id,
           :exchange_id,

@@ -8444,3 +8444,509 @@
     padding: 8px;
   }
 }
+
+/*************************************************
+ XTRANSFER FORM
+*************************************************/
+
+.xt-form {
+  --xt-form-primary: #4f46e5;
+  --xt-form-primary-soft: #eef2ff;
+  --xt-form-border: #e9eaf0;
+  --xt-form-muted: #8b90a0;
+  --xt-form-text: #252936;
+}
+
+
+/*************************************************
+ FORM HEADER
+*************************************************/
+
+.xt-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .25rem 0 1.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--xt-form-border);
+}
+
+.xt-form-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-width: 0;
+}
+
+.xt-form-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 12px;
+  background: var(--xt-form-primary-soft);
+  color: var(--xt-form-primary);
+  font-size: 1.1rem;
+}
+
+.xt-form-title {
+  margin: 0;
+  color: var(--xt-form-text);
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -.02em;
+}
+
+.xt-form-subtitle {
+  margin-top: .2rem;
+  color: var(--xt-form-muted);
+  font-size: .75rem;
+}
+
+.xt-header-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.xt-header-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+}
+
+.xt-header-pending-label {
+  color: #626879;
+  font-size: .72rem;
+  font-weight: 650;
+}
+
+.xt-header-id {
+  padding: .3rem .55rem;
+  border: 1px solid var(--xt-form-border);
+  border-radius: 7px;
+  background: #fafbfc;
+  color: #73798a;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+
+/*************************************************
+ MOVEMENT COLUMNS
+*************************************************/
+
+.xt-movements-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.xt-movement-section {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--xt-form-border);
+  border-radius: 14px;
+  background: #fafbfc;
+}
+
+.xt-send-section {
+  border-top: 3px solid #6366f1;
+}
+
+.xt-receive-section {
+  border-top: 3px solid #10b981;
+}
+
+
+/*************************************************
+ SECTION HEADINGS
+*************************************************/
+
+.xt-section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .85rem;
+}
+
+.xt-section-title {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-width: 0;
+}
+
+.xt-section-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 9px;
+  background: var(--xt-form-primary-soft);
+  color: var(--xt-form-primary);
+  font-size: .9rem;
+}
+
+.xt-send-icon {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.xt-receive-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.xt-section-title > div {
+  min-width: 0;
+}
+
+.xt-section-title strong {
+  display: block;
+  color: var(--xt-form-text);
+  font-size: .78rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.xt-section-title small {
+  display: block;
+  margin-top: .15rem;
+  color: var(--xt-form-muted);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+
+/*************************************************
+ ADD MOVEMENT BUTTONS
+*************************************************/
+
+.xt-add-movement-btn,
+.xt-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  flex: 0 0 auto;
+  padding: .38rem .65rem;
+  border: 1px solid var(--xt-form-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--xt-form-primary);
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  box-shadow: 0 2px 6px rgba(31, 35, 48, .04);
+  transition:
+    background-color .15s ease,
+    border-color .15s ease,
+    color .15s ease,
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+.xt-add-movement-btn:hover,
+.xt-add-btn:hover {
+  border-color: #c7c9f8;
+  background: var(--xt-form-primary-soft);
+  color: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, .1);
+}
+
+.xt-add-movement-btn i,
+.xt-add-btn i {
+  font-size: .72rem;
+}
+
+
+/*************************************************
+ SIDE SECTIONS
+*************************************************/
+
+.xt-side-section {
+  height: 100%;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--xt-form-border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.xt-side-section .xt-section-heading-row {
+  margin-bottom: .75rem;
+}
+
+
+/*************************************************
+ MOVEMENT CONTAINER
+*************************************************/
+
+.xt-movements-container {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+}
+
+
+/*************************************************
+ EXCHANGE AREA
+*************************************************/
+
+.xt-exchanges-container {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+}
+
+.xt-exchange-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .65rem;
+  border: 1px solid var(--xt-form-border);
+  border-radius: 10px;
+  background: #fafbfc;
+}
+
+.xt-exchange-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.xt-field {
+  min-width: 0;
+}
+
+.xt-label {
+  display: block;
+  margin-bottom: .3rem;
+  color: #626879;
+  font-size: .67rem;
+  font-weight: 700;
+}
+
+.xt-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 0;
+  border: 1px solid #f0d5d5;
+  border-radius: 8px;
+  background: #fff;
+  color: #dc3545;
+  transition:
+    background-color .15s ease,
+    border-color .15s ease,
+    transform .15s ease;
+}
+
+.xt-remove-btn:hover {
+  border-color: #e9b8b8;
+  background: #fff5f5;
+  transform: translateY(-1px);
+}
+
+
+/*************************************************
+ ATTACHMENTS
+*************************************************/
+
+.xt-attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+  margin-bottom: .7rem;
+}
+
+.xt-attachment-item {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem .6rem;
+  border: 1px solid var(--xt-form-border);
+  border-radius: 9px;
+  background: #fafbfc;
+}
+
+.xt-attachment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 8px;
+  background: var(--xt-form-primary-soft);
+  color: var(--xt-form-primary);
+}
+
+.xt-attachment-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.xt-attachment-link {
+  overflow: hidden;
+  color: #3f4350;
+  font-size: .7rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.xt-attachment-link:hover {
+  color: var(--xt-form-primary);
+}
+
+.xt-attachment-info small {
+  margin-top: 1px;
+  color: var(--xt-form-muted);
+  font-size: .62rem;
+}
+
+.xt-new-attachment {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  position: relative;
+  padding: .75rem;
+  border: 1px dashed #cfd3df;
+  border-radius: 10px;
+  background: #fafbfc;
+  overflow: hidden;
+}
+
+.xt-new-attachment-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.xt-new-attachment-content strong {
+  color: #4a4e5b;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.xt-new-attachment-content span {
+  margin-top: .1rem;
+  color: var(--xt-form-muted);
+  font-size: .63rem;
+}
+
+.xt-attachment-input {
+  max-width: 48%;
+  margin-left: auto;
+  font-size: .65rem;
+}
+
+
+/*************************************************
+ FORM CONTROLS
+*************************************************/
+
+.xt-form .form-select,
+.xt-form .form-control {
+  border-color: var(--xt-form-border);
+  border-radius: 8px;
+  font-size: .72rem;
+}
+
+.xt-form .form-select:focus,
+.xt-form .form-control:focus {
+  border-color: #a5a7ee;
+  box-shadow: 0 0 0 .18rem rgba(79, 70, 229, .08);
+}
+
+
+/*************************************************
+ ERROR
+*************************************************/
+
+.xt-error {
+  margin-bottom: 1rem;
+  padding: .8rem .9rem;
+  border: 1px solid #f1cccc;
+  border-radius: 10px;
+  background: #fff7f7;
+  color: #842029;
+}
+
+.xt-error-title {
+  display: flex;
+  align-items: flex-start;
+  gap: .45rem;
+  font-size: .74rem;
+  font-weight: 700;
+}
+
+.xt-error-title i {
+  margin-top: 1px;
+}
+
+.xt-error ul {
+  margin: .45rem 0 0;
+  padding-left: 1.25rem;
+  font-size: .68rem;
+}
+
+
+/*************************************************
+ RESPONSIVE
+*************************************************/
+
+@media (max-width: 991.98px) {
+  .xt-movements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .xt-header-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .xt-form-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .xt-section-heading-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .xt-add-movement-btn,
+  .xt-add-btn {
+    width: 100%;
+  }
+
+  .xt-attachment-input {
+    max-width: 100%;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .xt-new-attachment {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
