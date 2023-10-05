@@ -4,6 +4,11 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, :trackable
 
+
+
+  has_many :payment_orders
+
+
   PROFILE_TITLE = [
     'Accountant',
     'Marketing Manger',
