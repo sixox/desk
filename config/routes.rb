@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :vacations
   devise_for :users
   root 'home#index'
 

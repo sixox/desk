@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_03_085335) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_05_075202) do
   create_table "payment_orders", force: :cascade do |t|
     t.string "reference"
     t.integer "amount"
@@ -57,5 +57,21 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_03_085335) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "vacations", force: :cascade do |t|
+    t.boolean "hourly"
+    t.string "status"
+    t.datetime "start_at"
+    t.datetime "end_at"
+    t.boolean "confirm"
+    t.integer "user_id", null: false
+    t.text "details"
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "vacation_type"
+    t.index ["user_id"], name: "index_vacations_on_user_id"
+  end
+
   add_foreign_key "payment_orders", "users"
+  add_foreign_key "vacations", "users"
 end

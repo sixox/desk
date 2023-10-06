@@ -7,6 +7,7 @@ class User < ApplicationRecord
 
 
   has_many :payment_orders
+  has_many :vacations
 
 
   PROFILE_TITLE = [
