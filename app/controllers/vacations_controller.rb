@@ -11,25 +11,12 @@ class VacationsController < ApplicationController
 
 
 
-
-  def edit_confirm_vacation
-    vacation_id = params[:format].to_i
-    @vacation = Vacation.find(vacation_id)
-
-  end
-
-  def update_confirm_vacation
-    vacation_id = params[:format].to_i
-    @vacation = Vacation.find(vacation_id)
-
+  def confirm
+    @vacation = Vacation.find(params[:id])
+    @vacation.update(confirm: true)
     respond_to do |format|
-      if @vacation.update(confirm: params[:vacation][:confirm])
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("vacation_item_#{@vacation.id}", partial: 'vacations/vacation', locals: { vacation: @vacation }) }
-      else
-        format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'vacations/form', modal_title: 'Edit Vacation Request' })}
-      end
+    format.html { redirect_to member_path(current_user) } # Add this line for HTML response
     end
-
   end
 
 
@@ -50,10 +37,15 @@ end
 
 def update
   respond_to do |format|
-    if @vacation.update(vacation_params)
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("vacation_item_#{@vacation.id}", partial: 'vacations/vacation', locals: { vacation: @vacation }) }
-    else
-      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'vacations/form', modal_title: 'Edit Vacation Request' })}
+    if @vacation.can_modify?
+
+      if @vacation.update(vacation_params)
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("vacation_item_#{@vacation.id}", partial: 'vacations/vacation', locals: { vacation: @vacation }) }
+      else
+        redirect_to root_path
+        # format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'vacations/form', modal_title: 'Edit Vacation Request' })}
+      end
+
     end
   end
 end
@@ -71,7 +63,7 @@ end
 private
     # Use callbacks to share common setup or constraints between actions.
     def set_vacation
-      @vacation = current_user.vacations.find(params[:id])
+      @vacation = Vacation.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.

@@ -39,9 +39,8 @@
 					</div>
 				</div>
 			</div>
-			<% end %>
 
-			<% if @user.vacations.present? %>
+			<% if user_signed_in? && @user.vacations.present? %>
 			<ul class="list-group" id="vacation_items">
 				<% @user.vacations.reverse.each do |vacation| %>
 				<%= render 'vacations/vacation', vacation: vacation %>
@@ -59,6 +58,8 @@
 
 			</ul>
 			<% end %>
+			<% end %>
+
 		</div>
 	</div>
 

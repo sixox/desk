@@ -37,7 +37,7 @@
 				<% end %>	
 				<% if user_signed_in? && current_user == @user && @user.is_manager && !@user.hr? %>
 
-				<%= link_to edit_vacation_confirm_path(vacation), data: { controller: "bs-modal-form" } do %>
+				<%= link_to confirm_vacation_path(vacation), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to Confirm this vacation request, this action can not be undo!' } do %>
 				<i class="bi bi-check"></i>
 				<% end %>
 				<% end %>
