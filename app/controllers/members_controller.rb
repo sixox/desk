@@ -3,6 +3,11 @@ class MembersController < ApplicationController
 
 	def show
 		@user = User.find(params[:id])
+		@vacations_for_same_role = Vacation.joins(:user)
+		.where(users: { role: @user.role })
+		.where.not(users: { id: @user.id })
+		@vacations = Vacation.all
+
 	end
 
 	def edit_description

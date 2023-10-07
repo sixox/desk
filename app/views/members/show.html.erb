@@ -21,4 +21,49 @@
 			<%= render 'member_description', user: @user %>
 		</div>
 	</div>
+
+	<div class="card mb-5">
+		<div class="card-body">
+			<% if user_signed_in? && @user == current_user %>
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<h3>Vacations</h3>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						<%= link_to new_vacation_path, data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-plus"></i> Add Vacation
+						<% end %>
+					</div>
+				</div>
+			</div>
+			<% end %>
+
+			<% if @user.vacations.present? %>
+			<ul class="list-group" id="vacation_items">
+				<% @user.vacations.reverse.each do |vacation| %>
+				<%= render 'vacations/vacation', vacation: vacation %>
+				<% end %>
+				<% if @user.is_manager %>
+				<hr>
+				<% @vacations_for_same_role.reverse.each do |vacation|%>
+				<%= render 'vacations/vacation', vacation: vacation %>
+
+				<% end %>
+
+				<%end%>
+
+
+
+			</ul>
+			<% end %>
+		</div>
+	</div>
+
+
+
+
+
 </div>
