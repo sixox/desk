@@ -25,6 +25,7 @@ end
 
 def create
  @vacation = current_user.vacations.new(vacation_params)
+ @vacation.confirm = true if current_user.is_manager
  respond_to do |format|
   if @vacation.save
     format.turbo_stream { render turbo_stream: turbo_stream.prepend('vacation_items', partial: 'vacations/vacation', locals: { vacation: @vacation }) }
