@@ -8,9 +8,7 @@ class Vacation < ApplicationRecord
   validates :start_at, :end_at, :vacation_type, :details, presence: true
   validate :hourly_or_daily
 
-  def can_modify?
-    true
-  end
+
 
   def hourly_or_daily
     if start_at.present? && end_at.present?

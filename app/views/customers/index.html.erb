@@ -1,0 +1,26 @@
+<div class="card mb-5">
+	<div class="card-body">
+		<% if user_signed_in? && current_user.trading? && current_user.is_manager %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Customers</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<%= link_to new_customer_path, data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-plus"></i> Add Customer
+					<% end %>
+				</div>
+			</div>
+		</div>
+		<ul class="list-group" id="customer_items">
+			<% @customers.reverse.each do |customer| %>
+			<%= render 'customers/customer', customer: customer %>
+			<% end %>
+		</ul>
+		<% end %>
+
+	</div>
+</div>

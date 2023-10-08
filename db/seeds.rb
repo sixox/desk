@@ -7,24 +7,15 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 ActiveRecord::Base.transaction do
-	user_count = User.count
-	VACATION_TYPE = ['Paid', 'Unpaid', 'Medical']
+	40.times do
+		name = Faker::Name.name
+		nickname = Faker::Internet.username
+		company = Faker::Company.name
 
-
-	700.times do
-		  vacation_type = VACATION_TYPE.sample # Randomly select a vacation_type from the array
-
-		  user_id = rand(1..user_count) 
-		  start_date = Faker::Time.between(from: 1.year.ago, to: Time.now)
-		  end_date = start_date + rand(1..10).days
-		  Vacation.create(
-		  	user_id: user_id,
-		  	start_at: start_date,
-		  	end_at: end_date,
-		  	confirm: [true, false].sample,
-		  	vacation_type: vacation_type,
-		  	details: "some reason"
-		  	)
-
-		end
+		Customer.create!(
+			name: name,
+			nickname: nickname,
+			company: company
+			)
 	end
+end

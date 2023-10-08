@@ -8,6 +8,10 @@ class User < ApplicationRecord
 
   has_many :payment_orders
   has_many :vacations
+  has_many :customers
+  has_many :pis
+  has_many :cis
+
 
   enum role: {
     admin: 'admin',
