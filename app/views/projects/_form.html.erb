@@ -1,0 +1,65 @@
+<%= form_with model: @project do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @project.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@project.errors.count, 'error') %> prohibited your project from being saved.</h3>
+			<ul>
+				<% @project.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Project</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project %>
+					<h3 class="secondary"><%= @project.number %></h3>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+
+
+			<div class="form-group">
+				<label class="mb-2 mt-3">
+					Project number
+					<span class="text-danger">*</span>
+				</label>
+				<%= form.text_field :number, class: 'form-control' %>
+			</div>
+			<div class="form-group mb-2 mt-3">
+				<label class="mb-2 mt-3">
+					Project Name
+					<span class="text-danger">*</span>
+				</label>
+				<%= form.text_field :name, class: 'form-control' %>
+			</div>
+
+
+
+
+
+
+
+
+
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Create Project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

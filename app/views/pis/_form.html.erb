@@ -1,0 +1,256 @@
+<%= form_for [@project, @pi] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @pi.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@pi.errors.count, 'error') %> prohibited your pi from being saved.</h3>
+			<ul>
+				<% @pi.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h4>Purchase invoice</h4>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project %>
+					<small class="text-secondary">Project: <%= @project.number %></small>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="row bg-semi">
+				<div class="col-lg-7">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							PI number
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_field :number, class: 'form-control' %>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group mb-2">
+						<label class="mb-2 mt-3">
+							Buyer
+							<span class="text-danger">*</span>
+							<%= form.collection_select :customer_id, Customer.all, :id, :nickname, { prompt: 'Select Customer'}, { class: "form-select mt-2" } %>
+						</label>
+					</div>
+					
+				</div>
+			</div>
+
+
+			<div class="row">
+				<div class="col-lg-4">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-1">
+							Product
+							<span class="text-danger">*</span>
+							<%= form.select :product, options_for_select(Pi::PRODUCT, selected: form.object.product), { prompt: 'Select product' }, { class:"form-select mt-2" } %>
+						</label>
+
+
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Quantity
+							<span class="text-danger">*</span>
+							<%= form.number_field :quantity, id: "quantity_field", class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group ">
+						<label class="mb-2 mt-1">
+							Unit Price
+							<span class="text-danger">*</span>
+							
+							<%= form.number_field :unit_price, id: "unit_price_field", class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Currency
+							<span class="text-danger">*</span>
+							<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select mt-2" } %>
+						</label>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="row bg-semi">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Payment Term
+							<span class="text-danger">*</span>
+							<%= form.select :payment_term, options_for_select(Pi::PAYMENT_TERM, selected: form.object.payment_term), { prompt: 'Select payment term' }, { class:"form-select mt-2" } %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Shipment Rate
+							<%= form.number_field :shipment_rate, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Total Price
+							<span class="text-danger">*</span>
+							
+							<%= form.number_field :total_price, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Loading Port
+							<span class="text-danger">*</span>
+							<%= form.select :pol, options_for_select(Pi::POL, selected: form.object.pol), { prompt: 'Select POL' }, { class:"form-select mt-2 " } %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Destination Port
+							<span class="text-danger">*</span>
+							<%= form.text_field :pod, class: 'form-control mt-2' %>
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Delivery Time
+							<span class="text-danger">*</span>
+							<div class="input-group mt-2">
+								<%= form.number_field :delivery_time, class: "form-control" %>
+								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="row bg-semi">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Packing Type
+							<span class="text-danger">*</span>
+							<%= form.select :packing_type, options_for_select(Pi::PACKING_TYPE, selected: form.object.packing_type), { prompt: 'Select packing' }, { class:"form-select mt-2 " } %>
+						</label>
+					</div>	
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Count							
+							<%= form.number_field :packing_count, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Account
+							<span class="text-danger">*</span>
+							<%= form.text_field :bank_account, class: 'form-control mt-2' %>
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Seller
+							<span class="text-danger">*</span>
+							<%= form.select :seller, options_for_select(Pi::SELLER, selected: form.object.seller), { prompt: 'Select seller' }, { class:"form-select mt-2 " } %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-2"></div>
+				
+			</div>
+			<div class="row bg-semi">
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Issue Date
+							<span class="text-danger">*</span>
+							<%= form.date_field :issue_date, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Validity
+							<span class="text-danger">*</span>
+							<div class="input-group mt-2">
+								<%= form.number_field :validity, class: "form-control" %>
+								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-2"></div>
+			</div>
+			<% if !@pi.document.id %>
+			<div class="row">
+				<div class="form-group">
+					<label class="mb-2 mt-1">
+						Upload Document
+						<span class="text-danger">*</span>
+						<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
+					</label>
+				</div>
+			</div>
+			<% else %>
+			<% end %>
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Add PI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

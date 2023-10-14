@@ -1,0 +1,38 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<p class="fw-bold">Project <span class="text-warning"><%= @project.number %></span> </p>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						<p class="fw-bold">Status 
+							<% if @project.status%>
+							<span class="text-warning"><%= @project.status %></span> 
+							<% else %>
+							<span class="text-warning">Unknown</span> 
+							<% end %>
+
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<% if !@project.pi %>
+	<%= link_to "Create PI", new_project_pi_path(@project), data: { controller: "bs-modal-form" } %>
+	<% else %>
+
+
+
+		<%= render 'pis/pi', pi: @pi, project: @project %>
+
+
+
+	<% end %>
+</div>
+

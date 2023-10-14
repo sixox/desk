@@ -10,7 +10,9 @@ Rails.application.routes.draw do
   
   resources :customers
   resources :pis
-  resources :projects
+  resources :projects do
+    resources :pis
+  end
   resources :cis
 
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_08_110750) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -122,7 +122,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_08_110750) do
     t.integer "packing_count"
     t.float "shipment_rate"
     t.string "seller"
-    t.date "delivery_time"
+    t.integer "delivery_time"
     t.date "issue_date"
     t.string "pol"
     t.string "pod"
@@ -131,6 +131,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_08_110750) do
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.integer "project_id"
+    t.string "currency"
+    t.float "total_price"
     t.index ["customer_id"], name: "index_pis_on_customer_id"
     t.index ["project_id"], name: "index_pis_on_project_id"
     t.index ["user_id"], name: "index_pis_on_user_id"
@@ -141,6 +143,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_08_110750) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
   end
 
   create_table "users", force: :cascade do |t|
