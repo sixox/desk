@@ -1,0 +1,2 @@
+class Ballance < ApplicationRecord
+end

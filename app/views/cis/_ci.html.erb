@@ -1,0 +1,50 @@
+
+
+<div class="row mt-3" id="ci_item_<%= ci.id %>">
+	<table class="table table-success table-striped">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">CI number</th>
+				<th scope="col">PI number</th>
+				<th scope="col">Project</th>
+				<th scope="col">Net Weight</th>
+				<th scope="col">Gross Weight</th>
+				<th scope="col">Unit Price</th>
+				<th scope="col">Total Price</th>
+				<th scope="col">Term</th>
+				<th scope="col">Actions</th>
+
+
+
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th scope="row">-></th>
+				<td><%= ci.number %></td>
+				<td><%= ci.pi.number %></td>
+				<td><%= project.number %></td>
+				<td><%= ci.net_weight %></td>
+				<td><%= ci.gross_weight %></td>
+				<td><%= ci.pi.unit_price.to_i %></td>
+				<td><%= ci.total_price.to_i %> MT</td>
+				<td><%= ci.pi.payment_term %></td>
+				<td><% if user_signed_in? && current_user.trading? %>
+
+					<span><%= link_to edit_project_ci_path(project, ci), data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-pencil-fill"></i>
+						<% end %></span>
+						<% end %></td>
+
+					</tr>
+
+				</tbody>
+			</table>
+	</div>
+
+
+
+
+
+

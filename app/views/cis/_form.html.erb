@@ -1,0 +1,200 @@
+<%= form_for [@project, @ci] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @ci.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@ci.errors.count, 'error') %> prohibited your ci from being saved.</h3>
+			<ul>
+				<% @ci.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h4>Purchase invoice</h4>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project.pi %>
+					<small class="text-secondary">Project: <%= @project.number %></small><br>
+					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="row bg-semi">
+				<div class="col-lg-7">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							CI number
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_field :number, class: 'form-control' %>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group mb-2">
+						<label class="mb-2 mt-3">
+							Buyer
+							<div class="mt-2"> <%= @project.pi.customer.nickname %></div>
+						</label>
+					</div>
+					
+				</div>
+			</div>
+
+
+			<div class="row">
+				<div class="col-lg">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-1">
+							Product
+							<div class="mt-2"><%= @project.pi.product %></div>
+						</label>
+
+
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Net Weight
+							<span class="text-danger">*</span>
+							<%= form.number_field :net_weight, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group ">
+						<label class="mb-2 mt-1">
+							Gross Weight
+							<span class="text-danger">*</span>
+							
+							<%= form.number_field :gross_weight, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="row bg-semi">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Payment Term
+							<span class="text-danger">*</span>
+							<div class="mt-2"><%= @project.pi.payment_term %></div>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Advance Payment
+							<%= form.number_field :advance_payment, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Balance Payment
+							<span class="text-danger">*</span>
+							
+							<%= form.number_field :balance_payment, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="row bg-semi">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Total Price
+							<span class="text-danger">*</span>
+							<%=  form.number_field :total_price, class: "form-control mt-2" %>
+						</label>
+					</div>	
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Account							
+							<%= form.text_field :bank_account, class: 'form-control mt-2' %>
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Currency
+							<span class="text-danger">*</span>
+							<div class="mt-2"><%= @project.pi.currency %></div>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="row bg-semi">
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Issue Date
+							<span class="text-danger">*</span>
+							<%= form.date_field :issue_date, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Validity
+							<span class="text-danger">*</span>
+							<div class="input-group mt-2">
+								<%= form.number_field :validity, class: "form-control" %>
+								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-2"></div>
+			</div>
+			<% if !@ci.document.id %>
+			<div class="row">
+				<div class="form-group">
+					<label class="mb-2 mt-1">
+						Upload Document
+						<span class="text-danger">*</span>
+						<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
+					</label>
+				</div>
+			</div>
+			<% else %>
+			<% end %>
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Add PI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

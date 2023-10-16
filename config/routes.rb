@@ -12,6 +12,12 @@ Rails.application.routes.draw do
   resources :pis
   resources :projects do
     resources :pis
+    resources :cis
+    resources :bookings do
+      member do
+        get 'edit_picked_up'
+      end
+    end
   end
   resources :cis
 
@@ -21,6 +27,8 @@ Rails.application.routes.draw do
     patch 'update_description', to: 'members#update_description', as: 'update_member_description'
     get 'edit_personal_details', to: 'members#edit_personal_details', as: 'edit_member_personal_details'
     patch 'update_personal_details', to: 'members#update_personal_details', as: 'update_member_personal_details'
+
+    # get 'edit_booking_picked_up', to: 'bookings#edit_booking_picked_up', as: 'edit_booking_picked_up'
 
 
 

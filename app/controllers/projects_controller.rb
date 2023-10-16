@@ -6,7 +6,8 @@ class ProjectsController < ApplicationController
 
 	def show
 		@pi = @project.pi if @project.pi
-
+		@cis = @project.cis if @project.cis
+		@bookings = @project.bookings if @project.bookings
 	end
 
 	def index

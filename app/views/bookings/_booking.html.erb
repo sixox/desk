@@ -1,0 +1,58 @@
+
+
+<div class="row mt-3" id="booking_item_<%= booking.id %>">
+	<table class="table table-success table-striped">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Booking number</th>
+				<th scope="col">Line</th>
+				<th scope="col">Forwarder</th>
+				<th scope="col">Port</th>
+				<th scope="col">flexi</th>
+				<th scope="col">Picked up</th>
+				<th scope="col">Filled</th>
+				<th scope="col">Total</th>
+				<th scope="col">Free time</th>
+				<th scope="col">Action</th>
+
+
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th scope="row">-></th>
+				<td><%= booking.number %></td>
+				<td><%= booking.line %></td>
+				<td><%= booking.forwarder %></td>
+				<td><%= booking.pod %></td>
+				<td><%= 'yes' if booking.have_flexi %></td>
+				<td><%= booking.picked_up %></td>
+				<td><%= booking.filled %></td>
+				<td><%= booking.quantity %></td>
+
+				<td><%= booking.free_time %></td>
+
+				<td><% if user_signed_in? && current_user.trading? %>
+
+					<span><%= link_to edit_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-pencil-fill"></i>
+						<% end %></span>
+						<span><%= link_to edit_picked_up_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-database-fill-up"></i>
+						<% end %></span>
+
+						<% end %>
+				</td>
+
+					</tr>
+
+				</tbody>
+			</table>
+	</div>
+
+
+
+
+
+

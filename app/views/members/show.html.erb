@@ -47,6 +47,7 @@
 				<% end %>
 				<% if @user.is_manager %>
 				<hr>
+				department vacations
 				<% @vacations_for_same_role.reverse.each do |vacation|%>
 				<%= render 'vacations/vacation', vacation: vacation %>
 

@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  spi: one
+  net_weight: 1.5
+  gross_weight: 1.5
+  total_price: 1.5
+  advance_payment: 1.5
+  balance_payment: 1.5
+  bank_account: MyString
+  issue_date: 2023-10-16
+  have_loading_report: false
+  status: MyString
+
+two:
+  spi: two
+  net_weight: 1.5
+  gross_weight: 1.5
+  total_price: 1.5
+  advance_payment: 1.5
+  balance_payment: 1.5
+  bank_account: MyString
+  issue_date: 2023-10-16
+  have_loading_report: false
+  status: MyString

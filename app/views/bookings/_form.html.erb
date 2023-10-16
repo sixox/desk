@@ -1,0 +1,138 @@
+<%= form_for [@project, @booking] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @booking.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
+			<ul>
+				<% @booking.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h4>Booking</h4>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project.pi %>
+					<small class="text-secondary">Project: <%= @project.number %></small><br>
+					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="row bg-semi">
+				<div class="col-lg-7">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Booking number
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_field :number, class: 'form-control' %>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-3">
+							Line
+							<span class="text-danger">*</span>
+							<%= form.select :line, options_for_select(Booking::LINE, selected: form.object.line), { prompt: 'Select line' }, { class:"form-select mt-2" } %>
+						</label>
+
+
+					</div>
+					
+				</div>
+			</div>
+
+
+			<div class="row">
+				<div class="col-lg-4">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-1">
+							Forwarder
+							<span class="text-danger">*</span>
+							<%= form.select :forwarder, options_for_select(Booking::FORWARDER, selected: form.object.forwarder), { prompt: 'Select forwarder' }, { class:"form-select mt-2" } %>
+						</label>
+
+
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-1">
+							Type of fcl
+							<span class="text-danger">*</span>
+							<%= form.select :container_type, options_for_select(Booking::CONTAINER_TYPE, selected: form.object.container_type), { prompt: 'Select fcl' }, { class:"form-select mt-2" } %>
+						</label>
+
+
+					</div>
+				</div>
+
+				<div class="col-lg">
+					<div class="form-group mb-2 mt-5">
+						<%= form.check_box :have_flexi, class: 'form-check-input' %>
+						<label class="form-check-label" for="haveFlexi">
+							Have flexi?
+						</label>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="row bg-semi">
+				<div class="col-lg">
+					<div class="form-group ">
+						<label class="mb-2 mt-1">
+							Port
+							<span class="text-danger">*</span>
+							
+							<%= form.text_field :pod, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Quantity
+							<%= form.number_field :quantity, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Free time
+							<%= form.number_field :free_time, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				
+			</div>
+
+
+
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Add booking to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

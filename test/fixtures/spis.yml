@@ -1,0 +1,37 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  number: MyString
+  product: MyString
+  validity: 1
+  user: one
+  quantity: 1.5
+  unit_price: 1.5
+  payment_term: MyString
+  bank_account: MyString
+  packing_type: MyString
+  packing_count: 1
+  supplier: MyString
+  seller: MyString
+  issue_date: 2023-10-16
+  term: MyString
+  ballance: one
+  total_price: 1.5
+
+two:
+  number: MyString
+  product: MyString
+  validity: 1
+  user: two
+  quantity: 1.5
+  unit_price: 1.5
+  payment_term: MyString
+  bank_account: MyString
+  packing_type: MyString
+  packing_count: 1
+  supplier: MyString
+  seller: MyString
+  issue_date: 2023-10-16
+  term: MyString
+  ballance: two
+  total_price: 1.5

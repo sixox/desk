@@ -21,15 +21,70 @@
 				</div>
 			</div>
 		</div>
-
 	</div>
+
+
 	<% if !@project.pi %>
 	<%= link_to "Create PI", new_project_pi_path(@project), data: { controller: "bs-modal-form" } %>
+	<% else %>
+	<%= render 'pis/pi', pi: @pi, project: @project %>
+	<% if !@project.cis.present? %>
+	<%= link_to "Create CI", new_project_ci_path(@project), data: { controller: "bs-modal-form" } %>
 	<% else %>
 
 
 
-		<%= render 'pis/pi', pi: @pi, project: @project %>
+
+	
+
+	<div class="card mb-5" id="ci_items">
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-center">
+				<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
+				<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-plus"></i> Add CI
+				<% end %>
+
+
+			</div>
+			<% @cis.each do |ci|%>
+			<%= render 'cis/ci', ci: ci, project: @project %>
+			<% end %>
+
+		</div>
+	</div>
+
+
+
+
+
+	<% end %>
+
+	<% if !@project.bookings.present? %>
+		<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
+		<i class="bi bi-plus"></i> Add Booking
+		<% end %>
+
+	<% else %>
+		<div class="card mb-5" id="ci_items">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center">
+					<h5 class="card-title text-center mb-0">Bookings</h5>
+					<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-plus"></i> Add Booking
+					<% end %>
+
+
+				</div>
+				<% @bookings.each do |booking|%>
+				<%= render 'bookings/booking', booking: booking, project: @project %>
+				<% end %>
+
+			</div>
+		</div>
+	<% end %>
+
+
 
 
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -39,6 +39,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "ballances", force: :cascade do |t|
+    t.string "number"
+    t.string "status"
+    t.string "name"
+    t.string "product"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "bookings", force: :cascade do |t|
     t.string "number"
     t.string "line"
@@ -55,6 +64,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
     t.integer "project_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "filled"
     t.index ["project_id"], name: "index_bookings_on_project_id"
   end
 
@@ -71,6 +81,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.string "number"
+    t.integer "validity"
     t.index ["pi_id"], name: "index_cis_on_pi_id"
     t.index ["project_id"], name: "index_cis_on_project_id"
     t.index ["user_id"], name: "index_cis_on_user_id"
@@ -146,6 +158,45 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
     t.string "name"
   end
 
+  create_table "scis", force: :cascade do |t|
+    t.integer "spi_id", null: false
+    t.float "net_weight"
+    t.float "gross_weight"
+    t.float "total_price"
+    t.float "advance_payment"
+    t.float "balance_payment"
+    t.string "bank_account"
+    t.date "issue_date"
+    t.boolean "have_loading_report"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["spi_id"], name: "index_scis_on_spi_id"
+  end
+
+  create_table "spis", force: :cascade do |t|
+    t.string "number"
+    t.string "product"
+    t.integer "validity"
+    t.integer "user_id", null: false
+    t.float "quantity"
+    t.float "unit_price"
+    t.string "payment_term"
+    t.string "bank_account"
+    t.string "packing_type"
+    t.integer "packing_count"
+    t.string "supplier"
+    t.string "seller"
+    t.date "issue_date"
+    t.string "term"
+    t.integer "ballance_id", null: false
+    t.float "total_price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ballance_id"], name: "index_spis_on_ballance_id"
+    t.index ["user_id"], name: "index_spis_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -195,5 +246,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_091153) do
   add_foreign_key "pis", "customers"
   add_foreign_key "pis", "projects"
   add_foreign_key "pis", "users"
+  add_foreign_key "scis", "spis"
+  add_foreign_key "spis", "ballances"
+  add_foreign_key "spis", "users"
   add_foreign_key "vacations", "users"
 end
