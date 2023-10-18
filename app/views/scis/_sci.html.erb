@@ -1,0 +1,52 @@
+
+
+<div class="row mt-3" id="sci_item_<%= sci.id %>">
+	<table class="table table-success table-striped">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">CI number</th>
+				<th scope="col">PI number</th>
+				<th scope="col">Balance</th>
+				<th scope="col">Net Weight</th>
+				<th scope="col">Gross Weight</th>
+				<th scope="col">Unit Price</th>
+				<th scope="col">Total Price</th>
+				<th scope="col">Loading Report</th>
+				<th scope="col">Term</th>
+				<th scope="col">Actions</th>
+
+
+
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th scope="row">-></th>
+				<td><%= sci.number %></td>
+				<td><%= sci.spi.number %></td>
+				<td><%= ballance.number %></td>
+				<td><%= sci.net_weight %></td>
+				<td><%= sci.gross_weight %></td>
+				<td><%= sci.spi.unit_price.to_i %></td>
+				<td><%= sci.total_price.to_i %> MT</td>
+				<td><%= 'yes' if sci.have_loading_report %></td>
+				<td><%= sci.spi.payment_term %></td>
+				<td><% if user_signed_in? && current_user.procurement? %>
+
+					<span><%= link_to edit_ballance_sci_path(ballance, sci), data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-pencil-fill"></i>
+						<% end %></span>
+						<% end %></td>
+
+					</tr>
+
+				</tbody>
+			</table>
+	</div>
+
+
+
+
+
+

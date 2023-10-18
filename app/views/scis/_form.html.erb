@@ -1,11 +1,11 @@
-<%= form_for [@project, @ci] do |form| %>
+<%= form_for [@ballance, @sci] do |form| %>
 <div class="modal-body">
 	<div class="row">
-		<% if @ci.errors.any? %>
+		<% if @sci.errors.any? %>
 		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@ci.errors.count, 'error') %> prohibited your ci from being saved.</h3>
+			<h3><%= pluralize(@sci.errors.count, 'error') %> prohibited your sci from being saved.</h3>
 			<ul>
-				<% @ci.errors.each do |error|%>
+				<% @sci.errors.each do |error|%>
 				<li>
 					<%= error.full_message%>
 				</li>
@@ -21,9 +21,9 @@
 			</div>
 			<div class="col-lg-6">
 				<div class="d-flex justify-content-end">
-					<% if @project.pi %>
-					<small class="text-secondary">Project: <%= @project.number %></small><br>
-					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
+					<% if @ballance.spi %>
+					<small class="text-secondary">Balance: <%= @ballance.number %></small><br>
+					<small class="text-secondary">PI number: <%= @ballance.spi.number %></small>
 					<% end %>
 				</div>
 			</div>
@@ -43,8 +43,8 @@
 				<div class="col-lg-5">
 					<div class="form-group mb-2">
 						<label class="mb-2 mt-3">
-							Buyer
-							<div class="mt-2"> <%= @project.pi.customer.nickname %></div>
+							Supplier
+							<div class="mt-2"> <%= @ballance.supplier.name %></div>
 						</label>
 					</div>
 					
@@ -58,7 +58,7 @@
 
 						<label class="mb-2 mt-1">
 							Product
-							<div class="mt-2"><%= @project.pi.product %></div>
+							<div class="mt-2"><%= @ballance.spi.product %></div>
 						</label>
 
 
@@ -96,7 +96,7 @@
 						<label class="mb-2 mt-1">
 							Payment Term
 							<span class="text-danger">*</span>
-							<div class="mt-2"><%= @project.pi.payment_term %></div>
+							<div class="mt-2"><%= @ballance.spi.payment_term %></div>
 						</label>
 					</div>
 				</div>
@@ -142,15 +142,7 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Currency
-							<span class="text-danger">*</span>
-							<div class="mt-2"><%= @project.pi.currency %></div>
-						</label>
-					</div>
-				</div>
+
 			</div>
 
 			<div class="row bg-semi">
@@ -163,21 +155,17 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Validity
-							<span class="text-danger">*</span>
-							<div class="input-group mt-2">
-								<%= form.number_field :validity, class: "form-control" %>
-								<span class="input-group-text">Days</span>
-							</div>
+				<div class="col-lg">
+					<div class="form-group mb-2 mt-5">
+						<%= form.check_box :have_loading_report, class: 'form-check-input' %>
+						<label class="form-check-label" for="haveLoadingReport">
+							Loading Report?
 						</label>
 					</div>
 				</div>
 				<div class="col-lg-2"></div>
 			</div>
-			<% if !@ci.document.id %>
+			<% if !@sci.document.id %>
 			<div class="row">
 				<div class="form-group">
 					<label class="mb-2 mt-1">
@@ -194,7 +182,7 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<%= form.submit 'Add PI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<%= form.submit 'Add CI to balance', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
 	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
 <% end %>

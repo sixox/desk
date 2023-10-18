@@ -20,6 +20,11 @@ Rails.application.routes.draw do
     end
   end
   resources :cis
+  resources :ballances do
+    resources :spis
+    resources :scis
+  end
+  resources :suppliers
 
 
     get 'member/:id', to: 'members#show', as: 'member'

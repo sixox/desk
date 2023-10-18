@@ -1,0 +1,29 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+<div class="card mb-5 mt-5">
+	<div class="card-body">
+		<% if user_signed_in? && current_user.procurement? && current_user.is_manager %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Suppliers</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<%= link_to new_supplier_path, data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-plus"></i> Add supplier
+					<% end %>
+				</div>
+			</div>
+		</div>
+		<ul class="list-group" id="supplier_items">
+			<% @suppliers.reverse.each do |supplier| %>
+			<%= render 'suppliers/supplier', supplier: supplier %>
+			<% end %>
+		</ul>
+		<% end %>
+
+	</div>
+</div>
+</div>

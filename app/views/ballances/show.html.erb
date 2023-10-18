@@ -1,0 +1,55 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<p class="fw-bold">Balance <span class="text-warning"><%= @ballance.number %></span> </p>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						<p class="fw-bold">Status 
+							<% if @ballance.status%>
+							<span class="text-warning"><%= @ballance.status %></span> 
+							<% else %>
+							<span class="text-warning">Unknown</span> 
+							<% end %>
+
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<% if !@ballance.spi %>
+		<%= link_to "Create PI", new_ballance_spi_path(@ballance), data: { controller: "bs-modal-form" } %>
+		<% else %>
+			<%= render 'spis/spi', spi: @spi, ballance: @ballance %>
+			<% if !@ballance.scis.present? %>
+				<%= link_to "Create CI", new_ballance_sci_path(@ballance), data: { controller: "bs-modal-form" } %>
+				<% else %>
+
+					<div class="card mb-5" id="ci_items">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center">
+								<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
+								<%= link_to new_ballance_sci_path(@ballance), data: { controller: "bs-modal-form" } do %>
+								<i class="bi bi-plus"></i> Add CI
+								<% end %>
+
+
+							</div>
+							<% @scis.each do |sci|%>
+							<%= render 'scis/sci', sci: sci, ballance: @ballance %>
+							<% end %>
+
+						</div>
+					</div>
+
+			<% end %>
+
+	<% end %>
+
+
+</div>

@@ -17,7 +17,17 @@
           </a>
           <ul class="dropdown-menu text-white">
             <li><%= link_to "Create New Project", new_project_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-            <li><a class="dropdown-item" href="#">All Projects</a></li>
+            <li><a class="dropdown-item" href="#">Projects</a></li>
+
+          </ul>
+        </li>
+       <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Balances
+          </a>
+          <ul class="dropdown-menu text-white">
+            <li><%= link_to "Create New Balance", new_ballance_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
+            <li><a class="dropdown-item" href="#">Balances</a></li>
 
           </ul>
         </li>
@@ -26,7 +36,12 @@
         <li class="nav-item">
           <%= link_to "Customers", customers_path, class: "nav-link active" %>
         </li> 
-        <% end %>      
+        <% end %>  
+        <% if current_user.procurement? && current_user.is_manager %>
+        <li class="nav-item">
+          <%= link_to "Suppliers", suppliers_path, class: "nav-link active" %>
+        </li> 
+        <% end %>     
         <li class="nav-item">
           <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to sign out?'}, class: "nav-link active" %>
         </li>

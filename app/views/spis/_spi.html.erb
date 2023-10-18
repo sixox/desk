@@ -1,0 +1,70 @@
+<div class="card mb-5" id="spi_item_<%= spi.id %>">
+	<div class="card-body">
+		<div class="d-flex justify-content-between align-items-center">
+			<h5 class="card-title text-center mb-0">Purchase Invoice (PI)</h5>
+			<% if user_signed_in? && current_user.procurement? %>
+
+			<span><%= link_to edit_ballance_spi_path(ballance, spi), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-pencil-fill"></i>
+				<% end %></span>
+				<% end %>
+
+		</div>			
+			<div class="row mt-3">
+				<table class="table table-success table-striped">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Balance number</th>
+							<th scope="col">PI number</th>
+							<th scope="col">Supplier</th>
+							<th scope="col">Seller</th>
+							<th scope="col">Product</th>
+							<th scope="col">Quantity</th>
+							<th scope="col">Unit price</th>
+							<th scope="col">Total price</th>
+							<th scope="col">term</th>
+							<th scope="col">Packing</th>
+							<th scope="col">Packing count</th>
+							<th scope="col">Issue date</th>
+							<th scope="col">Validity</th>
+							<th scope="col">Bank account</th>
+
+
+
+
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">-></th>
+							<td><%= ballance.number %></td>
+							<td><%= spi.number %></td>
+							<td><%= ballance.supplier.name %></td>
+							<td><%= spi.seller %></td>
+							<td><%= spi.product %></td>
+							<td><%= spi.quantity.to_i %></td>
+							<td><%= spi.unit_price.to_i %> MT</td>
+							<td><%= spi.total_price.to_i %></td>
+							<td><%= spi.payment_term %></td>
+							<td><%= spi.packing_type %></td>
+							<td><%= spi.packing_count %></td>
+							<td><%= spi.issue_date %></td>
+							<td><%= spi.validity %></td>
+							<td><%= spi.bank_account %></td>
+						</tr>
+
+					</tbody>
+				</table>
+			</div>
+			
+
+		</div>
+
+	</div>
+
+
+
+
+
+

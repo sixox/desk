@@ -1,0 +1,60 @@
+<%= form_with model: @supplier do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @supplier.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@supplier.errors.count, 'error') %> prohibited your supplier from being saved.</h3>
+			<ul>
+				<% @supplier.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>supplier</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @supplier %>
+					<h3 class="secondary"><%= @supplier.id %></h3>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+
+
+			<div class="form-group">
+				<label class="mb-2 mt-3">
+					Supplier Name
+					<span class="text-danger">*</span>
+				</label>
+				<%= form.text_field :name, class: 'form-control' %>
+			</div>
+
+
+
+
+
+
+
+
+
+
+
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Add Supplier', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

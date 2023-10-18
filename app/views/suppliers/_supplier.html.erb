@@ -1,0 +1,42 @@
+<li class="list-group-item" id="supplier_item_<%= supplier.id %>">
+	<% if current_user.is_manager && current_user.procurement? %>
+
+	<div class="row">
+		<div class="col-lg-5">
+			Full Name: <span class="text-info"><%= supplier.name %></span> 
+		</div>
+		<div class="col-lg-7">
+			placeholder <span class="text-info">placeholder</span> 
+
+		</div>
+	</div>
+	<br>
+	<div class="row">
+		<div class="col-lg-5">
+			<div class="d-flex justify-content-start">
+				placeholder <p class="fw-bold"><span class="text-primary">placeholder</span> </p>
+			</div>
+		</div>
+		<div class="col-lg-3">
+place holder
+		</div>
+
+		<div class="col-lg-2">
+			<div class="d-flex justify-content-end">
+
+				<%= link_to edit_supplier_path(supplier), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-pencil-fill"></i>
+				<% end %>
+				<%= link_to supplier_path(supplier), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this supplier, this action can not be undo!' } do %>
+				<i class="bi bi-trash text-danger"></i>
+				<% end %>	
+
+			</div>
+			
+		</div>
+	</div>
+
+	<small><span class="text-secondary">placeholder</span> to <span class="text-secondary">placeholder</span> </small><br>
+	<small class="text-info">placeholder</small><br>
+</li>
+<% end %>

@@ -11,6 +11,9 @@ class User < ApplicationRecord
   has_many :customers
   has_many :pis
   has_many :cis
+  has_many :spis
+  has_many :suppliers
+  has_many :scis
 
 
   enum role: {
@@ -19,7 +22,8 @@ class User < ApplicationRecord
     marketing: 'marketing',
     trading: 'trading',
     ceo: 'ceo',
-    hr: 'hr'
+    hr: 'hr',
+    procurement: 'procurement'
   }
 
 

@@ -1,0 +1,73 @@
+<%= form_with model: @ballance do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @ballance.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@ballance.errors.count, 'error') %> prohibited your balance from being saved.</h3>
+			<ul>
+				<% @ballance.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Balance</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @ballance %>
+					<h3 class="secondary"><%= @ballance.number %></h3>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+
+
+			<div class="form-group">
+				<label class="mb-2 mt-3">
+					Balance Number
+					<span class="text-danger">*</span>
+				</label>
+				<%= form.text_field :number, class: 'form-control' %>
+			</div>
+			<div class="form-group mb-2 mt-3">
+				<label class="mb-2 mt-3">
+					Balance Name
+					<span class="text-danger">*</span>
+				</label>
+				<%= form.text_field :name, class: 'form-control' %>
+			</div>
+			<div class="form-group  ">
+
+				<label class="mb-2 mt-1">
+					Product
+					<span class="text-danger">*</span>
+					<%= form.select :product, options_for_select(Pi::PRODUCT, selected: form.object.product), { prompt: 'Select product' }, { class:"form-select mt-2" } %>
+				</label>
+
+
+			</div>
+			<div class="form-group mb-2">
+				<label class="mb-2 mt-3">
+					Supplier
+					<span class="text-danger">*</span>
+					<%= form.collection_select :supplier_id, Supplier.all, :id, :name, { prompt: 'Select Supplier'}, { class: "form-select mt-2" } %>
+				</label>
+			</div>
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Create Balance', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

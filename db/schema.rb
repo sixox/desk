@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_18_054801) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -46,6 +46,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
     t.string "product"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "supplier_id", null: false
+    t.index ["supplier_id"], name: "index_ballances_on_supplier_id"
   end
 
   create_table "bookings", force: :cascade do |t|
@@ -171,7 +173,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.integer "ballance_id", null: false
+    t.string "number"
+    t.index ["ballance_id"], name: "index_scis_on_ballance_id"
     t.index ["spi_id"], name: "index_scis_on_spi_id"
+    t.index ["user_id"], name: "index_scis_on_user_id"
   end
 
   create_table "spis", force: :cascade do |t|
@@ -195,6 +202,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
     t.datetime "updated_at", null: false
     t.index ["ballance_id"], name: "index_spis_on_ballance_id"
     t.index ["user_id"], name: "index_spis_on_user_id"
+  end
+
+  create_table "suppliers", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_suppliers_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -238,6 +253,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ballances", "suppliers"
   add_foreign_key "bookings", "projects"
   add_foreign_key "cis", "pis"
   add_foreign_key "cis", "projects"
@@ -246,8 +262,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_131814) do
   add_foreign_key "pis", "customers"
   add_foreign_key "pis", "projects"
   add_foreign_key "pis", "users"
+  add_foreign_key "scis", "ballances"
   add_foreign_key "scis", "spis"
+  add_foreign_key "scis", "users"
   add_foreign_key "spis", "ballances"
   add_foreign_key "spis", "users"
+  add_foreign_key "suppliers", "users"
   add_foreign_key "vacations", "users"
 end
