@@ -1,42 +1,15 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<p class="fw-bold">Project <span class="text-warning"><%= @project.number %></span> </p>
-					</div>
-				</div>
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-end">
-						<p class="fw-bold">Status 
-							<% if @project.status%>
-							<span class="text-warning"><%= @project.status %></span> 
-							<% else %>
-							<span class="text-warning">Unknown</span> 
-							<% end %>
-
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-	<% if !@project.pi %>
-	<%= link_to "Create PI", new_project_pi_path(@project), data: { controller: "bs-modal-form" } %>
-	<% else %>
-	<%= render 'pis/pi', pi: @pi, project: @project %>
-	<% if !@project.cis.present? %>
-	<%= link_to "Create CI", new_project_ci_path(@project), data: { controller: "bs-modal-form" } %>
-	<% else %>
-
-
-
-
 	
+	<%= render 'projects/project', project: @project, bookings: @bookings %>
 
+
+
+
+
+
+	<% if @project.pi %>
+	<%= render 'pis/pi', pi: @pi, project: @project %>
+	<% if @project.cis.present? %>
 	<div class="card mb-5" id="ci_items">
 		<div class="card-body">
 			<div class="d-flex justify-content-between align-items-center">
@@ -60,28 +33,23 @@
 
 	<% end %>
 
-	<% if !@project.bookings.present? %>
-		<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
-		<i class="bi bi-plus"></i> Add Booking
-		<% end %>
-
-	<% else %>
-		<div class="card mb-5" id="ci_items">
-			<div class="card-body">
-				<div class="d-flex justify-content-between align-items-center">
-					<h5 class="card-title text-center mb-0">Bookings</h5>
-					<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
-					<i class="bi bi-plus"></i> Add Booking
-					<% end %>
-
-
-				</div>
-				<% @bookings.each do |booking|%>
-				<%= render 'bookings/booking', booking: booking, project: @project %>
+	<% if @project.bookings.present? %>
+	<div class="card mb-5" id="ci_items">
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-center">
+				<h5 class="card-title text-center mb-0">Bookings</h5>
+				<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-plus"></i> Add Booking
 				<% end %>
 
+
 			</div>
+			<% @bookings.each do |booking|%>
+			<%= render 'bookings/booking', booking: booking, project: @project %>
+			<% end %>
+
 		</div>
+	</div>
 	<% end %>
 
 

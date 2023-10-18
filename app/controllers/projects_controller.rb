@@ -1,16 +1,19 @@
 class ProjectsController < ApplicationController
 	
 	before_action :authenticate_user!
-	before_action :set_project, only: %i[ show edit update destroy ]
+	before_action :set_project, only: %i[ show edit update destroy allocate] 
 
 
 	def show
 		@pi = @project.pi if @project.pi
 		@cis = @project.cis if @project.cis
 		@bookings = @project.bookings if @project.bookings
+		@allocates = @project.ballance_projects
 	end
 
 	def index
+		@projects = Project.all
+
 	end
 
 	def new	
@@ -37,6 +40,11 @@ class ProjectsController < ApplicationController
 
 	def destroy
 	end
+
+	def allocate
+	end
+
+
 
 
 	private

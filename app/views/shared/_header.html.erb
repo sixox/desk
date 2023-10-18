@@ -17,7 +17,10 @@
           </a>
           <ul class="dropdown-menu text-white">
             <li><%= link_to "Create New Project", new_project_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-            <li><a class="dropdown-item" href="#">Projects</a></li>
+            <li>
+              <%= link_to 'Projects', projects_path, class: 'dropdown-item' %>
+
+            </li>
 
           </ul>
         </li>

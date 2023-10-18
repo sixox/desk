@@ -1,0 +1,5 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<% @projects.reverse.each do |project| %>
+	<%= render 'projects/project', project: project, bookings: project.bookings %>
+	<% end %>
+</div>
