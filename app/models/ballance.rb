@@ -4,4 +4,5 @@ class Ballance < ApplicationRecord
 	has_many :scis
 	has_many :ballance_projects
   	has_many :projects, through: :ballance_projects
+  	has_many :payment_orders
 end

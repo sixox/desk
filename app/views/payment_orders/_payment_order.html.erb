@@ -1,0 +1,139 @@
+<li class="list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
+	<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<h5>Payment Order <span class="text-danger"><%= payment_order.id%></span></h5>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						issued at: <%= payment_order.created_at.strftime('%A %d %B')  %>
+					</div>
+				</div>
+	</div>
+	<div class="row mt-2">
+		<div class="col-lg">
+			<span class="fw-bold"> <%= payment_order.amount %></span>
+			<small> <%= payment_order.currency %> </small>
+			<small>requested by</small>
+			<small class="fw-bold"><%= payment_order.user.name %></small>
+		</div>
+		<% if payment_order.project.present? %>
+		<div class="col-lg">project: 
+			<span class="fw-bold"><%= payment_order.project.number %></span> 
+
+		</div>
+		<% end %>
+		<% if payment_order.ballance.present? %>
+		<div class="col-lg">Inventory: 
+			<span class="fw-bold"><%= payment_order.ballance.number %></span> 
+
+		</div>
+		<% end %>
+		<% if payment_order.spi.present? %>
+		<div class="col-lg">PI: 
+			<span class="fw-bold"><%= payment_order.spi.number %></span> 
+
+		</div>
+		<% end %>
+		<% if payment_order.sci.present? %>
+		<div class="col-lg">CI: 
+			<span class="fw-bold"><%= payment_order.sci.number %></span> 
+
+		</div>
+		<% end %>
+	</div>
+	<div class="row mt-1">
+		<div class="col-lg-10 mb-2">
+			<div class="d-flex justify-content-start">
+				detail: <span class="fw-bold"><%= payment_order.details %> </span>
+			</div>
+		</div>
+
+		<% if action_name == 'index' %>
+
+		<div class="col-lg-2 mb-2">
+			<div class="d-flex justify-content-end">
+
+				<% if user_signed_in? && current_user.is_manager  %>
+				<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
+					(current_user.accounting? && !payment_order.accounting_confirm) ||
+					(current_user.procurement? && !payment_order.coo_confirm) ||
+					(!payment_order.department_confirm && current_user.role == payment_order.user.role) %>
+
+					<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
+					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+					<% end %>
+
+				<% end %>
+				<% end %>
+
+				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-pencil-fill"></i>
+				<% end %>
+
+				<%= link_to payment_order_path(payment_order) do %>
+				<i class="bi bi-eye-fill"></i>
+				<% end %>
+
+				<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
+				<i class="bi bi-trash text-danger"></i>
+				<% end %>
+
+
+
+
+				</div>
+
+			</div>
+		</div>
+		<% end %>
+		<hr>
+		<div class="row">
+
+			<div class="col text-center">
+				Manager <br>
+				<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+
+			</div>
+			<div class="col text-center">
+				COO <br>
+				<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+
+			</div>
+			<div class="col text-center">
+				Accounting <br>
+				<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+
+			</div>
+			<div class="col text-center">
+				CEO <br>
+				<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+
+			</div>
+
+		</div>
+	</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

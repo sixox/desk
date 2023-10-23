@@ -1,8 +1,18 @@
 class PaymentOrder < ApplicationRecord
   belongs_to :user
+  belongs_to :project, optional: true
+  belongs_to :sci, optional: true
+  belongs_to :spi, optional: true
+  belongs_to :ballance, optional: true
+  belongs_to :booking, optional: true
 
-  validates :reference, :amount, :from, :to, :receiver, 
-            :receiver_account, :currency, :payment_type, 
-            :status, :currency, presence: true
+  has_one_attached :document
+
+
+
+
+
+
+
 
 end

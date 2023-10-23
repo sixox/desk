@@ -25,6 +25,12 @@ Rails.application.routes.draw do
     resources :scis
   end
   resources :suppliers
+  resources :payment_orders do
+    member do
+      patch "confirm", to: "payment_orders#confirm"
+      get "confirm", to: "payment_orders#confirm"
+    end
+  end
 
 
   get 'member/:id', to: 'members#show', as: 'member'

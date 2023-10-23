@@ -1,0 +1,21 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+
+
+	<div class="card mb-5">
+		<div class="card-body">
+
+			<ul class="list-group" id="payment_order_items">
+
+
+				<%= render 'payment_orders/payment_order', payment_order: @payment_order %>
+
+				<li class="list-group-item mt-2 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
+					<div class="row">
+
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

@@ -18,7 +18,7 @@ class User < ApplicationRecord
 
   enum role: {
     admin: 'admin',
-    accountant: 'accountant',
+    accounting: 'accounting',
     marketing: 'marketing',
     trading: 'trading',
     ceo: 'ceo',
@@ -28,7 +28,7 @@ class User < ApplicationRecord
 
 
   PROFILE_TITLE = [
-    'Accountant',
+    'Accounting',
     'Marketing Manger',
     'Marketing',
     'Accountant Manager',

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_18_061044) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_22_133024) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -131,6 +131,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_18_061044) do
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "project_id"
+    t.integer "sci_id"
+    t.integer "spi_id"
+    t.integer "ballance_id"
+    t.integer "booking_id"
+    t.boolean "is_rahkarsazan"
+    t.boolean "coo_confirm"
+    t.index ["ballance_id"], name: "index_payment_orders_on_ballance_id"
+    t.index ["booking_id"], name: "index_payment_orders_on_booking_id"
+    t.index ["project_id"], name: "index_payment_orders_on_project_id"
+    t.index ["sci_id"], name: "index_payment_orders_on_sci_id"
+    t.index ["spi_id"], name: "index_payment_orders_on_spi_id"
     t.index ["user_id"], name: "index_payment_orders_on_user_id"
   end
 
@@ -270,6 +282,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_18_061044) do
   add_foreign_key "cis", "pis"
   add_foreign_key "cis", "projects"
   add_foreign_key "cis", "users"
+  add_foreign_key "payment_orders", "ballances"
+  add_foreign_key "payment_orders", "bookings"
+  add_foreign_key "payment_orders", "projects"
+  add_foreign_key "payment_orders", "scis"
+  add_foreign_key "payment_orders", "spis"
   add_foreign_key "payment_orders", "users"
   add_foreign_key "pis", "customers"
   add_foreign_key "pis", "projects"

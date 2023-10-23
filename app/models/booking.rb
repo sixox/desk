@@ -1,5 +1,6 @@
 class Booking < ApplicationRecord
   belongs_to :project
+  has_many :payment_orders
 
   LINE = ['HDS', 'hoopad']
   FORWARDER = ['Daryabar', 'iishipment']
