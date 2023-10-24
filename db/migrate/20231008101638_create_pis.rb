@@ -4,7 +4,6 @@ class CreatePis < ActiveRecord::Migration[7.0]
       t.string :number
       t.string :product
       t.integer :validity
-      t.references :creator, null: false, foreign_key: true
       t.float :quantity
       t.float :unit_price
       t.string :payment_term
