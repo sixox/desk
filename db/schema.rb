@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_22_133024) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_23_070837) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -138,6 +138,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_22_133024) do
     t.integer "booking_id"
     t.boolean "is_rahkarsazan"
     t.boolean "coo_confirm"
+    t.boolean "delivery_confirm"
     t.index ["ballance_id"], name: "index_payment_orders_on_ballance_id"
     t.index ["booking_id"], name: "index_payment_orders_on_booking_id"
     t.index ["project_id"], name: "index_payment_orders_on_project_id"

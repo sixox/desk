@@ -1,19 +1,25 @@
 <li class="list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
 	<div class="row">
-				<div class="col-lg-6">
+		
+				<div class="col-lg-4">
 					<div class="d-flex justify-content-start">
 						<h5>Payment Order <span class="text-danger"><%= payment_order.id%></span></h5>
 					</div>
 				</div>
-				<div class="col-lg-6">
+				<div class="col-lg-4">
+					<div class="d-flex justify-content-between">
+						<div> Status: <span class="text-info"><%= payment_order.status %></span></div>
+					</div>
+				</div>
+				<div class="col-lg-4">
 					<div class="d-flex justify-content-end">
-						issued at: <%= payment_order.created_at.strftime('%A %d %B')  %>
+						<%= payment_order.created_at.strftime('%A %d %B')  %>
 					</div>
 				</div>
 	</div>
 	<div class="row mt-2">
 		<div class="col-lg">
-			<span class="fw-bold"> <%= payment_order.amount %></span>
+			<span class="fw-bold bg-warning"> <%= payment_order.amount %></span>
 			<small> <%= payment_order.currency %> </small>
 			<small>requested by</small>
 			<small class="fw-bold"><%= payment_order.user.name %></small>
@@ -67,17 +73,23 @@
 
 				<% end %>
 				<% end %>
+				<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
+					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-pencil-fill"></i>
+					<% end %>
+				
 
-				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
-				<i class="bi bi-pencil-fill"></i>
+				
+
+					<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
+					<i class="bi bi-trash text-danger"></i>
+					<% end %>
+
 				<% end %>
+
 
 				<%= link_to payment_order_path(payment_order) do %>
 				<i class="bi bi-eye-fill"></i>
-				<% end %>
-
-				<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
-				<i class="bi bi-trash text-danger"></i>
 				<% end %>
 
 

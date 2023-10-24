@@ -39,13 +39,20 @@ class PaymentOrdersController < ApplicationController
 		elsif current_user.is_manager
 			@payment_order.department_confirm = true
 		end
-		@payment_order.save
-	    respond_to do |format|
-	      format.html { redirect_to payment_orders_path }
-	    end
-  		
-	    
-	  	
+		
+		respond_to do |format|
+			if @payment_order.save
+				format.html { redirect_to payment_orders_path }
+			else
+				format.html { render :show, status: :unprocessable_entity }
+        		format.json { render json: @payment.errors, status: :unprocessable_entity }
+
+			end
+		end
+
+
+
+
 	end
 
 	def create
@@ -123,7 +130,8 @@ class PaymentOrdersController < ApplicationController
 			:booking_id,
 			:is_rahkarsazan,
 			:document,
-			:coo_confirm
+			:coo_confirm,
+			:receipt
 			)
 	end
 

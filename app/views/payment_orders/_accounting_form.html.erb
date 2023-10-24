@@ -1,0 +1,68 @@
+<%= form_with model: payment_order do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if payment_order.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(payment_order.errors.count, 'error') %> prohibited your payment_order from being saved.</h3>
+			<ul>
+				<% payment_order.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row mt-3">
+			<div class="col-lg-4">
+				<div class="d-flex justify-content-start">
+					<div class="form-group">
+						<label for="amount" class="form-label">
+							Exchange rate
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.number_field :exchange_rate, class: "form-control" %>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-4">
+				<div class="form-group">
+						<label for="amount" class="form-label">
+							Exchange amount
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.number_field :exchange_amount, class: "form-control" %>
+					</div>
+			</div>
+			<div class="col-lg-4">
+				<div class="mt-5">
+					<%= form.check_box :inserted, class: 'form-check-input' %>
+					<label class="form-check-label" for="hourly">
+						Inserted
+					</label>
+				</div>
+			</div>
+		</div>
+		<% if !@payment_order.receipt.attached? %>
+			<div class="row mt-4">
+				<div class="col-lg-12 mb-2">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Upload Receipt
+							<span class="text-danger">*</span>
+							<%= form.file_field :receipt, class: "form-control custom-file-input mt-2" %>
+						</label>
+					</div>
+				</div>
+			</div>
+			<% else %>
+			<% end %>
+
+
+	</div>
+</div>
+<div class="text-center mt-2">
+	<%= form.submit 'Save Payment order', class: 'btn btn-primary text-center'%>
+
+</div>
+<% end %>

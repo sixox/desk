@@ -4,18 +4,90 @@
 
 	<div class="card mb-5">
 		<div class="card-body">
+			<div class="row">
+		<% if @payment_order.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@payment_order.errors.count, 'error') %> prohibited your payment_order from being saved.</h3>
+			<ul>
+				<% @payment_order.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+			</div>
 
 			<ul class="list-group" id="payment_order_items">
 
 
 				<%= render 'payment_orders/payment_order', payment_order: @payment_order %>
 
-				<li class="list-group-item mt-2 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
+				<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
 					<div class="row">
-
+						<div class="col-lg">
+							<p>to: <span class="fw-bold"><%= @payment_order.to %></span></p>
+						</div>
+						<div class="col-lg">
+							<p>from: <span class="fw-bold"><%= @payment_order.from %></span></p>
+						</div>
+						<div class="col-lg">
+							<p>receiver: <span class="fw-bold"><%= @payment_order.receiver %></span></p>
+						</div>
+						<div class="col-lg">
+							<p>receiver account: <span class="fw-bold"><%= @payment_order.receiver_account %></span></p>
+						</div>
 					</div>
-				</li>
-			</ul>
+					<% if @payment_order.exchange_rate && @payment_order.exchange_amount  %>
+					<div class="row">
+						<div class="col-lg">
+							<p>exchange rate: <span class="fw-bold"><%= @payment_order.exchange_rate %></span></p>
+						</div>
+						<div class="col-lg">
+							<p>exchange amount: <span class="fw-bold"><%= @payment_order.exchange_amount %></span></p>
+						</div>
+					</div>
+					<% end %>
+					<% if @payment_order.document.attached? %>
+					<div class="row">
+						<div class="col">
+						<%= link_to 'View Document', url_for(@payment_order.document), target: '_blank' %>
+						</div>
+						<div class="col">
+							<p>have factor: <span class="fw-bold"> <%= @payment_order.have_factor ? 'yes' : 'no' %></span></p>
+						</div>
+					</div>
+					<% if @payment_order.receipt.attached? %>
+					<div class="col">
+						<%= link_to 'View receipt', url_for(@payment_order.receipt), target: '_blank' %>
+						</div>
+					<% end %>
+
+					<% end %>
+					<% if user_signed_in? && current_user.is_manager  %>
+					<% if (current_user.ceo? && !@payment_order.ceo_confirm && @payment_order.coo_confirm && @payment_order.accounting_confirm && @payment_order.department_confirm) ||
+						(current_user.accounting? && !@payment_order.accounting_confirm) ||
+						(current_user.procurement? && !@payment_order.coo_confirm) ||
+						(!@payment_order.department_confirm && current_user.role == @payment_order.user.role) %>
+						<div class="text-center mt-3">
+							
+
+								<%= link_to "Confirm", confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undone!' }, class: "btn btn-success text-center" %>
+							
+						</div>
+
+
+						<% end %>
+						<% end %>
+					</li>
+					<% if current_user.accounting? %>
+
+					<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
+						<%= render 'payment_orders/accounting_form', payment_order: @payment_order %>
+					</li>
+					<% end %>
+				</ul>
+			</div>
 		</div>
 	</div>
-</div>
