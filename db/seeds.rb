@@ -7,15 +7,5 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 ActiveRecord::Base.transaction do
-	40.times do
-		name = Faker::Name.name
-		nickname = Faker::Internet.username
-		company = Faker::Company.name
 
-		Customer.create!(
-			name: name,
-			nickname: nickname,
-			company: company
-			)
-	end
 end
