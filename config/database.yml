@@ -25,5 +25,5 @@ production:
   encoding: utf8
   database: desk_production
   username: deploy
-  password: @min2542026
+  password: "@min2542026"
   host: localhost
