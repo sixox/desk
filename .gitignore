@@ -42,3 +42,4 @@
 # Ignore Active Storage storage folders
 /storage
 /tmp/storage
+/db/schema.rb
