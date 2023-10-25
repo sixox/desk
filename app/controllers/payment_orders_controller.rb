@@ -11,7 +11,13 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def index
-		@payment_orders = PaymentOrder.all.reverse
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+			@payment_orders = PaymentOrder.all.reverse
+		else
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user_role }).reverse
+		end
+
 	end
 
 	def new	
@@ -45,7 +51,7 @@ class PaymentOrdersController < ApplicationController
 				format.html { redirect_to payment_orders_path }
 			else
 				format.html { render :show, status: :unprocessable_entity }
-        		format.json { render json: @payment.errors, status: :unprocessable_entity }
+				format.json { render json: @payment.errors, status: :unprocessable_entity }
 
 			end
 		end
