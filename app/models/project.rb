@@ -5,4 +5,16 @@ class Project < ApplicationRecord
 	has_many :ballance_projects
 	has_many :ballances, through: :ballance_projects
 	has_many :payment_orders
+
+
+
+  def self.ransackable_attributes(auth_object = nil)
+    ['name', 'number']
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    []
+  end
+
+
 end

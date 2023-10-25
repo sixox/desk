@@ -12,7 +12,8 @@ class ProjectsController < ApplicationController
 	end
 
 	def index
-		@projects = Project.all
+		@q = Project.ransack(params[:q])
+		@projects = @q.result.order(updated_at: :desc)
 
 	end
 

@@ -10,7 +10,7 @@
         <li class="nav-item">
           <%= link_to "Profile", member_path(current_user), class: "nav-link active" %>
         </li>  
-
+        <% if current_user.sales? || current_user.procurement? || current_user.accounting? %>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Projects
@@ -34,9 +34,11 @@
 
           </ul>
         </li>
+        <% end %>
         <li class="nav-item">
           <%= link_to "Payment orders", payment_orders_path, class: "nav-link active" %>
         </li> 
+
 
 
 

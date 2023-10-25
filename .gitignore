@@ -43,3 +43,5 @@
 /storage
 /tmp/storage
 /db/schema.rb
+Gemfile
+Gemfile.lock
