@@ -20,10 +20,12 @@ class User < ApplicationRecord
     admin: 'admin',
     accounting: 'accounting',
     marketing: 'marketing',
-    trading: 'trading',
+    sales: 'sales',
     ceo: 'ceo',
     hr: 'hr',
-    procurement: 'procurement'
+    procurement: 'procurement',
+    exchange: 'exchange',
+    board: 'board'    
   }
 
 
@@ -32,14 +34,19 @@ class User < ApplicationRecord
     'Marketing Manger',
     'Marketing',
     'Accountant Manager',
-    'Procurement',
+    'procurement',
     'Procurement Manager',
     'Sales',
     'Sales Manager',
     'Operation',
     'Operation Manager',
     'HR',
-    'CEO'
+    'CEO',
+    'general',
+    'sales',
+    'masoud',
+    'logestic',
+    'exchange'
   ].freeze
 
   def name

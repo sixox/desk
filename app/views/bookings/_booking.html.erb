@@ -31,7 +31,7 @@
 
 				<td><%= booking.free_time %></td>
 
-				<td><% if user_signed_in? && current_user.trading? %>
+				<td><% if user_signed_in? && current_user.sales? %>
 
 					<span><%= link_to edit_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
 						<i class="bi bi-pencil-fill"></i>

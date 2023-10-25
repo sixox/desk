@@ -41,7 +41,7 @@
 
 
 
-        <% if current_user.trading? && current_user.is_manager %>
+        <% if current_user.sales? && current_user.is_manager %>
         <li class="nav-item">
           <%= link_to "Customers", customers_path, class: "nav-link active" %>
         </li> 

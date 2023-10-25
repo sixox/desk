@@ -2,7 +2,7 @@
 	<div class="card-body">
 		<div class="d-flex justify-content-between align-items-center">
 			<h5 class="card-title text-center mb-0">Purchase Invoice (PI)</h5>
-			<% if user_signed_in? && current_user.trading? %>
+			<% if user_signed_in? && current_user.sales? %>
 
 			<span><%= link_to edit_project_pi_path(project, pi), data: { controller: "bs-modal-form" } do %>
 				<i class="bi bi-pencil-fill"></i>
