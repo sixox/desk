@@ -73,9 +73,7 @@ group :test do
   gem "capybara"
 end
 
-group :production do
-  gem 'mysql2'
-end
+
 
 gem 'faker'
 gem 'ransack'

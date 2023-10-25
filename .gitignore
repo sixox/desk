@@ -38,3 +38,10 @@
 !/app/assets/builds/.keep
 
 /node_modules
+
+# Ignore Active Storage storage folders
+/storage
+/tmp/storage
+
+Gemfile
+Gemfile.lock
