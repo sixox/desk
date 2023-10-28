@@ -120,7 +120,7 @@
 						<label class="mb-2 mt-1">
 							Payment Term
 							<span class="text-danger">*</span>
-							<%= form.select :payment_term, options_for_select(Pi::PAYMENT_TERM, selected: form.object.payment_term), { prompt: 'Select payment term' }, { class:"form-select mt-2" } %>
+							<%= form.text_field :payment_term, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
