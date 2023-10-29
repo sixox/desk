@@ -1,27 +1,7 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<p class="fw-bold">Balance <span class="text-warning"><%= @ballance.number %></span> </p>
-					</div>
-				</div>
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-end">
-						<p class="fw-bold">Status 
-							<% if @ballance.status%>
-							<span class="text-warning"><%= @ballance.status %></span> 
-							<% else %>
-							<span class="text-warning">Unknown</span> 
-							<% end %>
+		<%= render 'ballances/ballance', ballance: @ballance %>
 
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+
 	<% if !@ballance.spi %>
 		<%= link_to "Create PI", new_ballance_spi_path(@ballance), data: { controller: "bs-modal-form" } %>
 		<% else %>

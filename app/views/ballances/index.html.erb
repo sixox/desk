@@ -1,0 +1,20 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+	<div class="card mt-4 mb-4">
+		<div class="card-body">
+			<h3 class="text-center mb-3">Search in Inverntories</h3>
+			<%= search_form_for @q, url: ballances_path do |form| %>
+			
+			<div class="input-group mb-3">
+				<%= form.search_field :name_or_number_cont, class: "form-control", placeholder: "Search by inventory number or name", area: { label: "Search by inverntory number or name", describedby: "button-addon2" } %>
+				<%= form.submit "Search", class: "btn btn-primary", id: "button-addon2" %>
+			</div>
+			<% end %>
+		</div>
+	</div>
+
+
+	<% @ballances.each do |ballance| %>
+	<%= render 'ballances/ballance', ballance: ballance %>
+	<% end %>
+</div>

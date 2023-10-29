@@ -5,10 +5,13 @@ class BallancesController < ApplicationController
 	def show
 		@spi = @ballance.spi if @ballance.spi
 		@scis = @ballance.scis if @ballance.scis
+		@allocates = @ballance.ballance_projects
 
 	end
 
 	def index
+		@q = Ballance.ransack(params[:q])
+		@ballances = @q.result.order(updated_at: :desc)
 	end
 
 	def new	

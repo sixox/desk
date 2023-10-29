@@ -29,8 +29,10 @@
             Balances
           </a>
           <ul class="dropdown-menu text-white">
-            <li><%= link_to "Create New Balance", new_ballance_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-            <li><a class="dropdown-item" href="#">Balances</a></li>
+            <li><%= link_to "New Inventory", new_ballance_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
+            <li>
+              <%= link_to 'Inverntories', ballances_path, class: 'dropdown-item' %>
+            </li>
 
           </ul>
         </li>
