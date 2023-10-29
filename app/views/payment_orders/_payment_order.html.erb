@@ -32,7 +32,8 @@
 		<% end %>
 		<% if payment_order.ballance.present? %>
 		<div class="col-lg">Inventory: 
-			<span class="fw-bold"><%= payment_order.ballance.number %></span> 
+			<span class="fw-bold">  <%= link_to payment_order.ballance.number, ballance_path(payment_order.ballance) %>
+</span> 
 
 		</div>
 		<% end %>
