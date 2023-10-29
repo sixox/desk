@@ -2,8 +2,8 @@ class Booking < ApplicationRecord
   belongs_to :project
   has_many :payment_orders
 
-  LINE = ['HDS', 'hoopad']
-  FORWARDER = ['Daryabar', 'iishipment']
+  LINE = ['HDS', 'hoopad','hormoz marin']
+  FORWARDER = ['Daryabar', 'hormoz marin']
   CONTAINER_TYPE = ['20-foot', '40-foot']
 
   def empty
