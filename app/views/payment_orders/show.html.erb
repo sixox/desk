@@ -58,11 +58,12 @@
 							<p>have factor: <span class="fw-bold"> <%= @payment_order.have_factor ? 'yes' : 'no' %></span></p>
 						</div>
 					</div>
+					<% end %>
 					<% if @payment_order.receipt.attached? %>
 					<div class="col">
 						<%= link_to 'View receipt', url_for(@payment_order.receipt), target: '_blank' %>
 						</div>
-					<% end %>
+					
 
 					<% end %>
 					<% if user_signed_in? && current_user.is_manager  %>
