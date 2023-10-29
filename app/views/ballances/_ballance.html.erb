@@ -33,7 +33,7 @@
 			<div class="row">
 				<div class="col-lg">
 					<p class="fw-bold">Not allocated
-						<span class="text-warning"><%= ballance.not_allocated_quantity.present? ? ballance.not_allocated_quantity : 0 %>
+						<span class="text-warning"><%= ballance.not_allocated_quantity.present? ? ballance.not_allocated_quantity.to_i : 0 %>
 						</span>
 					</p>
 				</div>
