@@ -81,6 +81,13 @@
 
 						<% end %>
 						<% end %>
+						<% if user_signed_in? && @payment_order.status == "wait for delivery"  %>
+							<% if (current_user.is_manager && current_user.procurement?) || current_user == @payment_order.user %>
+							<div class="text-center mt-3">
+								<%= link_to "Delivered", delivered_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to change this payment order status to DELIVERED, this action can not be undone!' }, class: "btn btn-info text-center" %>
+							</div>
+							<% end %>
+						<% end %>
 					</li>
 					<% if current_user.accounting? %>
 

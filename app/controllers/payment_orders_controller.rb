@@ -61,6 +61,20 @@ class PaymentOrdersController < ApplicationController
 
 	end
 
+	def delivered
+		@payment_order = PaymentOrder.find(params[:id])
+		respond_to do |format|
+			if @payment_order.update(delivery_confirm: true)
+				format.html { redirect_to payment_orders_path }
+			else
+				format.html { render :show, status: :unprocessable_entity }
+				format.json { render json: @payment.errors, status: :unprocessable_entity }
+			end
+
+		end
+
+	end
+
 	def create
 		@payment_order = current_user.payment_orders.new(payment_order_params)
 		@payment_order.user = current_user
@@ -137,7 +151,8 @@ class PaymentOrdersController < ApplicationController
 			:is_rahkarsazan,
 			:document,
 			:coo_confirm,
-			:receipt
+			:receipt,
+			:delivery_confirm
 			)
 	end
 

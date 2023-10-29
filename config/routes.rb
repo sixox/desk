@@ -29,6 +29,8 @@ Rails.application.routes.draw do
     member do
       patch "confirm", to: "payment_orders#confirm"
       get "confirm", to: "payment_orders#confirm"
+      patch "delivered", to: "payment_orders#delivered"
+      get "delivered", to: "payment_orders#delivered"
     end
   end
 
