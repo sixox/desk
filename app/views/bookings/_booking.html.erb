@@ -13,6 +13,7 @@
 				<th scope="col">Filled</th>
 				<th scope="col">Total</th>
 				<th scope="col">Free time</th>
+				<th scope="col">Status</th>
 				<th scope="col">Action</th>
 
 
@@ -30,6 +31,8 @@
 				<td><%= booking.quantity %></td>
 
 				<td><%= booking.free_time %></td>
+				<td><%= booking.status %></td>
+
 
 				<td><% if user_signed_in? && current_user.sales? %>
 
@@ -39,13 +42,13 @@
 						<span><%= link_to edit_picked_up_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
 							<i class="bi bi-database-fill-up"></i>
 							<% end %></span>
-						<span>
-							<%= link_to edit_status_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
-							<i class="bi bi-clock-fill"></i>
-							<% end %>
-						</span>
+							<span>
+								<%= link_to edit_status_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
+								<i class="bi bi-clock-fill"></i>
+								<% end %>
+							</span>
 
-					<% end %>
+							<% end %>
 						</td>
 
 					</tr>
@@ -53,6 +56,49 @@
 				</tbody>
 			</table>
 		</div>
+		<div class="accordion" id="accordionBooking<%= booking.id %>">
+
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="headingBookingThree<%= booking.id %>">
+						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThreeBooking<%= booking.id %>" aria-expanded="false" aria-controls="collapseThreeBooking<%= booking.id %>">
+							More Details
+						</button>
+					</h2>
+					<div id="collapseThreeBooking<%= booking.id %>" class="accordion-collapse collapse" aria-labelledby="headingBookingThree<%= booking.id %>" data-bs-parent="#accordionBooking<%= booking.id %>">
+						<div class="accordion-body">
+							<table class="table table-success table-striped">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Factory order</th>
+										<th scope="col">Pick up date</th>
+										<th scope="col">Stuffing</th>
+										<th scope="col">Custom clearance</th>
+										<th scope="col">Custom submission date</th>
+										<th scope="col">Vessel ETD</th>
+
+
+
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">-></th>
+										<td><%= booking.factory_order_date ? booking.factory_order_date.strftime("%b-%d") : "" %></td>
+										<td><%= booking.pick_up_date ? booking.pick_up_date.strftime("%b-%d") : "" %></td>
+										<td><%= booking.stuffing ? "Started" : "Not Started" %></td>
+										<td><%= booking.custom_clearance ? "Started" : "Not Started" %></td>
+										<td><%= booking.custom_submission_date ? booking.custom_submission_date.strftime("%b-%d") : "" %></td>
+										<td><%= booking.vessel_etd ? booking.vessel_etd.strftime("%b-%d") : "" %></td>
+
+									</tr>
+
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 
 
 
