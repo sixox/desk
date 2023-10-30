@@ -74,6 +74,7 @@
 
 				<% end %>
 				<% end %>
+				<% if !payment_order.coo_confirm.present? %>
 				<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
 					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
 					<i class="bi bi-pencil-fill"></i>
@@ -86,6 +87,7 @@
 					<i class="bi bi-trash text-danger"></i>
 					<% end %>
 
+				<% end %>
 				<% end %>
 
 

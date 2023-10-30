@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     resources :bookings do
       member do
         get 'edit_picked_up'
+        get 'edit_status'
       end
     end
   end

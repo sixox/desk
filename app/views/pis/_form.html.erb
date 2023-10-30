@@ -106,7 +106,7 @@
 						<label class="mb-2 mt-1">
 							Payment Term
 							<span class="text-danger">*</span>
-							<%= form.select :payment_term, options_for_select(Pi::PAYMENT_TERM, selected: form.object.payment_term), { prompt: 'Select payment term' }, { class:"form-select mt-2" } %>
+							<%= form.text_field :payment_term, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
@@ -136,15 +136,6 @@
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Loading Port
-							<span class="text-danger">*</span>
-							<%= form.select :pol, options_for_select(Pi::POL, selected: form.object.pol), { prompt: 'Select POL' }, { class:"form-select mt-2 " } %>
-						</label>
-					</div>
-				</div>
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
 							Destination Port
 							<span class="text-danger">*</span>
 							<%= form.text_field :pod, class: 'form-control mt-2' %>
@@ -156,7 +147,6 @@
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Delivery Time
-							<span class="text-danger">*</span>
 							<div class="input-group mt-2">
 								<%= form.number_field :delivery_time, class: "form-control" %>
 								<span class="input-group-text">Days</span>
@@ -187,7 +177,7 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-5">
+				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Account
@@ -197,16 +187,15 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-5">
+				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Seller
 							<span class="text-danger">*</span>
-							<%= form.select :seller, options_for_select(Pi::SELLER, selected: form.object.seller), { prompt: 'Select seller' }, { class:"form-select mt-2 " } %>
+							<%= form.text_field :seller, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-2"></div>
 				
 			</div>
 			<div class="row bg-semi">
@@ -219,18 +208,7 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Validity
-							<span class="text-danger">*</span>
-							<div class="input-group mt-2">
-								<%= form.number_field :validity, class: "form-control" %>
-								<span class="input-group-text">Days</span>
-							</div>
-						</label>
-					</div>
-				</div>
+				
 				<div class="col-lg-2"></div>
 			</div>
 			<% if !@pi.document.id %>

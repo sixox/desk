@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_25_082241) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_30_061656) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -77,6 +77,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_25_082241) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "filled"
+    t.date "factory_order_date"
+    t.date "pick_up_date"
+    t.boolean "stuffing"
+    t.boolean "custom_clearance"
+    t.date "custom_submission_date"
+    t.date "vessel_etd"
     t.index ["project_id"], name: "index_bookings_on_project_id"
   end
 

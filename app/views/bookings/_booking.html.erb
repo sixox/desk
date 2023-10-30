@@ -37,17 +37,22 @@
 						<i class="bi bi-pencil-fill"></i>
 						<% end %></span>
 						<span><%= link_to edit_picked_up_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
-						<i class="bi bi-database-fill-up"></i>
-						<% end %></span>
+							<i class="bi bi-database-fill-up"></i>
+							<% end %></span>
+						<span>
+							<%= link_to edit_status_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
+							<i class="bi bi-clock-fill"></i>
+							<% end %>
+						</span>
 
-						<% end %>
-				</td>
+					<% end %>
+						</td>
 
 					</tr>
 
 				</tbody>
 			</table>
-	</div>
+		</div>
 
 
 

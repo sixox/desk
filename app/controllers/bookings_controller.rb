@@ -26,6 +26,10 @@ class BookingsController < ApplicationController
 		@booking = Booking.find(params[:id])
 	end
 
+	def edit_status
+		@booking = Booking.find(params[:id])
+	end
+
 	def update
 		@booking = Booking.find(params[:id])
 		respond_to do |format|
@@ -64,7 +68,13 @@ def booking_params
 		:picked_up,
 		:payment_status,
 		:project_id,
-		:filled
+		:filled,
+		:factory_order_date,
+		:pick_up_date,
+		:stuffing,
+		:custom_clearance,
+		:custom_submission_date,
+		:vessel_etd
 		)
 end
 

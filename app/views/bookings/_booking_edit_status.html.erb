@@ -1,0 +1,131 @@
+<%= form_for [@project, @booking] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @booking.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
+			<ul>
+				<% @booking.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h4>Booking</h4>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project.pi %>
+					<small class="text-secondary">Project: <%= @project.number %></small><br>
+					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="row bg-semi">
+				<div class="col-lg-7">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Booking number
+							<span class="text-danger">*</span>
+						</label>
+					<div>
+						<%= @booking.number %>
+					</div>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Quantity
+							<div>
+							<%= @booking.quantity %>
+							</div>
+						</label>
+					</div>
+					
+				</div>
+			</div>
+
+
+
+
+
+			<div class="row">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							date of Factory order 
+							<%= form.date_field :factory_order_date, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							date of Pick up containers
+							<%= form.date_field :pick_up_date, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				
+				
+				
+				
+			</div>
+			<div class="row bg-semi">
+				
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							date of Custom submission 
+							<%= form.date_field :custom_submission_date, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							vessel etd
+							<%= form.date_field :vessel_etd, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg mb-2 mt-5">
+					<%= form.check_box :stuffing, class: 'form-check-input' %>
+					<label class="form-check-label" for="hourly">
+						Stuffing started
+					</label>
+				
+				</div>
+				<div class="col-lg mb-2 mt-5">
+					<%= form.check_box :custom_clearance, class: 'form-check-input' %>
+					<label class="form-check-label" for="hourly">
+						Custom clearance
+					</label>
+				
+				</div>
+			</div>
+		
+
+
+
+
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'save changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>
