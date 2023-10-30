@@ -10,6 +10,7 @@ class Ballance < ApplicationRecord
 
 
   	def not_allocated_quantity
+      return 0 unless spi
   		q = ballance_projects.sum(:quantity)
   		spi.quantity - q
   	end
