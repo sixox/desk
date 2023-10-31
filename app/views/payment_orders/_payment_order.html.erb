@@ -19,7 +19,7 @@
 	</div>
 	<div class="row mt-2">
 		<div class="col-lg">
-			<span class="fw-bold bg-warning"> <%= payment_order.amount %></span>
+			<span class="fw-bold bg-warning"> <%= number_with_delimiter(payment_order.amount, delimiter: ',') %></span>
 			<small> <%= payment_order.currency %> </small>
 			<small>requested by</small>
 			<small class="fw-bold"><%= payment_order.user.name %></small>
