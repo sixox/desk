@@ -45,7 +45,11 @@
 
 			</div>
 			<% @bookings.each do |booking|%>
+			<h6 class="text-info mt-2">
+				<%= booking.part ? "part #{booking.part}" : "" %>
+			</h6>
 			<%= render 'bookings/booking', booking: booking, project: @project %>
+			
 			<% end %>
 
 		</div>

@@ -74,7 +74,8 @@ def booking_params
 		:stuffing,
 		:custom_clearance,
 		:custom_submission_date,
-		:vessel_etd
+		:vessel_etd,
+		:part
 		)
 end
 
