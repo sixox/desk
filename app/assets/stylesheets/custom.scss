@@ -10,3 +10,15 @@
 .confirm-size {
 	font-size: 24px !important;
 }
+.iconClass {
+	position: relative;
+}
+.iconClass span {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	display: block;
+}
+.notifMenu {
+	min-width: 323px;
+}

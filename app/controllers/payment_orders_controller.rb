@@ -29,21 +29,49 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def confirm
+		link_to_action = "/payment_orders/#{params[:id]}"
+		coo = User.find(9)
+		ceo = User.find(19)
+		farzin = User.find(4)
+		accounting_users = User.where(role: 'accounting')
+
 		@payment_order = PaymentOrder.find(params[:id])
 		if current_user.ceo?
 			@payment_order.ceo_confirm = true
+			accounting_users.each do |accounting_user|
+				accounting_user.notifications.create(message: 'Payment Order Confirmed and wait for payment',is_read: false, link_to_action: link_to_action)
+			end
+
+
 		elsif current_user.procurement?
 			@payment_order.coo_confirm = true
 			if @payment_order.user.procurement?
 				@payment_order.department_confirm = true
 			end
+			if !@payment_order.accounting_confirm
+				farzin.notifications.create(message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
+			end
+
+
+
 		elsif current_user.accounting?
 			@payment_order.accounting_confirm = true
 			if @payment_order.user.accounting?
 				@payment_order.department_confirm = true
 			end
-		elsif current_user.is_manager
+			if !@payment_order.coo_confirm
+				coo.notifications.create(message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
+			end
+			if @payment_order.coo_confirm && !@payment_order.ceo_confirm
+				ceo.notifications.create(message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
+			end
+
+		elsif current_user.is_manager && !current_user.procurement?
 			@payment_order.department_confirm = true
+			if !@payment_order.coo_confirm
+				coo.notifications.create(message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
+			end
+
 		end
 		
 		respond_to do |format|
@@ -76,10 +104,23 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def create
+		
+
 		@payment_order = current_user.payment_orders.new(payment_order_params)
 		@payment_order.user = current_user
 		respond_to do |format|
 			if @payment_order.save
+				if !current_user.is_manager
+					users_to_notify = User.where(role: current_user.role, is_manager: true)
+					users_to_notify.each do |user|
+						user.notifications.create(
+							message: 'Confirmation required for Payment order',
+							is_read: false,
+							link_to_action: payment_order_path(@payment_order)
+							)
+					end
+
+				end
 				format.turbo_stream { render turbo_stream: turbo_stream.prepend('payment_order_items', partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }) }
 			else
 				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Add payment_order' })}

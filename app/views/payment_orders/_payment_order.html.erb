@@ -64,8 +64,8 @@
 
 				<% if user_signed_in? && current_user.is_manager  %>
 				<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
-					(current_user.accounting? && !payment_order.accounting_confirm) ||
-					(current_user.procurement? && !payment_order.coo_confirm) ||
+					(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
+					(current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||
 					(!payment_order.department_confirm && current_user.role == payment_order.user.role) %>
 
 					<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
