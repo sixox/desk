@@ -20,7 +20,9 @@ class VacationsController < ApplicationController
 end
 
 
-
+def index
+  @vacations = current_user.vacations
+end
 
 
 def create

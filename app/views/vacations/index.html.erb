@@ -1,0 +1,23 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="row">
+		<div class="card mb-4 mb-lg-0">
+			<div class="row m-1">
+				<div class="col-lg">
+					<div class="d-flex justify-content-start">
+						<h4 class="text-secondary">Vacations</h4>
+					</div>
+				</div>
+
+			</div>
+			<% if user_signed_in? && @vacations.present? %>
+			<div class="card-body p-0">
+				<ul class="list-group list-group-flush rounded-3" id="vacation_items">
+					<% @vacations.order(created_at: :desc).each do |vacation| %>
+					<%= render 'vacations/vacation', vacation: vacation %>
+					<% end %>
+				</ul>
+			</div>
+			<% end %>
+		</div>
+	</div>
+</div>

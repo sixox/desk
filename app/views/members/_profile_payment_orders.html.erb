@@ -1,0 +1,29 @@
+
+
+
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<h3>Payment Orders</h3>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-plus"></i> Create Payment order
+						<% end %>
+					</div>
+				</div>
+			</div>
+			<ul class="list-group" id="payment_order_items">
+				<% user.payment_orders.order(created_at: :desc).limit(4).each do |payment_order| %>
+					<%= render 'payment_orders/payment_order', payment_order: payment_order %>
+				<% end %>
+			</ul>
+		</div>
+	</div>
+
+
+

@@ -1,94 +1,46 @@
-<div class="container mt-5">
-  <div class="row">
-    <div class="col-lg-10 mx-auto">
-      <div class="row">
-        <!-- Sidebar -->
-        <div class="col-lg-3">
-          <!-- Content for the first column of the sidebar -->
-          <!-- You can plhelloace your sidebar content here -->
-          <div class="card">
-          	<div class="card-body">
-          		<div class="row">
-          			
-          		</div>
-          	</div>
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="col-lg-9">
-        	there
-          <!-- Content for the main column -->
-          <!-- Your main content goes here -->
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="col-lg-10 mx-auto mt-5">
-	<%= render 'member_personal_details', user: @user%>
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<h3>About</h3>
+	<div class="row">
+		<div class="col-lg-4">
+
+			<%= render 'profile_image_name', user: @user%>
+
+			
+			
+			<div class="card mb-4 mb-lg-0">
+				<div class="row m-2">
+					<div class="col-lg">
+						<div class="d-flex justify-content-start">
+							<h4 class="text-secondary">Vacations</h4>
+						</div>
 					</div>
+					<div class="col-lg">
+						<div class="d-flex justify-content-end">
+							<%= link_to vacations_path, class: "btn btn-secondary" do %>
+							All Vacations
+							<% end %>
+						</div>
+					</div>
+					
 				</div>
-				<% if user_signed_in? && @user == current_user %>
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-end">
-						<%= link_to edit_member_description_path, data: { controller: "bs-modal-form" } do %>
-						<i class="bi bi-pencil-fill"></i>
+				<% if user_signed_in? && @user.vacations.present? %>
+				<div class="card-body p-0">
+					<ul class="list-group list-group-flush rounded-3" id="vacation_items">
+						<% @user.vacations.order(created_at: :desc).limit(4)
+						.each do |vacation| %>
+						<%= render 'vacations/vacation', vacation: vacation %>
 						<% end %>
-					</div>
+					</ul>
 				</div>
 				<% end %>
 			</div>
-			<%= render 'member_description', user: @user %>
+			
+
 		</div>
-	</div>
-
-	<div class="card mb-5">
-		<div class="card-body">
-			<% if user_signed_in? && @user == current_user %>
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<h3>Vacations</h3>
-					</div>
-				</div>
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-end">
-						<%= link_to new_vacation_path, data: { controller: "bs-modal-form" } do %>
-						<i class="bi bi-plus"></i> Add Vacation
-						<% end %>
-					</div>
-				</div>
-			</div>
-
-			<% if user_signed_in? && @user.vacations.present? %>
-			<ul class="list-group" id="vacation_items">
-				<% @user.vacations.reverse.each do |vacation| %>
-				<%= render 'vacations/vacation', vacation: vacation %>
-				<% end %>
+		<div class="col-lg-8">
+			<%= render 'profile_details', user: @user%>
+			<%= render 'profile_payment_orders', user: @user%>
 
 
-				<%end%>
-				<% if user_signed_in? && @user.is_manager && @user == current_user %>
-				<hr>
-				<h3>Department vacations</h3>
-				<% @vacations_for_same_role.reverse.each do |vacation|%>
-				<%= render 'vacations/vacation', vacation: vacation %>
-
-				<% end %>
-
-
-
-			</ul>
-			<% end %>
-			<% end %>
 
 		</div>
 	</div>

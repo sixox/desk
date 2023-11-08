@@ -1,0 +1,14 @@
+<div class="card mb-4">
+	<div class="card-body text-center">
+		<%= image_tag 'dmu1.jpeg', alt: 'avatar', class: 'rounded-circle img-fluid', style: 'width: 120px;' %>
+		<h5 class="my-3"><%= user.name %></h5>
+		<p class="text-muted">
+			<%= user.role %> 
+			<%= user.is_manager ? "manager" : "expert" %>
+
+		</p>
+		<%= link_to new_vacation_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
+  						Add Vacation
+  		<% end %>
+	</div>
+</div>
