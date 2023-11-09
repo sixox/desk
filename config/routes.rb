@@ -32,6 +32,13 @@ Rails.application.routes.draw do
       get "confirm", to: "payment_orders#confirm"
       patch "delivered", to: "payment_orders#delivered"
       get "delivered", to: "payment_orders#delivered"
+
+    end
+    collection do
+      get 'not_paid'
+      get 'not_confirmed'
+      get 'finished'
+      get 'pending'
     end
   end
 

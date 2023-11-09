@@ -103,6 +103,50 @@ class PaymentOrdersController < ApplicationController
 
 	end
 
+	def not_paid
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+    		@payment_orders = PaymentOrder.where(status: 'wait for payment').reverse
+		else
+   			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role, status: 'wait for payment' }).reverse
+		end
+		render 'index'
+	end
+
+	def not_confirmed
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+    		@payment_orders = PaymentOrder.where(status: 'wait for confirm').reverse
+		else
+   			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role, status: 'wait for confirm' }).reverse
+		end
+		render 'index'
+	end
+
+	def finished
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+    		@payment_orders = PaymentOrder.where(status: 'delivered').reverse
+		else
+   			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role, status: 'delivered' }).reverse
+		end
+		render 'index'
+	end
+
+	def pending
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+    		@payment_orders = PaymentOrder.where.not(status: 'delivered').reverse
+		else
+   			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where.not(status: 'delivered').reverse
+		end
+		render 'index'
+	end
+
+
+
+
+
 	def create
 		
 
