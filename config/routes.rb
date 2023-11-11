@@ -44,6 +44,7 @@ Rails.application.routes.draw do
       get 'finished'
       get 'pending'
       get 'not_delivered'
+      get 'mine'
     end
   end
 

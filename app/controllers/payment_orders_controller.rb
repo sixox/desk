@@ -156,6 +156,11 @@ class PaymentOrdersController < ApplicationController
 		render 'index'
 	end
 
+	def mine
+		@payment_orders = current_user.payment_orders
+		render 'index'
+	end
+
 
 
 
