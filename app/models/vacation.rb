@@ -27,6 +27,9 @@ class Vacation < ApplicationRecord
       "#{(end_at.to_date - start_at.to_date + 1).to_i}"
     end
   end
+
+
+  
 end
 
 

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     end
     collection do
       get 'managment'
+      get 'by_user'
     end
   end
   devise_for :users

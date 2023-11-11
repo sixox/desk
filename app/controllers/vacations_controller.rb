@@ -25,17 +25,29 @@ def index
 end
 
 def managment
+  @users = User.all
   @user = current_user
   if @user.is_manager
     if @user.hr? || @user.procurement? 
-      @vacations = Vacation.all
+        @vacations = Vacation.all
     else
-      @vacations = Vacation.joins(:user)
-      .where(users: { role: @user.role })
+       @vacations = Vacation.joins(:user)
+                        .where(users: { role: @user.role })
     end
   end
   @is_managment_page = true
   render 'index'
+end
+
+def by_user
+      @users = User.all
+
+      user_id = params[:user_id] || current_user.id
+      @user = User.find(user_id)
+      @vacations = @user.vacations
+      @is_managment_page = true
+      render 'index'
+
 end
 
 
