@@ -143,6 +143,16 @@ class PaymentOrdersController < ApplicationController
 		render 'index'
 	end
 
+	def not_delivered
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+    		@payment_orders = PaymentOrder.where(status: 'wait for delivery').reverse
+		else
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role, status: 'wait for delivery' }).reverse
+		end
+		render 'index'
+	end
+
 
 
 

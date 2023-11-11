@@ -43,6 +43,7 @@ Rails.application.routes.draw do
       get 'not_confirmed'
       get 'finished'
       get 'pending'
+      get 'not_delivered'
     end
   end
 
