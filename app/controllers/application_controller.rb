@@ -4,6 +4,6 @@ class ApplicationController < ActionController::Base
 
   def set_notifications
   	return if !user_signed_in?
-    @notifications = current_user.notifications.where(is_read: false)
+    @notifications = current_user.notifications.where(is_read: false).last(8).reverse
   end
 end

@@ -1,0 +1,21 @@
+<% @notifications.each do |notification| %>
+<li class="list-group-item m-1 shadow vacation-bg border border-warning">
+<div class="row">
+  <div class="col-sm-3 text-danger">
+  <%= link_to(notification.link_to_action, class: "notifLink") do %>
+  P.O <%= notification.payment_id %>
+<% end %>
+</div>
+<div class="col-sm-9">
+
+</div>
+  <div class="col-sm-9">
+    <small style="font-size: 12px;">
+      <%= notification.message %> 
+    </small>
+  </div>
+</div>
+</li>
+
+ <% end %>
+

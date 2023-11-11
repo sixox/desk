@@ -84,24 +84,15 @@
           <span class="badge badge-danger">
             <%= unread_notification_count %>
           </span>
-          <% end %>
+         
         </a>
-        <% if @notifications %>
         <ul class="m-1 p-1 dropdown-menu dropdown-menu-end notifMenu" aria-labelledby="navbarDropdown">
 
+       <%= render 'shared/notifications' %>
 
-          <% @notifications.reverse.last(5).each do |notification| %>
-          <%= link_to(notification.link_to_action, class: "notifLink") do %>
-            <div class="col-lg">
-              <small>
-              <%= notification.message %> 
-            </small>
-            </div>
+     </ul>
 
-          <% end %>
-          <% end %>
 
-        </ul>
         <% end %>
       </li>
     </ul>
