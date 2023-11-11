@@ -1,5 +1,5 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<% if @is_managment_page %>
+	<% if @is_managment_page && (current_user.hr? || current_user.procurement?) %>
 	<div class="row">
 		<%= form_tag(by_user_vacations_path, method: :get) do %>
 		<div class="col-lg-5">
@@ -9,7 +9,7 @@
 					<label class="mb-2 mt-1">
 						Select User
 
-						<%= select_tag(:user_id, options_for_select(User.all.map { |u| [u.name, u.id] }), { prompt: 'Select User', class: 'form-select' }) %>
+						<%= select_tag(:user_id, options_for_select(@users.map { |u| [u.name, u.id] }), { prompt: 'Select User', class: 'form-select' }) %>
 					</label>
 				</div>
 			</div>
