@@ -24,6 +24,20 @@ def index
   @vacations = current_user.vacations
 end
 
+def managment
+  @user = current_user
+  if @user.is_manager
+    if @user.hr? || @user.procurement? 
+      @vacations = Vacation.all
+    else
+      @vacations = Vacation.joins(:user)
+      .where(users: { role: @user.role })
+    end
+  end
+  @is_managment_page = true
+  render 'index'
+end
+
 
 def create
  @vacation = current_user.vacations.new(vacation_params)

@@ -4,6 +4,9 @@ Rails.application.routes.draw do
       patch "confirm", to: "vacations#confirm"
       get "confirm", to: "vacations#confirm"
     end
+    collection do
+      get 'managment'
+    end
   end
   devise_for :users
   root 'home#index'
