@@ -53,6 +53,7 @@ class Pi < ApplicationRecord
              'UREA  46%',
              'BITUMEN MIX GRADE'
            ]
+
   CURRENCY = ['dollar', 'dirham', 'rial']
   PAYMENT_TERM = ['30% advance', '20% advance']
   POL = ['IRAN', 'UAE', 'BND/IRAN']
