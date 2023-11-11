@@ -24,11 +24,12 @@
 								Filters
 							</button>
 							<ul class="dropdown-menu">
-								<li><%= link_to 'Not Paid', not_paid_payment_orders_path, class: 'dropdown-item' %></li>
 								<li><%= link_to 'Not Confirmed', not_confirmed_payment_orders_path, class: 'dropdown-item' %></li>
-								<li><%= link_to 'Finished', finished_payment_orders_path, class: 'dropdown-item' %></li>
-								<li><%= link_to 'Pending', pending_payment_orders_path, class: 'dropdown-item' %></li>
+								<li><%= link_to 'Not Paid', not_paid_payment_orders_path, class: 'dropdown-item' %></li>
 								<li><%= link_to 'Not Delivered', not_delivered_payment_orders_path, class: 'dropdown-item' %></li>
+								<li><%= link_to 'Pending', pending_payment_orders_path, class: 'dropdown-item' %></li>
+								<li><%= link_to 'Finished', finished_payment_orders_path, class: 'dropdown-item' %></li>
+								
 							</ul>
 						</div>
 					</div>
