@@ -157,7 +157,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def mine
-		@payment_orders = current_user.payment_orders
+		@payment_orders = current_user.payment_orders.reverse
 		render 'index'
 	end
 
