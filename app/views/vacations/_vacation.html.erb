@@ -1,10 +1,10 @@
 
 
 <li class="list-group-item m-2 shadow vacation-bg border border-warning" id="vacation_item_<%= vacation.id %>">
-	<% if current_user.is_manager && current_user != vacation.user %>
+	<% if @is_managment_page %>
 	<div class="row">
-		<div class="col-lg-5 text-info">
-			<%= vacation.user.name %>	
+		<div class="col-lg-5 text-black fw-bold">
+			<%= vacation.user.name.titleize %>	
 		</div>
 		<div class="col-lg-7">
 			<%= vacation.updated_at.strftime('%A %d %B') %>			
@@ -17,7 +17,7 @@
 				<p class="fw-bold"><span class="text-primary"> <%= vacation.days %></span> days</p>
 			</div>
 		</div>
-		<div class="col-lg-2">
+		<div class="col-lg-2 text-center">
 			<% if vacation.confirm %>
 			<i class="bi bi-check-circle text-success confirm-size"></i>
 			<% else %>
@@ -78,4 +78,21 @@
 			</div>
 		</div>
 	</div>
+	<div class="row mt-1">
+		<div class="col-lg-8">
+			<div class="d-flex justify-content-start">
+				<small>Details: <small class="text-secondary"><%= vacation.details %></small></small>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="d-flex justify-content-end">
+				<%= vacation.hourly ? "hourly" : "daily" %>
+			</div>
+		</div>		
+	</div>
 </li>
+
+
+
+
+
