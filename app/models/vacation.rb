@@ -22,9 +22,10 @@ class Vacation < ApplicationRecord
 
   def days
     if hourly
-      "#{(end_at.to_date - start_at.to_date).to_i}"
+      "#{(end_at.to_datetime - start_at.to_datetime).to_f * 24
+} Hours"
     else
-      "#{(end_at.to_date - start_at.to_date + 1).to_i}"
+      "#{(end_at.to_date - start_at.to_date + 1).to_i} Days"
     end
   end
 
