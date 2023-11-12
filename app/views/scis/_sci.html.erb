@@ -28,8 +28,8 @@
 				<td><%= ballance.number %></td>
 				<td><%= sci.net_weight %></td>
 				<td><%= sci.gross_weight %></td>
-				<td><%= sci.spi.unit_price.to_i %></td>
-				<td><%= sci.total_price.to_i %> MT</td>
+				<td><%= sci.spi.unit_price %></td>
+				<td><%= sci.total_price %> MT</td>
 				<td><%= 'yes' if sci.have_loading_report %></td>
 				<td><%= sci.spi.payment_term %></td>
 				<td><% if user_signed_in? && current_user.procurement? %>

@@ -69,7 +69,8 @@
 						<label class="mb-2 mt-1">
 							Net Weight
 							<span class="text-danger">*</span>
-							<%= form.number_field :net_weight, class: "form-control mt-2" %>
+							<%= form.text_field :net_weight, value: number_with_precision(@sci.net_weight, precision: 3), class: "form-control mt-2" %>
+
 
 
 						</label>
@@ -81,8 +82,7 @@
 							Gross Weight
 							<span class="text-danger">*</span>
 							
-							<%= form.number_field :gross_weight, class: "form-control mt-2" %>
-
+								<%= form.text_field :gross_weight, value: number_with_precision(@sci.gross_weight, precision: 3), class: "form-control mt-2" %>
 
 						</label>
 					</div>
@@ -104,7 +104,8 @@
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Advance Payment
-							<%= form.number_field :advance_payment, class: "form-control mt-2" %>
+							<%= form.text_field :advance_payment, value: number_with_precision(@sci.advance_payment, precision: 3), class: "form-control mt-2" %>
+
 						</label>
 					</div>
 				</div>
@@ -114,7 +115,8 @@
 							Balance Payment
 							<span class="text-danger">*</span>
 							
-							<%= form.number_field :balance_payment, class: "form-control mt-2" %>
+							<%= form.text_field :balance_payment, value: number_with_precision(@sci.balance_payment, precision: 3), class: "form-control mt-2" %>
+
 
 
 						</label>
@@ -129,7 +131,9 @@
 						<label class="mb-2 mt-1">
 							Total Price
 							<span class="text-danger">*</span>
-							<%=  form.number_field :total_price, class: "form-control mt-2" %>
+							<%= form.text_field :total_price, value: number_with_precision(@sci.total_price, precision: 3), class: "form-control mt-2" %>
+
+
 						</label>
 					</div>	
 				</div>
