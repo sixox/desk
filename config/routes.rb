@@ -46,7 +46,10 @@ Rails.application.routes.draw do
       get 'not_delivered'
       get 'mine'
     end
+    resources :comments
+
   end
+  resources :comments
 
 
   get 'member/:id', to: 'members#show', as: 'member'

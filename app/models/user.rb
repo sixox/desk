@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :suppliers
   has_many :scis
   has_many :notifications
+  has_many :comments
 
 
   enum role: {

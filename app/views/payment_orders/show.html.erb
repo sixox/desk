@@ -5,18 +5,18 @@
 	<div class="card mb-5">
 		<div class="card-body">
 			<div class="row">
-		<% if @payment_order.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@payment_order.errors.count, 'error') %> prohibited your payment_order from being saved.</h3>
-			<ul>
-				<% @payment_order.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
+				<% if @payment_order.errors.any? %>
+				<div class="error-area" style="color:red;">
+					<h3><%= pluralize(@payment_order.errors.count, 'error') %> prohibited your payment_order from being saved.</h3>
+					<ul>
+						<% @payment_order.errors.each do |error|%>
+						<li>
+							<%= error.full_message%>
+						</li>
+						<% end %>
+					</ul>
+				</div>
 				<% end %>
-			</ul>
-		</div>
-		<% end %>
 			</div>
 
 			<ul class="list-group" id="payment_order_items">
@@ -52,7 +52,7 @@
 					<% if @payment_order.document.attached? %>
 					<div class="row">
 						<div class="col">
-						<%= link_to 'View Document', url_for(@payment_order.document), target: '_blank' %>
+							<%= link_to 'View Document', url_for(@payment_order.document), target: '_blank' %>
 						</div>
 						<div class="col">
 							<p>have factor: <span class="fw-bold"> <%= @payment_order.have_factor ? 'yes' : 'no' %></span></p>
@@ -62,7 +62,7 @@
 					<% if @payment_order.receipt.attached? %>
 					<div class="col">
 						<%= link_to 'View receipt', url_for(@payment_order.receipt), target: '_blank' %>
-						</div>
+					</div>
 					
 
 					<% end %>
@@ -74,7 +74,7 @@
 						<div class="text-center mt-3">
 							
 
-								<%= link_to "Confirm", confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undone!' }, class: "btn btn-success text-center" %>
+							<%= link_to "Confirm", confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undone!' }, class: "btn btn-success text-center" %>
 							
 						</div>
 
@@ -82,11 +82,11 @@
 						<% end %>
 						<% end %>
 						<% if user_signed_in? && @payment_order.status == "wait for delivery"  %>
-							<% if (current_user.is_manager && current_user.procurement?) || current_user == @payment_order.user %>
-							<div class="text-center mt-3">
-								<%= link_to "Delivered", delivered_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to change this payment order status to DELIVERED, this action can not be undone!' }, class: "btn btn-info text-center" %>
-							</div>
-							<% end %>
+						<% if (current_user.is_manager && current_user.procurement?) || current_user == @payment_order.user %>
+						<div class="text-center mt-3">
+							<%= link_to "Delivered", delivered_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to change this payment order status to DELIVERED, this action can not be undone!' }, class: "btn btn-info text-center" %>
+						</div>
+						<% end %>
 						<% end %>
 					</li>
 					<% if current_user.accounting? %>
@@ -96,6 +96,38 @@
 					</li>
 					<% end %>
 				</ul>
+				
 			</div>
 		</div>
+
+		<div class="card mb-5">
+			<div class="card-body">
+				<div class="row">
+						<div class="col-lg-6">
+							<div class="d-flex justify-content-start">
+								<h5>Comments</h5>
+							</div>
+						</div>
+						<div class="col-lg-6">
+							<div class="d-flex justify-content-end">
+								<%= link_to new_payment_order_comment_path(@payment_order), data: { controller: "bs-modal-form", payment_order_id: @payment_order.id }, class: "btn btn-primary" do %>
+								Add Comment
+								<% end %>
+							</div>
+						</div>
+				</div>
+				<% if @payment_order.comments.present? %>
+				<ul class="list-group mt-1" id="comment_items">
+				<% @payment_order.comments.reverse.each do |comment| %>
+  					<%= render 'comments/comment', comment: comment %>
+				<% end %>
+				</ul>
+				<% else %>
+				<p>no comments</p>
+				<% end %>
+			</div>
+		</div>
+
 	</div>
+
+

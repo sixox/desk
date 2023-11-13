@@ -1,0 +1,51 @@
+<%= form_for [@commentable, @comment] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @comment.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@comment.errors.count, 'error') %> prohibited your vacation from being saved.</h3>
+			<ul>
+				<% @comment.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Comment</h3>
+				</div>
+			</div>
+			
+		</div>
+
+		<div class="col-lg-12">
+
+			<div class="form-group">
+				<label class="mb-2 mt-3">
+					Body
+					<span class="text-danger">*</span>
+				</label>
+				<%= form.text_area :body, class: 'form-control', rows: 5 %>
+			</div>			
+		</div>
+	</div>
+	<div class="row">
+		<div class="form-group">
+			<%= form.label :files, class: 'mb-2 mt-3' do %>
+			Attach Files
+			<span class="text-danger">*</span>
+			<% end %>
+			<%= form.file_field :files, multiple: true, class: 'form-control' %>
+		</div>
+	</div>
+</div>
+
+<div class="modal-footer">
+	<%= form.submit 'Save Comment', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>
