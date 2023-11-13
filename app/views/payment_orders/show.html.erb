@@ -103,28 +103,30 @@
 		<div class="card mb-5">
 			<div class="card-body">
 				<div class="row">
-						<div class="col-lg-6">
-							<div class="d-flex justify-content-start">
-								<h5>Comments</h5>
-							</div>
+					<div class="col-lg-6">
+						<div class="d-flex justify-content-start">
+							<h5>Comments</h5>
 						</div>
-						<div class="col-lg-6">
-							<div class="d-flex justify-content-end">
-								<%= link_to new_payment_order_comment_path(@payment_order), data: { controller: "bs-modal-form", payment_order_id: @payment_order.id }, class: "btn btn-primary" do %>
-								Add Comment
-								<% end %>
-							</div>
+					</div>
+					<div class="col-lg-6">
+						<div class="d-flex justify-content-end">
+							<%= link_to new_payment_order_comment_path(@payment_order), data: { controller: "bs-modal-form", payment_order_id: @payment_order.id }, class: "btn btn-primary" do %>
+							Add Comment
+							<% end %>
 						</div>
+					</div>
 				</div>
-				<% if @payment_order.comments.present? %>
+				
 				<ul class="list-group mt-1" id="comment_items">
-				<% @payment_order.comments.reverse.each do |comment| %>
-  					<%= render 'comments/comment', comment: comment %>
-				<% end %>
+					<% if @payment_order.comments.present? %>
+					<% @payment_order.comments.reverse.each do |comment| %>
+					<%= render 'comments/comment', comment: comment %>
+					<% end %>
+					
+					<% else %>
+					<p>no comments</p>
+					<% end %>
 				</ul>
-				<% else %>
-				<p>no comments</p>
-				<% end %>
 			</div>
 		</div>
 
