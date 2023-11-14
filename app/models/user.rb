@@ -16,6 +16,7 @@ class User < ApplicationRecord
   has_many :scis
   has_many :notifications
   has_many :comments
+  has_many :clients
 
 
   enum role: {

@@ -3,7 +3,7 @@
 	<div class="row">
 		<% if @comment.errors.any? %>
 		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@comment.errors.count, 'error') %> prohibited your vacation from being saved.</h3>
+			<h3><%= pluralize(@comment.errors.count, 'error') %> prohibited your comment from being saved.</h3>
 			<ul>
 				<% @comment.errors.each do |error|%>
 				<li>

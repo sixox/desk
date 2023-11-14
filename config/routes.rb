@@ -45,11 +45,13 @@ Rails.application.routes.draw do
       get 'pending'
       get 'not_delivered'
       get 'mine'
+      get 'confirmable'
     end
     resources :comments
 
   end
   resources :comments
+  resources :clients
 
 
   get 'member/:id', to: 'members#show', as: 'member'
