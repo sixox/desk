@@ -9,6 +9,9 @@ class Vacation < ApplicationRecord
   validate :hourly_or_daily
 
 
+  scope :not_confirmed_by_role, ->(role) {
+    joins(:user).where(users: { role: role }, not_confirmed: [nil, false])
+  }
 
   def hourly_or_daily
     if start_at.present? && end_at.present?
