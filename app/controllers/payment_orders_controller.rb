@@ -113,7 +113,7 @@ class PaymentOrdersController < ApplicationController
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.where(status: 'wait for confirm').reverse
 		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for confirm').reverse
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for confirm').sort_by(&:created_at).reverse
 
 		end
 		render 'index'
