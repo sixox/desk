@@ -15,9 +15,14 @@ class PaymentOrder < ApplicationRecord
 
   validate :coo_confirmation_requires_from
 
-  scope :filtered_by_role, ->(current_user) {
+  scope :filtered_by_role_and_dep_confirm, ->(current_user) {
     where(department_confirm: [nil, false])
     .joins(:user)
+    .where(users: { role: current_user.role })
+  }
+
+  scope :filtered_by_role, ->(current_user) {
+    joins(:user)
     .where(users: { role: current_user.role })
   }
 

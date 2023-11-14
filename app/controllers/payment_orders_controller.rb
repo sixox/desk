@@ -15,7 +15,7 @@ class PaymentOrdersController < ApplicationController
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.all.reverse
 		else
-			@payment_orders = PaymentOrder.filtered_by_role(cu)
+			@payment_orders = PaymentOrder.filtered_by_role(cu).sort_by(&:created_at).reverse
 		end
 
 	end
@@ -162,16 +162,16 @@ class PaymentOrdersController < ApplicationController
 
 
 			if cu.ceo?
-				@payment_orders = PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting
+				@payment_orders = PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting.reverse
 			elsif cu.procurement?
-				@payment_orders = PaymentOrder.not_confirmed_by_coo
+				@payment_orders = PaymentOrder.not_confirmed_by_coo.reverse
 			elsif cu.accounting?
-				accounting_pos = PaymentOrder.filtered_by_role(cu)
+				accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
 				@payment_orders = PaymentOrder.not_confirmed_by_accounting
 				@payment_orders += accounting_pos
 				@payment_orders = @payment_orders.sort_by(&:created_at).reverse
 			else
-				@payment_orders = PaymentOrder.filtered_by_role(cu)
+				@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu).reverse
 			end
 
 		end
