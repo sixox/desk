@@ -171,7 +171,10 @@ class PaymentOrdersController < ApplicationController
 			elsif cu.procurement?
 				@payment_orders = PaymentOrder.not_confirmed_by_coo
 			elsif cu.accounting?
+				accounting_pos = PaymentOrder.filtered_by_role(cu)
 				@payment_orders = PaymentOrder.not_confirmed_by_accounting
+				@payment_orders += accounting_pos
+				@payment_orders = @payment_orders.sort_by(&:created_at).reverse
 			else
 				@payment_orders = PaymentOrder.filtered_by_role(cu)
 			end
