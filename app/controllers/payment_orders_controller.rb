@@ -11,11 +11,11 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def index
-		current_user_role = current_user.role
+		cu = current_user
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.all.reverse
 		else
-			@payment_orders = PaymentOrder.filtered_by_role(current_user)
+			@payment_orders = PaymentOrder.filtered_by_role(cu)
 		end
 
 	end
