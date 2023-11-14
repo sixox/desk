@@ -15,7 +15,7 @@ class PaymentOrdersController < ApplicationController
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.all.reverse
 		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user_role }).reverse
+			@payment_orders = PaymentOrder.filtered_by_role(current_user)
 		end
 
 	end
@@ -83,10 +83,6 @@ class PaymentOrdersController < ApplicationController
 
 			end
 		end
-
-
-
-
 	end
 
 	def delivered
@@ -100,7 +96,6 @@ class PaymentOrdersController < ApplicationController
 			end
 
 		end
-
 	end
 
 	def not_paid
