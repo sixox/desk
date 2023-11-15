@@ -12,8 +12,9 @@
 			<%= link_to 'Pending', pending_payment_orders_path, class: "btn btn-primary #{@in_page == "pending" ? 'text-dark' : ''}" %>
 			
 			<%= link_to 'Finished', finished_payment_orders_path, class: "btn btn-primary #{@in_page == "finished" ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
+			<% if current_user.is_manager%>
+				<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
+			<% end %>
 			
 			<%= link_to 'Mine', mine_payment_orders_path, class: "btn btn-primary #{@in_page == "mine" ? 'text-dark' : ''}" %>
 		</div>
