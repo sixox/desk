@@ -28,7 +28,7 @@ def managment
   @users = User.all
   @user = current_user
   if @user.is_manager
-    if @user.hr? || @user.procurement? 
+    if @user.hr? || @user.procurement?  || @user.ceo?
         @vacations = Vacation.all
     else
        @vacations = Vacation.joins(:user)
