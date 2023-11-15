@@ -11,6 +11,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def index
+		@in_page = "index"
 		cu = current_user
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.all.reverse
@@ -99,6 +100,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def not_paid
+		@in_page = "notp"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.where(status: 'wait for payment').reverse
@@ -109,6 +111,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def not_confirmed
+		@in_page = "not confirmed"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.where(status: 'wait for confirm').reverse
@@ -120,6 +123,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def finished
+		@in_page = "finished"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.where(status: 'delivered').reverse
@@ -131,6 +135,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def pending
+		@in_page = "pending"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.where.not(status: 'delivered').reverse
@@ -142,6 +147,7 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def not_delivered
+		@in_page = "notd"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
 			@payment_orders = PaymentOrder.where(status: 'wait for delivery').reverse
@@ -152,11 +158,13 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def mine
+		@in_page = "mine"
 		@payment_orders = current_user.payment_orders.reverse
 		render 'index'
 	end
 
 	def confirmable
+		@in_page = "confirmable"
 		cu = current_user
 		if current_user.is_manager
 

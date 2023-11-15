@@ -1,6 +1,17 @@
 <div class="col-lg-10 mx-auto mt-5">
 
+	<div class="card mb-1 bg-success">
+		<div class="card-body">
+			<div class="row">
+				
 
+
+
+				
+				
+			</div>
+		</div>
+	</div>
 
 	<div class="card mb-5">
 		<div class="card-body">
@@ -12,17 +23,22 @@
 
 				</div>
 				
+				
 				<div class="col-lg-6">
 
 					<div class="d-flex justify-content-end">
-
+						<div class="hide-on-desktop">
+				<%= render 'filter' %>
+			</div>
 						<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
 						<i class="bi bi-plus"></i> Create Payment order
 						<% end %>
 						
-						<%= render 'filter' %>
 					</div>
 				</div>
+			</div>
+			<div class="hide-on-mobile">
+				<%= render 'filter_not_mobile' %>
 			</div>
 			<ul class="list-group" id="payment_order_items">
 				<% @payment_orders.each do |payment_order| %>

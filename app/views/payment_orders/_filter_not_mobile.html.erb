@@ -1,0 +1,21 @@
+<div class="row">
+	<div class="col-lg-8">
+		<div class="btn-group btn-group-sm">
+			<%= link_to "All", payment_orders_path, class: "btn btn-primary #{@in_page == "index"  ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Not Confirmed', not_confirmed_payment_orders_path, class: "btn btn-primary #{@in_page == "not confirmed" ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Not Paid', not_paid_payment_orders_path, class: "btn btn-primary #{@in_page == "notp" ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Not Delivered', not_delivered_payment_orders_path, class: "btn btn-primary #{@in_page == "notd" ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Pending', pending_payment_orders_path, class: "btn btn-primary #{@in_page == "pending" ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Finished', finished_payment_orders_path, class: "btn btn-primary #{@in_page == "finished" ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
+			
+			<%= link_to 'Mine', mine_payment_orders_path, class: "btn btn-primary #{@in_page == "mine" ? 'text-dark' : ''}" %>
+		</div>
+	</div>
+</div>

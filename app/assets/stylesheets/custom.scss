@@ -30,3 +30,13 @@
 	text-decoration: none;
 	color: red;
 }
+@media only screen and (max-width: 768px) {
+  .hide-on-mobile {
+    display: none;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .hide-on-desktop {
+    display: none;
+  }
+}
