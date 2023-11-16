@@ -1,21 +1,31 @@
 <li class="shadow-lg mb-2 bg-body rounded list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
 	<div class="row">
 		
-				<div class="col-lg-4">
-					<div class="d-flex justify-content-start">
-						<h4>P.O <span class="text-danger"><%= payment_order.id%></span></h4>
-					</div>
+		<div class="col-lg-2">
+			<div class="d-flex justify-content-start">
+				<h4>P.O <span class="text-danger"><%= payment_order.id%></span></h4>
+			</div>
+		</div>
+		<div class="col-lg-7">
+				<div class="text-center">
+					<span class="<%= payment_order.status == 'wait for confirm' ? 'text-danger fw-bold' : 'text-success small fw-bold' %>">
+						<%= payment_order.status == 'wait for confirm' ? 'Wait for Confirm' : 'Confirmed' %>
+					</span>
+					<span class="<%= payment_order.status == 'wait for payment' ? 'text-danger fw-bold' : (payment_order.status == 'wait for confirm' ? 'text-muted small' : 'text-success fw-bold small') %> mx-3">
+						<%= payment_order.status == 'wait for payment' ? 'Wait for Payment' : (payment_order.status == 'wait for confirm' ? 'not paid' : 'Paid') %>
+					</span>
+
+					<span class="<%= payment_order.status == 'wait for delivery' ? 'text-danger fw-bold' : (payment_order.status == 'delivered' ? 'text-success small fw-bold' : 'text-muted small') %>">
+						<%= payment_order.status == 'wait for delivery' ? 'Wait for Delivery' : (payment_order.status == 'delivered' ? 'Delivered' : 'Not delivered') %>
+					</span>
+
 				</div>
-				<div class="col-lg-4">
-					<div class="d-flex justify-content-between">
-						<div> Status: <span class="text-info"><%= payment_order.status %></span></div>
-					</div>
-				</div>
-				<div class="col-lg-4">
-					<div class="d-flex justify-content-end">
-						<%= payment_order.created_at.strftime('%A %d %B')  %>
-					</div>
-				</div>
+		</div>
+		<div class="col-lg-3">
+			<div class="d-flex justify-content-end">
+				<%= payment_order.created_at.strftime('%A %d %B')  %>
+			</div>
+		</div>
 	</div>
 	<div class="row mt-2">
 		<div class="col-lg">
@@ -33,7 +43,7 @@
 		<% if payment_order.ballance.present? %>
 		<div class="col-lg">Inventory: 
 			<span class="fw-bold">  <%= link_to payment_order.ballance.number, ballance_path(payment_order.ballance) %>
-</span> 
+			</span> 
 
 		</div>
 		<% end %>
@@ -72,28 +82,28 @@
 					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
 					<% end %>
 
-				<% end %>
-				<% end %>
-				<% if !payment_order.coo_confirm.present? %>
-				<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
+					<% end %>
+					<% end %>
+					<% if !payment_order.coo_confirm.present? %>
+					<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
 					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
 					<i class="bi bi-pencil-fill"></i>
 					<% end %>
-				
 
-				
+
+
 
 					<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
 					<i class="bi bi-trash text-danger"></i>
 					<% end %>
 
-				<% end %>
-				<% end %>
+					<% end %>
+					<% end %>
 
 
-				<%= link_to payment_order_path(payment_order) do %>
-				<i class="bi bi-eye-fill"></i>
-				<% end %>
+					<%= link_to payment_order_path(payment_order) do %>
+					<i class="bi bi-eye-fill"></i>
+					<% end %>
 
 
 
