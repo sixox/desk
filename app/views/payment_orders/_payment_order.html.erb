@@ -12,7 +12,7 @@
 						<%= payment_order.status == 'wait for confirm' ? 'Wait for Confirm' : 'Confirmed' %>
 					</span>
 					<span class="<%= payment_order.status == 'wait for payment' ? 'text-danger fw-bold' : (payment_order.status == 'wait for confirm' ? 'text-muted small' : 'text-success fw-bold small') %> mx-3">
-						<%= payment_order.status == 'wait for payment' ? 'Wait for Payment' : (payment_order.status == 'wait for confirm' ? 'not paid' : 'Paid') %>
+						<%= payment_order.status == 'wait for payment' ? 'Wait for Payment' : (payment_order.status == 'wait for confirm' ? 'Not paid' : 'Paid') %>
 					</span>
 
 					<span class="<%= payment_order.status == 'wait for delivery' ? 'text-danger fw-bold' : (payment_order.status == 'delivered' ? 'text-success small fw-bold' : 'text-muted small') %>">
