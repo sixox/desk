@@ -3,7 +3,11 @@
 		
 		<div class="col-lg-2">
 			<div class="d-flex justify-content-start">
-				<h4>P.O <span class="text-danger"><%= payment_order.id%></span></h4>
+			<%= link_to(payment_order_path(payment_order), class: 'link-nodecor-po') do %>
+
+				<h4 class="link-nodecor-po">P.O <span class="text-danger"><%= payment_order.id%></span></h4>
+				<% end %>
+
 			</div>
 		</div>
 		<div class="col-lg-7" style="font-size: 14px;">
