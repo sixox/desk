@@ -16,7 +16,7 @@
 					</span>
 
 					<span class="<%= payment_order.status == 'wait for delivery' ? 'text-danger fw-bold' : (payment_order.status == 'delivered' ? 'text-success small fw-bold' : 'text-muted small') %>">
-						<%= payment_order.status == 'wait for delivery' ? 'Wait for Delivery' : (payment_order.status == 'delivered' ? 'Delivered' : 'Not delivered') %>
+						<%= payment_order.status == 'wait for delivery' ? 'Wait for Delivery' : (payment_order.status == 'delivered' ? "Delivered at #{payment_order.delivered_at&.strftime('%b %d')}" : 'Not delivered') %>
 					</span>
 
 				</div>
