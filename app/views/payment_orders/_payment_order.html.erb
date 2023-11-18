@@ -118,22 +118,35 @@
 
 			<div class="col text-center">
 				Manager <br>
+				<small class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></small>
+				<br>
+
 				<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
 
 			</div>
 			<div class="col text-center">
 				COO <br>
+				<small class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></small>
+				<br>
+
 				<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
 
 			</div>
 			<div class="col text-center">
 				Accounting <br>
+				<small class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></small>
+				<br>
+
 				<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
 
 			</div>
 			<div class="col text-center">
 				CEO <br>
+				<small class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></small>
+				<br>
 				<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+				
+
 
 			</div>
 

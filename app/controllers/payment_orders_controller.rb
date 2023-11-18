@@ -39,6 +39,7 @@ class PaymentOrdersController < ApplicationController
 		@payment_order = PaymentOrder.find(params[:id])
 		if current_user.ceo?
 			@payment_order.ceo_confirm = true
+			@payment.order.ceo_confirmed_at = Time.now
 			accounting_users.each do |accounting_user|
 				accounting_user.notifications.create(payment_id: params[:id], message: 'Payment Order Confirmed and wait for payment',is_read: false, link_to_action: link_to_action)
 			end
@@ -46,8 +47,10 @@ class PaymentOrdersController < ApplicationController
 
 		elsif current_user.procurement?
 			@payment_order.coo_confirm = true
+			@payment_order.coo_confirmed_at = Time.now
 			if @payment_order.user.procurement?
 				@payment_order.department_confirm = true
+				@payment_order.department_confirmed_at = Time.now
 			end
 			if !@payment_order.accounting_confirm
 				farzin.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
@@ -57,8 +60,10 @@ class PaymentOrdersController < ApplicationController
 
 		elsif current_user.accounting?
 			@payment_order.accounting_confirm = true
+			@payment_order.accounting_confirmed_at = Time.now
 			if @payment_order.user.accounting?
 				@payment_order.department_confirm = true
+				@payment_order.department_confirmed_at = Time.now
 			end
 			if !@payment_order.coo_confirm
 				coo.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
@@ -69,6 +74,7 @@ class PaymentOrdersController < ApplicationController
 
 		elsif current_user.is_manager && !current_user.procurement?
 			@payment_order.department_confirm = true
+			@payment_order.department_confirmed_at = Time.now
 			if !@payment_order.coo_confirm
 				coo.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
 			end
@@ -88,6 +94,7 @@ class PaymentOrdersController < ApplicationController
 
 	def delivered
 		@payment_order = PaymentOrder.find(params[:id])
+		@payment_order.delivered_at = Time.now
 		respond_to do |format|
 			if @payment_order.update(delivery_confirm: true)
 				format.html { redirect_to payment_orders_path }
@@ -282,7 +289,12 @@ class PaymentOrdersController < ApplicationController
 			:document,
 			:coo_confirm,
 			:receipt,
-			:delivery_confirm
+			:delivery_confirm,
+			:ceo_confirmed_at,
+			:coo_confirmed_at,
+			:department_confirmed_at,
+			:accounting_confirmed_at,
+			:delivered_at
 			)
 	end
 
