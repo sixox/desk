@@ -40,7 +40,8 @@
 		</div>
 		<% if payment_order.project.present? %>
 		<div class="col-lg">project: 
-			<span class="fw-bold"><%= payment_order.project.number %></span> 
+			<span class="fw-bold">  <%= link_to payment_order.project.number, project_path(payment_order.project) %></span>
+
 
 		</div>
 		<% end %>
@@ -53,12 +54,14 @@
 		<% end %>
 		<% if payment_order.spi.present? %>
 		<div class="col-lg">PI: 
+
 			<span class="fw-bold"><%= payment_order.spi.number %></span> 
 
 		</div>
 		<% end %>
 		<% if payment_order.sci.present? %>
 		<div class="col-lg">CI: 
+
 			<span class="fw-bold"><%= payment_order.sci.number %></span> 
 
 		</div>
