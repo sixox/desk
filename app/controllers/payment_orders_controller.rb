@@ -39,7 +39,7 @@ class PaymentOrdersController < ApplicationController
 		@payment_order = PaymentOrder.find(params[:id])
 		if current_user.ceo?
 			@payment_order.ceo_confirm = true
-			@payment.order.ceo_confirmed_at = Time.now
+			@payment_order.ceo_confirmed_at = Time.now
 			accounting_users.each do |accounting_user|
 				accounting_user.notifications.create(payment_id: params[:id], message: 'Payment Order Confirmed and wait for payment',is_read: false, link_to_action: link_to_action)
 			end
