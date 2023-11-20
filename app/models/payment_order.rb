@@ -35,10 +35,7 @@ class PaymentOrder < ApplicationRecord
   }
 
   scope :not_confirmed_by_coo, -> {
-    joins(:user).where(
-      "(users.role = ? AND coo_confirm IN (?, ?)) OR (users.role != ? AND coo_confirm IN (?, ?) AND department_confirm = ?)",
-      'procurement', nil, false, 'procurement', nil, false, true
-      )
+    where(coo_confirm: [nil, false])
   }
 
   scope :not_confirmed_by_accounting, -> {
