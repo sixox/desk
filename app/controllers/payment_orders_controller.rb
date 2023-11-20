@@ -14,9 +14,9 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "index"
 		cu = current_user
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.all.reverse
+			@payment_orders = PaymentOrder.order(created_at: :desc).page(params[:page]).per(6)
 		else
-			@payment_orders = PaymentOrder.filtered_by_role(cu).sort_by(&:created_at).reverse
+			@payment_orders = PaymentOrder.filtered_by_role(current_user).order(created_at: :desc).page(params[:page]).per(6)
 		end
 
 	end
@@ -110,9 +110,9 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "notp"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'wait for payment').reverse
+			@payment_orders = PaymentOrder.where(status: 'wait for payment').order(created_at: :desc).page(params[:page]).per(6)
 		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for payment').reverse
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for payment').order(created_at: :desc).page(params[:page]).per(6)
 		end
 		render 'index'
 	end
@@ -121,9 +121,9 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "not confirmed"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'wait for confirm').reverse
+			@payment_orders = PaymentOrder.where(status: 'wait for confirm').order(created_at: :desc).page(params[:page]).per(6)
 		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for confirm').sort_by(&:created_at).reverse
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for confirm').order(created_at: :desc).page(params[:page]).per(6)
 
 		end
 		render 'index'
@@ -133,9 +133,9 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "finished"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'delivered').reverse
+			@payment_orders = PaymentOrder.where(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
 		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'delivered').sort_by(&:created_at).reverse
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
 
 		end
 		render 'index'
@@ -145,10 +145,10 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "pending"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where.not(status: 'delivered').reverse
+			@payment_orders = PaymentOrder.where.not(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
 		else
 
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where.not(status: 'delivered').sort_by(&:created_at).reverse
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where.not(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
 		end
 		render 'index'
 	end
@@ -157,16 +157,16 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "notd"
 		current_user_role = current_user.role
 		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'wait for delivery').reverse
+			@payment_orders = PaymentOrder.where(status: 'wait for delivery').order(created_at: :desc).page(params[:page]).per(6)
 		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for delivery').reverse
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for delivery').order(created_at: :desc).page(params[:page]).per(6)
 		end
 		render 'index'
 	end
 
 	def mine
 		@in_page = "mine"
-		@payment_orders = current_user.payment_orders.reverse
+		@payment_orders = current_user.payment_orders.order(created_at: :desc).page(params[:page]).per(6)
 		render 'index'
 	end
 
@@ -174,22 +174,22 @@ class PaymentOrdersController < ApplicationController
 		@in_page = "confirmable"
 		cu = current_user
 		if current_user.is_manager
-
-
 			if cu.ceo?
-				@payment_orders = PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting.reverse
+				@payment_orders = PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting.order(created_at: :desc)
 			elsif cu.procurement?
-				@payment_orders = PaymentOrder.not_confirmed_by_coo.reverse
+				@payment_orders = PaymentOrder.not_confirmed_by_coo.order(created_at: :desc)
 			elsif cu.accounting?
 				accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
-				@payment_orders = PaymentOrder.not_confirmed_by_accounting
+				@payment_orders = PaymentOrder.not_confirmed_by_accounting.order(created_at: :desc)
 				@payment_orders += accounting_pos
-				@payment_orders = @payment_orders.sort_by(&:created_at).reverse
+				@payment_orders.sort_by!(&:created_at)
 			else
-				@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu).reverse
+				@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu).order(created_at: :desc)
 			end
 
+			@payment_orders = Kaminari.paginate_array(@payment_orders.reverse).page(params[:page]).per(6)
 		end
+
 		render 'index'
 
 	end

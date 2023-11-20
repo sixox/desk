@@ -16,6 +16,8 @@
 
 	<% if current_user.ceo? || current_user.admin? %>
 	<div class="row mt-4 mb-4">
+<%= paginate @users, remote: true %>
+
 		<% @users.each do |user| %>
 			<div class="col-lg-3 mb-3 mt-3">
 				<div class="card text-center shadow">

@@ -10,8 +10,8 @@
 				<div class="col-lg-6">
 					<div class="d-flex justify-content-end">
 						<div class="hide-on-desktop">
-				<%= render 'filter' %>
-			</div>
+							<%= render 'filter' %>
+						</div>
 						<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
 						<i class="bi bi-plus"></i> Create Payment order
 						<% end %>
@@ -21,11 +21,22 @@
 			<div class="hide-on-mobile">
 				<%= render 'filter_not_mobile' %>
 			</div>
+
+
 			<ul class="list-group" id="payment_order_items">
 				<% @payment_orders.each do |payment_order| %>
 				<%= render 'payment_orders/payment_order', payment_order: payment_order %>
 				<% end %>
 			</ul>
+			<div class="row mt-1">
+				<div class="col-sm">
+					<nav aria-label="Page navigation">
+						<ul class="pagination justify-content-center">
+							<%= paginate @payment_orders, remote: true %>
+						</ul>
+					</nav>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
