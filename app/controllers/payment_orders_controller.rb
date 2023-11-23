@@ -187,7 +187,7 @@ class PaymentOrdersController < ApplicationController
 				@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu).order(created_at: :desc)
 			end
 
-			@payment_orders = Kaminari.paginate_array(@payment_orders.reverse).page(params[:page]).per(6)
+			@payment_orders = Kaminari.paginate_array(@payment_orders).page(params[:page]).per(6)
 		end
 
 		render 'index'
