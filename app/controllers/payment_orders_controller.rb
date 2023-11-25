@@ -182,7 +182,7 @@ class PaymentOrdersController < ApplicationController
 				accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
 				@payment_orders = PaymentOrder.not_confirmed_by_accounting.order(created_at: :desc)
 				@payment_orders += accounting_pos
-				@payment_orders.sort_by!(&:created_at)
+				@payment_orders.sort_by!(&:created_at).reverse
 			else
 				@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu).order(created_at: :desc)
 			end
