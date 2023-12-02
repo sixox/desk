@@ -1,7 +1,7 @@
 <li class="shadow-lg mb-2 bg-body rounded list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
 	<div class="row">
 		
-		<div class="col-lg-2">
+		<div class="col-sm-2">
 			<div class="d-flex justify-content-start">
 			<%= link_to(payment_order_path(payment_order), class: 'link-nodecor-po') do %>
 
@@ -10,7 +10,7 @@
 
 			</div>
 		</div>
-		<div class="col-lg-7" style="font-size: 14px;">
+		<div class="col-sm-7" style="font-size: 14px;">
 				<div class="text-center">
 					<span class="<%= payment_order.status == 'wait for confirm' ? 'text-danger fw-bold' : 'text-success small fw-bold' %>">
 						<%= payment_order.status == 'wait for confirm' ? 'Wait for Confirm' : 'Confirmed' %>
@@ -25,7 +25,7 @@
 
 				</div>
 		</div>
-		<div class="col-lg-3">
+		<div class="col-sm-3">
 			<div class="d-flex justify-content-end">
 				<%= payment_order.created_at.strftime('%A %d %B')  %>
 			</div>
