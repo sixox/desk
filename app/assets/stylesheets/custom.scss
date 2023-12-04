@@ -31,14 +31,23 @@
 	color: red;
 }
 @media only screen and (max-width: 768px) {
-  .hide-on-mobile {
-    display: none;
-  }
+	.hide-on-mobile {
+		display: none;
+	}
+	.stamp-image {
+
+		top: 139px; /* Adjust the top position as needed */
+
+	}
 }
 @media only screen and (min-width: 768px) {
-  .hide-on-desktop {
-    display: none;
-  }
+	.hide-on-desktop {
+		display: none;
+	}
+	.stamp-image {
+		top: 36px; /* Adjust the top position as needed */
+	}
+
 }
 .confirmation-date {
 	font-size: 11px;
@@ -52,3 +61,15 @@
 	text-decoration: none;
 	color: black;
 }
+.stamp-content {
+	position: relative;
+}
+.stamp-image {
+		position: absolute;
+		right: 55px; /* Adjust the left position as needed */
+		width: 159px; /* Set the width of the stamp image */
+		z-index: 1; /* Ensure the stamp image appears above the content */
+		opacity: 0.5; /* Adjust the opacity as needed */
+}
+
+

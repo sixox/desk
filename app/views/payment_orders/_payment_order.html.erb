@@ -1,3 +1,23 @@
+<% if payment_order.rejected_at %>
+	<div class="stamp-content">
+	  <div class="content">
+	    <!-- Your main content here -->
+	   
+	  </div>
+	  <%= image_tag("rejected.png", alt: "Rejected Stamp", class: "stamp-image") %>
+	</div>
+<% else %>
+	<% if payment_order.delivered_at  %>
+		<div class="stamp-content">
+		  <div class="content">
+		    <!-- Your main content here -->
+		   
+		  </div>
+			<%= image_tag("finished12.png", alt: "Finished Image", class: "stamp-image") %>
+		</div>
+
+	<% end %>
+<% end %>
 <li class="shadow-lg mb-2 bg-body rounded list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
 	<div class="row">
 		
@@ -169,6 +189,8 @@
 
 		</div>
 	</li>
+
+
 
 
 
