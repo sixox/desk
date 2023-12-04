@@ -10,6 +10,15 @@
 
 			</div>
 		</div>
+		<% if payment_order.rejected_at %>
+		<div class="col-sm-7">
+			<div class="text-center">
+				<span class="fw-bold text-danger">REJECTED</span>
+				<span class="text-secondary">by <%= payment_order.reject_by %></span>
+				<p class="confirmation-date"><%= payment_order.rejected_at&.strftime('%b %d') %></p>
+			</div>
+		</div>
+		<% else %>
 		<div class="col-sm-7" style="font-size: 14px;">
 				<div class="text-center">
 					<span class="<%= payment_order.status == 'wait for confirm' ? 'text-danger fw-bold' : 'text-success small fw-bold' %>">
@@ -25,6 +34,7 @@
 
 				</div>
 		</div>
+		<% end %>
 		<div class="col-sm-3">
 			<div class="d-flex justify-content-end">
 				<%= payment_order.created_at.strftime('%A %d %B')  %>
@@ -79,7 +89,7 @@
 		<div class="col-lg-2 mb-2">
 			<div class="d-flex justify-content-end">
 
-				<% if user_signed_in? && current_user.is_manager  %>
+				<% if user_signed_in? && current_user.is_manager && !payment_order.rejected_at  %>
 				<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
 					(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
 					(current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||

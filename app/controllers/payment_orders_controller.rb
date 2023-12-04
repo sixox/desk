@@ -1,7 +1,7 @@
 class PaymentOrdersController < ApplicationController
 
 	before_action :authenticate_user!
-	before_action :set_payment_order, only: %i[ show edit update destroy ]
+	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy ]
 	before_action :set_form_items, only: %i[ new edit ] 
 	
 
@@ -29,6 +29,29 @@ class PaymentOrdersController < ApplicationController
 	def edit
 	end
 
+	def reject
+		if current_user.ceo?
+			ro = "CEO"
+		elsif current_user.procurement?
+			ro = "COO"
+		else
+			ro = "Manager"
+		end
+		@payment_order.reject_by = ro
+		
+		@payment_order.rejected_at = Time.now
+		respond_to do |format|
+			if @payment_order.save
+				format.html { redirect_to payment_orders_path }
+			else
+				format.html { render :show, status: :unprocessable_entity }
+				format.json { render json: @payment.errors, status: :unprocessable_entity }
+
+			end
+		end
+
+	end
+
 	def confirm
 		link_to_action = "/payment_orders/#{params[:id]}"
 		coo = User.find(9)
@@ -36,7 +59,6 @@ class PaymentOrdersController < ApplicationController
 		farzin = User.find(4)
 		accounting_users = User.where(role: 'accounting')
 
-		@payment_order = PaymentOrder.find(params[:id])
 		if current_user.ceo?
 			@payment_order.ceo_confirm = true
 			@payment_order.ceo_confirmed_at = Time.now
@@ -294,7 +316,9 @@ class PaymentOrdersController < ApplicationController
 			:coo_confirmed_at,
 			:department_confirmed_at,
 			:accounting_confirmed_at,
-			:delivered_at
+			:delivered_at,
+			:reject_by,
+			:rejected_at
 			)
 	end
 
