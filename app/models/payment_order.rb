@@ -15,11 +15,13 @@ class PaymentOrder < ApplicationRecord
 
   validate :coo_confirmation_requires_from
 
-  scope :filtered_by_role_and_dep_confirm, ->(current_user) {
-    where(department_confirm: [nil, false])
-    .joins(:user)
-    .where(users: { role: current_user.role })
-  }
+scope :filtered_by_role_and_dep_confirm, ->(current_user) {
+  where(department_confirm: [nil, false])
+  .where(rejected_at: [nil, false])
+  .joins(:user)
+  .where(users: { role: current_user.role })
+}
+
 
   scope :filtered_by_role, ->(current_user) {
     joins(:user)
@@ -31,17 +33,23 @@ class PaymentOrder < ApplicationRecord
     .where(coo_confirm: true)
     .where(accounting_confirm: true)
     .where(department_confirm: true)
+    .where(rejected_at: [nil, false])
+
 
   }
 
   scope :not_confirmed_by_coo, -> {
     where(coo_confirm: [nil, false])
+    .where(rejected_at: [nil, false])
+
   }
 
   scope :not_confirmed_by_accounting, -> {
     where(accounting_confirm: [nil, false])
     .where(department_confirm: true)
     .where(coo_confirm: true)
+    .where(rejected_at: [nil, false])
+
   }
 
 
