@@ -15,12 +15,12 @@ class PaymentOrder < ApplicationRecord
 
   validate :coo_confirmation_requires_from
 
-scope :filtered_by_role_and_dep_confirm, ->(current_user) {
-  where(department_confirm: [nil, false])
-  .where(rejected_at: [nil, false])
-  .joins(:user)
-  .where(users: { role: current_user.role })
-}
+  scope :filtered_by_role_and_dep_confirm, ->(current_user) {
+    where(department_confirm: [nil, false])
+    .where(rejected_at: [nil, false])
+    .joins(:user)
+    .where(users: { role: current_user.role })
+  }
 
 
   scope :filtered_by_role, ->(current_user) {
@@ -56,18 +56,22 @@ scope :filtered_by_role_and_dep_confirm, ->(current_user) {
 
 
   def set_status
-    if !ceo_confirm
-      self.status = "wait for confirm"
-    else
-      if !receipt.attached?
-        self.status = "wait for payment"
+    if !rejected_at
+      if !ceo_confirm
+        self.status = "wait for confirm"
       else
-        if delivery_confirm
-          self.status = "delivered"
+        if !receipt.attached?
+          self.status = "wait for payment"
         else
-          self.status = "wait for delivery"
+          if delivery_confirm
+            self.status = "delivered"
+          else
+            self.status = "wait for delivery"
+          end
         end
       end
+    else
+      self.status = "rejected"
     end
   end
 
