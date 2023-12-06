@@ -217,12 +217,18 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def reports
-		  @distinct_years = PaymentOrder.distinct.pluck(Arel.sql("strftime('%Y', created_at)")).map(&:to_i)
+		  if ActiveRecord::Base.connection.adapter_name.downcase == 'sqlite'
+  @distinct_years = PaymentOrder.distinct.pluck(Arel.sql("strftime('%Y', created_at)")).map(&:to_i)
   @distinct_months = PaymentOrder.distinct.pluck(Arel.sql("strftime('%m', created_at)")).map(&:to_i)
+else
+  @distinct_years = PaymentOrder.distinct.pluck(Arel.sql("DATE_FORMAT(created_at, '%Y')")).map(&:to_i)
+  @distinct_months = PaymentOrder.distinct.pluck(Arel.sql("DATE_FORMAT(created_at, '%m')")).map(&:to_i)
+end
 
-  selected_date = parse_selected_date(params.dig(:selected_date, :year), params.dig(:selected_date, :month))
-  @selected_year = selected_date&.year || Date.current.year
-  @selected_month = selected_date&.month || Date.current.month
+
+		  selected_date = parse_selected_date(params.dig(:selected_date, :year), params.dig(:selected_date, :month))
+		  @selected_year = selected_date&.year || Date.current.year
+		  @selected_month = selected_date&.month || Date.current.month
 
 		@not_paid_dollar = PaymentOrder.filtered_orders('wait for payment', 'dollar', selected_date).joins(:user)
 		.select('payment_orders.*, users.role as user_role')
