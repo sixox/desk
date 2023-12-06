@@ -1,4 +1,29 @@
 <div class="col-lg-10 mx-auto mt-5">
+
+		<div class="col-lg">
+			<div class="d-flex justify-content-end">
+				<%= form_tag(reports_payment_orders_path, method: "get") do %>
+				<div class="row">
+					<div class="col-lg-4"> <!-- Adjust the column width as needed -->
+						<div class="form-group">
+							<%= select_tag 'selected_date[year]', options_for_select(@distinct_years.map { |year| [year, year] }, params.dig(:selected_date, :year).to_i), prompt: 'Select Year', class: 'form-control' %>
+						</div>
+					</div>
+					<div class="col-lg-4"> <!-- Adjust the column width as needed -->
+						<div class="form-group">
+							<%= select_tag 'selected_date[month]', options_for_select(@distinct_months.map { |month| [Date::MONTHNAMES[month], month] }, params.dig(:selected_date, :month).to_i), prompt: 'Select Month', class: 'form-control' %>
+						</div>
+					</div>
+					<div class="col-lg-4"> <!-- Adjust the column width as needed -->
+						<div class="form-group">
+							<%= submit_tag "Filter", class: "btn btn-primary" %>
+						</div>
+					</div>
+				</div>
+				<% end %>
+			</div>
+		</div>
+
 	<div class="row mb-2 bg-body rounded">
 		<h4 class="text-secondary mt-2">Wait for payment</h4>
 		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">

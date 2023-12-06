@@ -52,8 +52,8 @@ class PaymentOrder < ApplicationRecord
 
   }
 
-  scope :by_month, ->(selected_month) {
-    where(created_at: selected_month.beginning_of_month..selected_month.end_of_month) if selected_month.present?
+  scope :by_month, ->(selected_date) {
+    where(created_at: selected_date.beginning_of_month..selected_date.end_of_month) if selected_date.present?
   }
 
   scope :by_status_and_currency, ->(status, currency) {
@@ -62,15 +62,17 @@ class PaymentOrder < ApplicationRecord
     query
   }
 
-  scope :paid_by_currency, ->(selected_month = nil, currency) {
+  scope :paid_by_currency, ->(selected_date = nil, currency) {
     by_status_and_currency(['delivered', 'wait for delivery'], currency)
-      .by_month(selected_month)
+    .by_month(selected_date)
   }
 
-  scope :filtered_orders, ->(status, currency, selected_month) {
+  scope :filtered_orders, ->(status, currency, selected_date) {
     by_status_and_currency(status, currency)
-      .by_month(selected_month)
+    .by_month(selected_date)
   }
+
+
 
 
 

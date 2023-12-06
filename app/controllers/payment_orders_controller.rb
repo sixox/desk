@@ -217,31 +217,31 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def reports
-		selected_month = Date.parse(params[:selected_month]) if params[:selected_month].present?
+		  @distinct_years = PaymentOrder.distinct.pluck(Arel.sql("strftime('%Y', created_at)")).map(&:to_i)
+  @distinct_months = PaymentOrder.distinct.pluck(Arel.sql("strftime('%m', created_at)")).map(&:to_i)
 
-		@not_paid_dollar = PaymentOrder.filtered_orders('wait for payment', 'dollar', selected_month).joins(:user)
-                    .select('payment_orders.*, users.role as user_role')
-		@not_paid_rial = PaymentOrder.filtered_orders('wait for payment', 'rial', selected_month).joins(:user)
-                    .select('payment_orders.*, users.role as user_role')
-		@not_paid_dirham = PaymentOrder.filtered_orders('wait for payment', 'dirham', selected_month).joins(:user)
-                    .select('payment_orders.*, users.role as user_role')
-		@paid_dollar = PaymentOrder.paid_by_currency(selected_month, 'dollar').joins(:user)
-                    .select('payment_orders.*, users.role as user_role')
-		@paid_rial = PaymentOrder.paid_by_currency(selected_month, 'rial').joins(:user)
-                    .select('payment_orders.*, users.role as user_role')
-		@paid_dirham = PaymentOrder.paid_by_currency(selected_month, 'dirham').joins(:user)
-                    .select('payment_orders.*, users.role as user_role')
+  selected_date = parse_selected_date(params.dig(:selected_date, :year), params.dig(:selected_date, :month))
+  @selected_year = selected_date&.year || Date.current.year
+  @selected_month = selected_date&.month || Date.current.month
+
+		@not_paid_dollar = PaymentOrder.filtered_orders('wait for payment', 'dollar', selected_date).joins(:user)
+		.select('payment_orders.*, users.role as user_role')
+		@not_paid_rial = PaymentOrder.filtered_orders('wait for payment', 'rial', selected_date).joins(:user)
+		.select('payment_orders.*, users.role as user_role')
+		@not_paid_dirham = PaymentOrder.filtered_orders('wait for payment', 'dirham', selected_date).joins(:user)
+		.select('payment_orders.*, users.role as user_role')
+		@paid_dollar = PaymentOrder.paid_by_currency(selected_date, 'dollar').joins(:user)
+		.select('payment_orders.*, users.role as user_role')
+		@paid_rial = PaymentOrder.paid_by_currency(selected_date, 'rial').joins(:user)
+		.select('payment_orders.*, users.role as user_role')
+		@paid_dirham = PaymentOrder.paid_by_currency(selected_date, 'dirham').joins(:user)
+		.select('payment_orders.*, users.role as user_role')
 		@sum_not_paid_dollar = @not_paid_dollar.sum(:amount)
 		@sum_not_paid_rial = @not_paid_rial.sum(:amount)
 		@sum_not_paid_dirham = @not_paid_dirham.sum(:amount)
 		@sum_paid_dollar = @paid_dollar.sum(:amount)
 		@sum_paid_rial = @paid_rial.sum(:amount)
 		@sum_paid_dirham = @paid_dirham.sum(:amount)
-
-
-
-
-
 
 	end
 
@@ -250,7 +250,7 @@ class PaymentOrdersController < ApplicationController
 
 
 	def create
-		
+
 
 		@payment_order = current_user.payment_orders.new(payment_order_params)
 		@payment_order.user = current_user
@@ -297,59 +297,70 @@ class PaymentOrdersController < ApplicationController
 
 	private
 
-	def set_payment_order
-		@payment_order = PaymentOrder.find(params[:id])	
-	end
-
-	def set_form_items
-		@ballances = Ballance.all.reverse
-		@projects = Project.all.reverse
-		@bookings = Booking.all.reverse
-		@spis = Spi.all.reverse
-		@scis = Sci.all.reverse
-
+	def parse_selected_date(selected_year_param, selected_month_param)
+	  if selected_year_param.present? && selected_month_param.present?
+	    selected_year = selected_year_param.to_i
+	    selected_month = selected_month_param.to_i
+	    Date.new(selected_year, selected_month)
+	  else
+	    nil # Handle the case when no year and month are selected
+	  end
 	end
 
 
-	def payment_order_params
-		params.require(:payment_order).permit(
-			:reference,
-			:amount,
-			:from,
-			:to,
-			:receiver,
-			:receiver_account,
-			:details,
-			:exchange_rate,
-			:exchange_amount,
-			:have_factor,
-			:inserted,
-			:payment_type,
-			:department_confirm,
-			:accounting_confirm,
-			:ceo_confirm,
-			:status,
-			:currency,
-			:user_id,
-			:project_id,
-			:sci_id,
-			:spi_id,
-			:ballance_id,
-			:booking_id,
-			:is_rahkarsazan,
-			:document,
-			:coo_confirm,
-			:receipt,
-			:delivery_confirm,
-			:ceo_confirmed_at,
-			:coo_confirmed_at,
-			:department_confirmed_at,
-			:accounting_confirmed_at,
-			:delivered_at,
-			:reject_by,
-			:rejected_at
-			)
-	end
+def set_payment_order
+	@payment_order = PaymentOrder.find(params[:id])	
+end
+
+def set_form_items
+	@ballances = Ballance.all.reverse
+	@projects = Project.all.reverse
+	@bookings = Booking.all.reverse
+	@spis = Spi.all.reverse
+	@scis = Sci.all.reverse
+
+end
+
+
+def payment_order_params
+	params.require(:payment_order).permit(
+		:reference,
+		:amount,
+		:from,
+		:to,
+		:receiver,
+		:receiver_account,
+		:details,
+		:exchange_rate,
+		:exchange_amount,
+		:have_factor,
+		:inserted,
+		:payment_type,
+		:department_confirm,
+		:accounting_confirm,
+		:ceo_confirm,
+		:status,
+		:currency,
+		:user_id,
+		:project_id,
+		:sci_id,
+		:spi_id,
+		:ballance_id,
+		:booking_id,
+		:is_rahkarsazan,
+		:document,
+		:coo_confirm,
+		:receipt,
+		:delivery_confirm,
+		:ceo_confirmed_at,
+		:coo_confirmed_at,
+		:department_confirmed_at,
+		:accounting_confirmed_at,
+		:delivered_at,
+		:reject_by,
+		:rejected_at
+		)
+end
 
 
 end
