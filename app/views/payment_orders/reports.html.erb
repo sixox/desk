@@ -6,12 +6,12 @@
 				<div class="row">
 					<div class="col-lg-4"> <!-- Adjust the column width as needed -->
 						<div class="form-group">
-							<%= select_tag 'selected_date[year]', options_for_select(@distinct_years.map { |year| [year, year] }, params.dig(:selected_date, :year).to_i), prompt: 'Select Year', class: 'form-control' %>
+							<%= select_tag 'selected_date[year]', options_for_select(@distinct_years.map { |year| [year, year] }, params.dig(:selected_date, :year).to_i), prompt: 'Year', class: 'form-control' %>
 						</div>
 					</div>
 					<div class="col-lg-4"> <!-- Adjust the column width as needed -->
 						<div class="form-group">
-							<%= select_tag 'selected_date[month]', options_for_select(@distinct_months.map { |month| [Date::MONTHNAMES[month], month] }, params.dig(:selected_date, :month).to_i), prompt: 'Select Month', class: 'form-control' %>
+							<%= select_tag 'selected_date[month]', options_for_select(@distinct_months.map { |month| [Date::MONTHNAMES[month], month] }, params.dig(:selected_date, :month).to_i), prompt: 'Month', class: 'form-control' %>
 						</div>
 					</div>
 					<div class="col-lg-4"> <!-- Adjust the column width as needed -->
