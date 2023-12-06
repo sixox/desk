@@ -1,0 +1,27 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col" class="col-sm-1">#</th>
+      <th scope="col" class="col-sm-2">Amount</th>
+      <th scope="col" class="col-sm-6">Details</th>
+      <th scope="col" style="text-align: right;" class="col-sm-2 text-right">Issue Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% payment_orders.order(created_at: :desc).each do |payment_order| %>
+      <tr style="font-size: 12px;" class="<%= case payment_order.user_role
+           when 'accounting' then 'table-warning'
+           when 'procurement' then 'table-success'
+           when 'sales' then 'table-info'
+           else ''
+           end %>">
+        <th scope="row">
+          <%= link_to payment_order.id, payment_order_path(payment_order), class: "notifLink" %>
+        </th>
+        <td><%= payment_order.amount %></td>
+        <td><%= payment_order.details %></td>
+        <td style="text-align: right;"><%= payment_order.created_at.strftime('%d %b') %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

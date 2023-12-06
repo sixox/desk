@@ -216,6 +216,35 @@ class PaymentOrdersController < ApplicationController
 
 	end
 
+	def reports
+		selected_month = Date.parse(params[:selected_month]) if params[:selected_month].present?
+
+		@not_paid_dollar = PaymentOrder.filtered_orders('wait for payment', 'dollar', selected_month).joins(:user)
+                    .select('payment_orders.*, users.role as user_role')
+		@not_paid_rial = PaymentOrder.filtered_orders('wait for payment', 'rial', selected_month).joins(:user)
+                    .select('payment_orders.*, users.role as user_role')
+		@not_paid_dirham = PaymentOrder.filtered_orders('wait for payment', 'dirham', selected_month).joins(:user)
+                    .select('payment_orders.*, users.role as user_role')
+		@paid_dollar = PaymentOrder.paid_by_currency(selected_month, 'dollar').joins(:user)
+                    .select('payment_orders.*, users.role as user_role')
+		@paid_rial = PaymentOrder.paid_by_currency(selected_month, 'rial').joins(:user)
+                    .select('payment_orders.*, users.role as user_role')
+		@paid_dirham = PaymentOrder.paid_by_currency(selected_month, 'dirham').joins(:user)
+                    .select('payment_orders.*, users.role as user_role')
+		@sum_not_paid_dollar = @not_paid_dollar.sum(:amount)
+		@sum_not_paid_rial = @not_paid_rial.sum(:amount)
+		@sum_not_paid_dirham = @not_paid_dirham.sum(:amount)
+		@sum_paid_dollar = @paid_dollar.sum(:amount)
+		@sum_paid_rial = @paid_rial.sum(:amount)
+		@sum_paid_dirham = @paid_dirham.sum(:amount)
+
+
+
+
+
+
+	end
+
 
 
 

@@ -48,6 +48,7 @@ Rails.application.routes.draw do
       get 'not_delivered'
       get 'mine'
       get 'confirmable'
+      get 'reports'
     end
     resources :comments
 
