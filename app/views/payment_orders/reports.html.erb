@@ -1,5 +1,5 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<div class="row shadow-lg mb-2 bg-body rounded">
+	<div class="row mb-2 bg-body rounded">
 		<h4 class="text-secondary mt-2">Wait for payment</h4>
 		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
 			<h6 class="text-muted mt-1">Rial</h6>
@@ -11,17 +11,50 @@
 		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
 			<h6 class="text-muted mt-1">Dollar</h6>
 			<div>
-				<%= render 'payment_orders/report', payment_orders: @not_paid_dollar, sum: @sum_not_paid_rial %>
+				<%= render 'payment_orders/report', payment_orders: @not_paid_dollar, sum: @sum_not_paid_dollar %>
 
 			</div>
 		</div>
 		
 	</div>
-	<div class="row shadow-lg mb-2 bg-body rounded">
+	<div class="row mb-2 bg-body rounded">
 		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
 			<h6 class="text-muted mt-1">Dirham</h6>
 			<div>
-				<%= render 'payment_orders/report', payment_orders: @not_paid_dirham, sum: @sum_not_paid_rial %>
+				<%= render 'payment_orders/report', payment_orders: @not_paid_dirham, sum: @sum_not_paid_dirham %>
+
+			</div>
+		</div>
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-danger mt-1">Summery</h6>
+			<div></div>
+		</div>
+		
+	</div>
+
+	<div class="row mb-2 bg-body rounded">
+		<h4 class="text-secondary mt-2">Paid</h4>
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-muted mt-1">Rial</h6>
+			<div>
+				<%= render 'payment_orders/report', payment_orders: @paid_rial, sum: @sum_paid_rial %>
+
+			</div>
+		</div>
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-muted mt-1">Dollar</h6>
+			<div>
+				<%= render 'payment_orders/report', payment_orders: @paid_dollar, sum: @sum_paid_dollar %>
+
+			</div>
+		</div>
+		
+	</div>
+	<div class="row  mb-2 bg-body rounded">
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-muted mt-1">Dirham</h6>
+			<div>
+				<%= render 'payment_orders/report', payment_orders: @paid_dirham, sum: @sum_paid_dirham %>
 
 			</div>
 		</div>
