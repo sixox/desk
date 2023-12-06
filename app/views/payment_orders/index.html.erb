@@ -12,6 +12,12 @@
 						<div class="hide-on-desktop">
 							<%= render 'filter' %>
 						</div>
+						<% if current_user.is_manager || current_user.accounting? %>
+							<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
+							<i class="bi bi-bar-chart"></i> Reports
+							<% end %>
+						<% end %>
+
 						<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
 						<i class="bi bi-plus"></i> Create Payment order
 						<% end %>
