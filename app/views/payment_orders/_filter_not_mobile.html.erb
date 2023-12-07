@@ -1,5 +1,5 @@
 <div class="row mt-2 mb-1">
-	<div class="col-lg-8">
+	<div class="col-lg-9">
 		<div class="btn-group btn-group-sm">
 			<%= link_to "All", payment_orders_path, class: "btn btn-primary #{@in_page == "index"  ? 'text-dark' : ''}" %>
 			
@@ -15,6 +15,7 @@
 			<% if current_user.is_manager%>
 				<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
 			<% end %>
+			<%= link_to 'Rejected', rejected_payment_orders_path, class: "btn btn-primary #{@in_page == "rejected" ? 'text-dark' : ''}" %>
 			
 			<%= link_to 'Mine', mine_payment_orders_path, class: "btn btn-primary #{@in_page == "mine" ? 'text-dark' : ''}" %>
 		</div>

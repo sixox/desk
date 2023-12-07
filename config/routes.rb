@@ -49,6 +49,7 @@ Rails.application.routes.draw do
       get 'mine'
       get 'confirmable'
       get 'reports'
+      get 'rejected'
     end
     resources :comments
 

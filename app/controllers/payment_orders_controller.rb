@@ -165,6 +165,18 @@ class PaymentOrdersController < ApplicationController
 		render 'index'
 	end
 
+	def rejected
+		@in_page = "rejected"
+		current_user_role = current_user.role
+		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+			@payment_orders = PaymentOrder.where(status: 'rejected').order(created_at: :desc).page(params[:page]).per(6)
+		else
+			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'rejected').order(created_at: :desc).page(params[:page]).per(6)
+
+		end
+		render 'index'
+	end
+
 	def pending
 		@in_page = "pending"
 		current_user_role = current_user.role
