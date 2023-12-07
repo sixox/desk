@@ -34,6 +34,8 @@ class PaymentOrdersController < ApplicationController
 			ro = "CEO"
 		elsif current_user.procurement?
 			ro = "COO"
+		elsif current_user.accounting?
+			ro = "Accounting"
 		else
 			ro = "Manager"
 		end
