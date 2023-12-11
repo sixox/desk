@@ -57,7 +57,7 @@ class Pi < ApplicationRecord
   CURRENCY = ['dollar', 'dirham', 'rial']
   PAYMENT_TERM = ['30% advance', '20% advance']
   POL = ['IRAN', 'UAE', 'BND/IRAN']
-  PACKING_TYPE = ['180kg new drums', 'Jumbo', '180kg second hand drums', 'bulk', 'cartons']
+  PACKING_TYPE = ['180kg new drums', 'Jumbo', '180kg second hand drums', '150kg drums', 'bulk', 'cartons']
   SELLER = ['ZigguratOil', 'WhiteSands']
 
 end
