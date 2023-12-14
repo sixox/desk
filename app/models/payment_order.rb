@@ -7,6 +7,8 @@ class PaymentOrder < ApplicationRecord
   belongs_to :spi, optional: true
   belongs_to :ballance, optional: true
   belongs_to :booking, optional: true
+  belongs_to :bank, optional: true
+
 
   has_one_attached :document
   has_one_attached :receipt

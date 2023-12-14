@@ -24,7 +24,9 @@ Rails.application.routes.draw do
       end
     end
   end
-  resources :cis
+  resources :cis do
+    resources :swifts
+  end
   resources :ballances do
     resources :spis
     resources :scis

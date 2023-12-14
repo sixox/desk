@@ -231,18 +231,18 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def reports
-		  if ActiveRecord::Base.connection.adapter_name.downcase == 'sqlite'
-  @distinct_years = PaymentOrder.distinct.pluck(Arel.sql("strftime('%Y', created_at)")).map(&:to_i)
-  @distinct_months = PaymentOrder.distinct.pluck(Arel.sql("strftime('%m', created_at)")).map(&:to_i)
-else
-  @distinct_years = PaymentOrder.distinct.pluck(Arel.sql("DATE_FORMAT(created_at, '%Y')")).map(&:to_i)
-  @distinct_months = PaymentOrder.distinct.pluck(Arel.sql("DATE_FORMAT(created_at, '%m')")).map(&:to_i)
-end
+		if ActiveRecord::Base.connection.adapter_name.downcase == 'sqlite'
+			@distinct_years = PaymentOrder.distinct.pluck(Arel.sql("strftime('%Y', created_at)")).map(&:to_i)
+			@distinct_months = PaymentOrder.distinct.pluck(Arel.sql("strftime('%m', created_at)")).map(&:to_i)
+		else
+			@distinct_years = PaymentOrder.distinct.pluck(Arel.sql("DATE_FORMAT(created_at, '%Y')")).map(&:to_i)
+			@distinct_months = PaymentOrder.distinct.pluck(Arel.sql("DATE_FORMAT(created_at, '%m')")).map(&:to_i)
+		end
 
 
-		  selected_date = parse_selected_date(params.dig(:selected_date, :year), params.dig(:selected_date, :month))
-		  @selected_year = selected_date&.year || Date.current.year
-		  @selected_month = selected_date&.month || Date.current.month
+		selected_date = parse_selected_date(params.dig(:selected_date, :year), params.dig(:selected_date, :month))
+		@selected_year = selected_date&.year || Date.current.year
+		@selected_month = selected_date&.month || Date.current.month
 
 		@not_paid_dollar = PaymentOrder.filtered_orders('wait for payment', 'dollar', selected_date).joins(:user)
 		.select('payment_orders.*, users.role as user_role')
@@ -296,6 +296,20 @@ end
 	end
 
 	def update
+
+		if params[:payment_order].key?(:receipt) || params[:payment_order].key?('receipt')
+		    @bank = @payment_order.bank
+		  
+		    new_amount = @bank.account_balance - @payment_order.amount
+
+		    if @bank.update(account_balance: new_amount)
+		      # Handle success
+		    else
+		      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
+		      # Handle error
+		    end
+		end
+
 		respond_to do |format|
 			if @payment_order.update(payment_order_params)
 				format.turbo_stream { render turbo_stream: turbo_stream.replace("payment_order_item_#{@payment_order.id}", partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }) }
@@ -318,69 +332,70 @@ end
 	private
 
 	def parse_selected_date(selected_year_param, selected_month_param)
-	  if selected_year_param.present? && selected_month_param.present?
-	    selected_year = selected_year_param.to_i
-	    selected_month = selected_month_param.to_i
-	    Date.new(selected_year, selected_month)
-	  else
+		if selected_year_param.present? && selected_month_param.present?
+			selected_year = selected_year_param.to_i
+			selected_month = selected_month_param.to_i
+			Date.new(selected_year, selected_month)
+		else
 	    nil # Handle the case when no year and month are selected
 	  end
 	end
 
 
-def set_payment_order
-	@payment_order = PaymentOrder.find(params[:id])	
-end
+	def set_payment_order
+		@payment_order = PaymentOrder.find(params[:id])	
+	end
 
-def set_form_items
-	@ballances = Ballance.all.reverse
-	@projects = Project.all.reverse
-	@bookings = Booking.all.reverse
-	@spis = Spi.all.reverse
-	@scis = Sci.all.reverse
+	def set_form_items
+		@ballances = Ballance.all.reverse
+		@projects = Project.all.reverse
+		@bookings = Booking.all.reverse
+		@spis = Spi.all.reverse
+		@scis = Sci.all.reverse
 
-end
+	end
 
 
-def payment_order_params
-	params.require(:payment_order).permit(
-		:reference,
-		:amount,
-		:from,
-		:to,
-		:receiver,
-		:receiver_account,
-		:details,
-		:exchange_rate,
-		:exchange_amount,
-		:have_factor,
-		:inserted,
-		:payment_type,
-		:department_confirm,
-		:accounting_confirm,
-		:ceo_confirm,
-		:status,
-		:currency,
-		:user_id,
-		:project_id,
-		:sci_id,
-		:spi_id,
-		:ballance_id,
-		:booking_id,
-		:is_rahkarsazan,
-		:document,
-		:coo_confirm,
-		:receipt,
-		:delivery_confirm,
-		:ceo_confirmed_at,
-		:coo_confirmed_at,
-		:department_confirmed_at,
-		:accounting_confirmed_at,
-		:delivered_at,
-		:reject_by,
-		:rejected_at
-		)
-end
+	def payment_order_params
+		params.require(:payment_order).permit(
+			:reference,
+			:amount,
+			:from,
+			:to,
+			:receiver,
+			:receiver_account,
+			:details,
+			:exchange_rate,
+			:exchange_amount,
+			:have_factor,
+			:inserted,
+			:payment_type,
+			:department_confirm,
+			:accounting_confirm,
+			:ceo_confirm,
+			:status,
+			:currency,
+			:user_id,
+			:project_id,
+			:sci_id,
+			:spi_id,
+			:ballance_id,
+			:booking_id,
+			:is_rahkarsazan,
+			:document,
+			:coo_confirm,
+			:receipt,
+			:delivery_confirm,
+			:ceo_confirmed_at,
+			:coo_confirmed_at,
+			:department_confirmed_at,
+			:accounting_confirmed_at,
+			:delivered_at,
+			:reject_by,
+			:rejected_at,
+			:bank_id
+			)
+	end
 
 
 end

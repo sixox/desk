@@ -32,14 +32,45 @@
 
 					<span><%= link_to edit_project_ci_path(project, ci), data: { controller: "bs-modal-form" } do %>
 						<i class="bi bi-pencil-fill"></i>
-						<% end %></span>
-						<% end %></td>
+						<% end %>
+					</span>
+					<span><%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" } do %>
+						<i class="bi bi-plus"></i> Add swift
+						<% end %>
+					</span>
+					<% end %>
+				</td>
 
-					</tr>
+			</tr>
 
-				</tbody>
-			</table>
+		</tbody>
+	</table>
+	<% if ci.swift&.documents.present? %>
+	<% swift = ci.swift %>
+<div class="row">
+			<div class="col <% if swift.rejected_at.present? %>bg-danger<% elsif swift.confirm_at.present? %>bg-success<% else %>bg-warning<% end %>">
+				<p class="fw-bold mt-1">
+					Swift: <%= swift.amount %> 
+					<%= swift.currency %> to 
+					<%= swift.bank.name %> 
+					<%= swift.bank.kind ? "Exchange" : "Bank account"%>
+						
+					</p>
+
+			</div>
+			<div class="col <% if swift.rejected_at.present? %>bg-danger<% elsif swift.confirm_at.present? %>bg-success<% else %>bg-warning<% end %>">
+				<span class="mt-1"><small>Documents: </small>
+					<% ci.swift.documents.each do |file| %>
+					<small> 
+						<%= link_to file.filename, rails_blob_path(file, disposition: 'attachment') %> 
+					</small>
+					<% end %>
+				</span>
+			</div>
 	</div>
+	<hr>
+	<% end %>
+</div>
 
 
 

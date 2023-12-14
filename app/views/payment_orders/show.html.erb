@@ -90,7 +90,8 @@
 						<% end %>
 						<% end %>
 					</li>
-					<% if current_user.accounting? %>
+					<% if current_user.accounting? && @payment_order.ceo_confirm.present? %>
+					bank: <%= @payment_order.bank.account_balance %>
 
 					<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
 						<%= render 'payment_orders/accounting_form', payment_order: @payment_order %>

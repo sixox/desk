@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  amount: 1
+  bank: one
+  status: MyString
+  confirmed: false
+  rejected: false
+  confirm_at: 2023-12-13 10:30:54
+  rejected_at: 2023-12-13 10:30:54
+
+two:
+  amount: 1
+  bank: two
+  status: MyString
+  confirmed: false
+  rejected: false
+  confirm_at: 2023-12-13 10:30:54
+  rejected_at: 2023-12-13 10:30:54
