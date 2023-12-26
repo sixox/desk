@@ -74,6 +74,9 @@ class PaymentOrder < ApplicationRecord
     .by_month(selected_date)
   }
 
+  scope :by_status, ->(status) { where(status: status) }
+
+
 
 
 

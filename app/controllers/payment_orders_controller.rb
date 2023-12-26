@@ -202,7 +202,13 @@ class PaymentOrdersController < ApplicationController
 
 	def mine
 		@in_page = "mine"
-		@payment_orders = current_user.payment_orders.order(created_at: :desc).page(params[:page]).per(6)
+		status = params[:status]
+		if status.present?
+		    @payment_orders = current_user.payment_orders.by_status(status).order(created_at: :desc).page(params[:page]).per(6)
+		else
+		    # Default behavior if no status parameter is provided
+		    @payment_orders = current_user.payment_orders.order(created_at: :desc).page(params[:page]).per(6)
+		end
 		render 'index'
 	end
 

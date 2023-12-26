@@ -13,11 +13,31 @@
 			
 			<%= link_to 'Finished', finished_payment_orders_path, class: "btn btn-primary #{@in_page == "finished" ? 'text-dark' : ''}" %>
 			<% if current_user.is_manager%>
-				<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
+			<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
 			<% end %>
 			<%= link_to 'Rejected', rejected_payment_orders_path, class: "btn btn-primary #{@in_page == "rejected" ? 'text-dark' : ''}" %>
 			
 			<%= link_to 'Mine', mine_payment_orders_path, class: "btn btn-primary #{@in_page == "mine" ? 'text-dark' : ''}" %>
 		</div>
 	</div>
+</div>
+<div class="row m-4 mb-1">
+	<div class="col-lg-10 mx-auto">
+		<%= link_to "Wait for Confirm", mine_payment_orders_path(status: "wait for confirm"), class: "btn btn-primary#{' active' if params[:status] == 'wait for confirm'}" %>
+		<%= link_to "Wait for Payment", mine_payment_orders_path(status: "wait for payment"), class: "btn btn-primary#{' active' if params[:status] == 'wait for payment'}" %>
+		<%= link_to "Delivered", mine_payment_orders_path(status: "delivered"), class: "btn btn-primary#{' active' if params[:status] == 'delivered'}" %>
+		<%= link_to "Wait for Delivery", mine_payment_orders_path(status: "wait for delivery"), class: "btn btn-primary#{' active' if params[:status] == 'wait for delivery'}" %>
+		<%= link_to "Rejected", mine_payment_orders_path(status: "rejected"), class: "btn btn-primary#{' active' if params[:status] == 'rejected'}" %>
+
+	</div>
+
+</div>		
+<div class="btn-group" role="group" aria-label="Page Toggle">
+  <% if @in_page == "mine" %>
+    <%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary active" %>
+    <%= link_to "Index", payment_orders_path, class: "btn btn-primary" %>
+  <% else %>
+    <%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary" %>
+    <%= link_to "Index", payment_orders_path, class: "btn btn-primary active" %>
+  <% end %>
 </div>
