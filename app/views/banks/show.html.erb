@@ -1,0 +1,27 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<div class="card-title text-center fw-bold">
+					<%= @bank.name %>
+					<span class="text-warning">
+						<%= @bank.kind ? "Exchange" : "Account" %>
+					</span>
+				</div>
+			</div>
+			<div class="row mt-4">
+				
+					<p class="text-center"><span class="fw-bold">Balance:</span><span class="text-warning fw-bold"> <%= number_with_delimiter(@bank.account_balance, delimiter: ',') %></span> <%= @bank.currency %></p>
+				
+			</div>
+
+			<div class="row mt-3">
+				<div class="col-sm-6 bg-semi">
+					<p>
+					<span class="fw-bold">Payment orders in queue : <span class="text-warning"> <%= @waiting_payment_orders.sum(:amount) %></span></span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

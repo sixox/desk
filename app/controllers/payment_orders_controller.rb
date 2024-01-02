@@ -117,6 +117,8 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def delivered
+		@payment_order.skip_coo_confirmation_requirement = true
+
 		@payment_order = PaymentOrder.find(params[:id])
 		@payment_order.delivered_at = Time.now
 		respond_to do |format|

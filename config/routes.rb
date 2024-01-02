@@ -66,6 +66,7 @@ Rails.application.routes.draw do
       get "reject", to: "swifts#reject"
     end
   end
+  resources :banks
 
 
   get 'member/:id', to: 'members#show', as: 'member'

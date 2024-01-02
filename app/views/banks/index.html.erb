@@ -1,0 +1,50 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<row class="m-2">
+		<div class="col-sm">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col" class="col-sm-1">#</th>
+						<th scope="col" class="col-sm-2">Name</th>
+						<th scope="col" class="col-sm-2">Kind</th>
+						
+						<th scope="col" class="col-sm-2">Balance</th>
+						<th scope="col" class="col-sm-2">Currency</th>
+
+
+
+						<th scope="col" class="col-sm-2">Checked</th>
+						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<% @banks.order(created_at: :desc).each do |bank| %>
+					<tr>
+					<th scope="row">
+						<%= bank.id %>
+					</th>
+					<td><%= bank.name %></td>
+					<td><%= bank.kind ? "Account" : "Exchange" %></td>
+					
+
+
+					<td class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',') %></td>
+					<td><%= bank.currency %></td>
+					<td class="fw-bold"><%= number_with_delimiter(bank.checked_balance, delimiter: ',') %></td>
+					
+				<td style="text-align: right;">
+					<%= link_to bank_path(bank) do %>
+					<i class="bi bi-eye-fill"></i>
+					<% end %>
+
+					
+				</td>
+				</tr>
+				<% end %>
+			</tbody>
+		</table>
+
+	</div>
+</row>
+</div>
