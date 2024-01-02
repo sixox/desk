@@ -30,7 +30,7 @@
 							<p>to: <span class="fw-bold"><%= @payment_order.to %></span></p>
 						</div>
 						<div class="col-lg">
-							<p>from: <span class="fw-bold"><%= @payment_order.bank ? @payment_order.bank : @payment_order.from %></span></p>
+							<p>from: <span class="fw-bold"><%= @payment_order.bank ? @payment_order.bank.name : @payment_order.from %></span></p>
 						</div>
 						<div class="col-lg">
 							<p>receiver: <span class="fw-bold"><%= @payment_order.receiver %></span></p>
