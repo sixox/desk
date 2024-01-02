@@ -15,7 +15,7 @@ class PaymentOrder < ApplicationRecord
   has_many :comments, as: :commentable, dependent: :destroy
 
 
-  validate :coo_confirmation_requires_from
+  validate :coo_confirmation_requires_bank
 
   scope :filtered_by_role_and_dep_confirm, ->(current_user) {
     where(department_confirm: [nil, false])
@@ -104,11 +104,15 @@ class PaymentOrder < ApplicationRecord
 
   private
 
-  def coo_confirmation_requires_from
-    if coo_confirm && from.blank?
-      errors.add(:from, "must be present before COO confirmation")
+  def coo_confirmation_requires_bank
+    if coo_confirm && bank.blank?
+      errors.add(:bank, "must be present before COO confirmation")
     end
   end
+
+
+
+
 
   def self.ransackable_attributes(auth_object = nil)
     ['first_name', 'last_name']

@@ -13,11 +13,17 @@
 							<%= render 'filter' %>
 						</div>
 						<div class="hide-on-mobile">
-
-							<% if current_user.is_manager || current_user.accounting? %>
+							<div class="btn-group" role="group" aria-label="Page Toggle">
+								<% if @in_page == "mine" %>
+								<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary active" %>
+								<%= link_to "All", payment_orders_path, class: "btn btn-primary" %>
+								<% else %>
+								<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary" %>
+								<%= link_to "All", payment_orders_path, class: "btn btn-primary active" %>
+								<% end %>
+							</div>
 							<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
 							<i class="bi bi-bar-chart"></i> Reports
-							<% end %>
 							<% end %>
 						</div>
 
@@ -56,3 +62,4 @@
 		</div>
 	</div>
 </div>
+<%= Bank.first.account_balance %>

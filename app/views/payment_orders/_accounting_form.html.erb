@@ -14,7 +14,7 @@
 		</div>
 		<% end %>
 		<div class="row mt-3">
-			<div class="col-lg-4">
+			<div class="col-lg-3">
 				<div class="d-flex justify-content-start">
 					<div class="form-group">
 						<label for="amount" class="form-label">
@@ -25,7 +25,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-lg-4">
+			<div class="col-lg-3">
 				<div class="form-group">
 						<label for="amount" class="form-label">
 							Exchange amount
@@ -34,7 +34,17 @@
 						<%= form.number_field :exchange_amount, class: "form-control" %>
 					</div>
 			</div>
-			<div class="col-lg-4">
+			<div class="col-lg-3">
+				<div class="form-group">
+						<label class="mb-2 ">
+							To bank:
+							<span class="text-danger">*</span>
+						</label>
+						
+						<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
+					</div>
+			</div>
+			<div class="col-lg-3">
 				<div class="mt-5">
 					<%= form.check_box :inserted, class: 'form-check-input' %>
 					<label class="form-check-label" for="hourly">

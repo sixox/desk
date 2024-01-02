@@ -58,6 +58,14 @@ Rails.application.routes.draw do
   end
   resources :comments
   resources :clients
+  resources :swifts do
+    member do
+      patch "confirm", to: "swifts#confirm"
+      get "confirm", to: "swifts#confirm"
+      patch "reject", to: "swifts#reject"
+      get "reject", to: "swifts#reject"
+    end
+  end
 
 
   get 'member/:id', to: 'members#show', as: 'member'

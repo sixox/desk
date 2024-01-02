@@ -2,7 +2,7 @@ class PaymentOrdersController < ApplicationController
 
 	before_action :authenticate_user!
 	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy ]
-	before_action :set_form_items, only: %i[ new edit ] 
+	before_action :set_form_items, only: %i[ new edit create ] 
 	
 
 
@@ -142,16 +142,20 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def not_confirmed
-		@in_page = "not confirmed"
-		current_user_role = current_user.role
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'wait for confirm').order(created_at: :desc).page(params[:page]).per(6)
-		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for confirm').order(created_at: :desc).page(params[:page]).per(6)
-
-		end
-		render 'index'
+	  @in_page = "not confirmed"
+	  current_user_role = current_user.role
+	  
+	  base_query = PaymentOrder.where(status: 'wait for confirm', reject_by: nil).order(created_at: :desc)
+	  
+	  if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+	    @payment_orders = base_query.page(params[:page]).per(6)
+	  else
+	    @payment_orders = base_query.joins(:user).where(users: { role: current_user.role }).page(params[:page]).per(6)
+	  end
+	  
+	  render 'index'
 	end
+
 
 	def finished
 		@in_page = "finished"
@@ -350,6 +354,8 @@ class PaymentOrdersController < ApplicationController
 
 	def set_payment_order
 		@payment_order = PaymentOrder.find(params[:id])	
+		@banks = Bank.all
+
 	end
 
 	def set_form_items
@@ -358,6 +364,8 @@ class PaymentOrdersController < ApplicationController
 		@bookings = Booking.all.reverse
 		@spis = Spi.all.reverse
 		@scis = Sci.all.reverse
+		@banks = Bank.all
+
 
 	end
 

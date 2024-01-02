@@ -1,0 +1,69 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<row class="m-2">
+		<div class="col-sm">
+			<table class="table">
+				<thead>
+					<tr>
+						<th scope="col" class="col-sm-1">#</th>
+						<th scope="col" class="col-sm-2">Amount</th>
+						<th scope="col" class="col-sm-2">To</th>
+						<th scope="col" class="col-sm-2">Currency</th>
+						<th scope="col" class="col-sm-2">Project</th>
+
+
+
+						<th scope="col" class="col-sm-2">Status</th>
+						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<% @swifts.order(created_at: :desc).each do |swift| %>
+					<tr style="font-size: 12px;" class="<%= 
+					if swift.confirmed.present?
+						'table-success'
+					elsif swift.rejected.present?
+						'table-danger'
+					else
+						'table-warning'
+					end
+
+					 %>">
+					<th scope="row">
+						<%= swift.id %>
+					</th>
+					<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+					<td><%= swift.bank.name %></td>
+					<td><%= swift.currency %></td>
+					<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
+					<td><%= 
+					if swift.confirmed.present?
+						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
+					elsif swift.rejected.present?
+						"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
+					else
+						'Wait for deposite'
+					end
+				%></td>
+				<td style="text-align: right;">
+					<% if !swift.confirmed && !swift.rejected %>
+					<%= link_to confirm_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this swift, this action can not be undo!' } do %>
+					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+					<% end %>
+					|
+					<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
+					<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+					<% end %>
+					
+					<% end %>
+
+					
+				</td>
+				</tr>
+				<% end %>
+			</tbody>
+		</table>
+
+	</div>
+</row>
+</div>

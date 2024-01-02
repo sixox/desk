@@ -34,10 +34,12 @@
 						<i class="bi bi-pencil-fill"></i>
 						<% end %>
 					</span>
+					<% if !ci.swift.present? %>
 					<span><%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" } do %>
 						<i class="bi bi-plus"></i> Add swift
 						<% end %>
 					</span>
+					<% end %>
 					<% end %>
 				</td>
 
