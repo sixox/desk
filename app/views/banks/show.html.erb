@@ -1,27 +1,119 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="card-title text-center fw-bold">
-					<%= @bank.name %>
-					<span class="text-warning">
-						<%= @bank.kind ? "Exchange" : "Account" %>
-					</span>
-				</div>
-			</div>
-			<div class="row mt-4">
-				
-					<p class="text-center"><span class="fw-bold">Balance:</span><span class="text-warning fw-bold"> <%= number_with_delimiter(@bank.account_balance, delimiter: ',') %></span> <%= @bank.currency %></p>
-				
-			</div>
-
-			<div class="row mt-3">
-				<div class="col-sm-6 bg-semi">
-					<p>
-					<span class="fw-bold">Payment orders in queue : <span class="text-warning"> <%= @waiting_payment_orders.sum(:amount) %></span></span>
-					</p>
-				</div>
-			</div>
-		</div>
-	</div>
+  <section>
+    <div class="row">
+      <div class="col-12 mt-3 mb-1">
+        <h4 class="text-uppercase"><%= @bank.name %></h4>
+        <p><%= @bank.kind ? "Exchange" : "Bank Account" %></p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between p-md-1">
+              <div class="d-flex flex-row">
+                <div class="align-self-center">
+                  <i class="fas fa-pencil-alt text-info fa-3x me-4"></i>
+                </div>
+                <div>
+                  <h4>Current Balance <span style="font-size: 12px;"><%= @bank.currency %></span></h4>
+                  <p class="mb-0">last update: <%= @bank.updated_at&.strftime('%b %d')  %></p>
+                </div>
+              </div>
+              <div class="align-self-center">
+                <h2 class="h1 mb-0"><%= number_with_delimiter(@bank.account_balance, delimiter: ',')  %></h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between p-md-1">
+              <div class="d-flex flex-row">
+                <div class="align-self-center">
+                  <i class="far fa-comment-alt text-warning fa-3x me-4"></i>
+                </div>
+                <div>
+                  <h4>Checked Balance</h4>
+                  <p class="mb-0">last checked at: <%= @bank.checked_at&.strftime('%b %d') %></p>
+                </div>
+              </div>
+              <div class="align-self-center">
+                <h2 class="h1 mb-0"><%= number_with_delimiter(@bank.checked_balance, delimiter: ',')  %></h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between p-md-1">
+              <div class="d-flex flex-row">
+                <div class="align-self-center">
+                  <h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@waiting_payment_orders.sum(:amount), delimiter: ',') %> <span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+                </div>
+                <div>
+                  <h4>Waiting Payment </h4>
+                  <p class="mb-0">confirmed but not paid yet</p>
+                </div>
+              </div>
+              <div class="align-self-center">
+                <i class="far fa-heart text-danger fa-3x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between p-md-1">
+              <div class="d-flex flex-row">
+                <div class="align-self-center">
+                  <h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@unconfirmed_unrejected_swifts.sum(:amount), delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+                </div>
+                <div>
+                  <h4>Incomming Swifts</h4>
+                  <p class="mb-0">not confirmed swifts</p>
+                </div>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-wallet text-success fa-3x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-6 col-md-12 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between p-md-1">
+              <div class="d-flex flex-row">
+                <div class="align-self-center">
+                	<% a = @bank.account_balance
+                		b = @unconfirmed_unrejected_swifts.sum(:amount)
+                		c = @waiting_payment_orders.sum(:amount)
+                		d = a.to_i - c.to_i + b.to_i
+                	 %>
+                  <h2 class="h1 mb-0 me-4"><%= number_with_delimiter(d, delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+                </div>
+                <div>
+                  <h4>Total Expected Balance </h4>
+                  <p class="mb-0">balance + swifts - payments</p>
+                </div>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-wallet text-success fa-3x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
