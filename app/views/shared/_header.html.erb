@@ -61,7 +61,7 @@
             Accounting
           </a>
           <ul class="dropdown-menu text-white">
-              <%= link_to 'Banks', banks_path, class: 'dropdown-item' %>
+            <%= link_to 'Banks', banks_path, class: 'dropdown-item' %>
             <li>
               <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
             </li>
@@ -69,15 +69,16 @@
           </ul>
         </li>
         <li class="nav-item" style="position: relative;">
-  <%= link_to "Vacations", managment_vacations_path, class: "nav-link active" %>
-  <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
-    <%= count_not_confirmed_vacations %>
-  </span>
+          <%= link_to "Vacations", managment_vacations_path, class: "nav-link active" %>
+          <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
+            <%= count_not_confirmed_vacations %>
+          </span>
         </li>
         <% if current_user.ceo? || current_user.admin?%>
-          <li class="nav-item">
-  <%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active" %>
-</li>
+        <li class="nav-item">
+          <%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active", target: "_blank" %>
+        </li>
+
 
         <%end%>
         
@@ -107,19 +108,19 @@
           <span class="badge badge-danger">
             <%= unread_notification_count %>
           </span>
-         
+          
         </a>
         <ul class="m-1 p-1 dropdown-menu dropdown-menu-end notifMenu" aria-labelledby="navbarDropdown">
 
-       <%= render 'shared/notifications' %>
+         <%= render 'shared/notifications' %>
 
-     </ul>
+       </ul>
 
 
-        <% end %>
-      </li>
-    </ul>
-    <% end %>
-  </div>
+       <% end %>
+     </li>
+   </ul>
+   <% end %>
+ </div>
 </div>
 </nav>
