@@ -74,6 +74,12 @@
     <%= count_not_confirmed_vacations %>
   </span>
         </li>
+        <% if current_user.ceo? || current_user.admin?%>
+          <li class="nav-item">
+  <%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active" %>
+</li>
+
+        <%end%>
         
 
         <% end %>   
