@@ -1,119 +1,404 @@
 <div class="col-lg-10 mx-auto mt-5">
-  <section>
-    <div class="row">
-      <div class="col-12 mt-3 mb-1">
-        <h4 class="text-uppercase"><%= @bank.name %></h4>
-        <p><%= @bank.kind ? "Exchange" : "Bank Account" %></p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xl-6 col-md-12 mb-4">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between p-md-1">
-              <div class="d-flex flex-row">
-                <div class="align-self-center">
-                  <i class="fas fa-pencil-alt text-info fa-3x me-4"></i>
-                </div>
-                <div>
-                  <h4>Current Balance <span style="font-size: 12px;"><%= @bank.currency %></span></h4>
-                  <p class="mb-0">last update: <%= @bank.updated_at&.strftime('%b %d')  %></p>
-                </div>
-              </div>
-              <div class="align-self-center">
-                <h2 class="h1 mb-0"><%= number_with_delimiter(@bank.account_balance, delimiter: ',')  %></h2>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-6 col-md-12 mb-4">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between p-md-1">
-              <div class="d-flex flex-row">
-                <div class="align-self-center">
-                  <i class="far fa-comment-alt text-warning fa-3x me-4"></i>
-                </div>
-                <div>
-                  <h4>Checked Balance</h4>
-                  <p class="mb-0">last checked at: <%= @bank.checked_at&.strftime('%b %d') %></p>
-                </div>
-              </div>
-              <div class="align-self-center">
-                <h2 class="h1 mb-0"><%= number_with_delimiter(@bank.checked_balance, delimiter: ',')  %></h2>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xl-6 col-md-12 mb-4">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between p-md-1">
-              <div class="d-flex flex-row">
-                <div class="align-self-center">
-                  <h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@waiting_payment_orders.sum(:amount), delimiter: ',') %> <span style="font-size: 12px;"><%= @bank.currency %></span></h2>
-                </div>
-                <div>
-                  <h4>Waiting Payment </h4>
-                  <p class="mb-0">confirmed but not paid yet</p>
-                </div>
-              </div>
-              <div class="align-self-center">
-                <i class="far fa-heart text-danger fa-3x"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-6 col-md-12 mb-4">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between p-md-1">
-              <div class="d-flex flex-row">
-                <div class="align-self-center">
-                  <h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@unconfirmed_unrejected_swifts.sum(:amount), delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
-                </div>
-                <div>
-                  <h4>Incomming Swifts</h4>
-                  <p class="mb-0">not confirmed swifts</p>
-                </div>
-              </div>
-              <div class="align-self-center">
-                <i class="fas fa-wallet text-success fa-3x"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-xl-6 col-md-12 mb-4">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between p-md-1">
-              <div class="d-flex flex-row">
-                <div class="align-self-center">
-                	<% a = @bank.account_balance
-                		b = @unconfirmed_unrejected_swifts.sum(:amount)
-                		c = @waiting_payment_orders.sum(:amount)
-                		d = a.to_i - c.to_i + b.to_i
-                	 %>
-                  <h2 class="h1 mb-0 me-4"><%= number_with_delimiter(d, delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
-                </div>
-                <div>
-                  <h4>Total Expected Balance </h4>
-                  <p class="mb-0">balance + swifts - payments</p>
-                </div>
-              </div>
-              <div class="align-self-center">
-                <i class="fas fa-wallet text-success fa-3x"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+	<section>
+		<div class="row">
+			<div class="col-12 mt-3 mb-1">
+				<h4 class="text-uppercase"><%= @bank.name %></h4>
+				<p><%= @bank.kind ? "Exchange" : "Bank Account" %></p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xl-6 col-md-12 mb-4">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between p-md-1">
+							<div class="d-flex flex-row">
+								<div class="align-self-center">
+									<i class="fas fa-pencil-alt text-info fa-3x me-4"></i>
+								</div>
+								<div>
+									<h4>Current Balance <span style="font-size: 12px;"><%= @bank.currency %></span></h4>
+									<p class="mb-0">last update: <%= @bank.updated_at&.strftime('%b %d')  %></p>
+								</div>
+							</div>
+							<div class="align-self-center">
+								<h2 class="h1 mb-0"><%= number_with_delimiter(@bank.account_balance, delimiter: ',')  %></h2>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6 col-md-12 mb-4">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between p-md-1">
+							<div class="d-flex flex-row">
+								<div class="align-self-center">
+									<i class="far fa-comment-alt text-warning fa-3x me-4"></i>
+								</div>
+								<div>
+									<h4>Checked Balance</h4>
+									<p class="mb-0">last checked at: <%= @bank.checked_at&.strftime('%b %d') %></p>
+								</div>
+							</div>
+							<div class="align-self-center">
+								<h2 class="h1 mb-0"><%= number_with_delimiter(@bank.checked_balance, delimiter: ',')  %></h2>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xl-6 col-md-12 mb-4">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between p-md-1">
+							<div class="d-flex flex-row">
+								<div class="align-self-center">
+									<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@waiting_payment_orders.sum(:amount), delimiter: ',') %> <span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+								</div>
+								<div>
+									<h4>Waiting Payment </h4>
+									<p class="mb-0">confirmed but not paid yet</p>
+								</div>
+							</div>
+							<div class="align-self-center">
+								<i class="far fa-heart text-danger fa-3x"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6 col-md-12 mb-4">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between p-md-1">
+							<div class="d-flex flex-row">
+								<div class="align-self-center">
+									<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@unconfirmed_unrejected_swifts.sum(:amount), delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+								</div>
+								<div>
+									<h4>Incomming Swifts</h4>
+									<p class="mb-0">not confirmed swifts</p>
+								</div>
+							</div>
+							<div class="align-self-center">
+								<i class="fas fa-wallet text-success fa-3x"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6 col-md-12 mb-4">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between p-md-1">
+							<div class="d-flex flex-row">
+								<div class="align-self-center">
+									<% a = @bank.account_balance
+									b = @unconfirmed_unrejected_swifts.sum(:amount)
+									c = @waiting_payment_orders.sum(:amount)
+									d = a.to_i - c.to_i + b.to_i
+								%>
+								<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(d, delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+							</div>
+							<div>
+								<h4>Total Expected Balance </h4>
+								<p class="mb-0">balance + swifts - payments</p>
+							</div>
+						</div>
+						<div class="align-self-center">
+							<i class="fas fa-wallet text-success fa-3x"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<div class="row">
+	<div class="col-lg-6 shadow">
+		<div class="section">
+			<div class="row">
+				<div class="card mb-4 mb-lg-0">
+					<div class="row m-1">
+						<div class="col-lg">
+							<div class="d-flex justify-content-start">
+								<h4 class="text-secondary">Incomming Swifts</h4>
+							</div>
+						</div>
+
+					</div>
+					<% if user_signed_in? && @unconfirmed_unrejected_swifts.present? %>
+					<div class="card-body p-0">
+						<row class="m-2">
+							<div class="col-sm">
+								<table class="table">
+									<thead>
+										<tr>
+											<th scope="col" class="col-sm-1">#</th>
+											<th scope="col" class="col-sm-2">Amount</th>
+											<th scope="col" class="col-sm-2">To</th>
+											<th scope="col" class="col-sm-2">Project</th>
+
+
+
+											<th scope="col" class="col-sm-2">Status</th>
+											<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+										</tr>
+									</thead>
+									<tbody>
+										<% @unconfirmed_unrejected_swifts.order(created_at: :desc).each do |swift| %>
+										<tr style="font-size: 12px;" class="<%= 
+										if swift.confirmed.present?
+											'table-success'
+										elsif swift.rejected.present?
+											'table-danger'
+										else
+											'table-warning'
+										end
+
+									%>">
+									<th scope="row">
+										<%= swift.id %>
+									</th>
+									<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+									<td><%= swift.bank.name %></td>
+									<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
+									<td><%= 
+									if swift.confirmed.present?
+										"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
+									elsif swift.rejected.present?
+										"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
+									else
+										'Wait for deposite'
+									end
+								%></td>
+								<td style="text-align: right;">
+									<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
+									<%= link_to confirm_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this swift, this action can not be undo!' } do %>
+									<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+									<% end %>
+									|
+									<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
+									<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+									<% end %>
+
+									<% end %>
+
+
+								</td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+
+				</div>
+			</row>
+		</div>
+		<% end %>
+	</div>
 </div>
+</div>
+</div>
+<div class="col-lg-1"></div>
+<div class="col-lg-5 shadow">
+	<div class="section">
+		<div class="row">
+			<div class="card mb-4 mb-lg-0">
+				<div class="row m-1">
+					<div class="col-lg">
+						<div class="d-flex justify-content-start">
+							<h4 class="text-secondary">Wait For Payment</h4>
+						</div>
+					</div>
+
+				</div>
+				<% if user_signed_in? && @waiting_payment_orders.present? %>
+				<div class="card-body p-0">
+					<row class="m-2">
+						<div class="col-sm">
+							<table class="table">
+								<thead>
+									<tr>
+										<th scope="col" class="col-sm-1">#</th>
+										<th scope="col" class="col-sm-2">Amount</th>
+										<th scope="col" class="col-sm-6">Details</th>
+										<th scope="col" style="text-align: right;" class="col-sm-2 text-right">Issue Date</th>
+									</tr>
+								</thead>
+								<tbody>
+									<% @waiting_payment_orders.order(created_at: :desc).each do |payment_order| %>
+									<tr style="font-size: 12px;" class="<%= case payment_order.user.role
+								when 'accounting' then 'table-warning'
+								when 'procurement' then 'table-success'
+								when 'sales' then 'table-info'
+								else ''
+									end %>">
+									<th scope="row">
+										<%= link_to payment_order.id, payment_order_path(payment_order), class: "notifLink" %>
+									</th>
+									<td class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></td>
+									<td><%= payment_order.details %></td>
+									<td style="text-align: right;"><%= payment_order.created_at.strftime('%d %b') %></td>
+								</tr>
+								<% end %>
+							</tbody>
+						</table>
+						
+
+					</div>
+				</row>
+			</div>
+			<% end %>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+<div class="row mt-2">
+	<div class="col-lg-6 shadow">
+		<div class="section">
+			<div class="row">
+				<div class="card mb-4 mb-lg-0">
+					<div class="row m-1">
+						<div class="col-lg">
+							<div class="d-flex justify-content-start">
+								<h4 class="text-secondary">Latest Swifts</h4>
+							</div>
+						</div>
+
+					</div>
+					<% if user_signed_in? && @confirmed_swifts.present? %>
+					<div class="card-body p-0">
+						<row class="m-2">
+							<div class="col-sm">
+								<table class="table">
+									<thead>
+										<tr>
+											<th scope="col" class="col-sm-1">#</th>
+											<th scope="col" class="col-sm-2">Amount</th>
+											<th scope="col" class="col-sm-2">To</th>
+											<th scope="col" class="col-sm-2">Project</th>
+
+
+
+											<th scope="col" class="col-sm-2">Status</th>
+											<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+										</tr>
+									</thead>
+									<tbody>
+										<% @confirmed_swifts.order(created_at: :desc).each do |swift| %>
+										<tr style="font-size: 12px;" class="<%= 
+										if swift.confirmed.present?
+											'table-success'
+										elsif swift.rejected.present?
+											'table-danger'
+										else
+											'table-warning'
+										end
+
+									%>">
+									<th scope="row">
+										<%= swift.id %>
+									</th>
+									<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+									<td><%= swift.bank.name %></td>
+									<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
+									<td><%= 
+									if swift.confirmed.present?
+										"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
+									elsif swift.rejected.present?
+										"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
+									else
+										'Wait for deposite'
+									end
+								%></td>
+								<td style="text-align: right;">
+									<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
+									<%= link_to confirm_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this swift, this action can not be undo!' } do %>
+									<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+									<% end %>
+									|
+									<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
+									<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+									<% end %>
+
+									<% end %>
+
+
+								</td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+
+				</div>
+			</row>
+		</div>
+		<% end %>
+	</div>
+</div>
+</div>
+</div>
+<div class="col-lg-1"></div>
+<div class="col-lg-5 shadow">
+	<div class="section">
+		<div class="row">
+			<div class="card mb-4 mb-lg-0">
+				<div class="row m-1">
+					<div class="col-lg">
+						<div class="d-flex justify-content-start">
+							<h4 class="text-secondary">Latest Payment Orders</h4>
+						</div>
+					</div>
+
+				</div>
+				<% if user_signed_in? && @paid_payment_orders.present? %>
+				<div class="card-body p-0">
+					<row class="m-2">
+						<div class="col-sm">
+							<table class="table">
+								<thead>
+									<tr>
+										<th scope="col" class="col-sm-1">#</th>
+										<th scope="col" class="col-sm-2">Amount</th>
+										<th scope="col" class="col-sm-6">Details</th>
+										<th scope="col" style="text-align: right;" class="col-sm-2 text-right">Issue Date</th>
+									</tr>
+								</thead>
+								<tbody>
+									<% @paid_payment_orders.order(created_at: :desc).each do |payment_order| %>
+									<tr style="font-size: 12px;" class="<%= case payment_order.user.role
+								when 'accounting' then 'table-warning'
+								when 'procurement' then 'table-success'
+								when 'sales' then 'table-info'
+								else ''
+									end %>">
+									<th scope="row">
+										<%= link_to payment_order.id, payment_order_path(payment_order), class: "notifLink" %>
+									</th>
+									<td class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></td>
+									<td><%= payment_order.details %></td>
+									<td style="text-align: right;"><%= payment_order.created_at.strftime('%d %b') %></td>
+								</tr>
+								<% end %>
+							</tbody>
+						</table>
+						
+
+					</div>
+				</row>
+			</div>
+			<% end %>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
