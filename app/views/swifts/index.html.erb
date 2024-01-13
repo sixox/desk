@@ -20,6 +20,8 @@
 
 
 						<th scope="col" class="col-sm-2">Status</th>
+						<th scope="col" class="col-sm-2">Note</th>
+
 						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
 					</tr>
@@ -67,6 +69,9 @@
 						'Wait for deposite'
 					end
 				%></td>
+				<td>
+					<%= swift.note %>
+				</td>
 				<td style="text-align: right;">
 					<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
 					<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>

@@ -61,16 +61,17 @@
 					</div>
 				</div>
 			</div>
+
 			<div class="row">
 				<div class="col-sm-8">
 
-				<div class="form-group">
-					<%= form.label :documents, class: 'mb-2 mt-3' do %>
-					Attach Documents
-					<span class="text-danger">*</span>
-					<% end %>
-					<%= form.file_field :documents, multiple: true, class: 'form-control' %>
-				</div>
+					<div class="form-group">
+						<%= form.label :documents, class: 'mb-2 mt-3' do %>
+						Attach Documents
+						<span class="text-danger">*</span>
+						<% end %>
+						<%= form.file_field :documents, multiple: true, class: 'form-control' %>
+					</div>
 				</div>	
 				<div class="col-sm-4">
 					<div class="form-group mt-3">
@@ -81,6 +82,24 @@
 						<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select" } %>
 					</div>
 					
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Note
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_area :note, class: 'form-control', rows: 5 %>
+					</div>
+					<div class="form-group mb-2 mt-3">
+						<%= form.check_box :advance, class: 'form-check-input' %>
+						<label class="form-check-label" for="hourly">
+							Advance? unchek if it is balance payment
+						</label>
+					</div>
+
 				</div>
 			</div>
 			
@@ -161,13 +180,13 @@
 			<div class="row">
 				<div class="col-sm-8">
 
-				<div class="form-group">
-					<%= form.label :documents, class: 'mb-2 mt-3' do %>
-					Attach Documents
-					<span class="text-danger">*</span>
-					<% end %>
-					<%= form.file_field :documents, multiple: true, class: 'form-control' %>
-				</div>
+					<div class="form-group">
+						<%= form.label :documents, class: 'mb-2 mt-3' do %>
+						Attach Documents
+						<span class="text-danger">*</span>
+						<% end %>
+						<%= form.file_field :documents, multiple: true, class: 'form-control' %>
+					</div>
 				</div>	
 				<div class="col-sm-4">
 					<div class="form-group mt-3">
@@ -178,6 +197,24 @@
 						<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select" } %>
 					</div>
 					
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Note
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_area :note, class: 'form-control', rows: 5 %>
+					</div>
+					<div class="form-group mb-2 mt-3">
+						<%= form.check_box :advance, class: 'form-check-input' %>
+						<label class="form-check-label" for="hourly">
+							Advance? unchek if it is balance payment
+						</label>
+					</div>
+
 				</div>
 			</div>
 			
