@@ -73,7 +73,7 @@
         
 
         <% end %> 
-        <% if current_user.accounting || current_user.is_manager%>
+        <% if current_user.accounting? || current_user.is_manager%>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Accounting
