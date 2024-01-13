@@ -32,7 +32,7 @@
 		</div>
 		<div class="col-lg-12">
 			<div class="row">
-				<div class="col-sm-6">
+				<div class="col-sm-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Amount
@@ -41,7 +41,16 @@
 						<%= form.number_field :amount, class: 'form-control' %>
 					</div>
 				</div>
-				<div class="col-sm-6">
+				<div class="col-sm-4">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							From
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_field :from, class: 'form-control' %>
+					</div>
+				</div>
+				<div class="col-sm-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							To bank:
@@ -120,7 +129,7 @@
 		</div>
 		<div class="col-lg-12">
 			<div class="row">
-				<div class="col-sm-6">
+				<div class="col-sm-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Amount
@@ -129,7 +138,16 @@
 						<%= form.number_field :amount, class: 'form-control' %>
 					</div>
 				</div>
-				<div class="col-sm-6">
+				<div class="col-sm-4">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							From
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.text_field :from, class: 'form-control' %>
+					</div>
+				</div>
+				<div class="col-sm-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							To bank:
