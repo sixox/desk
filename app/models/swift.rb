@@ -1,6 +1,8 @@
 class Swift < ApplicationRecord
   belongs_to :bank
-  belongs_to :ci
+  belongs_to :ci, optional: true
+  belongs_to :project, optional: true
+
   has_many_attached :documents
 
 

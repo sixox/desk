@@ -5,6 +5,8 @@ class Project < ApplicationRecord
 	has_many :ballance_projects
 	has_many :ballances, through: :ballance_projects
 	has_many :payment_orders
+	has_many :swifts
+
 
 
 

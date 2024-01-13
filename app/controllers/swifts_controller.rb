@@ -1,21 +1,29 @@
 class SwiftsController < ApplicationController
 	# before_action :set_swift, only: [:show, :edit, :update, :destroy]
 	before_action :authenticate_user!
-	before_action :set_ci, only: %i[ new create ] 
+	before_action :set_ci_or_project, only: %i[ new create ] 
 	before_action :set_swift, only: %i[ confirm reject ] 
 
 
 	def new
-		@swift = @ci.build_swift
+		if @object == 1
+			@swift = @ci.build_swift
+		else
+			@swift = @project.swifts.build
+		end
 		@banks = Bank.all
 	end
 
 	def create
-		@swift = @ci.build_swift(swift_params)
+		if @object == 1
+			@swift = @ci.build_swift(swift_params)
+		else
+			@swift = @project.swifts.build(swift_params)
+		end
 		@banks = Bank.all
 
 		if @swift.save
-			redirect_to project_path(@ci.project), notice: "Swift created successfully."
+			redirect_to projects_path, notice: "Swift created successfully."
 		else
 			render :new
 		end
@@ -64,13 +72,19 @@ class SwiftsController < ApplicationController
 		@swift = Swift.find(params[:id])
 	end
 
-	def set_ci
-		@ci = Ci.find(params[:ci_id])
+	def set_ci_or_project
+		if params[:ci_id].present?
+			@object = 1
+			@ci = Ci.find(params[:ci_id])
+		else
+			@object = 2
+			@project = Project.find(params[:project_id])
+		end
 	end
 
     # Only allow a list of trusted parameters through.
     def swift_params
-    	params.require(:swift).permit(:amount, :bank_id, :currency, :confirmed, :rejected, :confirm_at, :rejected_at, :ci_id, documents: [])
+    	params.require(:swift).permit(:amount, :bank_id, :currency, :confirmed, :rejected, :confirm_at, :rejected_at, :ci_id, :project_id, documents: [])
     end
 
 end

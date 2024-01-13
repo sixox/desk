@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     resources :ballance_projects
     resources :pis
     resources :cis
+    resources :swifts
     resources :bookings do
       member do
         get 'edit_picked_up'

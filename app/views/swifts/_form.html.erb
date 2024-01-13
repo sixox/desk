@@ -1,3 +1,4 @@
+<% if @object == 1 %>
 <%= form_for [@ci, @swift] do |form| %>
 <div class="modal-body">
 	<div class="row">
@@ -83,4 +84,96 @@
 	<%= form.submit 'Add swift to CI', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
 	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
+<% end %>
+<% else %>
+
+<%= form_for [@project, @swift] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @swift.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@swift.errors.count, 'error') %> prohibited your swift from being saved.</h3>
+			<ul>
+				<% @swift.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h4>Swift</h4>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project.pi %>
+					<small class="text-secondary">Project: <%= @project.number %></small><br>
+					<small class="text-secondary">PI number: <%= @project.pi.number %></small><br>
+					
+					<% end %>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-12">
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Amount
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.number_field :amount, class: 'form-control' %>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							To bank:
+							<span class="text-danger">*</span>
+						</label>
+						
+						<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-8">
+
+				<div class="form-group">
+					<%= form.label :documents, class: 'mb-2 mt-3' do %>
+					Attach Documents
+					<span class="text-danger">*</span>
+					<% end %>
+					<%= form.file_field :documents, multiple: true, class: 'form-control' %>
+				</div>
+				</div>	
+				<div class="col-sm-4">
+					<div class="form-group mt-3">
+						<label for="amount" class="form-label">
+							Currency
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select" } %>
+					</div>
+					
+				</div>
+			</div>
+			
+		</div>
+
+
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Add swift to Project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>
+
+
+
 <% end %>
