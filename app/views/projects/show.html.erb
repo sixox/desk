@@ -24,6 +24,8 @@
 									<th scope="col" class="col-sm-2">Currency</th>
 									<th scope="col" class="col-sm-2">Project</th>
 									<th scope="col" class="col-sm-2">Document</th>
+									<th scope="col" class="col-sm-2">Type</th>
+
 
 
 
@@ -65,6 +67,7 @@
 									</small>
 									<% end %>
 								</td>
+								<td><%= swift.advance ? "Advance" : "Balance" %></td>
 								<td><%= 
 								if swift.confirmed.present?
 									"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"

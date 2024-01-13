@@ -97,7 +97,7 @@ class SwiftsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def swift_params
-    	params.require(:swift).permit(:amount, :bank_id, :currency, :confirmed, :rejected, :confirm_at, :rejected_at, :ci_id, :project_id, :deposited_amount, :from, documents: [])
+    	params.require(:swift).permit(:amount, :bank_id, :currency, :confirmed, :rejected, :confirm_at, :rejected_at, :ci_id, :project_id, :deposited_amount, :from, :note, :advance, documents: [])
     end
 
 end
