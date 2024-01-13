@@ -65,6 +65,7 @@ Rails.application.routes.draw do
       get "confirm", to: "swifts#confirm"
       patch "reject", to: "swifts#reject"
       get "reject", to: "swifts#reject"
+      get 'edit_amount_before_confirm'
     end
   end
   resources :banks

@@ -35,7 +35,11 @@
 					<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
 					<td><%= swift.bank.name %></td>
 					<td><%= swift.currency %></td>
+					<% if swift.ci.present? %>
 					<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
+					<% else %>
+					<td><%= link_to swift.project.number, project_path(swift.project) %></td>
+					<% end %>
 					<td><%= 
 					if swift.confirmed.present?
 						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
