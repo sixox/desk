@@ -1,0 +1,62 @@
+<%= form_with model: @swift, url: confirm_swift_path(@swift), method: :patch do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @swift.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@swift.errors.count, 'error') %> prohibited your swift from being saved.</h3>
+			<ul>
+				<% @swift.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Swift</h3>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col mt-1">
+				<h6>Project: <%= @swift.project.present? ? @swift.project.number : @swift.ci.project.number %></h6>
+				
+			</div>
+			<div class="col">
+				<p>amount: <span class="fw-bold bg-warning"><%= @swift.amount %></span> <small>	<%= @swift.currency %></small></p>
+			</div>
+
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+							<label class="mb-2 mt-3">
+								To bank:
+								<span class="text-danger">*</span>
+							</label>
+							
+							<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="form-group">
+						<label class="mb-2 mt-3">
+							Deposited amount
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.number_field :deposited_amount, class: 'form-control', value: @swift.amount %>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Confirm', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

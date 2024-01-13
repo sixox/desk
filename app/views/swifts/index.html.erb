@@ -6,6 +6,8 @@
 					<tr>
 						<th scope="col" class="col-sm-1">#</th>
 						<th scope="col" class="col-sm-2">Amount</th>
+						<th scope="col" class="col-sm-2">Deposited Amount</th>
+
 						<th scope="col" class="col-sm-2">To</th>
 						<th scope="col" class="col-sm-2">Currency</th>
 						<th scope="col" class="col-sm-2">Project</th>
@@ -33,6 +35,8 @@
 						<%= swift.id %>
 					</th>
 					<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+					<td class="fw-bold"><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
+
 					<td><%= swift.bank.name %></td>
 					<td><%= swift.currency %></td>
 					<% if swift.ci.present? %>
@@ -50,10 +54,10 @@
 					end
 				%></td>
 				<td style="text-align: right;">
-					<% if !swift.confirmed && !swift.rejected %>
-					<%= link_to confirm_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this swift, this action can not be undo!' } do %>
-					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-					<% end %>
+					<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
+					<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>
+							<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+							<% end %></span>
 					|
 					<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
 					<i class="bi bi-calendar-x-fill" style="color: red;"></i>

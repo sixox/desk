@@ -2,7 +2,7 @@ class SwiftsController < ApplicationController
 	# before_action :set_swift, only: [:show, :edit, :update, :destroy]
 	before_action :authenticate_user!
 	before_action :set_ci_or_project, only: %i[ new create ] 
-	before_action :set_swift, only: %i[ confirm reject ] 
+	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm ] 
 
 
 	def new
@@ -29,25 +29,38 @@ class SwiftsController < ApplicationController
 		end
 	end
 
+	def edit_amount_before_confirm
+		@banks = Bank.all
+	end
+
 	def index
     	@swifts = Swift.with_bank_and_ci.all
 	end
 
 	def confirm
-		@swift.confirmed = true
-		@swift.confirm_at = Time.now
-		bank = @swift.bank
-		new_amount = bank.account_balance.to_i + @swift.amount.to_i
-		respond_to do |format|
-			if @swift.save && bank.update(account_balance: new_amount)
-				format.html { redirect_to swifts_path }
-			else
-				format.html { render :show, status: :unprocessable_entity }
-				format.json { render json: @swift.errors, status: :unprocessable_entity }
+		  puts "Submitted params: #{swift_params.inspect}"
 
-			end
-		end
+	  # Update @swift with the form's parameters
+	  @swift.update(swift_params)
+
+	  # Ensure @swift is confirmed and set the confirmation time
+	  @swift.confirmed = true
+	  @swift.confirm_at = Time.now
+
+	  # Fetch the bank related to @swift
+	  bank = @swift.bank
+
+	  # Calculate new amount using deposited_amount
+	  new_amount = bank.account_balance.to_i + @swift.deposited_amount.to_i
+
+	  # Save the swift and update the bank's account balance
+	  if @swift.save && bank.update(account_balance: new_amount)
+	    redirect_to swifts_path, notice: 'Swift confirmed successfully.'
+	  else
+	    render :show, status: :unprocessable_entity
+	  end
 	end
+
 
 	def reject
 		@swift.rejected = true
@@ -84,7 +97,7 @@ class SwiftsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def swift_params
-    	params.require(:swift).permit(:amount, :bank_id, :currency, :confirmed, :rejected, :confirm_at, :rejected_at, :ci_id, :project_id, documents: [])
+    	params.require(:swift).permit(:amount, :bank_id, :currency, :confirmed, :rejected, :confirm_at, :rejected_at, :ci_id, :project_id, :deposited_amount, documents: [])
     end
 
 end
