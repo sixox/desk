@@ -313,8 +313,24 @@ class PaymentOrdersController < ApplicationController
 		if params[:payment_order].key?(:receipt) || params[:payment_order].key?('receipt')
 		    @bank = @payment_order.bank
 		  
-		    new_amount = @bank.account_balance - @payment_order.amount
-
+			if @payment_order.currency == @bank.currency
+		      # Scenario 1: Currencies match, proceed normally
+		      new_amount = @bank.account_balance - @payment_order.amount
+			elsif @payment_order.currency != @bank.currency && (@payment_order.exchange_amount.present? || params[:payment_order][:exchange_amount].present?)
+		      # Scenario 2: Currencies don't match, but exchange_amount is provided
+		      @payment_order.assign_attributes(payment_order_params)
+		      if @payment_order.valid?
+		        @payment_order.save
+		        new_amount = @bank.account_balance - @payment_order.exchange_amount.to_f
+		      else
+		        render :show and return
+		      end
+		    else
+		      # Scenario 3: Currencies don't match and no exchange_amount is provided
+		      @payment_order.errors.add(:currency, "does not match with the bank's currency and no exchange amount provided")
+		      @p_mas = "does not match with the bank's currency and no exchange amount provided"
+		      render :show and return
+		    end
 		    if @bank.update(account_balance: new_amount)
 		      # Handle success
 		    else
