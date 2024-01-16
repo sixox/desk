@@ -13,10 +13,10 @@ class BanksController < ApplicationController
     @unconfirmed_unrejected_swifts = @bank.swifts.where(confirmed: [nil, false], rejected: [nil, false])
     @unconfirmed_unrejected_swifts.each do |swift|
       if swift.currency == @bank.currency
-        @sum_unconfirmed_unrejected_swifts = @sum_unconfirmed_unrejected_swifts + swift.amount
+        @sum_unconfirmed_unrejected_swifts = @sum_unconfirmed_unrejected_swifts.to_i + swift.amount
       else
         swift.currency == "dollar" ? a = swift.amount / 3.67 : a = swift.amount * 3.67
-        @sum_unconfirmed_unrejected_swifts = @sum_unconfirmed_unrejected_swifts + a.to_i
+        @sum_unconfirmed_unrejected_swifts = @sum_unconfirmed_unrejected_swifts.to_i + a.to_i
       end
     end
   end
