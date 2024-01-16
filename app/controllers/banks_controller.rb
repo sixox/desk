@@ -15,7 +15,7 @@ class BanksController < ApplicationController
       if swift.currency == @bank.currency
         @sum_unconfirmed_unrejected_swifts = @sum_unconfirmed_unrejected_swifts.to_i + swift.amount
       else
-        swift.currency == "dollar" ? a = swift.amount / 3.67 : a = swift.amount * 3.67
+        swift.currency == "dollar" ? a = swift.amount * 3.67 : a = swift.amount / 3.67
         @sum_unconfirmed_unrejected_swifts = @sum_unconfirmed_unrejected_swifts.to_i + a.to_i
       end
     end
