@@ -75,7 +75,7 @@
 						<div class="d-flex justify-content-between p-md-1">
 							<div class="d-flex flex-row">
 								<div class="align-self-center">
-									<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@unconfirmed_unrejected_swifts.sum(:amount), delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+									<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@sum_unconfirmed_unrejected_swifts, delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
 								</div>
 								<div>
 									<h4>Incomming Swifts</h4>
@@ -96,7 +96,7 @@
 							<div class="d-flex flex-row">
 								<div class="align-self-center">
 									<% a = @bank.account_balance
-									b = @unconfirmed_unrejected_swifts.sum(:amount)
+									b = @sum_unconfirmed_unrejected_swifts
 									c = @waiting_payment_orders.sum(:amount)
 									d = a.to_i - c.to_i + b.to_i
 								%>
@@ -311,7 +311,12 @@
 									</th>
 									<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
 									<td><%= swift.bank.name %></td>
+									<% if swift.ci.present?%>
 									<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
+									<% else %>
+									<td><%= link_to swift.project.number, project_path(swift.project) %></td>
+
+									<% end %>
 									<td><%= 
 									if swift.confirmed.present?
 										"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
