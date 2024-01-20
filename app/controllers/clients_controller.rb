@@ -3,7 +3,7 @@ class ClientsController < ApplicationController
   before_action :set_client, only: [:show, :edit, :update, :destroy, :change_status]
 
   def index
-    @clients = current_user.clients
+    @clients = Client.all
   end
 
   def show
@@ -46,7 +46,7 @@ class ClientsController < ApplicationController
   private
 
   def set_client
-    @client = current_user.clients.find(params[:id])
+    @client = Client.find(params[:id])
   end
 
   def client_params
