@@ -1,3 +1,58 @@
-<%= link_to new_client_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
+
+<div class="col-lg-10 mx-auto mt-5">
+	<row class="m-2">
+		<%= link_to new_client_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
   						Add Client
   		<% end %>
+		<div class="col-sm">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col" class="col-sm-1">#</th>
+						<th scope="col" class="col-sm-2">Name</th>
+						<th scope="col" class="col-sm-2">Company</th>
+						
+						<th scope="col" class="col-sm-2">Email</th>
+						<th scope="col" class="col-sm-2">Phone</th>
+
+
+
+						<th scope="col" class="col-sm-2">Port/Country</th>
+						<th scope="col" class="col-sm-2">Product</th>
+						<th scope="col" class="col-sm-2">Packing</th>
+						<th scope="col" class="col-sm-2">Quantity</th>
+						<th scope="col" class="col-sm-2">Preferred way to connect</th>
+						<th scope="col" class="col-sm-2">How know us</th>
+						<th scope="col" class="col-sm-2">Status</th>
+						<th scope="col" class="col-sm-2">Follower</th>
+						
+
+
+					</tr>
+				</thead>
+				<tbody>
+					<% @clients.order(created_at: :desc).each do |client| %>
+					<tr>
+					<th scope="row">
+						<%= link_to client.id, client_path(client),class: 'link-nodecor-po text-danger' %>
+					</th>
+					<td><%= client.name %></td>
+					<td><%= client.company %></td>
+					<td><%= client.email %></td>
+					<td><%= client.phone %></td>
+					<td><%= client.port %>/<%= client.country %></td>
+					<td><%= client.product %></td>
+					<td><%= client.packing %></td>
+					<td><%= client.quantity %></td>
+					<td><%= client.preferred_connection %></td>
+					<td><%= client.received_from %></td>
+					<td><%= client.status %></td>
+					<td><%= client.follower %></td>
+				</tr>
+				<% end %>
+			</tbody>
+		</table>
+
+	</div>
+</row>
+</div>

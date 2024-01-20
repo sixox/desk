@@ -1,5 +1,6 @@
 class ClientsController < ApplicationController
-  before_action :set_client, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!
+  before_action :set_client, only: [:show, :edit, :update, :destroy, :change_status]
 
   def index
     @clients = current_user.clients
@@ -14,6 +15,7 @@ class ClientsController < ApplicationController
 
   def create
     @client = current_user.clients.build(client_params)
+    @client.status = "New"
 
     if @client.save
       redirect_to @client, notice: 'Client was successfully created.'
@@ -23,6 +25,9 @@ class ClientsController < ApplicationController
   end
 
   def edit
+  end
+
+  def change_status
   end
 
   def update
@@ -45,6 +50,6 @@ class ClientsController < ApplicationController
   end
 
   def client_params
-    params.require(:client).permit(:name, :company, :email, :phone, :received_from, :preferred_connection, :product, :country, :port, :packing, :details, :status, :update_status_at, :quantity)
+    params.require(:client).permit(:name, :company, :email, :phone, :received_from, :preferred_connection, :product, :country, :port, :packing, :details, :status, :update_status_at, :quantity, :follower)
   end
 end

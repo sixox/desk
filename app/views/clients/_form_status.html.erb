@@ -1,0 +1,63 @@
+<%= form_with model: @client do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @client.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@client.errors.count, 'error') %> prohibited your client from being saved.</h3>
+			<ul>
+				<% @client.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Client</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @client.status %>
+					<h3 class="secondary"><%= @client.status %></h3>
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="form-group mt-3">
+						<label for="amount" class="form-label">
+							Status
+							<span class="text-danger">*</span>
+						</label>
+						<%= form.select :status, options_for_select(Client::STATUSES, selected: form.object.status), { prompt: '' }, { class:"form-select" } %>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Assign to
+							
+						</label>
+						<%= form.text_field :follower, class: 'form-control' %>
+					</div>
+				</div>
+			</div>
+
+			
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>
+

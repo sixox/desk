@@ -1,0 +1,64 @@
+<div class="card mb-5">
+	<div class="card-body">
+		<div class="row mt-1">
+			<div class="col-lg-2">
+				<div class="d-flex justify-content-start">
+					<p class="fw-bold">Client <span class="text-warning"><%= link_to client.id, client_path(client), class: 'link-nodecor-po text-danger' %></span> </p>
+				</div>
+			</div>
+			<div class="col-lg-2">
+				<p class="fw-bold">Name <span class="text-warning"><%= client.name %></span> </p>				
+			</div>
+			<div class="col-lg-4">
+				<p class="fw-bold"><span class="text-warning"><%= client.quantity ? "#{client.quantity}MT " : "" %><%= client.product %></span> PACKING <span class="text-warning"><%= client.packing %></span>
+				</p>				
+			</div>
+			<div class="col-lg">
+				<span class="fw-bold text-warning">
+					<%= client.port %>/ <%= client.country %>
+				</span>
+			</div>
+
+
+
+
+
+			<div class="col-lg-2">
+				<div class="d-flex justify-content-end">
+					<p class="fw-bold">Status 
+						<% if client.status%>
+						<span class="text-secondary"><%= client.status %></span> 
+						<% else %>
+						<span class="text-secondary">Unknown</span> 
+						<% end %>
+
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-2">
+				<p class="fw-bold">Company: <small class="text-warning"><%= client.company %></small></p>
+			</div>
+			<div class="col-2">
+				<p class="fw-bold">Phone: <small class="text-warning"><%= client.phone %></small></p>
+			</div>
+			<div class="col-4">
+				<p class="fw-bold">Preferred way to connect: <small class="text-warning"><%= client.preferred_connection %></small></p>
+			</div>
+			<div class="col-2">
+				<p class="fw-bold">How know us: <small class="text-warning"><%= client.received_from %></small></p>
+			</div>
+			<div class="col-2">
+				<p class="fw-bold">Assigned to : <small class="text-warning"><%= client.follower %></small></p>
+			</div>
+		</div>
+		<% if controller_name == 'clients' && action_name == 'show' %>
+			<%= link_to "Edit", edit_client_path(client), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
+			
+			<%= link_to "Change Status and Assigning", change_status_client_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
+		<% end %>
+
+	</div>
+</div>
+

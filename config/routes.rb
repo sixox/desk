@@ -59,7 +59,12 @@ Rails.application.routes.draw do
 
   end
   resources :comments
-  resources :clients
+  resources :clients do
+    member do
+      get "change_status", to: "clients_change_status"
+    end
+    resources :comments
+  end
   resources :swifts do
     member do
       patch "confirm", to: "swifts#confirm"
