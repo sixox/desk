@@ -7,6 +7,9 @@ class Project < ApplicationRecord
 	has_many :payment_orders
 	has_many :swifts
 
+	validates :number, uniqueness: true
+
+
 
 
 
