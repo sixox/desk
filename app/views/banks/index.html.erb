@@ -1,12 +1,14 @@
 <div class="col-lg-10 mx-auto mt-5">
 	<row class="m-2">
 		<div class="col-sm">
+			<% if current_user.accounting? && current_user.is_manager %>
 			<%= link_to new_transfer_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
-  						Transfer
-  		<% end %>
-  		<%= link_to new_deposit_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
-  						Deposite
-  		<% end %>
+			Transfer
+			<% end %>
+			<%= link_to new_deposit_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+			Deposite
+			<% end %>
+			<% end %>
 			<table class="table table-striped">
 				<thead>
 					<tr>
@@ -27,30 +29,30 @@
 				<tbody>
 					<% @banks.order(created_at: :desc).each do |bank| %>
 					<tr>
-					<th scope="row">
-						<%= bank.id %>
-					</th>
-					<td><%= bank.name %></td>
-					<td><%= bank.kind ? "Account" : "Exchange" %></td>
-					
+						<th scope="row">
+							<%= bank.id %>
+						</th>
+						<td><%= bank.name %></td>
+						<td><%= bank.kind ? "Account" : "Exchange" %></td>
 
 
-					<td class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',') %></td>
-					<td><%= bank.currency %></td>
-					<td class="fw-bold"><%= number_with_delimiter(bank.checked_balance, delimiter: ',') %></td>
-					
-				<td style="text-align: right;">
-					<%= link_to bank_path(bank) do %>
-					<i class="bi bi-eye-fill"></i>
+
+						<td class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',') %></td>
+						<td><%= bank.currency %></td>
+						<td class="fw-bold"><%= number_with_delimiter(bank.checked_balance, delimiter: ',') %></td>
+
+						<td style="text-align: right;">
+							<%= link_to bank_path(bank) do %>
+							<i class="bi bi-eye-fill"></i>
+							<% end %>
+
+
+						</td>
+					</tr>
 					<% end %>
+				</tbody>
+			</table>
 
-					
-				</td>
-				</tr>
-				<% end %>
-			</tbody>
-		</table>
-
-	</div>
-</row>
+		</div>
+	</row>
 </div>
