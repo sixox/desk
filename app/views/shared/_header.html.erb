@@ -50,7 +50,7 @@
             </li>
             <% if current_user.procurement? %>
             <li class="">
-          <%= link_to "Suppliers", suppliers_path, class: "nav-link active" %>
+          <%= link_to "Suppliers", suppliers_path, class: "dropdown-item" %>
              </li>
             <li>
               <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
@@ -70,6 +70,11 @@
             <% if current_user.is_manager %>
             <li><%= link_to "Vacations", managment_vacations_path, class: "dropdown-item" %></li>
             <% end %>
+            <% if current_user.hr? %>
+            <li>
+              <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
+            </li>
+            <% end %>
           </ul>
         </li>
         <% if current_user.ceo? || current_user.admin?%>
@@ -79,7 +84,10 @@
           </a>
           
           <ul class="dropdown-menu text-white">
-            <li><%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active", target: "_blank" %></li>
+            <li><%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "dropdown-item", target: "_blank" %></li>
+            <li>
+              <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
+            </li>
           </ul>
         </li>
         <% end %>
