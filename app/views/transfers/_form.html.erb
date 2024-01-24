@@ -1,0 +1,87 @@
+<%= form_with model: @transfer do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @transfer.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@transfer.errors.count, 'error') %> prohibited your Transfer from being saved.</h3>
+			<ul>
+				<% @transfer.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Transfer</h3>
+				</div>
+			</div>
+			
+		</div>
+		<div class="row mt-2">
+			<div class="col-lg-8">
+				<div class="form-group mt-3">
+					<label for="amount" class="form-label">
+						Withdraw from
+						<span class="text-danger">*</span>
+					</label>
+					
+					<%= form.collection_select :withdraw_from, @banks, :id, :name, { prompt: 'Select Bank to Withdraw From'}, { class: "form-select" } %>
+				</div>
+			</div>
+			<div class="col-lg-4">
+				<div class="form-group mt-3">
+					<label for="amount" class="form-label">
+						Amount
+						<span class="text-danger">*</span>
+					</label>
+					<%= form.number_field :withdraw_amount, class: "form-control" %>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-lg-8">
+				<div class="form-group mt-3">
+					<label for="amount" class="form-label">
+						Deposit to
+						<span class="text-danger">*</span>
+					</label>
+					
+					<%= form.collection_select :deposited_to, @banks, :id, :name, { prompt: 'Select Bank to Deposit To'}, { class: "form-select" } %>
+				</div>
+			</div>
+			<div class="col-lg-4">
+				<div class="form-group mt-3">
+					<label for="amount" class="form-label">
+						Amount
+						<span class="text-danger">*</span>
+					</label>
+					<%= form.number_field :deposited_amount, class: "form-control" %>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-4">
+				<div class="form-group mt-3">
+					<label for="amount" class="form-label">
+						Wage
+						<span class="text-danger">*</span>
+					</label>
+					<%= form.number_field :wage, class: "form-control" %>
+				</div>
+			</div>
+		</div>
+
+
+		
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>
+

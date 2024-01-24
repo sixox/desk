@@ -116,7 +116,158 @@
 		</div>
 	</div>
 </section>
-<div class="row">
+<div class="row mt-2">
+	<div class="col-12 shadow">
+		<div class="section">
+			<div class="row">
+				<div class="card mb-4 mb-lg-0">
+					<div class="row m-1">
+						<div class="col-lg">
+							<div class="d-flex justify-content-start">
+								<h4 class="text-secondary">Transfers</h4>
+							</div>
+						</div>
+					</div>
+					<div class="card-body p-0">
+						<row class="m-2">
+							<div class="col-sm">
+								<% if @all_transfers.present? %>
+								<table class="table">
+									<thead>
+										<tr>
+											<th scope="col" class="col-sm-1">#</th>
+											<th scope="col" class="col-sm-2">From</th>
+											<th scope="col" class="col-sm-2">To</th>
+											<th scope="col" class="col-sm-2"> Withdraw amount</th>
+
+
+
+											<th scope="col" class="col-sm-2">Deposite amount</th>
+											<th scope="col" class="col-sm-2">Wage</th>
+											<th scope="col" class="col-sm-2">Status</th>
+											<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+										</tr>
+									</thead>
+									<tbody>
+										<% @all_transfers.each do |transfer| %>
+										<tr style="font-size: 12px;" class="<%= 
+										if transfer.confirmed.present?
+											'table-success'
+										elsif transfer.rejected.present?
+											'table-danger'
+										else
+											'table-warning'
+										end
+
+									%>">
+									<th scope="row">
+										<% if transfer.withdraw_from == @bank.id %>
+										    <i class="bi bi-arrow-down-circle-fill text-danger"></i>
+										  <% elsif transfer.deposited_to == @bank.id %>
+										    <i class="bi bi-arrow-up-circle-fill text-success"></i>
+										  <% end %>
+										<%= transfer.id %>
+										  
+									</th>
+									<td><%= transfer.withdraw_from_bank.name %></td>
+									<td><%= transfer.deposited_to_bank.name %></td>
+									<td class="fw-bold text-danger"><%= number_with_delimiter(transfer.withdraw_amount, delimiter: ',') %> <small>	<%= transfer.withdraw_from_bank.currency %></small></td>
+									<td class="fw-bold text-success"><%= number_with_delimiter(transfer.deposited_amount, delimiter: ',') %> <small>	<%= transfer.deposited_to_bank.currency %></small></td>
+									<td><%= transfer.wage.to_i %></td>
+									
+									<td><%= 
+									if transfer.confirmed.present?
+										"Confirmed at #{transfer.confirmed_at&.strftime('%b %d')}"
+									elsif transfer.rejected.present?
+										"Rejected at #{transfer.rejected_at&.strftime('%b %d')}" 
+									else
+										'Wait for Confirm'
+									end
+								%></td>
+								<td style="text-align: right;">
+									<% if !transfer.confirmed && !transfer.rejected && current_user.ceo? %>
+									<%= link_to confirm_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this transfer, this action can not be undo!' } do %>
+									<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+									<% end %>
+									|
+									<%= link_to reject_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this transfer, this action can not be undo!' } do %>
+									<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+									<% end %>
+
+									<% end %>
+
+
+								</td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+					<% end %>
+				</div>
+			</row>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row mt-2">
+	<div class="col-12 shadow">
+		<div class="section">
+			<div class="row">
+				<div class="card mb-4 mb-lg-0">
+					<div class="row m-1">
+						<div class="col-lg">
+							<div class="d-flex justify-content-start">
+								<h4 class="text-secondary">Deposits</h4>
+							</div>
+						</div>
+					</div>
+					<div class="card-body p-0">
+						<row class="m-2">
+							<div class="col-sm">
+								<% if @deposits.present? %>
+								<table class="table">
+									<thead>
+										<tr>
+											<th scope="col" class="col-sm-1">#</th>
+											<th scope="col" class="col-sm-2">Amount</th>
+											<th scope="col" class="col-sm-6">Deatils</th>
+											<th scope="col" class="col-sm-2">Document</th>
+										</tr>
+									</thead>
+									<tbody>
+										<% @deposits.each do |deposit| %>
+										<tr style="font-size: 12px;">
+									<th scope="row">
+										
+										<%= deposit.id %>
+										  
+									</th>
+									<td><%= deposit.amount %></td>
+									<td><%= deposit.details %></td>
+									<td>
+										<% if deposit.document.attached? %>
+										<%= link_to 'View Document', url_for(deposit.document), target: '_blank' %>
+										<% else %>
+										no document
+										<% end %>
+									</td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+					<% end %>
+				</div>
+			</row>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row mt-1">
 	<div class="col-lg-6 shadow">
 		<div class="section">
 			<div class="row">

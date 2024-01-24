@@ -41,6 +41,8 @@ class CommentsController < ApplicationController
       @commentable = PaymentOrder.find(params[:payment_order_id])
     elsif params[:client_id]
       @commentable = Client.find(params[:client_id])
+    elsif params[:report_id]
+      @commentable = Report.find(params[:report_id])
     end
   end
 

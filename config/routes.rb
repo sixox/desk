@@ -75,6 +75,18 @@ Rails.application.routes.draw do
     end
   end
   resources :banks
+  resources :transfers do
+    member do
+      patch "confirm", to: "transfers#confirm"
+      get "confirm", to: "transfers#confirm"
+      patch "reject", to: "transfers#reject"
+      get "reject", to: "transfers#reject"
+    end
+  end
+  resources :deposits
+  resources :reports do
+    resources :comments
+  end
 
 
   get 'member/:id', to: 'members#show', as: 'member'

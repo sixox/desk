@@ -1,0 +1,32 @@
+
+
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<h3>Reports</h3>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						
+
+
+						<%= link_to new_report_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+						<i class="bi bi-plus"></i> Create Report
+						<% end %>
+					</div>
+				</div>
+			</div>
+			<ul class="list-group" id="report_items">
+				<% @reports.each do |report| %>
+					<%= render 'reports/report', report: report %>
+				<% end %>
+			</ul>
+
+
+		</div>
+	</div>
+</div>

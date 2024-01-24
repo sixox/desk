@@ -7,6 +7,8 @@ class BanksController < ApplicationController
   end
 
   def show
+    @deposits = @bank.deposits
+    @all_transfers = @bank.withdrawn_transfers.or(@bank.deposited_transfers).order(created_at: :desc)
     @paid_payment_orders = @bank.payment_orders.joins(:receipt_attachment).where.not(active_storage_attachments: { id: nil })
     @waiting_payment_orders = @bank.payment_orders.where(status: 'wait for payment')
     @confirmed_swifts = @bank.swifts.where(confirmed: true)

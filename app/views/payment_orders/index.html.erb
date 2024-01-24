@@ -1,65 +1,146 @@
 <div class="col-lg-10 mx-auto mt-5">
+	<% if @transfers.present? %>
 	<div class="card mb-5">
 		<div class="card-body">
 			<div class="row">
 				<div class="col-lg-6">
 					<div class="d-flex justify-content-start">
-						<h3>Payment Orders</h3>
+						<h3>Transfers</h3>
 					</div>
 				</div>
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-end">
-						<div class="hide-on-desktop">
-							<%= render 'filter' %>
-						</div>
-						<div class="hide-on-mobile">
-							<div class="btn-group" role="group" aria-label="Page Toggle">
-								<% if @in_page == "mine" %>
-								<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary active" %>
-								<%= link_to "All", payment_orders_path, class: "btn btn-primary" %>
-								<% else %>
-								<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary" %>
-								<%= link_to "All", payment_orders_path, class: "btn btn-primary active" %>
-								<% end %>
-							</div>
-							<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
-							<i class="bi bi-bar-chart"></i> Reports
+			</div>
+			<div class="col-sm">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">From</th>
+							<th scope="col">To</th>
+							<th scope="col"> Withdraw amount</th>
+
+
+
+							<th scope="col">Deposite amount</th>
+							<th scope="col">Wage</th>
+							<th scope="col">Status</th>
+							<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+						</tr>
+					</thead>
+					<tbody>
+						<% @transfers.each do |transfer| %>
+						<tr style="font-size: 12px;" class="<%= 
+						if transfer.confirmed.present?
+							'table-success'
+						elsif transfer.rejected.present?
+							'table-danger'
+						else
+							'table-warning'
+						end
+
+					%>">
+					<th scope="row">
+						<%= transfer.id %>
+					</th>
+					<td><%= transfer.withdraw_from_bank.name %></td>
+					<td><%= transfer.deposited_to_bank.name %></td>
+					<td class="fw-bold text-danger"><%= number_with_delimiter(transfer.withdraw_amount, delimiter: ',') %> <small>	<%= transfer.withdraw_from_bank.currency %></small></td>
+					<td class="fw-bold text-success"><%= number_with_delimiter(transfer.deposited_amount, delimiter: ',') %> <small>	<%= transfer.deposited_to_bank.currency %></small></td>
+					<td><%= transfer.wage.to_i %></td>
+
+					<td><%= 
+					if transfer.confirmed.present?
+						"Confirmed at #{transfer.confirmed_at&.strftime('%b %d')}"
+					elsif transfer.rejected.present?
+						"Rejected at #{transfer.rejected_at&.strftime('%b %d')}" 
+					else
+						'Wait for Confirm'
+					end
+				%></td>
+				<td style="text-align: right;">
+					<% if !transfer.confirmed && !transfer.rejected && current_user.ceo? %>
+					<%= link_to confirm_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this transfer, this action can not be undo!' } do %>
+					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+					<% end %>
+					|
+					<%= link_to reject_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this transfer, this action can not be undo!' } do %>
+					<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+					<% end %>
+
+					<% end %>
+
+
+				</td>
+			</tr>
+			<% end %>
+		</tbody>
+	</table>
+</div>
+
+</div>
+</div>
+<% end %>
+<div class="card mb-5">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Payment Orders</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<div class="hide-on-desktop">
+						<%= render 'filter' %>
+					</div>
+					<div class="hide-on-mobile">
+						<div class="btn-group" role="group" aria-label="Page Toggle">
+							<% if @in_page == "mine" %>
+							<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary active" %>
+							<%= link_to "All", payment_orders_path, class: "btn btn-primary" %>
+							<% else %>
+							<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary" %>
+							<%= link_to "All", payment_orders_path, class: "btn btn-primary active" %>
 							<% end %>
 						</div>
-
-						<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
-						<i class="bi bi-plus"></i> Create Payment order
+						<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
+						<i class="bi bi-bar-chart"></i> Reports
 						<% end %>
 					</div>
-				</div>
-			</div>
-			<div class="hide-on-mobile">
-				<%= render 'filter_not_mobile' %>
-			</div>
-			<div class="hide-on-desktop">
-				<% if current_user.is_manager || current_user.accounting? %>
-				<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
-				<i class="bi bi-bar-chart"></i> Reports
-				<% end %>
-				<% end %>
-			</div>
 
-
-			<ul class="list-group" id="payment_order_items">
-				<% @payment_orders.each do |payment_order| %>
-				<%= render 'payment_orders/payment_order', payment_order: payment_order %>
-				<% end %>
-			</ul>
-			<div class="row mt-1">
-				<div class="col-sm">
-					<nav aria-label="Page navigation">
-						<ul class="pagination justify-content-center">
-							<%= paginate @payment_orders, remote: true %>
-						</ul>
-					</nav>
+					<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+					<i class="bi bi-plus"></i> Create Payment order
+					<% end %>
 				</div>
 			</div>
 		</div>
+		<div class="hide-on-mobile">
+			<%= render 'filter_not_mobile' %>
+		</div>
+		<div class="hide-on-desktop">
+			<% if current_user.is_manager || current_user.accounting? %>
+			<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
+			<i class="bi bi-bar-chart"></i> Reports
+			<% end %>
+			<% end %>
+		</div>
+
+
+		<ul class="list-group" id="payment_order_items">
+			<% @payment_orders.each do |payment_order| %>
+			<%= render 'payment_orders/payment_order', payment_order: payment_order %>
+			<% end %>
+		</ul>
+		<div class="row mt-1">
+			<div class="col-sm">
+				<nav aria-label="Page navigation">
+					<ul class="pagination justify-content-center">
+						<%= paginate @payment_orders, remote: true %>
+					</ul>
+				</nav>
+			</div>
+		</div>
 	</div>
+</div>
 </div>
 <%= Bank.first.account_balance %>

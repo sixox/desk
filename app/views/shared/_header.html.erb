@@ -10,86 +10,112 @@
         <li class="nav-item">
           <%= link_to "Profile", member_path(current_user), class: "nav-link active" %>
         </li>  
-        <% if current_user.sales? || current_user.procurement? || current_user.accounting? || current_user.admin? %>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Projects
+            Sales
           </a>
           <ul class="dropdown-menu text-white">
+            <% if current_user.sales? %>
             <li><%= link_to "Create New Project", new_project_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
+            <% end %>
             <li>
+
               <%= link_to 'Projects', projects_path, class: 'dropdown-item' %>
 
+            </li>
+            <% if current_user.sales? %>
+             <li class="">
+          <%= link_to "Customers", customers_path, class: "dropdown-item" %>
             </li>
             <li>
               <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
             </li>
+            <li>
+              <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
+            </li>
+            <% end %>
 
           </ul>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Inventory
+            Procurement
           </a>
           <ul class="dropdown-menu text-white">
+            <% if current_user.procurement? %>
             <li><%= link_to "New Inventory", new_ballance_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
+            <% end %>
             <li>
               <%= link_to 'Inverntories', ballances_path, class: 'dropdown-item' %>
             </li>
+            <% if current_user.procurement? %>
+            <li class="">
+          <%= link_to "Suppliers", suppliers_path, class: "nav-link active" %>
+             </li>
+            <li>
+              <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
+            </li>
+            <% end %>
 
           </ul>
         </li>
-        <% end %>
-        <li class="nav-item">
-          <%= link_to "Payment orders", payment_orders_path, class: "nav-link active" %>
-        </li> 
-
-
-
-
-
-        <% if current_user.sales? && current_user.is_manager %>
-        <li class="nav-item">
-          <%= link_to "Customers", customers_path, class: "nav-link active" %>
-        </li> 
-        <% end %>  
-        <% if current_user.procurement? %>
-        <li class="nav-item">
-          <%= link_to "Suppliers", suppliers_path, class: "nav-link active" %>
-        </li> 
-        <% end %>  
-        <% if current_user.is_manager %>
-        
-        <li class="nav-item" style="position: relative;">
-          <%= link_to "Vacations", managment_vacations_path, class: "nav-link active" %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            HR
+          </a>
           <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
             <%= count_not_confirmed_vacations %>
           </span>
+          <ul class="dropdown-menu text-white">
+            <% if current_user.is_manager %>
+            <li><%= link_to "Vacations", managment_vacations_path, class: "dropdown-item" %></li>
+            <% end %>
+          </ul>
         </li>
         <% if current_user.ceo? || current_user.admin?%>
-        <li class="nav-item">
-          <%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active", target: "_blank" %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Manager
+          </a>
+          
+          <ul class="dropdown-menu text-white">
+            <li><%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active", target: "_blank" %></li>
+          </ul>
         </li>
-
-
-        <%end%>
+        <% end %>
+       
         
 
-        <% end %> 
-        <% if current_user.accounting? || current_user.is_manager%>
+
+
+
+
+         
+         
+        
+        
+
+       
+        
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Accounting
           </a>
+
           <ul class="dropdown-menu text-white">
+            <% if (current_user.ceo? || current_user.accounting?) || (current_user.procurement? && current_user.is_manager)  %>
             <%= link_to 'Banks', banks_path, class: 'dropdown-item' %>
             <li>
               <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
             </li>
+            <% end %>
+            <li class="">
+          <%= link_to "Payment orders", payment_orders_path, class: "dropdown-item" %>
+        </li> 
 
           </ul>
         </li>  
-        <% end %>
+        
         <% if current_user.is_manager || current_user.is_marketing || current_user.sales? || current_user.admin? %>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

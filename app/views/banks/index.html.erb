@@ -1,6 +1,12 @@
 <div class="col-lg-10 mx-auto mt-5">
 	<row class="m-2">
 		<div class="col-sm">
+			<%= link_to new_transfer_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
+  						Transfer
+  		<% end %>
+  		<%= link_to new_deposit_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+  						Deposite
+  		<% end %>
 			<table class="table table-striped">
 				<thead>
 					<tr>

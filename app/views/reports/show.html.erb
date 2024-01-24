@@ -1,0 +1,52 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<% if @report.errors.any? %>
+				<div class="error-area" style="color:red;">
+					<h3><%= pluralize(@report.errors.count, 'error') %> prohibited your Report from being saved.</h3>
+					<ul>
+						<% @report.errors.each do |error|%>
+						<li>
+							<%= error.full_message%>
+						</li>
+						<% end %>
+					</ul>
+				</div>
+				<% end %>
+			</div>
+			<ul class="list-group" id="report_items">
+				<%= render 'reports/report', report: @report %>
+			</ul>
+		</div>
+	</div>
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<h5>Comments</h5>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-end">
+						<%= link_to new_report_comment_path(@report), data: { controller: "bs-modal-form", report_id: @report.id }, class: "btn btn-primary" do %>
+						Add Comment
+						<% end %>
+					</div>
+				</div>
+			</div>
+
+			<ul class="list-group mt-1" id="comment_items">
+				<% if @report.comments.present? %>
+				<% @report.comments.reverse.each do |comment| %>
+				<%= render 'comments/comment', comment: comment %>
+				<% end %>
+
+				<% else %>
+				<p>no comments</p>
+				<% end %>
+			</ul>
+		</div>
+	</div>
+</div>
