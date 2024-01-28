@@ -42,7 +42,11 @@ class SwiftsController < ApplicationController
 	end
 
 	def update
-	    if @swift.update(swift_params)
+		updated_params = swift_params
+		if updated_params[:documents].present? && updated_params[:documents].all?(&:blank?)
+		   updated_params.delete(:documents)
+		end
+	    if @swift.update(updated_params)
 	      redirect_to swifts_path, notice: 'Swift was successfully updated.'
 	    else
 	      render :edit
