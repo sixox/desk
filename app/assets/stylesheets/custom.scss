@@ -71,5 +71,11 @@
 		z-index: 1; /* Ensure the stamp image appears above the content */
 		opacity: 0.5; /* Adjust the opacity as needed */
 }
+.my-custom-accordion-btn {
+  padding: 0.25rem 0.5rem; /* Smaller padding */
+  font-size: 0.875rem; /* Smaller font size */
+  color: darkblue;
+  background-color: #fbc3c3;
+}
 
 

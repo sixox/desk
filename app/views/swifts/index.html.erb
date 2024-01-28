@@ -70,7 +70,20 @@
 					end
 				%></td>
 				<td>
-					<%= swift.note %>
+				  <div class="accordion" id="accordionNote<%= swift.id %>">
+				    <div class="accordion-item">
+				      <h2 class="accordion-header" id="headingNote<%= swift.id %>">
+				       <button class="accordion-button collapsed my-custom-accordion-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNote<%= swift.id %>" aria-expanded="false" aria-controls="collapseNote<%= swift.id %>">
+						  Note
+						</button>
+				      </h2>
+				      <div id="collapseNote<%= swift.id %>" class="accordion-collapse collapse" aria-labelledby="headingNote<%= swift.id %>" data-bs-parent="#accordionNote<%= swift.id %>">
+				        <div class="accordion-body">
+				          <%= swift.note %>
+				        </div>
+				      </div>
+				    </div>
+				  </div>
 				</td>
 				<td style="text-align: right;">
 					<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
