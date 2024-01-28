@@ -13,7 +13,7 @@ class ProjectsController < ApplicationController
 
 	def index
 		@q = Project.ransack(params[:q])
-		@projects = @q.result.order(updated_at: :desc)
+		@projects = @q.result.order(number: :desc)
 
 	end
 
