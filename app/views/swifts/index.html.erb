@@ -87,6 +87,9 @@
 						<%= link_to edit_swift_path(swift), data: { controller: "bs-modal-form" } do %>
 							<i class="bi bi-pencil-fill" style="color: red;"></i>
 							<% end %>
+							<%= link_to swift_path(swift), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this Swift , this action can not be undo!' } do %>
+					<i class="bi bi-trash text-danger"></i>
+					<% end %>
 					<% end %>
 
 					

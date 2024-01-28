@@ -2,7 +2,7 @@ class SwiftsController < ApplicationController
 	# before_action :set_swift, only: [:show, :edit, :update, :destroy]
 	before_action :authenticate_user!
 	before_action :set_ci_or_project, only: %i[ new create ] 
-	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm edit update ] 
+	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm edit update destroy ] 
 
 
 	def new
@@ -95,6 +95,13 @@ class SwiftsController < ApplicationController
 				format.json { render json: @swift.errors, status: :unprocessable_entity }
 
 			end
+		end
+	end
+
+	def destroy
+		respond_to do |format|
+			@swift.destroy
+	      	redirect_to swifts_path, notice: 'Swift was successfully removed.'
 		end
 	end
 
