@@ -70,6 +70,7 @@
 					end
 				%></td>
 				<td>
+					<% if swift.note.present? %>
 				  <div class="accordion" id="accordionNote<%= swift.id %>">
 				    <div class="accordion-item">
 				      <h2 class="accordion-header" id="headingNote<%= swift.id %>">
@@ -84,6 +85,9 @@
 				      </div>
 				    </div>
 				  </div>
+				  <% else %>
+				  -
+				  <% end %>
 				</td>
 				<td style="text-align: right;">
 					<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
