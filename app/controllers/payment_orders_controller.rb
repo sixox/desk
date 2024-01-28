@@ -344,7 +344,7 @@ class PaymentOrdersController < ApplicationController
 
 		respond_to do |format|
 			if @payment_order.update(payment_order_params)
-				format.turbo_stream { render turbo_stream: turbo_stream.replace("payment_order_item_#{@payment_order.id}", partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }) }
+	      redirect_to @payment_order, notice: 'Payment order was successfully updated.'
 			else
 				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
 			end
