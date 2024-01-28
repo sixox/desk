@@ -2,7 +2,7 @@ class SwiftsController < ApplicationController
 	# before_action :set_swift, only: [:show, :edit, :update, :destroy]
 	before_action :authenticate_user!
 	before_action :set_ci_or_project, only: %i[ new create ] 
-	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm ] 
+	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm edit update ] 
 
 
 	def new
@@ -28,6 +28,28 @@ class SwiftsController < ApplicationController
 			render :new
 		end
 	end
+
+	def edit
+		@projects = Project.all
+		@banks = Bank.all
+		if @swift.project.present?
+			@object = 2
+			@project = @swift.project
+		else
+			@object = 1
+			@ci = @swift.ci
+		end
+	end
+
+	def update
+	    if @swift.update(swift_params)
+	      redirect_to swifts_path, notice: 'Swift was successfully updated.'
+	    else
+	      render :edit
+	    end
+ 	end
+ 	
+
 
 	def edit_amount_before_confirm
 		@banks = Bank.all

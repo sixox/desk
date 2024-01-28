@@ -102,6 +102,9 @@
 
 				</div>
 			</div>
+		
+			
+		
 			
 		</div>
 
@@ -215,6 +218,17 @@
 						</label>
 					</div>
 
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="form-group">
+						<label for="amount" class="form-label">
+							Project
+							<span class="text-danger">*</span>
+						</label>
+					<%= form.collection_select :project_id, @projects, :id, :number, { prompt: 'Select Project'}, { class: "form-select" } %>		
+					</div>
 				</div>
 			</div>
 			
