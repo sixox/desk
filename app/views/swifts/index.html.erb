@@ -100,7 +100,7 @@
 					<% end %>
 					
 					<% end %>
-					<% if !swift.confirmed && !swift.rejected && current_user.sales? %>
+					<% if !swift.confirmed && !swift.rejected && current_user.sales? || true %>
 						<%= link_to edit_swift_path(swift), data: { controller: "bs-modal-form" } do %>
 							<i class="bi bi-pencil-fill" style="color: red;"></i>
 							<% end %>
