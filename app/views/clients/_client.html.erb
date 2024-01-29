@@ -10,7 +10,7 @@
 				<p class="fw-bold">Name <span class="text-warning"><%= client.name %></span> </p>				
 			</div>
 			<div class="col-lg-4">
-				<p class="fw-bold"><span class="text-warning"><%= client.quantity ? "#{client.quantity}MT " : "" %><%= client.product %></span> PACKING <span class="text-warning"><%= client.packing %></span>
+				<p class="fw-bold"><span class="text-warning"><%= client.quantity ? "#{client.quantity}MT " : "" %><%= client.product %></span> <%= client.packing ? "PACKING" : "" %> <span class="text-warning"><%= client.packing %></span>
 				</p>				
 			</div>
 			<div class="col-lg">
