@@ -17,6 +17,8 @@ class PaymentOrder < ApplicationRecord
   attr_accessor :skip_coo_confirmation_requirement
 
   validates :currency, presence: true
+  validates :amount, presence: true
+
 
 
   # validate :coo_confirmation_requires_bank, unless: :skip_coo_confirmation_requirement

@@ -9,12 +9,17 @@
   </thead>
   <tbody>
     <% payment_orders.order(created_at: :desc).each do |payment_order| %>
-      <tr style="font-size: 12px;" class="<%= case payment_order.user_role
+      <tr style="font-size: 12px;" 
+      <% if controller_name == 'payment_orders' %>
+
+      class="<%= case payment_order.user_role
            when 'accounting' then 'table-warning'
            when 'procurement' then 'table-success'
            when 'sales' then 'table-info'
            else ''
-           end %>">
+           end %>"
+      <% end %>     
+           >
         <th scope="row">
           <%= link_to payment_order.id, payment_order_path(payment_order), class: "notifLink" %>
         </th>

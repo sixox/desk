@@ -9,6 +9,18 @@ class ProjectsController < ApplicationController
 		@cis = @project.cis if @project.cis
 		@bookings = @project.bookings if @project.bookings
 		@allocates = @project.ballance_projects
+		filtered_payment_orders = @project.payment_orders
+		@payment_orders_with_status_paid_dollar = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'dollar')
+		@payment_orders_with_status_paid_dirham = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'dirham')
+		@payment_orders_with_status_paid_rial = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'rial')
+		@sum_paid_dollar = @payment_orders_with_status_paid_dollar.sum(:amount)
+		@sum_paid_dirham = @payment_orders_with_status_paid_dirham.sum(:amount)
+		@sum_paid_rial = @payment_orders_with_status_paid_rial.sum(:amount)
+
+		@payment_orders_with_status_not_paid = filtered_payment_orders.where.not(status: ['wait for delivery', 'delivered'])
+
+
+
 	end
 
 	def index

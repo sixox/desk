@@ -10,156 +10,210 @@
 				<h5 class="card-title text-center mb-0">Swifts</h5>
 			</div>
 			<% @project.swifts.each do |ci|%>
-				<row class="m-2">
-					<div class="col-sm">
-						<table class="table">
-							<thead>
-								<tr>
-									<th scope="col" class="col-sm-1">#</th>
-									<th scope="col" class="col-sm-2">Amount</th>
-									<th scope="col" class="col-sm-2">Deposited Amount</th>
-									<th scope="col" class="col-sm-2">From</th>
+			<row class="m-2">
+				<div class="col-sm">
+					<table class="table">
+						<thead>
+							<tr>
+								<th scope="col" class="col-sm-1">#</th>
+								<th scope="col" class="col-sm-2">Amount</th>
+								<th scope="col" class="col-sm-2">Deposited Amount</th>
+								<th scope="col" class="col-sm-2">From</th>
 
-									<th scope="col" class="col-sm-2">To</th>
-									<th scope="col" class="col-sm-2">Currency</th>
-									<th scope="col" class="col-sm-2">Project</th>
-									<th scope="col" class="col-sm-2">Document</th>
-									<th scope="col" class="col-sm-2">Type</th>
-
-
+								<th scope="col" class="col-sm-2">To</th>
+								<th scope="col" class="col-sm-2">Currency</th>
+								<th scope="col" class="col-sm-2">Project</th>
+								<th scope="col" class="col-sm-2">Document</th>
+								<th scope="col" class="col-sm-2">Type</th>
 
 
 
-									<th scope="col" class="col-sm-2">Status</th>
-									<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
-								</tr>
-							</thead>
-							<tbody>
-								<% @project.swifts.order(created_at: :desc).each do |swift| %>
-								<tr style="font-size: 12px;" class="<%= 
-								if swift.confirmed.present?
-									'table-success'
-								elsif swift.rejected.present?
-									'table-danger'
-								else
-									'table-warning'
-								end
 
-								 %>">
-								<th scope="row">
-									<%= swift.id %>
-								</th>
-								<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
-								<td class="fw-bold"><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
-								<td><%= swift.from %></td>
+								<th scope="col" class="col-sm-2">Status</th>
+								<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
-								<td><%= swift.bank.name %></td>
-								<td><%= swift.currency %></td>
-								<% if swift.ci.present? %>
-								<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
-								<% else %>
-								<td><%= link_to swift.project.number, project_path(swift.project) %></td>
-								<% end %>
-								<td><% swift.documents.each do |file| %>
-									<small> 
-										<%= link_to file.filename, rails_blob_path(file, disposition: 'attachment') %> 
-									</small>
-									<% end %>
-								</td>
-								<td><%= swift.advance ? "Advance" : "Balance" %></td>
-								<td><%= 
-								if swift.confirmed.present?
-									"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
-								elsif swift.rejected.present?
-									"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
-								else
-									'Wait for deposite'
-								end
-							%></td>
-							<td style="text-align: right;">
-								<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
-								<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>
-										<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-										<% end %></span>
-								|
-								<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
-								<i class="bi bi-calendar-x-fill" style="color: red;"></i>
-								<% end %>
-								
-								<% end %>
-
-								
-							</td>
 							</tr>
+						</thead>
+						<tbody>
+							<% @project.swifts.order(created_at: :desc).each do |swift| %>
+							<tr style="font-size: 12px;" class="<%= 
+							if swift.confirmed.present?
+								'table-success'
+							elsif swift.rejected.present?
+								'table-danger'
+							else
+								'table-warning'
+							end
+
+						%>">
+						<th scope="row">
+							<%= swift.id %>
+						</th>
+						<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+						<td class="fw-bold"><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
+						<td><%= swift.from %></td>
+
+						<td><%= swift.bank.name %></td>
+						<td><%= swift.currency %></td>
+						<% if swift.ci.present? %>
+						<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
+						<% else %>
+						<td><%= link_to swift.project.number, project_path(swift.project) %></td>
+						<% end %>
+						<td><% swift.documents.each do |file| %>
+							<small> 
+								<%= link_to file.filename, rails_blob_path(file, disposition: 'attachment') %> 
+							</small>
 							<% end %>
-						</tbody>
-					</table>
+						</td>
+						<td><%= swift.advance ? "Advance" : "Balance" %></td>
+						<td><%= 
+						if swift.confirmed.present?
+							"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
+						elsif swift.rejected.present?
+							"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
+						else
+							'Wait for deposite'
+						end
+					%></td>
+					<td style="text-align: right;">
+						<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
+						<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>
+							<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+							<% end %></span>
+							|
+							<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
+							<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+							<% end %>
 
-					</div>
-				</row>
+							<% end %>
+
+
+						</td>
+					</tr>
+					<% end %>
+				</tbody>
+			</table>
+
+		</div>
+	</row>
+	<% end %>
+
+</div>
+</div>
+
+<% end %>
+
+
+
+<% if @project.pi %>
+<%= render 'pis/pi', pi: @pi, project: @project %>
+<% if @project.cis.present? %>
+<div class="card mb-5" id="ci_items">
+	<div class="card-body">
+		<div class="d-flex justify-content-between align-items-center">
+			<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
+			<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" } do %>
+			<i class="bi bi-plus"></i> Add CI
 			<% end %>
+
+
+		</div>
+		<% @cis.each do |ci|%>
+		<%= render 'cis/ci', ci: ci, project: @project %>
+		<% end %>
+
+	</div>
+</div>
+
+
+
+
+
+<% end %>
+
+<% if @project.bookings.present? %>
+<div class="card mb-5" id="ci_items">
+	<div class="card-body">
+		<div class="d-flex justify-content-between align-items-center">
+			<h5 class="card-title text-center mb-0">Bookings</h5>
+			<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
+			<i class="bi bi-plus"></i> Add Booking
+			<% end %>
+
+
+		</div>
+		<% @bookings.each do |booking|%>
+		<h6 class="text-info mt-2">
+			<%= booking.part ? "part #{booking.part}" : "" %>
+		</h6>
+		<%= render 'bookings/booking', booking: booking, project: @project %>
+
+		<% end %>
+
+	</div>
+</div>
+<% end %>
+
+
+
+
+
+<% end %>
+<% if @payment_orders_with_status_paid_dollar.present? || @payment_orders_with_status_paid_dirham.present? || @payment_orders_with_status_paid_rial.present? %>
+<div class="row mb-2 bg-body rounded">
+	<h4 class="text-secondary mt-2">Paid Payment Orders</h4>
+	<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+		<h6 class="text-muted mt-1">Rial</h6>
+		<div>
+			<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_rial, sum: @sum_paid_rial %>
+
+		</div>
+	</div>
+	<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+		<h6 class="text-muted mt-1">Dollar</h6>
+		<div>
+			<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_dollar, sum: @sum_paid_dollar %>
 
 		</div>
 	</div>
 
-	<% end %>
-
-
-
-	<% if @project.pi %>
-	<%= render 'pis/pi', pi: @pi, project: @project %>
-	<% if @project.cis.present? %>
-	<div class="card mb-5" id="ci_items">
-		<div class="card-body">
-			<div class="d-flex justify-content-between align-items-center">
-				<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
-				<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" } do %>
-				<i class="bi bi-plus"></i> Add CI
-				<% end %>
-
-
-			</div>
-			<% @cis.each do |ci|%>
-			<%= render 'cis/ci', ci: ci, project: @project %>
-			<% end %>
+</div>
+<div class="row mb-2 bg-body rounded">
+	<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+		<h6 class="text-muted mt-1">Dirham</h6>
+		<div>
+			<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_dirham, sum: @sum_paid_dirham %>
 
 		</div>
 	</div>
+	<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+		<h6 class="text-danger mt-1">Summery</h6>
+		<div></div>
+	</div>
 
-
-
-
-
-	<% end %>
-
-	<% if @project.bookings.present? %>
-	<div class="card mb-5" id="ci_items">
-		<div class="card-body">
-			<div class="d-flex justify-content-between align-items-center">
-				<h5 class="card-title text-center mb-0">Bookings</h5>
-				<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
-				<i class="bi bi-plus"></i> Add Booking
-				<% end %>
-
-
+</div>
+<% end %>
+<% if @payment_orders_with_status_not_paid.present?  %>
+<div class="card mb-5">
+	<div class="card-body">
+		<div class="row mb-3">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Not Paid Payment Orders</h3>
+				</div>
 			</div>
-			<% @bookings.each do |booking|%>
-			<h6 class="text-info mt-2">
-				<%= booking.part ? "part #{booking.part}" : "" %>
-			</h6>
-			<%= render 'bookings/booking', booking: booking, project: @project %>
 			
-			<% end %>
-
 		</div>
+		<ul class="list-group" id="payment_order_items">
+			<% @payment_orders_with_status_not_paid.each do |payment_order| %>
+			<%= render 'payment_orders/payment_order', payment_order: payment_order %>
+			<% end %>
+		</ul>
 	</div>
-	<% end %>
+</div>
+<% end %>
 
-
-
-
-
-	<% end %>
 </div>
 
