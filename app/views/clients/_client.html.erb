@@ -53,6 +53,11 @@
 				<p class="fw-bold">Assigned to : <small class="text-warning"><%= client.follower %></small></p>
 			</div>
 		</div>
+		<div class="row">
+			<div class="col-4">
+				<p class="fw-bold">Email : <small class="text-warning"><%= client.email %></small></p>
+			</div>
+		</div>
 		<% if controller_name == 'clients' && action_name == 'show' %>
 			<%= link_to "Edit", edit_client_path(client), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
 			
