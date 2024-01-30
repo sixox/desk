@@ -117,9 +117,11 @@
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             HR
           </a>
+          <% if current_user.is_manager %>
           <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
             <%= count_not_confirmed_vacations %>
           </span>
+          <% end %>
           <ul class="dropdown-menu text-white">
             <% if current_user.is_manager %>
             <li><%= link_to "Vacations", managment_vacations_path, class: "dropdown-item" %></li>
