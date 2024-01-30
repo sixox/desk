@@ -17,11 +17,11 @@
 						<th scope="col" class="col-sm-2">Kind</th>
 						
 						<th scope="col" class="col-sm-2">Balance</th>
+						<th scope="col" class="col-sm-2">Expected Balance</th>
 						<th scope="col" class="col-sm-2">Currency</th>
 
 
 
-						<th scope="col" class="col-sm-2">Checked</th>
 						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
 					</tr>
@@ -38,8 +38,8 @@
 
 
 						<td class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',') %></td>
+						<td class="fw-bold"><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></td>
 						<td><%= bank.currency %></td>
-						<td class="fw-bold"><%= number_with_delimiter(bank.checked_balance, delimiter: ',') %></td>
 
 						<td style="text-align: right;">
 							<%= link_to bank_path(bank) do %>
