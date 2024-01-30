@@ -16,15 +16,15 @@
 						<th scope="col" class="col-sm-1">Name</th>
 						<th scope="col" class="col-sm-1">Kind</th>
 						
-						<th scope="col" class="col-sm-2">Balance</th>
+						<th scope="col" class="col-sm-1">Balance</th>
 						<th scope="col" class="col-sm-2">Expected Balance</th>
-						<th scope="col" class="col-sm-2">Currency</th>
+						<th scope="col" class="col-sm-1">Currency</th>
 						<th scope="col" class="col-sm-2">Last change at</th>
 						
 
 
 
-						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+						<th scope="col" style="text-align: right;" class="col-sm-1 text-right">Actions</th>
 
 					</tr>
 				</thead>
@@ -39,7 +39,7 @@
 
 
 
-						<td class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',') %></td>
+						<td class="fw-bold"><span class="bg-warning"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></span> </td>
 						<td class="fw-bold"><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></td>
 						<td><%= bank.currency %></td>
 						<td><%= bank.updated_at&.strftime('%b %d')  %></td>
