@@ -314,14 +314,18 @@ class PaymentOrdersController < ApplicationController
 	def update
 
 		if params[:payment_order].key?(:receipt) || params[:payment_order].key?('receipt')
+			@payment_order.assign_attributes(payment_order_params)
 		    @bank = @payment_order.bank
 		  
 			if @payment_order.currency == @bank.currency
 		      # Scenario 1: Currencies match, proceed normally
-		      new_amount = @bank.account_balance - @payment_order.amount
+		      if @payment_order.exchange_amount.present?
+		      	new_amount = @bank.account_balance - @payment_order.exchange_amount
+		      else
+		      	new_amount = @bank.account_balance - @payment_order.amount.to_f
+		      end
 			elsif @payment_order.currency != @bank.currency && (@payment_order.exchange_amount.present? || params[:payment_order][:exchange_amount].present?)
 		      # Scenario 2: Currencies don't match, but exchange_amount is provided
-		      @payment_order.assign_attributes(payment_order_params)
 		      if @payment_order.valid?
 		        @payment_order.save
 		        new_amount = @bank.account_balance - @payment_order.exchange_amount.to_f
