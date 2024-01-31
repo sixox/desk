@@ -56,7 +56,9 @@
             Marketing
           </a>
           <ul class="dropdown-menu text-white">
+            <%if current_user.is_marketing.present? %>
             <li><%= link_to "New Client", new_client_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
+            <% end %>
             <li>
               <%= link_to 'Clients', clients_path, class: 'dropdown-item' %>
             </li>
