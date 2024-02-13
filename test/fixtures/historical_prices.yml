@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  quantity: MyString
+  purchase_price: MyString
+  fob_cost: MyString
+  fob_price: MyString
+  time: 2024-02-07 11:29:58
+  price: one
+  user: one
+
+two:
+  quantity: MyString
+  purchase_price: MyString
+  fob_cost: MyString
+  fob_price: MyString
+  time: 2024-02-07 11:29:58
+  price: two
+  user: two

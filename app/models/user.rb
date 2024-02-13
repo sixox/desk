@@ -18,6 +18,9 @@ class User < ApplicationRecord
   has_many :comments
   has_many :clients
   has_many :reports
+  has_many :prices
+  has_many :historical_prices, dependent: :destroy
+
 
 
   enum role: {

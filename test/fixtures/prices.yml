@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  packing: MyString
+  oil_content: MyString
+  refinery: MyString
+  quantity: MyString
+  purchase_price: MyString
+  fob_cost: MyString
+  fob_price: MyString
+  comment: MyString
+  user: one
+
+two:
+  name: MyString
+  packing: MyString
+  oil_content: MyString
+  refinery: MyString
+  quantity: MyString
+  purchase_price: MyString
+  fob_cost: MyString
+  fob_price: MyString
+  comment: MyString
+  user: two

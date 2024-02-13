@@ -87,6 +87,12 @@ Rails.application.routes.draw do
   resources :reports do
     resources :comments
   end
+  resources :prices do
+    member do
+      get "add_price", to: "prices#add_price"
+
+    end
+  end
 
 
   get 'member/:id', to: 'members#show', as: 'member'

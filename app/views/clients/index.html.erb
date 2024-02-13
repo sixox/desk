@@ -1,8 +1,10 @@
 
 <div class="col-lg-10 mx-auto mt-5">
 	<row class="m-2">
+		<%if current_user.is_marketing.present? %>
 		<%= link_to new_client_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
 		Add Client
+		<% end %>
 		<% end %>
 		<div class="col-12">
 			<table class="table table-striped">
