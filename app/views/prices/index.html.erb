@@ -51,8 +51,10 @@
 						<td><small> <%= price.status %></small></td>
 						<td><small><%= time_ago_in_words(price.updated_at) %> ago</small></td>
 						<td>
+							<% if current_user.procurement? || current_user.admin? %>
 							<%= link_to add_price_price_path(price), method: :patch, data: { turbo_stream: true }, class: "" do %>
 							<i class="bi bi-plus-circle"></i>
+							<% end %>
 							<% end %>
 							<%= link_to "##{dom_id(price)}-details", class: "", data: { bs_toggle: "collapse" }, aria_expanded: "false", aria_controls: "#{dom_id(price)}-details" do %>
 							<i class="bi bi-chevron-down"></i> <!-- Example icon -->
