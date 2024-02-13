@@ -64,6 +64,9 @@
           <li>
             <%= link_to 'Inventories', ballances_path, class: 'dropdown-item' %>
           </li>
+          <li>
+            <%= link_to 'Pricing', prices_path, class: 'dropdown-item' %>
+          </li>
           <% if current_user.procurement? %>
           <li class="">
             <%= link_to "Suppliers", suppliers_path, class: "dropdown-item" %>
