@@ -6,7 +6,7 @@ class PricesController < ApplicationController
   def index
     # @prices = Price.all
     @q = Price.ransack(params[:q])
-    @prices = @q.result.order(:created_at)
+    @prices = @q.result.order(updated_at: :desc)
   end
 
   def show
@@ -62,6 +62,6 @@ class PricesController < ApplicationController
   end
 
   def price_params
-    params.require(:price).permit(:name, :packing, :oil_content, :refinery, :quantity, :purchase_price, :fob_cost, :fob_price, :description, :status, :user_id)
+    params.require(:price).permit(:name, :packing, :oil_content, :refinery, :quantity, :purchase_price, :fob_cost, :fob_price, :description, :status, :user_id, :validation_time)
   end
 end

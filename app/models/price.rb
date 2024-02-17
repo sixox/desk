@@ -34,6 +34,10 @@ class Price < ApplicationRecord
     'BULK'
   ]
 
+  def not_validate
+    validation_time.present? && validation_time > Time.now
+  end
+
   def self.ransackable_attributes(auth_object = nil)
     ['name', 'refinery']
   end

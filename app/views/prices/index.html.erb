@@ -40,7 +40,7 @@
 						<th>FOB Cost</th>
 						<th>FOB Price</th>
 						<th scope="col" class="col-sm-1 text-truncate">Description</th>
-						<th>Status</th>
+						<th>Validation Date</th>
 						<th scope="col" class="col-sm-4">Time</th>
 						<th>Actions</th>
 					</tr>
@@ -60,7 +60,13 @@
 								<small>	<%= price.description %></small>
 							</div>
 						</td>
-						<td><small> <%= price.status %></small></td>
+						<td>
+							<% if price.not_validate == false %>
+							<small class="bg-danger fw-bold"> NOT-VALID </small>
+							<% else %>
+							<small class="bg-success"><%= price.validation_time&.strftime('%b %d') %></small>
+							<% end %>
+						</td>
 						<td><small><%= time_ago_in_words(price.updated_at) %> ago</small></td>
 						<td>
 							<% if current_user.procurement? || current_user.admin? %>
