@@ -54,6 +54,20 @@ class PaymentOrdersController < ApplicationController
 
 	end
 
+	def hamed_confirm
+		@payment_order.hamed_confirm = true
+		@payment_order.hamed_confirmed_at = Time.now
+		respond_to do |format|
+			if @payment_order.save
+				format.html { redirect_to payment_orders_path }
+			else
+				format.html { render :show, status: :unprocessable_entity }
+				format.json { render json: @payment.errors, status: :unprocessable_entity }
+
+			end
+		end
+	end
+
 	def confirm
 		link_to_action = "/payment_orders/#{params[:id]}"
 		coo = User.find(9)

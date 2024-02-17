@@ -42,6 +42,7 @@ Rails.application.routes.draw do
       get "delivered", to: "payment_orders#delivered"
       patch "reject", to: "payment_orders#reject"
       get "reject", to: "payment_orders#reject"
+      patch "hamed_confirm", to: "payment_orders#hamed_confirm"
 
     end
     collection do
