@@ -20,7 +20,7 @@
 					</div>
 				</div>
 				<div class="col-lg-6">
-					<% if current_user.admin? %>
+					<% if current_user.admin? || current_user.procurement? %>
 					<div class="d-flex justify-content-end">
 						<%= link_to new_price_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
 						<i class="bi bi-plus"></i> Create Pricing

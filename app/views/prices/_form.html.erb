@@ -17,13 +17,13 @@
         <div class="col-lg-6">
             <div class="form-group mt-3">
                 <%= form.label :name, 'Name', class: 'form-label' %>
-                <%= form.text_field :name, class: "form-control" %>
+                <%= form.select :name, options_for_select(Price::PRODUCT, selected: form.object.name), { prompt: 'Select product' }, { class:"form-select " } %>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="form-group mt-3">
                 <%= form.label :packing, 'Packing', class: 'form-label' %>
-                <%= form.text_field :packing, class: "form-control" %>
+                <%= form.select :packing, options_for_select(Price::PACKING, selected: form.object.packing), { prompt: 'Select packing' }, { class:"form-select " } %>
             </div>
         </div>
     </div>
