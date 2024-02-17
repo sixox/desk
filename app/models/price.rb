@@ -2,6 +2,8 @@ class Price < ApplicationRecord
   belongs_to :user
   has_many :historical_prices, dependent: :destroy
 
+  validates_presence_of :name, :packing
+
   validates :name, uniqueness: { scope: :packing, message: "and packing combination must be unique" }
 
 
