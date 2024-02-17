@@ -101,10 +101,11 @@
 		<div class="col-lg-10 mb-2">
 			<div class="d-flex justify-content-start">
 				detail: <span class="fw-bold"><%= payment_order.details %>  </span>
-				<% if payment_order.hamed_confirm.present? %>
+				
 				
 				
 			</div>
+			<% if payment_order.hamed_confirm.present? %>
 			<div class="text-danger fw-bold"><small> Confirmd by Mr.Iranshahy</small></div>
 				<% end %>
 		</div>
