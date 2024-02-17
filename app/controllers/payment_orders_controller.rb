@@ -1,7 +1,7 @@
 class PaymentOrdersController < ApplicationController
 
 	before_action :authenticate_user!
-	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy ]
+	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy hamed_confirm ]
 	before_action :set_form_items, only: %i[ new edit create ] 
 	
 
