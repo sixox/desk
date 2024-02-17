@@ -88,6 +88,7 @@
 													<th>Purchase Price</th>
 													<th>FOB Cost</th>
 													<th>FOB Price</th>
+													<th>Refinery</th>
 													<th>Time</th>
 												</tr>
 											</thead>
@@ -98,6 +99,7 @@
 													<td><%= historical_price.purchase_price %></td>
 													<td><%= historical_price.fob_cost %></td>
 													<td><%= historical_price.fob_price %></td>
+													<td><%= historical_price.refinery %></td>
 <td><%= time_ago_in_words(historical_price.time) %> ago</td>												</tr>
 												<% end %>
 											</tbody>

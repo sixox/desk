@@ -38,7 +38,8 @@ class PricesController < ApplicationController
       purchase_price: @price.purchase_price,
       fob_cost: @price.fob_cost,
       fob_price: @price.fob_price,
-      time: @price.created_at, 
+      time: @price.created_at,
+      refinery: @price.refinery, 
       user_id: @price.user.id 
     )
     @price.user = current_user 
