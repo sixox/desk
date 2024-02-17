@@ -64,7 +64,7 @@
 							<% if price.not_validate == false %>
 							<small class="bg-danger fw-bold"> NOT-VALID </small>
 							<% else %>
-							<small class="bg-success"><%= price.validation_time&.strftime('%b %d') %></small>
+							<small class="bg-success fw-bold"><%= price.validation_time&.strftime('%b %d') %></small>
 							<% end %>
 						</td>
 						<td><small><%= time_ago_in_words(price.updated_at) %> ago</small></td>
