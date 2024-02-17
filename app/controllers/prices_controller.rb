@@ -4,7 +4,9 @@ class PricesController < ApplicationController
   before_action :set_price, only: [:show, :edit, :update, :destroy, :add_price]
 
   def index
-    @prices = Price.all
+    # @prices = Price.all
+    @q = Price.ransack(params[:q])
+    @prices = @q.result.order(:created_at)
   end
 
   def show

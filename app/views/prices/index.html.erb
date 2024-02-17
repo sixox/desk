@@ -1,4 +1,16 @@
 <div class="col-lg-10 mx-auto mt-5">
+	<div class="card mt-4 mb-4">
+		<div class="card-body">
+			<h3 class="text-center mb-3">Search in Prices</h3>
+			<%= search_form_for @q, url: prices_path do |form| %>
+			
+			<div class="input-group mb-3">
+				<%= form.search_field :name_or_refinery_cont, class: "form-control", placeholder: "Search by product name or refinary", area: { label: "Search by product name or refinary", describedby: "button-addon2" } %>
+				<%= form.submit "Search", class: "btn btn-primary", id: "button-addon2" %>
+			</div>
+			<% end %>
+		</div>
+	</div>
 	<div class="card mb-5">
 		<div class="card-body">
 			<div class="row mb-3">
