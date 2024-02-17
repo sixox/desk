@@ -29,12 +29,7 @@
     </div>
     
     <div class="row">
-        <div class="col-lg-4">
-            <div class="form-group mt-3">
-                <%= form.label :validation_time, 'Validation Date', class: 'form-label' %>
-                <%= form.datetime_field :validation_time, class: "form-control" %>
-            </div>
-        </div>
+       
         <div class="col-lg-4">
             <div class="form-group mt-3">
                 <%= form.label :refinery, 'Refinery', class: 'form-label' %>
@@ -74,10 +69,8 @@
         <div class="col-lg-6">
 
             <div class="form-group mt-3">
-                <label for="amount" class="form-label">
-                    Status
-                </label>
-                <%= form.select :status, options_for_select(Price::STATUSES, selected: form.object.status), { prompt: '' }, { class:"form-select" } %>
+                <%= form.label :validation_time, 'Validation Date', class: 'form-label' %>
+                <%= form.datetime_field :validation_time, class: "form-control" %>
             </div>
         </div>
     </div>
