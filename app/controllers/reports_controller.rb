@@ -4,7 +4,7 @@ class ReportsController < ApplicationController
 
   # GET /reports
   def index
-    if current_user.ceo?
+    if current_user.ceo? || current_user.admin?
       @reports = Report.all.order(created_at: :desc)
     else
       @reports = Report.by_user_role(current_user.role)
