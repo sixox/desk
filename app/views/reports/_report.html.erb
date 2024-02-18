@@ -12,7 +12,8 @@
 		<div class="col-sm-7">
 			<div class="text-center">
 				<small class="fw-bold text-secondary">Department:</small>
-				<span class="text-danger"> <%= report.user.role %> <small class="fw-bold text-secondary">by </small><%= report.user.name %></span>
+				<span class="text-danger"> 
+					<%= report.invest.present? ? "Investment" : report.user.role %> <small class="fw-bold text-secondary">by </small><%= report.user.name %></span>
 			</div>
 		</div>
 

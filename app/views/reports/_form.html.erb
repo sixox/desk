@@ -52,6 +52,16 @@
 					<%= form.file_field :documents, multiple: true, class: 'form-control' %>
 				</div>
 			</div>
+			<% if current_user.marketing? %>
+			<div class="col-lg">
+				<div class="form-group mb-2 mt-3">
+					<%= form.check_box :invest, class: 'form-check-input' %>
+					<label class="form-check-label" for="invest">
+						Invest Dep?
+					</label>
+				</div>
+			</div>
+			<% end %>
 		</div>
 
 
