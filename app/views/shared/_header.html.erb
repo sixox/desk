@@ -36,7 +36,10 @@
           <li>
             <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
           </li>
-          <li>
+         
+          <% end %>
+          <% if current_user.sales? || current_user.marketing? %>
+           <li>
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
           <% end %>
