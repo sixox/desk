@@ -7,7 +7,7 @@ class ReportsController < ApplicationController
     if current_user.ceo? || current_user.admin?
       @reports = Report.all.order(created_at: :desc)
     else
-      @reports = Report.by_user_role(current_user.role)
+      @reports = Report.by_user_role(current_user.role).order(created_at: :desc)
     end
   end
 
