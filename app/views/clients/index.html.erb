@@ -46,7 +46,7 @@
 						<td><%= client.quantity %></td>
 						<td><%= client.preferred_connection %></td>
 						<td><%= client.received_from %></td>
-						<td><%= client.status %></td>
+						<td class="fw-bold"><span class="<%= client.status == "Rejected" ? "bg-danger" : "bg-warning" %>"><%= client.status %></span></td>
 						<td><%= client.follower %></td>
 						<td><%= client.comments.present? ? "#{client.comments.last.user.first_name} #{time_ago_in_words(client.comments.last.updated_at)} ago" : "-" %></td>
 					</tr>
