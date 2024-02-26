@@ -13,7 +13,14 @@ Rails.application.routes.draw do
   devise_for :users
   root 'home#index'
   resources :customers
-  resources :pis
+  resources :pis do
+    member do
+    get :create_document_form
+    post :create_document
+    patch :create_document
+
+    end
+  end
   resources :projects do
     resources :ballance_projects
     resources :pis
@@ -94,6 +101,8 @@ Rails.application.routes.draw do
 
     end
   end
+
+  resources :letter_heads
 
 
   get 'member/:id', to: 'members#show', as: 'member'

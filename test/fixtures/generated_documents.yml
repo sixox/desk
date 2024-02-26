@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  file: MyString
+  user: one
+  pi: one
+  ci: one
+
+two:
+  name: MyString
+  file: MyString
+  user: two
+  pi: two
+  ci: two

@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :reports
   has_many :prices
   has_many :historical_prices, dependent: :destroy
+  has_many :generated_documents
 
 
 

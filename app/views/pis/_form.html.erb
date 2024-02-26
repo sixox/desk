@@ -104,7 +104,7 @@
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Payment Term
+							Advance %
 							<span class="text-danger">*</span>
 							<%= form.text_field :payment_term, class: "form-control mt-2" %>
 						</label>
@@ -113,7 +113,7 @@
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Shipment Rate
+							Frieght
 							<%= form.number_field :shipment_rate, class: "form-control mt-2" %>
 						</label>
 					</div>
@@ -130,15 +130,27 @@
 						</label>
 					</div>
 				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Tolerance
+							<span class="text-danger">*</span>
+							
+							<%= form.number_field :tolerance, class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
 			</div>
 
 			<div class="row">
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Destination Port
+							Loading Port
 							<span class="text-danger">*</span>
-							<%= form.text_field :pod, class: 'form-control mt-2' %>
+							<%= form.text_field :pol, class: 'form-control mt-2' %>
 
 						</label>
 					</div>
@@ -146,14 +158,14 @@
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Delivery Time
-							<div class="input-group mt-2">
-								<%= form.number_field :delivery_time, class: "form-control" %>
-								<span class="input-group-text">Days</span>
-							</div>
+							Incoterms & Destination Port
+							<span class="text-danger">*</span>
+							<%= form.text_field :pod, class: 'form-control mt-2' %>
+
 						</label>
 					</div>
 				</div>
+				
 			</div>
 			<div class="row bg-semi">
 				<div class="col-lg">
@@ -209,7 +221,28 @@
 					</div>
 				</div>
 				
-				<div class="col-lg-2"></div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Validity
+							<div class="input-group mt-2">
+								<%= form.number_field :validity, class: "form-control" %>
+								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Delivery Time
+							<div class="input-group mt-2">
+								<%= form.number_field :delivery_time, class: "form-control" %>
+								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
 			</div>
 			<% if !@pi.document.id %>
 			<div class="row">

@@ -1,0 +1,50 @@
+<%= form_with model: @letter_head do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @letter_head.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@letter_head.errors.count, 'error') %> prohibited your LetterHead from being saved.</h3>
+			<ul>
+				<% @letter_head.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+
+		<% if !@letter_head.file.id %>
+			<div class="row">
+				<div class="col-lg-5">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Name 
+							<span class="text-danger">*</span>
+							<%= form.text_field :name, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-7">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Upload LetterHead
+							<span class="text-danger">*</span>
+							<%= form.file_field :file, class: "form-control custom-file-input mt-2" %>
+						</label>
+					</div>
+				</div>
+			</div>
+		<% else %>
+		<% end %>
+
+		
+
+
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Create Template', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

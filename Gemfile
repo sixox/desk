@@ -81,4 +81,7 @@ gem 'devise'
 gem 'kaminari'
 gem 'cssbundling-rails'
 gem "mini_magick"
+gem 'docx'
+gem 'numbers_and_words'
+
 

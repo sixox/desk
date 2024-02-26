@@ -1,13 +1,18 @@
+
+
 <div class="card mb-5" id="pi_item_<%= pi.id %>">
 	<div class="card-body">
 		<div class="d-flex justify-content-between align-items-center">
 			<h5 class="card-title text-center mb-0">Purchase Invoice (PI)</h5>
 			<% if user_signed_in? && current_user.sales? %>
-
-			<span><%= link_to edit_project_pi_path(project, pi), data: { controller: "bs-modal-form" } do %>
+				
+			<span>
+				<%= link_to "Issue PI file", create_document_form_pi_path(pi), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
+				<%= link_to edit_project_pi_path(project, pi), data: { controller: "bs-modal-form" } do %>
 				<i class="bi bi-pencil-fill"></i>
 				<% end %></span>
-			<% end %>
+
+				<% end %>
 
 			</div>			
 			<div class="row mt-3">
@@ -66,6 +71,8 @@
 										<th scope="col">Seller</th>
 										<th scope="col">Delivery Time</th>
 										<th scope="col">POL</th>
+										<th scope="col">PI File</th>
+
 
 
 
@@ -81,6 +88,10 @@
 										<td><%= pi.seller %></td>
 										<td><%= pi.delivery_time %></td>
 										<td><%= pi.pol %></td>
+										<td><% if pi.generated_document.present?%>
+											<%= link_to 'View PI', url_for(pi.generated_document.file), target: '_blank' %>
+											<% end %>
+										</td>
 
 									</tr>
 

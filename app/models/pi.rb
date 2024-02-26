@@ -3,6 +3,7 @@ class Pi < ApplicationRecord
   belongs_to :customer
   belongs_to :project
   has_many :cis
+  has_one :generated_document
 
   has_one_attached :document
 

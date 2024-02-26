@@ -17,6 +17,7 @@
           <ul class="dropdown-menu text-white">
            <% if current_user.sales? %>
            <li><%= link_to "Create New Project", new_project_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
+           <li><%= link_to "Create template", new_letter_head_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
            <% end %>
            <li>
 

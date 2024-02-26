@@ -1,6 +1,7 @@
 class PisController < ApplicationController
   before_action :authenticate_user!
-  before_action :find_project
+  before_action :find_project, only: %i[ new create edit update destroy ]
+
 
   def new
     @pi = @project.build_pi
@@ -33,6 +34,44 @@ def update
   end
 end
 
+def create_document
+    # Assuming the template_document is attached to a GeneratedDocument instance
+    template_document = LetterHead.find(params[:generated_document][:template_id])
+    model_object = Pi.find(params[:id]) # Or Ci.find(params[:id]) based on the form submission
+
+    output_path = Rails.root.join('tmp', "#{SecureRandom.hex}.docx")
+    template_document = LetterHead.find(params[:generated_document][:template_id])
+
+    # Assuming the file is stored with Active Storage and you need to process it
+    template_document.file.blob.open do |tempfile|
+      # Pass the tempfile path to your DocxGenerator
+      DocxGenerator.generate_from_template(tempfile.path, model_object, output_path)
+    end
+
+    # Create a new GeneratedDocument instance for the newly created document
+    new_document = GeneratedDocument.new(user: current_user)
+    new_document.pi_id = params[:id]
+
+    new_document.file.attach(io: File.open(output_path), filename: "#{model_object.class.name.downcase}_document_#{model_object.number}_p#{model_object.project.number}.docx")
+
+    
+    if new_document.save
+      redirect_to root_path, notice: 'Document was successfully created.'
+    else
+      render :new, alert: 'There was an error creating the document.'
+    end
+  ensure
+    # Ensure temporary file is deleted after processing
+    File.delete(output_path) if output_path && File.exist?(output_path)
+end
+
+def create_document_form
+  @pi = Pi.find(params[:id])
+
+end
+
+
+
 def destroy
     @pi = Pi.find(params[:id])
 
@@ -53,8 +92,12 @@ def pi_params
     :number, :product, :validity, :quantity, :unit_price, :payment_term,
     :bank_account, :packing_type, :packing_count, :shipment_rate, :seller,
     :delivery_time, :issue_date, :pol, :pod, :customer_id, :user_id, :project_id, :currency, 
-    :total_price, :document
+    :total_price, :tolerance, :document
     )
 end
+
+  def document_params
+    params.permit(:template_id)
+  end
 
 end
