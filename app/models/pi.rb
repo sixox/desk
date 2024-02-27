@@ -1,10 +1,9 @@
 class Pi < ApplicationRecord
   belongs_to :user
   belongs_to :customer
-  belongs_to :project
-  has_many :cis
-  has_one :generated_document
-
+  belongs_to :project, optional: true
+  has_many :cis, dependent: :destroy # or :nullify if you prefer not to delete them
+  has_one :generated_document, dependent: :destroy
   has_one_attached :document
 
   PRODUCT = ['BASE OIL',
@@ -64,5 +63,9 @@ class Pi < ApplicationRecord
    POL = ['IRAN', 'UAE', 'BND/IRAN']
    PACKING_TYPE = ['180kg new drums', 'Jumbo', '180kg second hand drums', '150kg drums', 'bulk', 'cartons']
    SELLER = ['ZigguratOil', 'WhiteSands']
+
+  scope :without_project, -> { 
+    left_outer_joins(:project).where(projects: { id: nil }) 
+  }
 
  end

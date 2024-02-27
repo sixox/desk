@@ -24,6 +24,12 @@
             <%= link_to 'Projects', projects_path, class: 'dropdown-item' %>
 
           </li>
+          <li>
+
+            <%= link_to 'PIs', pis_path, class: 'dropdown-item' %>
+
+          </li>
+
           <% if current_user.sales? %>
           <li class="">
             <%= link_to "Customers", customers_path, class: "dropdown-item" %>

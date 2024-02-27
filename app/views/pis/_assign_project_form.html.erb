@@ -1,0 +1,55 @@
+<%= form_with model: @pi, url: assign_project_form_pi_path(@pi), method: :patch, local: true do |form| %>
+
+<div class="modal-body">
+	<div class="row">
+		<% if @pi.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@pi.errors.count, 'error') %> prohibited your pi from being saved.</h3>
+			<ul>
+				<% @pi.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h4>Purchase invoice</h4>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<% if @project %>
+					<small class="text-secondary">Project: <%= @project.number %></small>
+					<% else %>
+					<small class="text-danger">No Project Yet</small>
+
+					<% end %>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="row mt-3">
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Project
+							<span class="text-danger">*</span>
+						</label>
+						
+						<%= form.collection_select :project_id, @projects, :id, :number, { prompt: 'Select project'}, { class: "form-select" } %>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'Add to Project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

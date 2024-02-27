@@ -7,10 +7,9 @@
 			<% if user_signed_in? && current_user.sales? %>
 				
 			<span>
-				<%= link_to "Issue PI file", create_document_form_pi_path(pi), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
-				<%= link_to edit_project_pi_path(project, pi), data: { controller: "bs-modal-form" } do %>
-				<i class="bi bi-pencil-fill"></i>
-				<% end %></span>
+				<%= link_to "Issue PI.docx", create_document_form_pi_path(pi), data: { controller: "bs-modal-form" }, class: "btn btn-success" %>
+				<%= link_to "Edit PI", edit_project_pi_path(project, pi), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
+				</span>
 
 				<% end %>
 
@@ -37,7 +36,7 @@
 						<tr>
 							<th scope="row"><%= pi.number %></th>
 							<td><%= project.number %></td>
-							<td><%= pi.pod %></td>
+							<td><%= pi.incoterm %> <%= pi.pod %></td>
 							<td><%= pi.customer.nickname %></td>
 							<td><%= pi.product %></td>
 							<td><%= pi.packing_type %></td>

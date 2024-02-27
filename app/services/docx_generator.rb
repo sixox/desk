@@ -57,22 +57,25 @@ class DocxGenerator
     if model_object.is_a?(Pi)
       data = {
         "PI_NUMBER" => model_object.number,
-        "PI_SELLER" => model_object.seller,
+        "PI_SELLER" => model_object.seller.upcase,
         "PI_BUYER" => model_object.customer.name,
-        "BUYER_COMPANY" => model_object.customer.company,
+        "BUYER_COMPANY" => model_object.customer.company.upcase,
         "DATE" => model_object.created_at.strftime('%d %b %Y'),
         "VALIDITY" => model_object.validity.to_i,
-        "PRODUCT" => model_object.product,
+        "PRODUCT" => model_object.product.upcase,
         "QUANTITY" => model_object.quantity.to_i,
         "UNIT_PRICE" => model_object.unit_price.to_i,
         "TOTAL_PRICE" => model_object.total_price.to_i,
         "TOTAL_PRICE_IN_WORDS" => model_object.total_price.to_i.to_words.upcase,
         "DELIVERY_TIME" => model_object.delivery_time.to_i,
         "ADVANCE" => model_object.payment_term,
-        "PACKING" => model_object.packing_type,
-        "POL" => model_object.pol,
-        "POD" => model_object.pod,
-        "TOLERANCE" => model_object.tolerance
+        "PACKING" => model_object.packing_type.upcase,
+        "POL" => model_object.pol.upcase,
+        "POD" => model_object.pod.upcase,
+        "TOLERANCE" => model_object.tolerance,
+        "SHORT_CURRENCY" => model_object.currency == "dollar" ? "USD" : "AED",
+        "CURRENCY" => model_object.currency.upcase,
+        "TERM" => model_object.incoterm.upcase
 
 
 

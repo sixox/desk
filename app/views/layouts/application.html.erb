@@ -16,6 +16,15 @@
   <div class="container">
     <div class="row">
       <div class="col-lg-10 mx-auto">
+      <% flash.each do |type, message| %>
+        <div class="alert <%= bootstrap_class_for_flash(type) %>" role="alert">
+          <%= message %>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      <% end %>
+
         <%= render 'shared/header' %>
       </div>
     </div>

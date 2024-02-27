@@ -15,10 +15,20 @@ Rails.application.routes.draw do
   resources :customers
   resources :pis do
     member do
-    get :create_document_form
-    post :create_document
-    patch :create_document
+      get :create_document_form
+      post :create_document
+      patch :create_document
+      patch :update_temp
+      patch "assign_project_form", to: "pis#assign_project_form"
+      get "assign_project", to: "pis#assign_project"
 
+
+    end
+    collection do
+
+      get :new_temp
+      post :create_temp
+      delete :destroy_temp
     end
   end
   resources :projects do

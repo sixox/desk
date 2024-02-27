@@ -1,4 +1,5 @@
-<%= form_for [@project, @pi] do |form| %>
+<%= form_with model: @pi, local: true, url: @pi.new_record? ? create_temp_pis_path : update_temp_pi_path(@pi) do |form| %>
+
 <div class="modal-body">
 	<div class="row">
 		<% if @pi.errors.any? %>
@@ -23,6 +24,9 @@
 				<div class="d-flex justify-content-end">
 					<% if @project %>
 					<small class="text-secondary">Project: <%= @project.number %></small>
+					<% else %>
+					<small class="text-danger">No Project Yet</small>
+
 					<% end %>
 				</div>
 			</div>
@@ -291,7 +295,7 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<%= form.submit 'Add PI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<%= form.submit 'Create PI', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
 	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
 <% end %>
