@@ -1,7 +1,7 @@
 class PisController < ApplicationController
   before_action :authenticate_user!
   before_action :find_project, only: %i[ new create edit update ]
-  before_action :set_pi, only: [:update_temp, :destroy]
+  before_action :set_pi, only: [:update_temp, :destroy, :update_temp_form]
 
 
 
@@ -52,6 +52,10 @@ class PisController < ApplicationController
     end
   end
 
+  def update_temp_form
+  end
+
+
   def assign_project
     @pi = Pi.find(params[:id])
     @projects = Project.left_outer_joins(:pi)
@@ -74,17 +78,27 @@ class PisController < ApplicationController
 
 
 
-def update
-  @pi = Pi.find(params[:id])
-  respond_to do |format|
-    if @pi.update(pi_params)
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("pi_item_#{@pi.id}", partial: 'pis/pi', locals: { pi: @pi, project: @pi.project }) }
-    else
-      # redirect_to root_path
-      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'pis/form', modal_title: 'Edit PI' })}
+  def update
+    @pi = Pi.find(params[:id])
+    respond_to do |format|
+      if @pi.update(pi_params)
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace("pi_item_#{@pi.id}", partial: 'pis/pi', locals: { pi: @pi, project: @pi.project }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'PI was successfully updated.' })
+          ]
+        end
+      else
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'pis/form', modal_title: 'Edit PI' }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating PI.' })
+          ]
+        end
+      end
     end
   end
-end
+
 
 def create_document
     # Assuming the template_document is attached to a GeneratedDocument instance

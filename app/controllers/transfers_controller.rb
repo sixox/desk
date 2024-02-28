@@ -13,7 +13,7 @@ class TransfersController < ApplicationController
     @banks = Bank.all
     respond_to do |format|
       if @transfer.save
-        format.html { redirect_to banks_path }
+        format.html { redirect_to banks_path, notice: 'Transfer was successfully created' }
       else
         render :new
       end
@@ -30,7 +30,7 @@ class TransfersController < ApplicationController
         @transfer.deposited_to_bank.increment!(:account_balance, @transfer.deposited_amount)
         @transfer.save!
       end
-      redirect_to banks_path, notice: 'Transfer successful'
+      redirect_to banks_path, notice: 'Transfer confirmed successful'
     else
       render :new
     end
@@ -42,7 +42,7 @@ class TransfersController < ApplicationController
     @transfer.rejected_at = Time.now
     respond_to do |format|
       if @transfer.save
-        format.html { redirect_to banks_path }
+        format.html { redirect_to banks_path, notice: 'Transfer was rejected successfully' }
       else
         render :new
       end

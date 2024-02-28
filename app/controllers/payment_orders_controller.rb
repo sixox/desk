@@ -44,7 +44,7 @@ class PaymentOrdersController < ApplicationController
 		@payment_order.rejected_at = Time.now
 		respond_to do |format|
 			if @payment_order.save
-				format.html { redirect_to payment_orders_path }
+				format.html { redirect_to payment_orders_path, notice: 'Payment order rejected successfully' }
 			else
 				format.html { render :show, status: :unprocessable_entity }
 				format.json { render json: @payment.errors, status: :unprocessable_entity }
@@ -59,7 +59,7 @@ class PaymentOrdersController < ApplicationController
 		@payment_order.hamed_confirmed_at = Time.now
 		respond_to do |format|
 			if @payment_order.save
-				format.html { redirect_to payment_orders_path }
+				format.html { redirect_to payment_orders_path, notice: 'Payment order confirmed successfully' }
 			else
 				format.html { render :show, status: :unprocessable_entity }
 				format.json { render json: @payment.errors, status: :unprocessable_entity }
@@ -121,7 +121,7 @@ class PaymentOrdersController < ApplicationController
 		
 		respond_to do |format|
 			if @payment_order.save
-				format.html { redirect_to payment_orders_path }
+				format.html { redirect_to payment_orders_path, notice: 'Payment order confirmed successfully' }
 			else
 				format.html { render :show, status: :unprocessable_entity }
 				format.json { render json: @payment.errors, status: :unprocessable_entity }
@@ -138,7 +138,7 @@ class PaymentOrdersController < ApplicationController
 		@payment_order.delivered_at = Time.now
 		respond_to do |format|
 			if @payment_order.update(delivery_confirm: true)
-				format.html { redirect_to payment_orders_path }
+				format.html { redirect_to payment_orders_path, notice: 'Payment order was successfully updated' }
 			else
 				format.html { render :show, status: :unprocessable_entity }
 				format.json { render json: @payment.errors, status: :unprocessable_entity }
@@ -304,25 +304,51 @@ class PaymentOrdersController < ApplicationController
 
 		@payment_order = current_user.payment_orders.new(payment_order_params)
 		@payment_order.user = current_user
-		respond_to do |format|
-			if @payment_order.save
-				if !current_user.is_manager
-					users_to_notify = User.where(role: current_user.role, is_manager: true)
-					users_to_notify.each do |user|
-						user.notifications.create(
-							payment_id: params[:id],
-							message: 'Confirmation required for Payment order',
-							is_read: false,
-							link_to_action: payment_order_path(@payment_order)
-							)
-					end
+		# respond_to do |format|
+		# 	if @payment_order.save
+		# 		if !current_user.is_manager
+		# 			users_to_notify = User.where(role: current_user.role, is_manager: true)
+		# 			users_to_notify.each do |user|
+		# 				user.notifications.create(
+		# 					payment_id: params[:id],
+		# 					message: 'Confirmation required for Payment order',
+		# 					is_read: false,
+		# 					link_to_action: payment_order_path(@payment_order)
+		# 					)
+		# 			end
 
-				end
-				format.turbo_stream { render turbo_stream: turbo_stream.prepend('payment_order_items', partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }) }
-			else
-				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Add payment_order' })}
-			end
+		# 		end
+		# 		format.turbo_stream { render turbo_stream: turbo_stream.prepend('payment_order_items', partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }) }
+		# 	else
+		# 		format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Add payment_order' })}
+		# 	end
+		# end
+		respond_to do |format|
+		if @payment_order.save
+		    if !current_user.is_manager
+		      users_to_notify = User.where(role: current_user.role, is_manager: true)
+		      users_to_notify.each do |user|
+		        user.notifications.create(
+		          payment_id: params[:id],
+		          message: 'Confirmation required for Payment order',
+		          is_read: false,
+		          link_to_action: payment_order_path(@payment_order)
+		        )
+		      end
+		    end
+		    format.turbo_stream do
+		      render turbo_stream: [
+		        turbo_stream.prepend('payment_order_items', partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }),
+		        turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Payment order was successfully created.' })
+		      ]
+		    end
+		  else
+		    format.turbo_stream do 
+		      render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Add payment_order' })
+		    end
+		  end
 		end
+
 	end
 
 	def update

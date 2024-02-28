@@ -18,25 +18,47 @@ class SuppliersController < ApplicationController
 	end
 
 	def create
-		@supplier = current_user.suppliers.new(supplier_params)
-		respond_to do |format|
-			if @supplier.save
-				format.turbo_stream { render turbo_stream: turbo_stream.prepend('supplier_items', partial: 'suppliers/supplier', locals: { supplier: @supplier }) }
-			else
-				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'suppliers/form', modal_title: 'Add supplier' })}
-			end
-		end
+	  @supplier = current_user.suppliers.new(supplier_params)
+	  respond_to do |format|
+	    if @supplier.save
+	      format.turbo_stream do
+	        render turbo_stream: [
+	          turbo_stream.prepend('supplier_items', partial: 'suppliers/supplier', locals: { supplier: @supplier }),
+	          turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Supplier was successfully added.' })
+	        ]
+	      end
+	    else
+	      format.turbo_stream do
+	        render turbo_stream: [
+	          turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'suppliers/form', modal_title: 'Add Supplier' }),
+	          turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error adding supplier.' })
+	        ]
+	      end
+	    end
+	  end
 	end
 
+
 	def update
-		respond_to do |format|
-			if @supplier.update(supplier_params)
-				format.turbo_stream { render turbo_stream: turbo_stream.replace("supplier_item_#{@supplier.id}", partial: 'suppliers/supplier', locals: { supplier: @supplier }) }
-			else
-				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'suppliers/form', modal_title: 'Edit supplier ' })}
-			end
-		end
+	  respond_to do |format|
+	    if @supplier.update(supplier_params)
+	      format.turbo_stream do
+	        render turbo_stream: [
+	          turbo_stream.replace("supplier_item_#{@supplier.id}", partial: 'suppliers/supplier', locals: { supplier: @supplier }),
+	          turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Supplier was successfully updated.' })
+	        ]
+	      end
+	    else
+	      format.turbo_stream do
+	        render turbo_stream: [
+	          turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'suppliers/form', modal_title: 'Edit Supplier' }),
+	          turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating supplier.' })
+	        ]
+	      end
+	    end
+	  end
 	end
+
 
 	def destroy
 		respond_to do |format|

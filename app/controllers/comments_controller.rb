@@ -18,14 +18,23 @@ class CommentsController < ApplicationController
 
     respond_to do |format|
       if @comment.save
-        format.turbo_stream { render turbo_stream: turbo_stream.prepend('comment_items', partial: 'comments/comment', locals: { comment: @comment }) }
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.prepend('comment_items', partial: 'comments/comment', locals: { comment: @comment }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Comment was successfully created.' })
+          ]
+        end
       else
-        format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'comments/form', modal_title: 'Create New Comment' })}
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'comments/form', modal_title: 'Create New Comment' }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error creating comment.' })
+          ]
+        end
       end
     end
-
-    
   end
+
 
   def show
   end

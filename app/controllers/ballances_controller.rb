@@ -22,7 +22,7 @@ class BallancesController < ApplicationController
 		@ballance = Ballance.new(ballance_params)
 		respond_to do |format|
 			if @ballance.save
-				format.html { redirect_to ballance_url(@ballance), notice: "Balance was successfully created." }
+				format.html { redirect_to ballance_url(@ballance), notice: "Inventory was successfully created." }
 				format.json { render :show, status: :created, location: @ballance }
 			else
 				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'ballances/form', modal_title: 'Add new Balance' })}

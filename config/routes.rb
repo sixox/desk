@@ -19,6 +19,9 @@ Rails.application.routes.draw do
       post :create_document
       patch :create_document
       patch :update_temp
+      get :update_temp_form
+
+
       patch "assign_project_form", to: "pis#assign_project_form"
       get "assign_project", to: "pis#assign_project"
 

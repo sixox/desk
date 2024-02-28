@@ -23,17 +23,27 @@ class SpisController < ApplicationController
 
   end
 
-def update
-  @spi = Spi.find(params[:id])
-  respond_to do |format|
-    if @spi.update(spi_params)
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("spi_item_#{@spi.id}", partial: 'spis/spi', locals: { spi: @spi, ballance: @spi.ballance }) }
-    else
-      # redirect_to root_path
-      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'spis/form', modal_title: 'Edit PI' })}
+  def update
+    @spi = Spi.find(params[:id])
+    respond_to do |format|
+      if @spi.update(spi_params)
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace("spi_item_#{@spi.id}", partial: 'spis/spi', locals: { spi: @spi, ballance: @spi.ballance }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'PI was successfully updated.' })
+          ]
+        end
+      else
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'spis/form', modal_title: 'Edit PI' }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating PI.' })
+          ]
+        end
+      end
     end
   end
-end
+
 
 def destroy
     @spi = Spi.find(params[:id])

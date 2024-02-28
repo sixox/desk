@@ -93,7 +93,7 @@ class SwiftsController < ApplicationController
 		@swift.rejected_at = Time.now
 		respond_to do |format|
 			if @swift.save
-				format.html { redirect_to swifts_path }
+				format.html { redirect_to swifts_path, notice: 'Swift rejected successfully.' }
 			else
 				format.html { render :show, status: :unprocessable_entity }
 				format.json { render json: @swift.errors, status: :unprocessable_entity }

@@ -26,16 +26,26 @@ class ScisController < ApplicationController
 	end
 
 	def update
-  @sci = Sci.find(params[:id])
-  respond_to do |format|
-    if @sci.update(sci_params)
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("sci_item_#{@sci.id}", partial: 'scis/sci', locals: { sci: @sci, ballance: @sci.ballance }) }
-    else
-      # redirect_to root_path
-      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'scis/form', modal_title: 'Edit CI' })}
+    @sci = Sci.find(params[:id])
+    respond_to do |format|
+      if @sci.update(sci_params)
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace("sci_item_#{@sci.id}", partial: 'scis/sci', locals: { sci: @sci, ballance: @sci.ballance }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'CI was successfully updated.' })
+          ]
+        end
+      else
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'scis/form', modal_title: 'Edit CI' }),
+            turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating CI.' })
+          ]
+        end
+      end
     end
   end
-end
+
 
 def destroy
     @sci = Sci.find(params[:id])

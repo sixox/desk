@@ -11,7 +11,7 @@ class LetterHeadsController < ApplicationController
 			if @letter_head.save
 				format.html { redirect_to projects_path, notice: "file was successfully created." }
 			else
-				format.html { redirect_to projects_path, notice: "file was successfully created." }
+				format.html { redirect_to projects_path, alert: "file was not created." }
 
 			end
 		end

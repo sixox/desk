@@ -25,17 +25,28 @@ class CisController < ApplicationController
 		@ci = Ci.find(params[:id])
 	end
 
+	
 	def update
-  @ci = Ci.find(params[:id])
-  respond_to do |format|
-    if @ci.update(ci_params)
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("ci_item_#{@ci.id}", partial: 'cis/ci', locals: { ci: @ci, project: @ci.project }) }
-    else
-      # redirect_to root_path
-      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'cis/form', modal_title: 'Edit CI' })}
-    end
-  end
-end
+	  @ci = Ci.find(params[:id])
+	  respond_to do |format|
+	    if @ci.update(ci_params)
+	      format.turbo_stream do
+	        render turbo_stream: [
+	          turbo_stream.replace("ci_item_#{@ci.id}", partial: 'cis/ci', locals: { ci: @ci, project: @ci.project }),
+	          turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'CI was successfully updated.' })
+	        ]
+	      end
+	    else
+	      format.turbo_stream do
+	        render turbo_stream: [
+	          turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'cis/form', modal_title: 'Edit CI' }),
+	          turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating CI.' })
+	        ]
+	      end
+	    end
+	  end
+	end
+
 
 def destroy
     @ci = Ci.find(params[:id])
