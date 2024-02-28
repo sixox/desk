@@ -76,16 +76,32 @@ class DocxGenerator
         "SHORT_CURRENCY" => model_object.currency == "dollar" ? "USD" : "AED",
         "CURRENCY" => model_object.currency.upcase,
         "TERM" => model_object.incoterm.upcase
-
-
-
-
       }
     elsif model_object.is_a?(Ci)
       data = {
         "CI_NUMBER" => model_object.number,
-        "PROJECT_NUMBER" => model_object.project.number,
-        "DESCRIPTION" => model_object.created_at.strftime('%Y-%m-%d')
+        "CI_SELLER" => model_object.pi.seller.upcase,
+        "CI_BUYER" => model_object.pi.customer.name,
+        "BUYER_COMPANY" => model_object.pi.customer.company.upcase,
+        "POL" => model_object.pi.pol.upcase,
+        "POD" => model_object.pi.pod.upcase,
+        "PI_NUMBER" => model_object.pi.number,
+        "PI_DATE" => model_object.pi.created_at.strftime('%d %b %Y'),
+        "DATE" => model_object.created_at.strftime('%d %b %Y'),
+        "PRODUCT" => model_object.pi.product.upcase,
+        "COUNT" => model_object.pi.packing_count,
+        "PACKING" => model_object.pi.packing_type.upcase,
+        "NET" => model_object.net_weight,
+        "GROSS" => model_object.gross_weight,
+        "UNIT_PRICE" => model_object.pi.unit_price.to_i,
+        "SHORT_CURRENCY" => model_object.pi.currency == "dollar" ? "USD" : "AED",
+        "TERM" => model_object.pi.incoterm.upcase,
+        "TOTAL_PRICE" => model_object.total_price.to_i,
+        "ADVANCE" => model_object.advance_payment.to_i,
+        "BALANCE" => model_object.balance_payment.to_i,
+        "TOTAL_PRICE_IN_WORDS" => model_object.total_price.to_i.to_words.upcase,
+        "CURRENCY" => model_object.pi.currency.upcase
+
       }
     end
     data

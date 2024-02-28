@@ -7,7 +7,7 @@
 			<% if user_signed_in? && current_user.sales? %>
 				
 			<span>
-				<%= link_to "Issue PI.docx", create_document_form_pi_path(pi), data: { controller: "bs-modal-form" }, class: "btn btn-success" %>
+				<%= link_to "PI .docx", create_document_form_pi_path(pi), data: { controller: "bs-modal-form" }, class: "btn btn-success" %>
 				<%= link_to "Edit PI", edit_project_pi_path(project, pi), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
 				</span>
 

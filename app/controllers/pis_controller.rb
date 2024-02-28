@@ -121,7 +121,7 @@ def create_document
     new_document = GeneratedDocument.new(user: current_user)
     new_document.pi_id = params[:id]
 
-    new_document.file.attach(io: File.open(output_path), filename: "#{model_object.class.name.downcase}_document_#{model_object.number}.docx")
+    new_document.file.attach(io: File.open(output_path), filename: "#{model_object.class.name.downcase}_#{model_object.number}.docx")
 
     
     if new_document.save

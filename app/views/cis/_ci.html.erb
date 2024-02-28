@@ -12,6 +12,7 @@
 				<th scope="col">Unit Price</th>
 				<th scope="col">Total Price</th>
 				<th scope="col">Term</th>
+				<th scope="col">File</th>
 				<th scope="col">Actions</th>
 
 
@@ -28,19 +29,26 @@
 				<td><%= ci.pi.unit_price.to_i %></td>
 				<td><%= ci.total_price.to_i %> MT</td>
 				<td><%= ci.pi.payment_term %></td>
+				<td><% if ci.generated_document.present?%>
+						<%= link_to 'View CI', url_for(ci.generated_document.file), target: '_blank' %>
+					<% end %>
+				</td>
 				<td><% if user_signed_in? && current_user.sales? %>
 
-					<span><%= link_to edit_project_ci_path(project, ci), data: { controller: "bs-modal-form" } do %>
-						<i class="bi bi-pencil-fill"></i>
-						<% end %>
+					<span>
+						<%= link_to "Edit", edit_project_ci_path(project, ci), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
+
 					</span>
 					<% if !ci.swift.present? %>
-					<span><%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" } do %>
-						<i class="bi bi-plus"></i> Add swift
-						<% end %>
+					<span>
+						<%= link_to "Swift", new_ci_swift_path(ci), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
+
 					</span>
 					<% end %>
-					<% end %>
+					<span>
+						<%= link_to "CI .docx", create_document_form_ci_path(ci), data: { controller: "bs-modal-form" }, class: "btn btn-success" %>
+						<% end %>
+					</span>
 				</td>
 
 			</tr>

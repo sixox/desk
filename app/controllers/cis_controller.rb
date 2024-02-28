@@ -1,6 +1,7 @@
 class CisController < ApplicationController
 	before_action :authenticate_user!
-	before_action :find_project
+  before_action :find_project, only: %i[ new create edit update ]
+
 
 
 	def new
@@ -16,8 +17,48 @@ class CisController < ApplicationController
     else
       render :new
     end
+	end
 
+	def create_document
+	    # Assuming the template_document is attached to a GeneratedDocument instance
+	    template_document = LetterHead.find(params[:generated_document][:template_id])
+	    model_object = Ci.find(params[:id]) 
 
+	    existing_document = model_object.generated_document
+	    existing_document.destroy if existing_document.present?
+
+	    output_path = Rails.root.join('tmp', "#{SecureRandom.hex}.docx")
+	    template_document = LetterHead.find(params[:generated_document][:template_id])
+
+	    # Assuming the file is stored with Active Storage and you need to process it
+	    template_document.file.blob.open do |tempfile|
+	      # Pass the tempfile path to your DocxGenerator
+	      DocxGenerator.generate_from_template(tempfile.path, model_object, output_path)
+	    end
+
+	    # Create a new GeneratedDocument instance for the newly created document
+	    new_document = GeneratedDocument.new(user: current_user)
+	    new_document.ci_id = params[:id]
+
+	    new_document.file.attach(io: File.open(output_path), filename: "#{model_object.class.name.downcase}_#{model_object.number}.docx")
+
+	    
+	    if new_document.save
+	      if model_object.project.present?
+	        redirect_to project_path(model_object.project), notice: 'Document was successfully created.'
+	      else
+	        redirect_to pis_path, notice: 'Document was successfully created.'
+	      end
+	    else
+	      render :new, alert: 'There was an error creating the document.'
+	    end
+	  ensure
+	    # Ensure temporary file is deleted after processing
+	    File.delete(output_path) if output_path && File.exist?(output_path)
+	end
+
+	def create_document_form
+	  @ci = Ci.find(params[:id])
 
 	end
 

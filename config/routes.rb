@@ -48,6 +48,11 @@ Rails.application.routes.draw do
   end
   resources :cis do
     resources :swifts
+    member do
+      get :create_document_form
+      post :create_document
+      patch :create_document
+    end
   end
   resources :ballances do
     resources :spis

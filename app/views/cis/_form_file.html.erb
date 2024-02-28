@@ -1,0 +1,8 @@
+<%= form_with model: [@ci, @ci.generated_document || @ci.build_generated_document], url: create_document_ci_path(@ci), local: true do |form| %>
+  <div class="field">
+    <%= form.label :template_id, "Select a Template" %>
+    <%= form.collection_select :template_id, LetterHead.all, :id, :name, include_blank: true %>
+  </div>
+
+  <%= form.submit "Generate Document", class: "btn btn-primary" %>
+<% end %>
