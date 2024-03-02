@@ -1,0 +1,95 @@
+<div class="modal-body">
+	<hr>
+	<%= render 'projects/project', project: @project, bookings: @project.bookings %>
+	<row class="m-2">
+
+		<div class="col-sm">
+			<h3>PI</h3>
+				<hr>
+
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col"><small>Number</small></th>
+						<th scope="col"><small>Product</small></th>
+						<th scope="col"><small>Quantity</small></th>
+						<th scope="col"><small>Unit price</small></th>
+						<th scope="col"><small>Total price</small></th>
+						<th scope="col"><small>Term</small></th>
+						<th scope="col"><small>POD</small></th>
+						<th scope="col"><small>Shipment rate</small></th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						
+						<td><small> <%= @project.pi.number %></small></td>
+						<td><small> <%= @project.pi.product %></small></td>
+						<td><small> <%= @project.pi.quantity %></small></td>
+						<td><small> <%= @project.pi.unit_price %></small></td>
+						<td><small> <%= @project.pi.total_price %></small></td>
+						<td><small> <%= @project.pi.incoterm %></small></td>
+						<td><small> <%= @project.pi.pod %></small></td>
+						<td><small> <%= @project.pi.shipment_rate %></small></td>
+
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm">
+			<h3>CIs</h3>
+				<hr>
+
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col"><small>Number</small></th>
+						<th scope="col"><small>Net weight</small></th>
+						<th scope="col"><small>Gross weight</small></th>
+						<th scope="col"><small>Advance</small></th>
+						<th scope="col"><small>Balance</small></th>
+						<th scope="col"><small>Total</small></th>
+						<th scope="col"><small>File</small></th>
+						<th scope="col"><small>Swift</small></th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<% @project.cis.each do |ci| %>
+					<tr>
+						
+						<td><small> <%= ci.number %></small></td>
+						<td><small> <%= ci.net_weight %></small></td>
+						<td><small> <%= ci.gross_weight %></small></td>
+						<td><small> <%= ci.advance_payment %></small></td>
+						<td><small> <%= ci.balance_payment %></small></td>
+						<td><small> <%= ci.total_price %></small></td>
+						<td><small> <% if ci.generated_document.present?%>
+						<%= link_to 'CI .docx', url_for(ci.generated_document.file), target: '_blank' %>
+					<% end %></small></td>
+					<td>
+						<% if ci.swift.present?  %>
+							<% if ci.swift.rejected.present? %>
+								<small class="text-danger">Rejected</small>
+							<% else %>
+								<% if ci.swift.confirmed.present? %>
+									<small class="text-success">Confirmed</small>
+								<% else %>
+									<small class="text-warning">Pending</small>
+								<% end%>
+							<% end %>
+						<% else %>
+							<small class="text-primary">No SWIFT</small>
+						<% end %>
+					</td>
+
+					</tr>
+					<% end %>
+				</tbody>
+			</table>
+		</div>
+	</row>
+
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>

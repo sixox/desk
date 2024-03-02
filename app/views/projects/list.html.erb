@@ -1,0 +1,120 @@
+<div class="col-lg-10 mx-auto mt-5">
+    <div class="card mt-4 mb-4">
+      <div class="card-body">
+        <h3 class="text-center mb-3">Search in projects</h3>
+        <%= search_form_for @q, url: list_projects_path do |form| %>
+        
+        <div class="input-group mb-3">
+          <%= form.search_field :name_or_number_cont, class: "form-control", placeholder: "Search by project number or name", area: { label: "Search by project number or name", describedby: "button-addon2" } %>
+          <%= form.submit "Search", class: "btn btn-primary", id: "button-addon2" %>
+        </div>
+        <% end %>
+      </div>
+    </div>
+	<row class="m-2">
+		<div class="col-sm">
+			<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col"  style="max-width: 37px;">Project</th>
+      <th scope="col">PI-num</th>
+      <th scope="col" style="min-width: 267px;">Description</th>
+      <th scope="col" style="max-width: 100px;">Quantity</th>
+      <th scope="col" style="min-width: 175px;">Packing</th>
+      <th scope="col" style="min-width: 175px;">Product</th>
+      <th scope="col" style="min-width: 180px;">POD</th>
+      <th scope="col">Bookings</th>
+      <th scope="col">Forwarder</th>
+      <th scope="col">Line</th>
+      
+      <th scope="col">Status</th>
+      <th scope="col">Free Time</th>
+      <th scope="col">Net Weight</th>
+      <th scope="col">Gross Weight</th>
+      <th scope="col">Unit Price</th>
+
+
+
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @projects.each do |project| %>
+      <tr>
+        <!-- First 5 attributes with one color -->
+        <td><%= link_to project.number, project, class: "notifLink btn btn-light btn-sm" %></td>
+        <td><small> <%= project.pi.number %></small></td>
+        <td><small > <%= project.name %></small></td>
+        <td class=""><small><%= project.pi.quantity.to_i %> MT</small></td>
+        <td><small> <%= project.pi.packing_type %></small></td>
+        <td><small><%= project.pi.product %></small></td>
+        <td><%= project.pi.pod %></td>
+
+        <!-- Next 6 attributes with another color -->
+        <td class="bg-semi-list">
+        	<% if project.bookings.present? %>
+        		<% project.bookings.each do |booking| %>
+        			<%= booking.number %>
+        		<% end %>
+        	<% else %>
+        	-
+        	<% end %>
+        </td>
+        <td class="bg-semi-list"><%= project.bookings.first&.forwarder %></td>
+        <td class="bg-semi-list"><%= project.bookings.first&.line %></td>
+        <td class="bg-semi-list">
+        	<% if project.bookings.present? %>
+        		<% project.bookings.each do |booking| %>
+        			<small> <%= booking&.status %></small>
+        		<% end %>
+        	<% else %>
+        	-
+        	<% end %>
+        		
+        	</td>
+        <td class="bg-semi-list">
+        	<% if project.bookings.present? %>
+        		<% project.bookings.each do |booking| %>
+        			<%= booking.free_time %>
+        		<% end %>
+        	<% else %>
+        	-
+        	<% end %>
+        		
+        	</td>
+          <% if project.cis.present? %>
+            <td class="bg-semi-list-2">
+              <% project.cis.each do |ci| %>
+                <%= ci.net_weight %><br>
+              <% end %>
+            </td>
+            <td class="bg-semi-list-2">
+              <% project.cis.each do |ci| %>
+                <%= ci.gross_weight %><br>
+              <% end %>
+            </td>
+            <td class="bg-semi-list-2">
+              <%= project.pi.unit_price.to_i %>
+            </td>
+          <% else %>
+            <td class="bg-semi-list-2"></td>
+            <td class="bg-semi-list-2"></td>
+            <td class="bg-semi-list-2"></td>
+          <% end %>
+
+
+
+        <!-- Actions with another color -->
+        <td class="">
+          <!-- Example actions -->
+          <%= link_to "more", card_project_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-info btn-sm" %>
+          
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+		</div>
+	</row>
+</div>

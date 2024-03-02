@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
 	
 	before_action :authenticate_user!
-	before_action :set_project, only: %i[ show edit update destroy allocate] 
+	before_action :set_project, only: %i[ show edit update destroy allocate card] 
 
 
 	def show
@@ -56,6 +56,16 @@ class ProjectsController < ApplicationController
 
 	def allocate
 	end
+
+	def list
+	  @q = Project.ransack(params[:q])
+	  @projects = @q.result.includes(:cis).joins(:pi).order(created_at: :desc)
+	end
+
+
+	def card
+	end
+
 
 
 

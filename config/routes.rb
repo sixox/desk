@@ -35,6 +35,9 @@ Rails.application.routes.draw do
     end
   end
   resources :projects do
+    member do
+      get :card
+    end
     resources :ballance_projects
     resources :pis
     resources :cis
@@ -44,6 +47,9 @@ Rails.application.routes.draw do
         get 'edit_picked_up'
         get 'edit_status'
       end
+    end
+    collection do
+      get :list
     end
   end
   resources :cis do
