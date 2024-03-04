@@ -137,7 +137,7 @@
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Account							
-							<%= form.text_field :bank_account, class: 'form-control mt-2' %>
+    					<%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select'} %>
 
 						</label>
 					</div>

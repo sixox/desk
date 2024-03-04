@@ -1,0 +1,51 @@
+<%= form_with model: @account, local: true do |form| %>
+<div class="modal-body">
+    <div class="row">
+        <% if @account.errors.any? %>
+        <div class="error-area" style="color:red;">
+            <h3><%= pluralize(@account.errors.count, 'error') %> prohibited this account from being saved:</h3>
+            <ul>
+                <% @account.errors.full_messages.each do |message| %>
+                <li>
+                    <%= message %>
+                </li>
+                <% end %>
+            </ul>
+        </div>
+        <% end %>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group mt-3">
+                    <label for="name" class="form-label">
+                        Name
+                        <span class="text-danger">*</span>
+                    </label>
+                    <%= form.text_field :name, class: "form-control" %>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-group mt-3">
+                    <label for="details" class="form-label">
+                        Details
+                        <span class="text-danger">*</span>
+                    </label>
+                    <%= form.text_area :details, class: "form-control", rows: 3 %>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-group mt-3">
+                    <label for="bank_id" class="form-label">
+                        Bank
+                        <span class="text-danger">*</span>
+                    </label>
+                    <%= form.collection_select :bank_id, Bank.all, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <%= form.submit 'Save Account', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

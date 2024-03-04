@@ -103,7 +103,7 @@ end
 	def ci_params
 		params.require(:ci).permit(:net_weight, :gross_weight, :total_price, 
 			:advance_payment, :balance_payment, :bank_account, :issue_date, 
-			:project_id, :user_id, :document, :number, :validity
+			:project_id, :user_id, :document, :number, :validity, :account_id
 			)
 	end
 

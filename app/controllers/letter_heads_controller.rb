@@ -8,12 +8,11 @@ class LetterHeadsController < ApplicationController
 	def create
 		@letter_head = LetterHead.new(letter_head_params)
 		respond_to do |format|
-			if @letter_head.save
-				format.html { redirect_to projects_path, notice: "file was successfully created." }
-			else
-				format.html { redirect_to projects_path, alert: "file was not created." }
-
-			end
+		  if @letter_head.save
+		    format.html { redirect_back(fallback_location: root_path, notice: "File was successfully created.") }
+		  else
+		    format.html { redirect_back(fallback_location: root_path, alert: "File was not created.") }
+		  end
 		end
 	end
 

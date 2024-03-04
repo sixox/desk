@@ -1,146 +1,112 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
-  <div class="container-fluid">
-    <%= link_to "Desk", root_path, class: "navbar-brand" %>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <% if user_signed_in?%>
-        <li class="nav-item">
-          <%= link_to "Profile", member_path(current_user), class: "nav-link active" %>
-        </li>  
-        <% if current_user.sales? || current_user.procurement? || current_user.accounting? || current_user.admin? %>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Projects
-          </a>
-          <ul class="dropdown-menu text-white">
-            <li><%= link_to "Create New Project", new_project_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-            <li>
-              <%= link_to 'Projects', projects_path, class: 'dropdown-item' %>
-
-            </li>
-            <li>
-              <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
-            </li>
-
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Inventory
-          </a>
-          <ul class="dropdown-menu text-white">
-            <li><%= link_to "New Inventory", new_ballance_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-            <li>
-              <%= link_to 'Inverntories', ballances_path, class: 'dropdown-item' %>
-            </li>
-
-          </ul>
-        </li>
-        <% end %>
-        <li class="nav-item">
-          <%= link_to "Payment orders", payment_orders_path, class: "nav-link active" %>
-        </li> 
+require 'docx'
+require 'numbers_and_words'
 
 
+class DocxGenerator
+  def self.generate_from_template(template_path, model_object, output_path)
+    doc = Docx::Document.open(template_path)
+
+    # Determine the type of the model_object (PI or CI) and prepare data accordingly
+    data = prepare_data_for_model(model_object)
+
+    # Replace placeholders in paragraphs
+    replace_placeholders_in_paragraphs(doc, data)
+
+    # Replace placeholders in tables
+    replace_placeholders_in_tables(doc, data)
+
+    # Save the modified document
+    doc.save(output_path)
+  end
+
+  private
+
+  def self.replace_placeholders_in_paragraphs(doc, data)
+    doc.paragraphs.each do |p|
+      data.each do |placeholder, value|
+        if p.text.include?("{#{placeholder}}")
+          p.each_text_run do |tr|
+            tr.text = tr.text.gsub("{#{placeholder}}", value.to_s)
+          end
+        end
+      end
+    end
+  end
+
+  def self.replace_placeholders_in_tables(doc, data)
+    doc.tables.each do |table|
+      table.rows.each do |row|
+        row.cells.each do |cell|
+          data.each do |placeholder, value|
+            if cell.text.include?("{#{placeholder}}")
+              cell.paragraphs.each do |paragraph|
+                paragraph.each_text_run do |text_run|
+                  text_run.text = text_run.text.gsub("{#{placeholder}}", value.to_s)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def self.prepare_data_for_model(model_object)
+    # Your existing implementation to prepare data
+    data = {}
+    if model_object.is_a?(Pi)
+      data = {
+        "PI_NUMBER" => model_object.number,
+        "PI_SELLER" => model_object.seller.upcase,
+        "PI_BUYER" => model_object.customer.name,
+        "BUYER_COMPANY" => model_object.customer.company.upcase,
+        "DATE" => model_object.created_at.strftime('%d %b %Y'),
+        "VALIDITY" => model_object.validity.to_i,
+        "PRODUCT" => model_object.product.upcase,
+        "QUANTITY" => model_object.quantity.to_i,
+        "UNIT_PRICE" => model_object.unit_price.to_i,
+        "TOTAL_PRICE" => model_object.total_price.to_i,
+        "TOTAL_PRICE_IN_WORDS" => model_object.total_price.to_i.to_words.upcase,
+        "DELIVERY_TIME" => model_object.delivery_time.to_i,
+        "ADVANCE" => model_object.payment_term,
+        "PACKING" => model_object.packing_type.upcase,
+        "POL" => model_object.pol.upcase,
+        "POD" => model_object.pod.upcase,
+        "TOLERANCE" => model_object.tolerance,
+        "SHORT_CURRENCY" => model_object.currency == "dollar" ? "USD" : "AED",
+        "CURRENCY" => model_object.currency.upcase,
+        "TERM" => model_object.incoterm.upcase,
+        "ACCOUNT" => model_object.account.details.split("\n")
+      }
+    elsif model_object.is_a?(Ci)
+      data = {
+        "CI_NUMBER" => model_object.number,
+        "CI_SELLER" => model_object.pi.seller.upcase,
+        "CI_BUYER" => model_object.pi.customer.name,
+        "BUYER_COMPANY" => model_object.pi.customer.company.upcase,
+        "POL" => model_object.pi.pol.upcase,
+        "POD" => model_object.pi.pod.upcase,
+        "PI_NUMBER" => model_object.pi.number,
+        "PI_DATE" => model_object.pi.created_at.strftime('%d %b %Y'),
+        "DATE" => model_object.created_at.strftime('%d %b %Y'),
+        "PRODUCT" => model_object.pi.product.upcase,
+        "COUNT" => model_object.pi.packing_count,
+        "PACKING" => model_object.pi.packing_type.upcase,
+        "NET" => model_object.net_weight,
+        "GROSS" => model_object.gross_weight,
+        "UNIT_PRICE" => model_object.pi.unit_price.to_i,
+        "SHORT_CURRENCY" => model_object.pi.currency == "dollar" ? "USD" : "AED",
+        "TERM" => model_object.pi.incoterm.upcase,
+        "TOTAL_PRICE" => model_object.total_price.to_i,
+        "ADVANCE" => model_object.advance_payment.to_i,
+        "BALANCE" => model_object.balance_payment.to_i,
+        "TOTAL_PRICE_IN_WORDS" => model_object.total_price.to_i.to_words.upcase,
+        "CURRENCY" => model_object.pi.currency.upcase,
+        "ACCOUNT" => model_object.account.details.split("\n")
 
 
-
-        <% if current_user.sales? && current_user.is_manager %>
-        <li class="nav-item">
-          <%= link_to "Customers", customers_path, class: "nav-link active" %>
-        </li> 
-        <% end %>  
-        <% if current_user.procurement? %>
-        <li class="nav-item">
-          <%= link_to "Suppliers", suppliers_path, class: "nav-link active" %>
-        </li> 
-        <% end %>  
-        <% if current_user.is_manager %>
-        
-        <li class="nav-item" style="position: relative;">
-          <%= link_to "Vacations", managment_vacations_path, class: "nav-link active" %>
-          <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
-            <%= count_not_confirmed_vacations %>
-          </span>
-        </li>
-        <% if current_user.ceo? || current_user.admin?%>
-        <li class="nav-item">
-          <%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "nav-link active", target: "_blank" %>
-        </li>
-
-
-        <%end%>
-        
-
-        <% end %> 
-        <% if current_user.accounting? || current_user.is_manager%>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Accounting
-          </a>
-          <ul class="dropdown-menu text-white">
-            <%= link_to 'Banks', banks_path, class: 'dropdown-item' %>
-            <li>
-              <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
-            </li>
-
-          </ul>
-        </li>  
-        <% end %>
-        <% if current_user.is_manager || current_user.is_marketing || current_user.sales? || current_user.admin? %>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Marketing
-          </a>
-          <ul class="dropdown-menu text-white">
-            <li><%= link_to "New Client", new_client_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-            <li>
-              <%= link_to 'Clients', clients_path, class: 'dropdown-item' %>
-            </li>
-
-          </ul>
-        </li>
-        <% end %>
-        <li class="nav-item">
-          <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to sign out?'}, class: "nav-link active" %>
-        </li>
-        
-
-
-
-        <% else %>
-        <li class="nav-item">
-          <%= link_to "Sign in", new_user_session_path, class: "nav-link active" %>
-        </li>
-        <% end %>
-
-      </ul>
-      <% if user_signed_in?%>
-
-      <ul class="navbar-nav">
-        <li class="nav-item dropdown">
-         <a class="nav-link dropdown-toggle iconClass" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-bell"></i> <!-- Bootstrap Icons bell icon -->
-          <% if @notifications %>
-          <span class="badge badge-danger">
-            <%= unread_notification_count %>
-          </span>
-          
-        </a>
-        <ul class="m-1 p-1 dropdown-menu dropdown-menu-end notifMenu" aria-labelledby="navbarDropdown">
-
-         <%= render 'shared/notifications' %>
-
-       </ul>
-
-
-       <% end %>
-     </li>
-   </ul>
-   <% end %>
- </div>
-</div>
-</nav>
+      }
+    end
+    data
+  end
+end

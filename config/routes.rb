@@ -127,6 +127,7 @@ Rails.application.routes.draw do
   end
 
   resources :letter_heads
+  resources :accounts
 
 
   get 'member/:id', to: 'members#show', as: 'member'

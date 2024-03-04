@@ -171,7 +171,7 @@ def pi_params
     :number, :product, :validity, :quantity, :unit_price, :payment_term,
     :bank_account, :packing_type, :packing_count, :shipment_rate, :seller,
     :delivery_time, :issue_date, :pol, :pod, :customer_id, :user_id, :project_id, :currency, 
-    :total_price, :tolerance, :incoterm, :document
+    :total_price, :tolerance, :incoterm, :account_id, :document
     )
 end
 

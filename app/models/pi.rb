@@ -5,6 +5,8 @@ class Pi < ApplicationRecord
   has_many :cis, dependent: :destroy # or :nullify if you prefer not to delete them
   has_one :generated_document, dependent: :destroy
   has_one_attached :document
+  belongs_to :account, optional: true
+
 
   PRODUCT = ['BASE OIL',
    'BASEOIL SN 100',
