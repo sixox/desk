@@ -44,7 +44,7 @@ class Pi < ApplicationRecord
    'LIGHT PARS',
    'PARAFFIN WAX 1-2%',
    'PARAFFIN WAX 3-5%',
-   'PARAFFIN WAX 5-7%',
+   'PARAFFIN WAX 5-8%',
    'PARAFFIN WAX H5%',
    'PG-7622',
    'RPO 135',
