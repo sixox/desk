@@ -69,7 +69,8 @@
 						<label class="mb-2 mt-1">
 							Net Weight
 							<span class="text-danger">*</span>
-							<%= form.number_field :net_weight, class: "form-control mt-2" %>
+							<%= form.number_field :net_weight, :step => "0.0001", class: "form-control mt-2" %>
+
 
 
 						</label>
@@ -81,7 +82,7 @@
 							Gross Weight
 							<span class="text-danger">*</span>
 							
-							<%= form.number_field :gross_weight, class: "form-control mt-2" %>
+							<%= form.number_field :gross_weight, :step => "0.0001", class: "form-control mt-2" %>
 
 
 						</label>
@@ -194,7 +195,7 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<%= form.submit 'Add PI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<%= form.submit 'Add CI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
 	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
 <% end %>
