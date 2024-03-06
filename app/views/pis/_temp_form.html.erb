@@ -223,8 +223,7 @@
 						<label class="mb-2 mt-3">
 							Bank Account
 							<span class="text-danger">*</span>
-							<%= form.text_field :bank_account, class: 'form-control mt-2' %>
-
+							<%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select'} %>
 						</label>
 					</div>
 				</div>
