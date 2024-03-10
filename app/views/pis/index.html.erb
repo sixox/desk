@@ -27,6 +27,7 @@
 						<th scope="col" class="col-sm-2">Product</th>
 						<th scope="col" class="col-sm-2">Packing</th>
 						<th scope="col" class="col-sm-2">Unit price</th>
+						<th scope="col" class="col-sm-2">Quantity</th>
 
 						<th scope="col" class="col-sm-2">Total Price</th>
 						<th scope="col" class="col-sm-2">Currency</th>
@@ -48,8 +49,9 @@
 						<td><%= pi.packing_type %></td>
 
 						<td><%= pi.unit_price %></td>
+						<td><%= pi.quantity.to_i %></td>
 						<td><%= pi.total_price %></td>
-						<td><% pi.currency %>
+						<td><%= pi.currency %>
 						</td>
 						<td><%= pi.incoterm %></td>
 
