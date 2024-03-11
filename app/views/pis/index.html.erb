@@ -17,6 +17,7 @@
 			</div>
 		</div>
 	</div>
+	<% if @pis_without_project.present? %>
 	<row class="m-2">
 		<h4>PIs without Project</h4>
 		<hr>
@@ -89,8 +90,9 @@
 
 			</div>
 		</row>
+		<% end %>
 		<row class="m-3">
-		<h4>PIs with Project</h4>
+		<h4>PIs</h4>
 		<hr>
 			<div class="col-sm">
 				<table class="table">
