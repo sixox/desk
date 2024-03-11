@@ -26,6 +26,7 @@ class PisController < ApplicationController
 
   def index
     @pis_without_project = Pi.without_project
+    @pis_with_project = Pi.with_project
     
   end
 

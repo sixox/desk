@@ -69,5 +69,8 @@ class Pi < ApplicationRecord
   scope :without_project, -> { 
     left_outer_joins(:project).where(projects: { id: nil }) 
   }
+  scope :with_project, -> { 
+    left_outer_joins(:project).where.not(projects: { id: nil }) 
+  }
 
  end

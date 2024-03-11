@@ -18,11 +18,14 @@
 		</div>
 	</div>
 	<row class="m-2">
+		<h4>PIs without Project</h4>
+		<hr>
 		<div class="col-sm">
 			<table class="table">
 				<thead>
 					<tr>
 						<th scope="col" class="col-sm-1">#</th>
+
 						<th scope="col" class="col-sm-2">Customer</th>
 						<th scope="col" class="col-sm-2">Product</th>
 						<th scope="col" class="col-sm-2">Packing</th>
@@ -86,4 +89,76 @@
 
 			</div>
 		</row>
-	</div>
+		<row class="m-3">
+		<h4>PIs with Project</h4>
+		<hr>
+			<div class="col-sm">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col" class="col-sm-1">#</th>
+							<th scope="col" class="col-sm-2">Project</th>
+
+							<th scope="col" class="col-sm-2">Customer</th>
+							<th scope="col" class="col-sm-2">Product</th>
+							<th scope="col" class="col-sm-2">Packing</th>
+							<th scope="col" class="col-sm-2">Unit price</th>
+							<th scope="col" class="col-sm-2">Quantity</th>
+
+							<th scope="col" class="col-sm-2">Total Price</th>
+							<th scope="col" class="col-sm-2">Currency</th>
+							<th scope="col" class="col-sm-2">Term</th>
+							<th scope="col" class="col-sm-2">POD</th>
+							<th scope="col" class="col-sm-2">File</th>
+							<th scope="col" style="text-align: right;" class="col-sm-4 text-right">Actions</th>
+
+						</tr>
+					</thead>
+					<tbody>
+						<% @pis_with_project.order(created_at: :desc).each do |pi| %>
+						<tr style="font-size: 12px;">
+							<th scope="row">
+								<%= pi.number %>
+							</th>
+					<td><%= link_to pi.project.number, project_path(pi.project) %></td>
+							<td class="fw-bold"><%= pi.customer.nickname %></td>
+							<td class="fw-bold"><%= pi.product %></td>
+							<td><%= pi.packing_type %></td>
+
+							<td><%= pi.unit_price %></td>
+							<td><%= pi.quantity.to_i %></td>
+							<td><%= pi.total_price %></td>
+							<td><%= pi.currency %>
+							</td>
+							<td><%= pi.incoterm %></td>
+
+							<td><%= pi.pod %></td>
+							<td><% if pi.generated_document.present?%>
+								<%= link_to 'PI', url_for(pi.generated_document.file), target: '_blank' %>
+								<% end %></td>
+								<td style="text-align: right;">
+									<% if user_signed_in? && current_user.sales? %>
+
+									<span>
+										<%= link_to create_document_form_pi_path(pi), data: { controller: "bs-modal-form" } do %>
+										<i class="bi bi-filetype-docx" style="color: green; font-size: 15px;"></i>
+										<% end %>
+										<%= link_to update_temp_form_pi_path(pi), data: { controller: "bs-modal-form" } do %>
+										<i class="bi bi-pencil-fill" style="color: blueviolet; font-size: 15px;"></i>
+										<% end %>
+
+
+									</span>
+
+									<% end %>
+
+
+								</td>
+							</tr>
+							<% end %>
+						</tbody>
+					</table>
+
+				</div>
+			</row>
+		</div>
