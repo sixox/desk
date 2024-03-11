@@ -21,6 +21,8 @@
 
 						<th scope="col" class="col-sm-2">Status</th>
 						<th scope="col" class="col-sm-2">Note</th>
+						<th scope="col" class="col-sm-2">Created at</th>
+
 
 						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
@@ -88,6 +90,9 @@
 				  <% else %>
 				  -
 				  <% end %>
+				</td>
+				<td>
+					<%= swift.created_at&.strftime('%b %d') %>
 				</td>
 				<td style="text-align: right;">
 					<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>

@@ -19,6 +19,10 @@ class CisController < ApplicationController
     end
 	end
 
+	def index
+		  @cis = Ci.includes(:pi).all
+	end
+
 	def create_document
 	    # Assuming the template_document is attached to a GeneratedDocument instance
 	    template_document = LetterHead.find(params[:generated_document][:template_id])

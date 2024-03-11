@@ -1,0 +1,78 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+
+
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-center">
+				<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
+				<% if user_signed_in? && current_user.sales? %>
+				
+				<span>
+				</span>
+
+				<% end %>
+
+			</div>
+		</div>
+	</div>
+	<row class="m-2">
+		<div class="col-sm">
+			<table class="table">
+				<thead>
+					<tr>
+						<th scope="col" class="col-sm-1">CI number</th>
+						<th scope="col" class="col-sm-1">PI number</th>
+						<th scope="col" class="col-sm-1">Project</th>
+						<th scope="col" class="col-sm-1">Net Weight</th>
+						<th scope="col" class="col-sm-1">Gross Weight</th>
+						<th scope="col" class="col-sm-1">Unit Price</th>
+						<th scope="col" class="col-sm-1">Total Price</th>
+						<th scope="col" class="col-sm-1">Term</th>
+						<th scope="col" class="col-sm-1">File</th>
+						
+						<th scope="col" style="text-align: center;" class="col-sm-4 text-right">Actions</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<% @cis.order(created_at: :desc).each do |ci| %>
+					<tr style="font-size: 12px;">
+
+						<th scope="row"><%= ci.number %></th>
+						<td><%= ci.pi.number %></td>
+						<td><%= ci.project.number %></td>
+						<td><%= ci.net_weight %></td>
+						<td><%= ci.gross_weight %></td>
+						<td><%= ci.pi.unit_price.to_i %></td>
+						<td><%= ci.total_price.to_i %> </td>
+						<td><%= ci.pi.payment_term %></td>
+						<td><% if ci.generated_document.present?%>
+							<%= link_to 'View CI', url_for(ci.generated_document.file), target: '_blank' %>
+							<% end %>
+						</td>
+						<td><% if user_signed_in? && current_user.sales? %>
+
+							<span>
+								<%= link_to "Edit", edit_project_ci_path(ci.project, ci), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
+
+							</span>
+							<% if !ci.swift.present? %>
+							<span>
+								<%= link_to "Swift", new_ci_swift_path(ci), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
+
+							</span>
+							<% end %>
+							<span>
+								<%= link_to "CI .docx", create_document_form_ci_path(ci), data: { controller: "bs-modal-form" }, class: "btn btn-success" %>
+								<% end %>
+							</span>
+						</td>
+					</tr>
+					<% end %>
+				</tbody>
+			</table>
+
+		</div>
+	</row>
+</div>
