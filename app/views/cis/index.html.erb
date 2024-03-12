@@ -41,7 +41,8 @@
 
 						<th scope="row"><%= ci.number %></th>
 						<td><%= ci.pi.number %></td>
-						<td><%= ci.project.number %></td>
+						<td><%= link_to ci.project.number, project_path(ci.project) %></td>
+
 						<td><%= ci.net_weight %></td>
 						<td><%= ci.gross_weight %></td>
 						<td><%= ci.pi.unit_price.to_i %></td>
