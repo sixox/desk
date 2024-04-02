@@ -138,7 +138,7 @@
 							Unit Price
 							<span class="text-danger">*</span>
 							
-							<%= form.number_field :unit_price, id: "unit_price_field", class: "form-control mt-2" %>
+							<%= form.number_field :unit_price,:step => "0.0001", id: "unit_price_field", class: "form-control mt-2" %>
 
 
 						</label>
@@ -159,7 +159,7 @@
 							Total Price
 							<span class="text-danger">*</span>
 							
-							<%= form.number_field :total_price, class: "form-control mt-2" %>
+							<%= form.number_field :total_price,:step => "0.0001", class: "form-control mt-2" %>
 
 
 						</label>
