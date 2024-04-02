@@ -33,7 +33,14 @@
 			<div class="d-flex justify-content-start">
 				detail: &nbsp; <span class=""> <%= report.details %> </span>
 			</div>
+			<br>
+
+				<% if current_user == report.user && report.created_within_24_hours? %>
+				<%= link_to "Edit", edit_report_path(report), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
+				<% end %>
+			
 		</div>
+
 		<hr>
 		<div class="row">
 			<% if report.documents.attached? %>

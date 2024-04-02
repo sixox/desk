@@ -6,6 +6,10 @@ class Report < ApplicationRecord
 
   scope :by_user_role, -> (role) { joins(:user).where(users: { role: role }) }
 
+  def created_within_24_hours?
+    created_at >= 24.hours.ago
+  end
+
 
 
 end
