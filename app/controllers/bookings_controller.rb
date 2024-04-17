@@ -36,7 +36,7 @@ class BookingsController < ApplicationController
 	    if @booking.update(booking_params)
 	      format.turbo_stream do
 	        render turbo_stream: [
-	          turbo_stream.replace("booking_item_#{booking.id}", partial: 'bookings/booking', locals: { booking: @booking, project: @booking.project }),
+	          turbo_stream.replace("booking_item_#{@booking.id}", partial: 'bookings/booking', locals: { booking: @booking, project: @booking.project }),
 	          turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Booking was successfully updated.' })
 	        ]
 	      end

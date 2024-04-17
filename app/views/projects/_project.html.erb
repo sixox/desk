@@ -27,13 +27,8 @@
 
 				<div class="col-lg-2">
 					<div class="d-flex justify-content-end">
-						<p class="fw-bold">Status 
-							<% if project.status%>
-							<span class="text-secondary"><%= project.status %></span> 
-							<% else %>
-							<span class="text-secondary">Unknown</span> 
-							<% end %>
-
+						<p class="fw-bold"> 
+							<%= risk_level_tag(project) %>
 						</p>
 					</div>
 				</div>

@@ -1,4 +1,6 @@
 class Project < ApplicationRecord
+  before_save :calculate_risk_based_on_impact_and_likelihood
+
 	has_one :pi
 	has_many :cis
 	has_many :bookings
@@ -20,6 +22,52 @@ class Project < ApplicationRecord
   def self.ransackable_associations(auth_object = nil)
     []
   end
+
+  private
+
+	def calculate_risk_based_on_impact_and_likelihood
+	    # Define likelihood and impact for each attribute
+	    attribute_details = {
+	      new_customer:    { likelihood: 1, impact: 5 },
+	      new_destination: { likelihood: 6, impact: 7 },
+	      shipping:        { likelihood: 3, impact: 7 },
+	      exchange:        { likelihood: 3, impact: 7 },
+	      supplier_prepaid:{ likelihood: 7, impact: 7 },
+	      delivery_failure:{ likelihood: 2, impact: 5 },
+	      supplier_credits:{ likelihood: 7, impact: 9 },
+	      third_person:    { likelihood: 1, impact: 9 },
+	      custom_clearance: { likelihood: 5, impact: 10 },
+	      logistic:        { likelihood: 1, impact: 5 },
+	      quality:         { likelihood: 7, impact: 9 }
+	    }
+
+	    # Initialize max values
+	    max_risk_value = 0
+	    selected_attribute = nil
+
+	    # Calculate the product of likelihood and impact for each attribute
+	    attribute_details.each do |attr, details|
+	      if send(attr)
+	        risk_value = details[:likelihood] * details[:impact]
+	        if risk_value > max_risk_value
+	          max_risk_value = risk_value
+	          selected_attribute = attr
+	        end
+	      end
+	    end
+
+	    # Set the risk, impact, and likelihood attributes
+	    if selected_attribute
+	      self.risk = max_risk_value
+	      self.impact = attribute_details[selected_attribute][:impact]
+	      self.likelihood = attribute_details[selected_attribute][:likelihood]
+	      self.selected_risk = selected_attribute
+	    else
+	      self.risk = 0
+	      self.impact = 0
+	      self.likelihood = 0
+	    end
+	  end
 
 
 end

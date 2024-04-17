@@ -83,5 +83,9 @@
   color: darkblue;
   background-color: #fbc3c3;
 }
-
+.no-risk { color: white }
+.risk-low { color: green; }
+.risk-medium { color: yellow; }
+.risk-high { color: orange; }
+.risk-extreme { color: red; }
 
