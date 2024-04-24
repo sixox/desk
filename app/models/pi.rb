@@ -6,6 +6,8 @@ class Pi < ApplicationRecord
   has_one :generated_document, dependent: :destroy
   has_one_attached :document
   belongs_to :account, optional: true
+  validates :number, uniqueness: true
+
 
 
   PRODUCT = ['BASE OIL',
