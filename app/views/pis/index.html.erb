@@ -37,7 +37,10 @@
 						<th scope="col" class="col-sm-2">Currency</th>
 						<th scope="col" class="col-sm-2">Term</th>
 						<th scope="col" class="col-sm-2">POD</th>
+						<th scope="col" class="col-sm-2">Issue Date</th>
 						<th scope="col" class="col-sm-2">File</th>
+
+
 						<th scope="col" style="text-align: right;" class="col-sm-4 text-right">Actions</th>
 
 					</tr>
@@ -60,6 +63,7 @@
 						<td><%= pi.incoterm %></td>
 
 						<td><%= pi.pod %></td>
+						<td><%= pi.issue_date&.strftime('%b %d') %></td>
 						<td><% if pi.generated_document.present?%>
 							<%= link_to 'PI', url_for(pi.generated_document.file), target: '_blank' %>
 							<% end %></td>
@@ -111,6 +115,8 @@
 							<th scope="col" class="col-sm-2">Currency</th>
 							<th scope="col" class="col-sm-2">Term</th>
 							<th scope="col" class="col-sm-2">POD</th>
+							<th scope="col" class="col-sm-2">Issue Date</th>
+
 							<th scope="col" class="col-sm-2">File</th>
 							<th scope="col" style="text-align: right;" class="col-sm-4 text-right">Actions</th>
 
@@ -135,6 +141,8 @@
 							<td><%= pi.incoterm %></td>
 
 							<td><%= pi.pod %></td>
+							<td><%= pi.issue_date&.strftime('%b %d') %></td>
+
 							<td><% if pi.generated_document.present?%>
 								<%= link_to 'PI', url_for(pi.generated_document.file), target: '_blank' %>
 								<% end %></td>

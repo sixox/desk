@@ -20,7 +20,9 @@ class CisController < ApplicationController
 	end
 
 	def index
-		  @cis = Ci.includes(:pi).all
+		  # @cis = Ci.includes(:pi).all
+      @cis = Ci.includes(pi: :project).order('projects.number DESC')
+
 	end
 
 	def create_document
