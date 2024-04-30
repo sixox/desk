@@ -49,7 +49,7 @@
 						<td><%= ci.pi.unit_price.to_i %></td>
 						<td><%= ci.total_price.to_i %> </td>
 						<td><%= ci.pi.payment_term %></td>
-						<td><%= ci.issue_date&.strftime('%a %b %d') %></td>
+						<td><%= ci.issue_date&.strftime('%b %d %a') %></td>
 						<td><% if ci.generated_document.present?%>
 							<%= link_to 'View CI', url_for(ci.generated_document.file), target: '_blank' %>
 							<% end %>

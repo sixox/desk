@@ -49,6 +49,11 @@ class ProjectsController < ApplicationController
 	end
 
 	def update
+		if @project.update(project_params)
+			redirect_to project_path(@project), notice: "Project Edited Successfully"
+		else
+			redirect_to project_path(@project), alert: "Project Edited not Done"
+		end
 	end
 
 	def destroy

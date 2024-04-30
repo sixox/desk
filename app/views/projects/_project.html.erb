@@ -84,7 +84,7 @@
 
 			<div class="row mt-2">
 				<div class="col-lg">
-					
+					<%= link_to "Edit", edit_project_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
 					<%= link_to "Add Swift", new_project_swift_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
 					<% if !project.pi%>
 					<%= link_to "Create PI", new_project_pi_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
