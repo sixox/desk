@@ -36,6 +36,7 @@ class Pi < ApplicationRecord
    'CUTBACK BITUMEN MC-3000',
    'CUTBACK MC30',
    'EMULSION BITUMEN CSS-60',
+   'FootsOil',
    'ENGINE OIL',
    'ENGINE OIL SAE 40',
    'HEAVY BEHRAN',
