@@ -90,6 +90,10 @@
           <li>
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
+          <% if current_user.is_manager %>
+                    <li><%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "dropdown-item", target: "_blank" %></li>
+
+          <% end %>
           <% end %>
 
         </ul>
