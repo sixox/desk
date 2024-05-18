@@ -84,7 +84,7 @@ class Pi < ApplicationRecord
     when 'pi_number'
       order('number DESC')
     when 'pi_updated_at'
-      order('updated_at DESC')
+      order('issue_date DESC')
     else
       with_project.order('projects.number DESC') # Default sorting
     end
