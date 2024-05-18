@@ -74,9 +74,20 @@ class Pi < ApplicationRecord
     left_outer_joins(:project).where(projects: { id: nil }) 
   }
   scope :with_project, -> {
-    left_outer_joins(:project)
-    .where.not(projects: { id: nil })
-    .order('projects.number DESC') # Add ordering here
+    left_outer_joins(:project).where.not(projects: { id: nil })
   }
+
+  def self.custom_order(sort_by)
+    case sort_by
+    when 'project_number_desc'
+      with_project.order('projects.number DESC')
+    when 'pi_number'
+      order('number DESC')
+    when 'pi_updated_at'
+      order('updated_at DESC')
+    else
+      with_project.order('projects.number DESC') # Default sorting
+    end
+  end
 
  end
