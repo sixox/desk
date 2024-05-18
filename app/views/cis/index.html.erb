@@ -1,6 +1,16 @@
 <div class="col-lg-10 mx-auto mt-5">
 
-
+  <%= form_with(url: cis_path, method: :get, local: true, class: "d-flex justify-content-end mb-3") do |form| %>
+    <div class="form-group">
+      <label for="sort_by" class="me-2">Sort by:</label>
+      <%= select_tag :sort_by, options_for_select({
+        'Project' => 'project_number_desc',
+        'CI Number' => 'ci_number',
+        'PI Number' => 'pi_number',
+        'Date' => 'issue_date'
+      }, selected: @sort_by), onchange: 'this.form.submit();', class: 'form-select form-select-sm' %>
+    </div>
+  <% end %>
 
 	<div class="card mb-5">
 		<div class="card-body">

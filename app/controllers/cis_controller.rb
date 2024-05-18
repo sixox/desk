@@ -21,8 +21,8 @@ class CisController < ApplicationController
 
 	def index
 		  # @cis = Ci.includes(:pi).all
-      @cis = Ci.includes(pi: :project).order('projects.number DESC')
-
+	  @sort_by = params[:sort_by] || 'project_number_desc'
+	  @cis = sort_cis(Ci.includes(pi: :project), @sort_by)
 	end
 
 	def create_document
@@ -115,6 +115,21 @@ end
 
 	def find_project
 		@project = Project.find(params[:project_id])
+	end
+
+	def sort_cis(query, sort_by)
+	  case sort_by
+	  when 'ci_number'
+	    query.order('number DESC')
+	  when 'pi_number'
+	    query.order('pis.number DESC')
+	  when 'project_number_desc'
+	    query.order('projects.number DESC')
+	  when 'issue_date'
+	    query.order('issue_date DESC')
+	  else
+	    query
+	  end
 	end
 
 
