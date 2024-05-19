@@ -39,6 +39,7 @@ class Pi < ApplicationRecord
    'FootsOil',
    'ENGINE OIL',
    'ENGINE OIL SAE 40',
+   'SLACK WAX',
    'HEAVY BEHRAN',
    'HEAVY PARS',
    'IRANOL-SW10-AB',
