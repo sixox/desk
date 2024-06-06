@@ -59,26 +59,34 @@
 
 
 
-			<div class="row bg-semi">
+			<div class="row bg-semi mt-3">
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Picked up
-							<%= form.number_field :picked_up, class: "form-control mt-2" %>
+					        <%= form.range_field :picked_up, min: 0, max: @booking.quantity, class: "form-range mt-2", id: "picked_up_range" %>
 						</label>
 					</div>
 				</div>
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Filled
-							<%= form.number_field :filled, class: "form-control mt-2" %>
+							Stuffed
+							<%= form.range_field :filled, min: 0, max: @booking.quantity, class: "form-range mt-2" %>
 						</label>
 					</div>
+				</div>
+				<div class="col-lg mb-2 mt-5">
+					<%= form.check_box :stuffing, class: 'form-check-input' %>
+					<label class="form-check-label" for="hourly">
+						Stuffing started
+					</label>
+				
 				</div>
 				
 				
 			</div>
+
 
 
 

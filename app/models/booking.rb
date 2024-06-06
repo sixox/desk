@@ -3,6 +3,14 @@ class Booking < ApplicationRecord
 
   belongs_to :project
   has_many :payment_orders
+  has_one_attached :bl_draft
+  has_one_attached :bl_dated
+  has_one_attached :surrender
+  has_many_attached :images
+
+
+  validates :number, :pod, :container_type, :quantity, presence: true
+
 
   LINE = ['HDS', 'hoopad','hormoz marin']
   FORWARDER = ['Daryabar', 'hormoz marin']
@@ -15,7 +23,7 @@ class Booking < ApplicationRecord
   end
 
   def set_status
-    if vessel_etd.present?
+    if vessel_eta.present?
       self.status = "vessel ETD"
     elsif custom_submission_date.present?
       self.status = "custom submission"

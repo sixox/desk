@@ -9,7 +9,12 @@ class Project < ApplicationRecord
 	has_many :payment_orders
 	has_many :swifts
 
+  has_secure_password
+
+
 	validates :number, uniqueness: true
+  validates :password, presence: true, on: :create
+
 
 
 
@@ -21,6 +26,22 @@ class Project < ApplicationRecord
 
   def self.ransackable_associations(auth_object = nil)
     []
+  end
+
+  def total_booking_quantity
+    bookings.sum(:quantity)
+  end
+
+  def total_booking_picked_up
+    bookings.sum(:picked_up)
+  end
+
+  def total_booking_filled
+    bookings.sum(:filled)
+  end
+
+  def any_booking_stuffing_finished?
+    bookings.any? { |booking| booking.filled == booking.quantity }
   end
 
   private

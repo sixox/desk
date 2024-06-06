@@ -1,0 +1,871 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+  <!-- Timeline 7 - Bootstrap Brain Component -->
+  <section class="bsb-timeline-7 bg-light py-3 py-md-5 py-xl-8">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-10 col-md-12 col-xl-10 col-xxl-9">
+          <ul class="timeline">
+            <li class="timeline-item">
+              <div class="timeline-body">
+                <div class="timeline-meta">
+                  <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
+                    <span class="fw-bold"><%= @project.pi.issue_date %></span>
+                    <span>Performa Invoice</span>
+                  </div>
+                </div>
+                <div class="timeline-content timeline-indicator">
+                  <div class="card border-0 shadow">
+                    <div class="card-body p-xl-4">
+                      <h2 class="card-title mb-2 text-success">Performa Invoice issued</h2>
+                      <div class="row d-flex justify-content-between">
+                        <div class="col-auto">
+                          <h6 class="card-subtitle text-secondary mb-3">
+                            <% if @project.pi.document.attached? %>
+                            <%= link_to "#{@project.pi.number}.PDF", @project.pi.document, class: "text-secondary", target: "_blank" %>
+                            <% end %>
+                          </h6>
+                        </div>
+                        <div class="col-auto" style="margin-top: -6px;">
+                          <small class="text-success">
+                            <%= @project.pi.issue_date.strftime('%B %d') %>
+                          </small>
+                        </div>
+                      </div>
+                      <p class="card-text m-0">
+                        <br>
+                        <small><%= @project.pi.quantity.to_i %></small> MT <small><%= @project.pi.product %></small> - <small><%= @project.pi.packing_type %></small>
+                        <br> 
+                        <small><%= @project.pi.incoterm %> <%= @project.pi.pod %></small> PORT
+                        <br>
+                        <hr>
+                        <div class="row">
+                          <div class="col">
+                            price
+                            <br>
+                            <small class="text-warning"><%= @project.pi.unit_price.to_i %></small>
+                          </div>
+                          <div class="col">
+                            advance
+                            <br>
+                            <small class="text-warning"><%= @project.pi.payment_term %>% </small>
+                          </div>
+                          <div class="col">total 
+                            <br>
+                            <small class="text-warning"><%= number_with_delimiter(@project.pi.total_price.to_i, delimiter: ',') %></small>
+                            <br>
+                          </div>
+                          <div class="col">
+                            <br>
+                            <small> <%= @project.pi.currency %></small>
+                          </div>
+                        </div>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <% if @project.swifts.present? %>
+            <li class="timeline-item">
+              <div class="timeline-body">
+                <div class="timeline-meta">
+                  <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
+                    <span class="fw-bold"><%= @project.swifts.last.updated_at.strftime('%Y-%m-%d') %></span>
+                    <span>Advance Payment</span>
+                  </div>
+                </div>
+                <div class="timeline-content timeline-indicator">
+                  <div class="card border-0 shadow">
+                    <div class="card-body p-xl-4">
+                      <h2 class="card-title mb-2 text-success">Advance Payment Received</h2>
+                      <div class="row d-flex justify-content-between">
+                        <div class="col-auto">
+                          <h6 class="card-subtitle text-secondary mb-3">
+                          </h6>
+                        </div>
+                        <div class="col-auto" style="margin-top: -6px;">
+                          <small class="text-success">
+                          </small>
+                        </div>
+                      </div>
+                      <% @project.swifts.each do |swift| %>
+                      <div class="row d-flex justify-content-between">
+                        <div class="col-auto">
+                          <h6 class="card-subtitle text-secondary mb-3">
+                            <% swift.documents.each do |document| %>
+                            <div class="col-12 mb-2">
+                              <%= link_to "swift/#{@project.pi.number}/#{swift.id}.file", rails_blob_path(document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+                            </div>
+                            <% end %>
+                          </h6>
+                        </div>
+                        <div class="col-auto" style="margin-top: -6px;">
+                          <small class="text-success">
+                            <%= swift.updated_at.strftime('%B %d') %>
+                          </small>
+                        </div>
+                      </div>
+                      <% end %>
+                      <p class="card-text m-0">
+                        <hr>
+                        <div class="row">
+                          <div class="col">Amount</div>
+                          <div class="col">Confirmed</div>
+                          <div class="col"></div>
+                          <div class="col"></div>
+                        </div>
+                        <% @project.swifts.each do |swift| %>
+                        <div class="row">
+                          <div class="col"><small class="text-warning"><%= number_with_delimiter(swift.amount.to_i, delimiter: ',') %></small></div>
+                          <div class="col"><small class="text-success"><%= swift.confirmed.present? ? swift.confirm_at.strftime('%Y-%m-%d') : "-" %></small></div>
+                          <div class="col"></div>
+                          <div class="col"><small class="text-secondary"><%= swift.currency %></small></div>
+                        </div>
+                        <% end %>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <% else %>
+            <li class="timeline-item">
+              <div class="timeline-body">
+                <div class="timeline-meta">
+                  <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-<%= @project.pi.payment_term == '0' ? "success" : "warning" %>-subtle border border-success-subtle rounded-2 text-md-end">
+                    <span class="fw-bold"><%= @project.pi.payment_term == '0' ? "without advance" : "payment" %></span>
+                    <span>Advance Payment</span>
+                  </div>
+                </div>
+                <div class="timeline-content timeline-indicator">
+                  <div class="card border-0 shadow">
+                    <div class="card-body p-xl-4">
+                      <h2 class="card-title mb-2 text-<%= @project.pi.payment_term == '0' ? "success" : "warning" %>"><%= @project.pi.payment_term == '0' ? "need no Advance Payment" : "Advance payment" %></h2>
+                      <div class="row d-flex justify-content-between">
+                        <div class="col-auto">
+                          <h6 class="card-subtitle text-secondary mb-3">
+                          </h6>
+                        </div>
+                        <div class="col-auto" style="margin-top: -6px;">
+                          <small class="text-success">
+                          </small>
+                        </div>
+                      </div>
+                      <p class="card-text m-0">
+                        <div class="row">
+                          <div class="col">
+                            Amount
+                            <br>
+                            <small class="text-warning">0</small>
+                          </div>
+                          <div class="col">
+                            Confirmed at
+                            <br>
+                            <small class="text-warning">-</small>
+                          </div>
+                          <div class="col">
+                            <br>
+                            <small> <%= @project.pi.currency %></small>
+                          </div>
+                        </div>
+
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <% end %>
+            <% if (@project.swifts.first&.confirmed.present? && @project.swifts.first&.advance.present?  ) or @project.started %>
+            <li class="timeline-item">
+              <div class="timeline-body">
+                <div class="timeline-meta">
+                  <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-<%= @project.pi.payment_term == '0' ? "success" : "warning" %>-subtle border border-success-subtle rounded-2 text-md-end">
+                    <span class="fw-bold">Sales</span>
+                    <span>Purchase Confirmed</span>
+                  </div>
+                </div>
+                <div class="timeline-content timeline-indicator">
+                  <div class="card border-0 shadow">
+                    <div class="card-body p-xl-4">
+                      <h2 class="card-title text-primary">Purchase Confirmed</h2>
+                      <div class="row d-flex justify-content-between">
+                        <div class="col-auto">
+
+                        </div>
+                        
+                      </div>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <% else %>
+            <li class="timeline-item">
+              <div class="timeline-body">
+                <div class="timeline-meta">
+                  <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-warning-subtle border border-success-subtle rounded-2 text-md-end">
+                    <span class="fw-bold">sales</span>
+                    <span>Purchase Confirm</span>
+                  </div>
+                </div>
+                <div class="timeline-content timeline-indicator">
+                  <div class="card border-0 shadow">
+                    <div class="card-body p-xl-4">
+                      <h2 class="card-title mb-2 text-warning">Purchase confirm</h2>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <% end %>
+            <% if @project.bookings.present? %>
+            <li class="timeline-item">
+              <div class="timeline-body">
+                <div class="timeline-meta">
+                  <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
+                    <span class="fw-bold"><%= @latest_booking.present? ? @latest_booking.updated_at.strftime('%Y-%m-%d') : "" %></span>
+
+                    <span>Bookings</span>
+                  </div>
+                </div>
+                <div class="timeline-content timeline-indicator">
+                  <div class="card border-0 shadow">
+                    <div class="card-body p-xl-4">
+                      <h2 class="card-title mb-2 text-success">Bookings</h2>
+                      <% @project.bookings.each do |booking|%>
+                      <div class="card card-custom mt-1">
+                        <div class="card-body">
+
+                          <div class="row d-flex justify-content-between">
+                            <div class="col-auto">
+                              <h6 class="card-subtitle text-secondary mb-3">
+                                <span class="text-danger"> NO. </span><small class="text-secondary"><%= booking.number %></small>
+                              </h6>
+                            </div>
+                            <div class="col-auto" style="margin-top: -6px;">
+                              <small class="text-success">
+                                <h5 class="mb-1 timeline-h5">STATUS:
+                                  <% if booking.filled.to_i == booking.quantity.to_i %>
+                                  <span class="text-success fw-bold">stuffing finished</span>
+                                  <% elsif booking.stuffing == true || (booking.filled.to_i > 0 && booking.filled.to_i < booking.quantity.to_i) %>
+                                  <span class="text-warning fw-bold">stuffing</span>
+                                  <% elsif booking.picked_up.to_i < booking.quantity.to_i %>
+                                  <span class="text-warning fw-bold">pick up containers</span>
+                                  <% elsif booking.filled.to_i == booking.quantity.to_i %>
+                                  <span class="text-success fw-bold">finished</span>
+                                  <% end %>
+
+                                  
+                                </h5>
+                              </small>
+                            </div>
+                          </div>
+
+                          <% if @project.total_booking_picked_up > 0 %>
+                          
+
+                          <div class="row text-center">
+                            <div class="col">
+                              <small class="fw-bold timeline-small">total <span style="font-size: 10px;"> <%= booking.container_type %></span> </small>
+                              <hr>
+                            </div>
+                            <div class="col">
+                              <small class="fw-bold timeline-small">picked up</small>
+                              <hr>
+                            </div>
+                            
+                            <div class="col">
+                              <small class="fw-bold timeline-small">Stuffed</small>
+                              <hr>
+                            </div>
+                          </div>
+                          <div class="row text-center">
+                            <div class="col border-end border-1 border-dark">
+                              <small class="text-secondary"><i class="bi bi-clipboard"></i> <%= booking.quantity %> <span style="font-size: 10px;">Containers</span></small>
+                            </div>
+                            <div class="col border-end border-1 border-dark">
+                              <small class="text-secondary"><i class="bi bi-clipboard-check"></i> <%= booking.picked_up.to_i %> <span style="font-size: 10px;">Containers</span></small>
+                              <%= form_with model: [@project, booking], local: true, class: "form-inline" do |form| %>
+                              <div class="form-group">
+                                <%= form.range_field :picked_up, min: 0, max: booking.quantity, class: "form-range mt-2", style: "width: 100%;", disabled: true %>
+                              </div>
+                              <% end %>
+                            </div>
+                            <div class="col">
+                              <small class="text-secondary"><i class="bi bi-clipboard-fill"></i> <%= booking.filled.to_i %> <span style="font-size: 10px;">Containers</span></small>
+                              <%= form_with model: [@project, booking], local: true, class: "form-inline" do |form| %>
+                              <div class="form-group">
+                                <%= form.range_field :filled, min: 0, max: booking.quantity, class: "form-range mt-2", style: "width: 100%;", disabled: true %>
+                              </div>
+                              <% end %>
+                            </div>          
+
+                          </div>
+
+
+
+                          <div class="row mt-5 d-flex justify-content-between">
+                            <div class="col-auto fw-bold">
+                                <% if booking.images.attached? %>
+                                <small class="timeline-small me-1">Images</small>
+                                <% booking.images.each_with_index do |image, index| %>
+                                  <small class="me-1">
+                                    <%= link_to index + 1, rails_blob_path(image, disposition: "attachment"), target: "_blank", class: "text-secondary" %>
+                                  </small>
+                                <% end %>
+                              <% end %>
+                            </div>
+                            <div class="col-auto">
+                              <small class="text-secondary">
+                                last update: <span class="fw-bold"> <%= booking.updated_at.strftime('%Y-%m-%d') %></span>
+                              </small>
+                            </div>
+                          </div>
+                          <% end %>
+                        </div>
+
+                      </div>
+                      <% end %>
+
+                      <% if @project.bookings.second.present? %>
+                      <hr>
+                      <div class="row">
+                        <div class="col">
+                          <span>
+                            <small class="fw-bold timeline-small">total: </small><span class="text-secondary fw-bold"><%= @project.total_booking_quantity %></span>
+                          </span>
+                        </div>
+                        <div class="col">
+                         <span>
+                          <small class="fw-bold timeline-small">picked up: </small><span class="text-secondary fw-bold"><%= @project.total_booking_picked_up %></span>
+                        </span>
+                      </div>
+                      <div class="col">
+                       <span>
+                        <small class="fw-bold timeline-small">stuffed: </small><span class="text-secondary fw-bold"><%= @project.total_booking_filled %></span>
+                      </span>
+                    </div>
+                  </div>
+                  <% end%>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <% else %>
+        <li class="timeline-item">
+          <div class="timeline-body">
+            <div class="timeline-meta">
+              <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-warning-subtle border border-success-subtle rounded-2 text-md-end">
+                <span class="fw-bold">stuffing</span>
+                <span>Booking</span>
+              </div>
+            </div>
+            <div class="timeline-content timeline-indicator">
+              <div class="card border-0 shadow">
+                <div class="card-body p-xl-4">
+                  <h2 class="card-title mb-2 text-warning">Booking</h2>
+
+                  <div class="row d-flex justify-content-between">
+                    <div class="col-auto">
+                      <h6 class="card-subtitle text-secondary mb-3">
+                        0 containers
+                      </h6>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <% end %>
+
+        <% if @project.any_booking_stuffing_finished? %>
+        <li class="timeline-item">
+          <div class="timeline-body">
+            <div class="timeline-meta">
+              <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
+                <span class="fw-bold"><%= @latest_booking.present? ? @latest_booking.updated_at.strftime('%Y-%m-%d') : "" %></span>
+                <span>Custom Clearance</span>
+              </div>
+            </div>
+            <div class="timeline-content timeline-indicator">
+              <div class="card border-0 shadow">
+                <div class="card-body p-xl-4">
+                  <% if @project.bookings.last&.custom_submission_date.present? %>
+                  <h2 class="card-title mb-2 text-success">Documents Delivered</h2>
+                  <% else %>
+                  <h2 class="card-title mb-2 text-success">Documents</h2>
+                  <% end %>
+                  <% @project.bookings.each do |booking| %>
+                  <div class="card card-custom mt-1">
+                    <div class="card-body">
+
+                      <div class="row d-flex justify-content-between mt-2">
+                        <div class="col-auto">
+                          <h6 class="card-subtitle text-secondary">
+                            <span class="text-danger"> <i class="bi bi-box-seam-fill"></i> </span><span class="text-secondary"> <%= booking.quantity %> </span><small style="font-size: 10px;">containers</small>
+                          </h6>
+                        </div>
+                        <div class="col-auto">
+                          <small class="text-success">
+                            <h5 class="mb-1 timeline-h5">STATUS:
+                              <% if booking.custom_submission_date.present? %>
+                              <small class="text-success">docs delivered to line</small>
+                              <% elsif booking.tally  %>
+                              <small class="text-warning">processing 90%</small>
+                              <% elsif booking.declaration %>
+                              <span class="text-warning">processing 50%</span>
+                              <% elsif booking.filled != booking.quantity %>
+                              <span class="text-danger">not started</span>
+                              <% else %>
+                              <span class="text-warning">started</span>
+                              <% end %>
+
+
+                            </h5>
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <% else %>
+        <li class="timeline-item">
+          <div class="timeline-body">
+            <div class="timeline-meta">
+              <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-warning-subtle border border-success-subtle rounded-2 text-md-end">
+                <span class="fw-bold">documents</span>
+                <span>Custom Clearance</span>
+              </div>
+            </div>
+            <div class="timeline-content timeline-indicator">
+              <div class="card border-0 shadow">
+                <div class="card-body p-xl-4">
+                  <h2 class="card-title mb-2 text-warning">Documents</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <% end %>
+
+
+
+        <% if @any_bl_draft_attached %>
+        <li class="timeline-item">
+          <div class="timeline-body">
+            <div class="timeline-meta">
+              <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
+                <span class="fw-bold">shipping</span>
+                <span>Ocean Freight</span>
+              </div>
+            </div>
+            <div class="timeline-content timeline-indicator">
+              <div class="card border-0 shadow">
+                <div class="card-body p-xl-4">
+                  <h2 class="card-title mb-2 text-success">Shipping</h2>
+                  <% @project.bookings.each do |booking| %>
+                  <div class="card card-custom mt-1">
+                    <div class="card-body">
+                      <h6 class="card-subtitle text-secondary mt-1 mb-3">
+                        to: <span class="text-success"><%= booking.pod.titleize %></span>
+                      </h6>
+                      <div class="card card-custom mt-1">
+                        <div class="card-body">
+                          <div class="row d-flex justify-content-between mt-2">
+
+                            <div class="col-auto">
+
+                              <h6 class="card-subtitle text-<%= booking.bl_draft.attached? ? "success" : "warning" %>">
+                                <small>BL Draft</small></h6>
+
+                              </div>
+                              <div class="col-auto">
+                                <h6 class="card-subtitle text-secondary">
+                                 <small class="timeline-small">
+                                  <% if booking.bl_draft.attached? %>
+                                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                                  <%= link_to "#{booking.number}.PDF", rails_blob_path(booking.bl_draft), class: 'timeline-small' %>
+                                  <% else %>
+                                  -
+                                  <% end %>
+                                </small>
+                              </h6>
+                            </div>
+
+                          </div>
+                        </div>
+                      </div>
+                      <div class="card card-custom mt-1">
+                        <div class="card-body">
+                          <div class="row d-flex justify-content-between mt-2">
+
+                            <div class="col-auto">
+
+                              <h6 class="card-subtitle text-<%= booking.vessel_eta.present? ? "success" : "warning" %>">
+                                <small>Vessel</small> </h6>
+
+                              </div>
+                              <% if booking.vessel_eta.present? %>
+                              <div class="col-auto">
+                                <h6 class="card-subtitle timeline-small" style="margin-top: -23px;">
+                                  <% if booking.vessel_name.present? %>
+                                  <small style="font-size: 9px;">NAME</small>
+                                  <br>
+                                  <% end %>
+                                  <small class="timeline-small"> 
+                                    <%= booking.vessel_name %>
+                                  </small>
+                                </h6>
+                              </div>
+                              <div class="col-auto">
+                                <h6 class="card-subtitle timeline-small" style="margin-top: -23px;">
+                                  <small style="font-size: 9px;">ETA</small>
+                                  <br>
+                                  <small class=""> 
+                                    <%= booking.vessel_eta.strftime('%Y-%m-%d') %>
+                                  </small>                                
+                                </h6>
+                              </div>
+                              <% end  %>
+
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card card-custom mt-1">
+                          <div class="card-body">
+                            <div class="row d-flex justify-content-between mt-2">
+
+                              <div class="col-auto">
+
+                                <h6 class="card-subtitle text-<%= booking.bl_dated.attached? ? "success" : "warning" %>">
+                                  <small>Dated Bl</small> </h6>
+
+                                </div>
+                                <div class="col-auto">
+                                  <h6 class="card-subtitle text-secondary">
+                                    <small class="text-secondary timeline-small"> 
+                                      <% if booking.bl_dated.attached? %>
+                                      <i class="bi bi-file-earmark-pdf-fill timeline-small"></i>
+                                      <%= link_to "DATED.PDF", rails_blob_path(booking.bl_dated), class: 'timeline-small' %>
+                                      <% else %>
+                                      <% end %>
+                                    </small>
+                                  </h6>
+                                </div>
+
+                              </div>
+                            </div>
+                          </div>
+                          <div class="card card-custom mt-1">
+                            <div class="card-body">
+                              <div class="row d-flex justify-content-between mt-2">
+
+                                <div class="col-auto">
+
+                                  <h6 class="card-subtitle text-<%= booking.surrender.attached? ? "success" : "warning" %>">
+                                    <small>Surrender</small> </h6>
+
+                                  </div>
+                                  <div class="col-auto">
+                                    <h6 class="card-subtitle text-secondary">
+                                      <small class="text-secondary timeline-small"> 
+                                        <% if booking.surrender.attached? %>
+                                        <i class="bi bi-file-earmark-pdf-fill timeline-small"></i>
+                                        <%= link_to "SURRENDER.PDF", rails_blob_path(booking.surrender), class: 'timeline-small' %>
+                                        <% else %>
+                                        <% end %>
+                                      </small>
+                                    </h6>
+                                  </div>
+
+                                </div>
+                              </div>
+                            </div>
+                            <div class="row mt-5 d-flex justify-content-between">
+                              <div class="col-auto">
+                              </div>
+                              <div class="col-auto" style="margin-top: -6px;">
+                                <small class="text-secondary">
+                                  last update: <span class="fw-bold"> <%= booking.updated_at.strftime('%Y-%m-%d') %></span>
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <% else %>
+              <li class="timeline-item">
+                <div class="timeline-body">
+                  <div class="timeline-meta">
+                    <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-warning-subtle border border-success-subtle rounded-2 text-md-end">
+                      <span class="fw-bold">shipping</span>
+                      <span>Ocean Freight</span>
+                    </div>
+                  </div>
+                  <div class="timeline-content timeline-indicator">
+                    <div class="card border-0 shadow">
+                      <div class="card-body p-xl-4">
+                        <h2 class="card-title mb-2 text-warning">Shipping</h2>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <% end %>
+
+
+
+              <% if @project.cis.present? %>
+              <li class="timeline-item">
+                <div class="timeline-body">
+                  <div class="timeline-meta">
+                    <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
+                      <span class="fw-bold"><%= @project.swifts.last.updated_at.strftime('%Y-%m-%d') %></span>
+                      <span>Balance Payment</span>
+                    </div>
+                  </div>
+                  <div class="timeline-content timeline-indicator">
+                    <div class="card border-0 shadow">
+                      <div class="card-body p-xl-4">
+                        <h2 class="card-title mb-2 text-success">Balance Payment <%= "Received" if @all_bookings_done %></h2>
+                        <div class="row d-flex justify-content-between">
+                          <div class="col-auto">
+                            <h6 class="card-subtitle text-secondary mb-3">
+                            </h6>
+                          </div>
+                          <div class="col-auto" style="margin-top: -6px;">
+                            <small class="text-success">
+                            </small>
+                          </div>
+                        </div>
+                        <% @project.cis.each do |ci| %>
+
+
+                        <div class="card card-custom mt-1">
+                          <div class="card-body">
+                            <% if ci.document.attached? %>
+                            <div class="row d-flex justify-content-between">
+                              <div class="col-auto">
+                                <h6 class="text-<%= ci.swift.present? ? "success" : "warning" %>">
+                                  INVOCE <small class="fw-bold timeline-small"><%= ci.number %></small>
+                                </h6>
+                                
+                              </div>
+                              <div class="col-auto">
+                                <h6 class="fw-bold text-<%= ci.swift.present? ? "success" : "danger" %>">
+                                  <%= ci.swift.present? ? "PAID" : "UNPAID" %>
+                                </h6>
+                              </div>
+                            </div>
+
+
+
+
+                            <div class="row mt-4">
+                              <div class="col">
+                                <div class="card card-custom mt-1">
+                                  <div class="card-body text-center">
+                                    <h6 class="card-subtitle timeline-small">
+                                      gross weight
+                                      <hr>
+                                    </h6>
+                                    <small class="text-center text-secondary"><%= ci.gross_weight %> MT</small>
+
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col">
+                                <div class="card card-custom mt-1">
+                                  <div class="card-body text-center">
+                                    <h6 class="card-subtitle timeline-small">
+                                      net weight
+                                      <hr>
+                                    </h6>
+                                    <small class="text-center text-secondary"><%= ci.net_weight %> MT</small>
+
+
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="card card-custom mt-1">
+                              <div class="card-body">
+                                <div class="row text-center mt-3">
+                                  <div class="col">
+                                    <small class="fw-bold timeline-small">advance</small>
+                                    <hr>
+                                  </div>
+                                  <div class="col">
+                                    <small class="fw-bold timeline-small">balance</small>
+                                    <hr>
+                                  </div>
+                                  
+                                  <div class="col">
+                                    <small class="fw-bold timeline-small">total</small>
+                                    <hr>
+                                  </div>
+                                </div>
+                                <div class="row text-center">
+                                  <div class="col border-end border-1 border-dark">
+                                    <small class="text-secondary"><%= number_with_delimiter(ci.advance_payment.to_i, delimiter: ',') %> <small style="font-size: 9px;"><%= @project.pi.currency %></small></small>
+                                  </div>
+                                  <div class="col border-end border-1 border-dark">
+                                    <small class="text-secondary"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %> <small style="font-size: 9px;"><%= @project.pi.currency %></small></small>
+                                  </div>
+                                  <div class="col">
+                                    <small class="text-secondary">
+                                      <%= number_with_delimiter(ci.total_price.to_i, delimiter: ',') %> <small style="font-size: 9px;"><%= @project.pi.currency %></small>
+                                    </small>
+                                  </div>          
+
+                                </div>
+                                <div class="row mt-5 d-flex justify-content-between">
+                                  <div class="col-auto">
+                                    <small class="text-secondary">
+                                      <i class="bi bi-file-earmark-pdf-fill"></i>
+                                      <%= link_to "INVOICE-#{ci.number}.PDF", rails_blob_path(ci.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+
+                                    </small>
+                                  </div>
+                                  <div class="col-auto">
+                                    <small class="text-secondary">
+                                      issue date: <span class="fw-bold"> <%= ci.issue_date&.strftime('%Y-%m-%d') %></span>
+                                    </small>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+
+
+                            <% end %>
+                          </div>
+                        </div>
+                        <% end %>
+                        <hr>
+                        <div class="card card-custom mt-1">
+                          <div class="card-body">
+                            <div class="row d-flex justify-content-between">
+                              <div class="col-auto">
+                                <h6 class="fw-bold timeline-small">
+                                  Swifts 
+                                </h6>
+                                
+                              </div>
+                            </div>
+                            <div class="row timeline-small mt-3">
+                              <div class="col">Swift</div>
+                              <div class="col">Amount</div>
+                              <div class="col">Confirmed</div>
+                              <div class="col"></div>
+                            </div>
+                            <hr>
+                            <% @balance_swifts.each do |swift| %>
+                            <div class="row">
+                              <div class="col">
+                                <small class="timeline-small">
+                                  <% swift.documents.each do |document| %>
+                                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                                  <%= link_to ".PDF", rails_blob_path(document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+                                  <% end %>
+                                </small>
+                              </div>
+                              <div class="col"><small class="text-warning"><%= number_with_delimiter(swift.amount.to_i, delimiter: ',') %></small></div>
+                              <div class="col"><small class="text-success"><%= swift.confirmed.present? ? swift.confirm_at.strftime('%Y-%m-%d') : "-" %></small></div>
+                              <div class="col"><small class="text-secondary"><%= swift.currency %></small></div>
+                            </div>
+                            <% end %>
+                            <% if @balance_swifts.second %>
+                            <hr>
+                            <small class="mt-2 timeline-small">total <span class="text-secondary fw-bold"> 
+                              <%= number_with_delimiter(@total_balance_swift_amount.to_i, delimiter: ',') %></span> <span style="font-size: 9px;"> <%= @balance_swifts.second.currency %></span></small>
+                            <% end %>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <% else %>
+              <li class="timeline-item">
+                <div class="timeline-body">
+                  <div class="timeline-meta">
+                    <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-<%= @any_ci_swift_present ? "success" : "warning" %>-subtle border border-success-subtle rounded-2 text-md-end">
+                      <span class="fw-bold">payment</span>
+                      <span>Balance Payment</span>
+                    </div>
+                  </div>
+                  <div class="timeline-content timeline-indicator">
+                    <div class="card border-0 shadow">
+                      <div class="card-body p-xl-4">
+                        <h2 class="card-title mb-2 text-warning">Balance Payment</h2>
+                        <div class="row d-flex justify-content-between">
+                          <div class="col-auto">
+                            <h6 class="card-subtitle text-secondary mb-3">
+                            </h6>
+                          </div>
+                          <div class="col-auto" style="margin-top: -6px;">
+                            <small class="text-success">
+                            </small>
+                          </div>
+                        </div>
+                        <p class="card-text m-0">
+                          <div class="row">
+                            <div class="col">
+                              Amount
+                              <br>
+                              <small class="text-warning">0</small>
+                            </div>
+                            <div class="col">
+                              Confirmed at
+                              <br>
+                              <small class="text-warning">-</small>
+                            </div>
+                            <div class="col">
+                              <br>
+                              <small> <%= @project.pi.currency %></small>
+                            </div>
+                          </div>
+
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <% end %>
+
+
+
+
+            </ul>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>

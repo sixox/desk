@@ -1,0 +1,84 @@
+<%= form_for [@project, @booking] do |form| %>
+<div class="modal-body">
+	<div class="row">
+		<% if @booking.errors.any? %>
+		<div class="error-area" style="color:red;">
+			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
+			<ul>
+				<% @booking.errors.each do |error|%>
+				<li>
+					<%= error.full_message%>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+		<% end %>
+	</div>
+	<div class="row mb-3">
+		<h5>booking no.<%= @booking.number %></h5>
+		<div class="subtitle">Shipping</div>
+	</div>
+
+	<div class="row mt-3 bg-semi">
+		<div class="col-lg">
+			<div class="form-group">
+				<label class="fw-bold mb-2 mt-1">
+					Upload BL draft
+					<%= form.file_field :bl_draft, class: "form-control custom-file-input mt-2" %>
+				</label>
+			</div>
+		</div>
+	</div>
+
+	<div class="row mt-3">
+		<div class="col-lg">
+			<div class="form-group">
+				<label class="fw-bold mb-2 mt-1">
+					Vessel ETA 
+					<%= form.date_field :vessel_eta, class: "form-control mt-2" %>
+				</label>
+			</div>
+		</div>
+		<div class="col-lg">
+			<div class="form-group">
+				<label class="fw-bold mb-2 mt-1">
+					Vessel Name
+					<%= form.text_field :vessel_name, class: "form-control custom-file-input mt-2" %>
+				</label>
+			</div>
+		</div>
+		
+	</div>
+	<div class="row mt-3 bg-semi">
+		<div class="col-lg">
+			<div class="form-group">
+				<label class="fw-bold mb-2 mt-1">
+					Dated Bl 
+					<%= form.file_field :bl_dated, class: "form-control custom-file-input mt-2" %>				</label>
+			</div>
+		</div>
+		<div class="col-lg">
+			<div class="form-group">
+				<label class="fw-bold mb-2 mt-1">
+					Surrender
+					<%= form.file_field :surrender, class: "form-control custom-file-input mt-2" %>
+				</label>
+			</div>
+		</div>
+		
+	</div>
+	<div class="row mt-3">
+		<h6>has payment done and cargo released?</h6>
+		<div class="col-lg mb-2 mt-2">
+			<%= form.check_box :payment_done, class: 'form-check-input' %>
+			<label class="form-check-label" for="hourly">
+				YES
+			</label>	
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<%= form.submit 'pick up or fill container', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

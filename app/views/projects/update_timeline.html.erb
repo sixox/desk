@@ -1,0 +1,253 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<% if @pi %>
+	<%= link_to "Edit PI", edit_project_pi_path(@project, @pi), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
+	<% else %>
+	<%= link_to "Create PI", new_project_pi_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
+	<% end %>
+	<hr><hr>
+
+
+
+	if project needs no advance you must enter value "0" for "advance" feild in PI
+	<br>
+	you are allowed to add many new swifts, each swift can have many attachments
+	<br>
+
+	<%= link_to "Add Advance Swift", new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
+	<hr><hr>
+	to make project status started last advance swift must be confirmed or you can edit project and make it started by select it in form <br>
+	<%= link_to "Edit Project", edit_project_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
+
+	<hr><hr>
+	each project could have many bookings
+	<br>
+	<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" do %>
+	<i class="bi bi-plus"></i> Add Booking
+	<% end %>
+	<br>
+
+	<row class="m-2">
+		<div class="col-sm">
+			<table class="table">
+				<thead>
+					<tr>
+						<th scope="col" class="col-sm-1">Booking number</th>
+						<th scope="col" class="col-sm-2">quantity</th>
+						<th scope="col" class="col-sm-2">actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% @project.bookings.each do |booking| %>
+					<tr>
+						<td scope="row"><%= booking.number %></td>
+						<td class="fw-bold"><%= booking.quantity %></td>
+						<td><span>
+							<%= link_to "Edit Booking", edit_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %></span></td>
+						</tr>
+						<% end %>
+					</tbody>
+				</table>
+			</div>
+		</row>
+		<hr><hr>
+
+
+		Conditions <br>
+		If stuffed == quantity then status = "stuffing finished".<br>
+		If stuffing checked or (0 < stuffed < quantity) then status = "stuffing".<br>
+		If picked_up < quantity then status = "pick up containers".<br>
+		If stuffed == quantity then status = "finished".<br>
+		<br>
+		<row class="m-2">
+			<div class="col-sm">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col" class="col-sm-1">Booking number</th>
+							<th scope="col" class="col-sm-2">quantity</th>
+							<th scope="col" class="col-sm-2">picked up</th>
+							<th scope="col" class="col-sm-2">stuffed</th>
+							<th scope="col" class="col-sm-2">images</th>
+							<th scope="col" class="col-sm-2">add images</th>
+							<th scope="col" class="col-sm-2">actions</th>
+
+						</tr>
+					</thead>
+					<tbody>
+					<% @project.bookings.each do |booking| %>
+					  <div id="booking_item_<%= booking.id %>">
+				  	    <%= form_for [@project, booking], url: update_images_project_booking_path(@project, booking), html: { multipart: true }, method: :patch, local: true do |form| %>
+					      <tr>
+					        <th scope="row"><%= booking.number %></th>
+					        <th class="fw-bold"><%= booking.quantity %></th>
+					        <th class="fw-bold"><%= booking.picked_up.to_i %></th>
+					        <th class="fw-bold"><%= booking.filled.to_i %></th>
+					        <th class="fw-bold">
+					          <% if booking.images.attached? %>
+					            <% booking.images.each_with_index do |image, index| %>
+					              <span class="ml-1">
+					                <%= link_to format('%02d', index + 1), rails_blob_path(image, disposition: "attachment"), target: "_blank", class: "text-secondary" %>
+					              </span class="ml-1">
+					            <% end %>
+					          <% else %>
+					            <p>0 images</p>
+					          <% end %>
+					        </th>
+					        <th class="fw-bold">
+					          <span class="form-group">
+					            <%= form.file_field :images, multiple: true, direct_upload: true, class: 'form-control' %>
+					          </span>
+					          <span class="form-group">
+					            <%= form.submit 'Upload Images', class: 'btn btn-primary' %>
+					          </span>
+					          <% end %>
+					          <span>
+					          	<%= form_with url: delete_all_images_project_booking_path(@project, booking), method: :delete, local: true do %>
+							      <div class="form-group">
+							        <%= submit_tag 'Delete All Images', class: 'btn btn-danger' %>
+							      </div>
+							    <% end %>
+					          </span>
+					        </th>
+					        <th>
+					          <span>
+					            <%= link_to "pick up and stuffing", edit_picked_up_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
+					          </span>
+					        </th>
+					      </tr>
+					    
+					    
+					  </div>
+					<% end %>
+
+
+
+					</tbody>
+				</table>
+			</div>
+		</row>
+		<br>
+		
+
+
+		<hr><hr>
+
+		if one of bookings stuffing finish. this part active before that it is not started <br>
+		<hr><hr>
+		if last booking "submission date" set then title change to "Documents Delivered" else it is "Documents" <br>
+		status "not started" when that booking stuffed containers are less than quantity, stuffing must finish <br>
+		status "started" when all containers stuffed but "tally", "declaration", "date of submission" and "bl_draft" are empty <br>
+		status "processing 50%" when "declaration" selected <br>
+		status "processing 90%" when "tally" selected <br>
+		status "docs delivered to line" when "date of submission" selected <br>
+		<% if @project.bookings.present? %>
+		<row class="m-2">
+			<div class="col-sm">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col" class="col-sm-1">Booking number</th>
+							<th scope="col" class="col-sm-2">quantity</th>
+							<th scope="col" class="col-sm-2">actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% @project.bookings.each do |booking| %>
+						<div id="booking_item_<%= booking.id %>">	
+							<tr>
+								<th scope="row"><%= booking.number %></th>
+								<th class="fw-bold"><%= booking.quantity %></th>
+
+								<th><span>
+									<%= link_to "Custom Clearance", edit_status_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
+								</span></th>
+							</tr>
+						</div>
+						<% end %>
+					</tbody>
+				</table>
+			</div>
+		</row>
+		<% end %>
+		<hr><hr>
+
+		upload bl-draft will active Shipping section <br>
+		<% if @project.bookings.present? %>
+		<div class="row mt-2">
+			<div class="col-sm">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col" class="col-sm-1">Booking number</th>
+							<th scope="col" class="col-sm-2">ETA</th>
+							<th scope="col" class="col-sm-2">Vessel</th>
+							<th scope="col" class="col-sm-1">Draft</th>
+							<th scope="col" class="col-sm-1">Dated</th>
+							<th scope="col" class="col-sm-1">Surrender</th>
+							<th scope="col" class="col-sm-4">actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% @project.bookings.each do |booking| %>
+						<div id="booking_item_<%= booking.id %>">	
+							<tr>
+								<th scope="row"><%= booking.number %></th>
+								<td class="text-success"><%= booking.vessel_eta&.strftime('%Y-%m-%d') %></td>
+								<td scope="row"><%= booking.vessel_name %></td>
+								<td scope="row">
+									<% if booking.bl_draft.attached? %>
+									<p><%= link_to 'BL Draft', rails_blob_path(booking.bl_draft, disposition: "attachment") %></p>
+									<% else %>
+									<p>-</p>
+									<% end %>
+								</td>
+								<td scope="row">
+									<% if booking.bl_dated.attached? %>
+									<p><%= link_to 'BL Dated', rails_blob_path(booking.bl_dated, disposition: "attachment") %></p>
+									<% else %>
+									<p>-</p>
+									<% end %>					
+								</td>
+								<td scope="row">
+									<% if booking.surrender.attached? %>
+									<p><%= link_to 'Surrender', rails_blob_path(booking.surrender, disposition: "attachment") %></p>
+									<% else %>
+									<p>-</p>
+									<% end %>
+								</td>
+
+								<td><span>
+									<%= link_to "edit Shipping", shipping_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
+								</span></td>
+							</tr>
+						</div>
+						<% end %>
+					</tbody>
+				</table>
+			</div>
+
+		</div>
+		<% end %>
+		<hr><hr>
+		this section active by create ing CI. now attaching .pdf is mandetory <br>
+		if "payment done" is selected for all bookings, title change to "Advance payment received" <br>
+		<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-success mt-2" do %>
+		<i class="bi bi-plus"></i> Add CI
+		<% end %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</div>

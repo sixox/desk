@@ -11,6 +11,7 @@ class Bank < ApplicationRecord
 	def total_expected_balance
 		unconfirmed_unrejected_swifts = swifts.where(confirmed: [nil, false], rejected: [nil, false])
 		sum_unconfirmed_unrejected_swifts = 0
+		sum_unpaid_payment_order = 0
 
 		unconfirmed_unrejected_swifts.each do |swift|
 			if swift.currency == currency
@@ -22,9 +23,21 @@ class Bank < ApplicationRecord
 		end
 
 		waiting_payment_orders = payment_orders.where(status: 'wait for payment')
+
+		waiting_payment_orders.each do |payment_order|
+			if payment_order.currency == currency
+				sum_unpaid_payment_order += payment_order.amount
+			elsif payment_order.currency == "dollar"
+				a = payment_order.amount * 3.67
+				sum_unpaid_payment_order += a
+			elsif payment_order.currency == "dirham"
+				a = payment_order.amount / 3.67
+				sum_unpaid_payment_order += a
+			end
+		end
 		a = account_balance
 		b = sum_unconfirmed_unrejected_swifts
-		c = waiting_payment_orders.sum(:amount)
+		c = sum_unpaid_payment_order
 
 		a.to_i - c.to_i + b.to_i
 	end

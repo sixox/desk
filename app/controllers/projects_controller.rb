@@ -1,7 +1,9 @@
 class ProjectsController < ApplicationController
 	
-	before_action :authenticate_user!
-	before_action :set_project, only: %i[ show edit update destroy allocate card] 
+  before_action :authenticate_user!, except: [:project_login, :authenticate, :time_line]
+	before_action :set_project, only: %i[ show edit update destroy allocate card time_line update_timeline] 
+  before_action :verify_project_access, only: :time_line
+
 
 
 	def show
@@ -71,6 +73,39 @@ class ProjectsController < ApplicationController
 	def card
 	end
 
+	def project_login
+	end
+
+  def authenticate
+    @project = Project.joins(:pi).find_by(pis: { number: params[:unique_number] })
+
+    if @project&.authenticate(params[:password])
+      session[:project_id] = @project.id
+      redirect_to time_line_project_path(@project), notice: "Entered Project Page Successfully"
+    else
+      flash[:alert] = "Invalid PI number or password"
+      redirect_to project_login_path
+    end
+  end
+
+  def time_line
+  	    @project = Project.includes(:pi, :cis, :bookings, :swifts).find(params[:id])
+        @latest_booking = @project.bookings&.max_by(&:updated_at)
+        @any_bl_draft_attached = @project.bookings&.any? { |booking| booking.bl_draft.attached? }
+        @all_bookings_done = @project.bookings.all? { |booking| booking.payment_done }
+        filtered_swifts = @project.swifts.where.not(advance: true)
+		    # Collect Swifts from each Ci associated with the project
+		    cis_swifts = @project.cis.map(&:swift).compact
+
+		    # Merge the two arrays
+		    @balance_swifts = (filtered_swifts + cis_swifts).uniq
+		    @total_balance_swift_amount = @balance_swifts.sum(&:amount)
+  end
+
+  def update_timeline
+  	@pi = @project.pi
+  end
+
 
 
 
@@ -81,8 +116,15 @@ class ProjectsController < ApplicationController
 		@project = Project.find(params[:id])
 	end
 
+  def verify_project_access
+    unless session[:project_id] == @project.id
+      flash[:alert] = "Unauthorized access to the project"
+      redirect_to project_login_path
+    end
+  end
+
 	def project_params
-		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk )
+		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started )
 	end
 
 

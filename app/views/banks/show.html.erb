@@ -95,12 +95,7 @@
 						<div class="d-flex justify-content-between p-md-1">
 							<div class="d-flex flex-row">
 								<div class="align-self-center">
-									<% a = @bank.account_balance
-									b = @sum_unconfirmed_unrejected_swifts
-									c = @waiting_payment_orders.sum(:amount)
-									d = a.to_i - c.to_i + b.to_i
-								%>
-								<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(d, delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
+								<h2 class="h1 mb-0 me-4"><%= number_with_delimiter(@bank.total_expected_balance, delimiter: ',') %><span style="font-size: 12px;"><%= @bank.currency %></span></h2>
 							</div>
 							<div>
 								<h4>Total Expected Balance </h4>

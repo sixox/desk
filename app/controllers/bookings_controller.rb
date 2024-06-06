@@ -1,6 +1,7 @@
 class BookingsController < ApplicationController
 	before_action :authenticate_user!
 	before_action :find_project
+	before_action :set_booking, only: %i[ edit edit_picked_up edit_status shipping update_images update delete_all_images destroy] 
 
 	def new
 		@booking = @project.bookings.build
@@ -19,41 +20,53 @@ class BookingsController < ApplicationController
 	end
 
 	def edit
-		@booking = Booking.find(params[:id])
 	end
 
 	def edit_picked_up
-		@booking = Booking.find(params[:id])
 	end
 
 	def edit_status
-		@booking = Booking.find(params[:id])
 	end
 
-	def update
-	  @booking = Booking.find(params[:id])
-	  respond_to do |format|
-	    if @booking.update(booking_params)
-	      format.turbo_stream do
-	        render turbo_stream: [
-	          turbo_stream.replace("booking_item_#{@booking.id}", partial: 'bookings/booking', locals: { booking: @booking, project: @booking.project }),
-	          turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Booking was successfully updated.' })
-	        ]
-	      end
-	    else
-	      format.turbo_stream do
-	        render turbo_stream: [
-	          turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'bookings/form', modal_title: 'Edit booking' }),
-	          turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating booking.' })
-	        ]
+	def shipping
+	end
+
+	  def update
+	    respond_to do |format|
+	      if @booking.update(booking_params)
+	        format.html { redirect_to request.referer, notice: 'Booking was successfully updated.' }
+	        format.turbo_stream do
+	          render turbo_stream: [
+	            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'bookings/form', modal_title: 'Edit booking' }),
+	            turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'Booking was successfully updated.' })
+	          ]
+	        end
+	      else
+	        format.html { render :edit }
+	        format.turbo_stream do
+	          render turbo_stream: [
+	            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'bookings/form', modal_title: 'Edit booking' }),
+	            turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating booking.' })
+	          ]
+	        end
 	      end
 	    end
 	  end
-	end
+
+	  def update_images
+	    if params[:booking][:images].present?
+	      @booking.images.attach(params[:booking][:images])
+	    end
+	    redirect_to request.referer, notice: 'Images were successfully updated.'
+	  end
+
+	  def delete_all_images
+	    @booking.images.purge
+	    redirect_to request.referer, notice: 'All images were successfully deleted.'
+	  end
 
 
 def destroy
-	@booking = Booking.find(params[:id])
 
 	respond_to do |format|
 		@booking.destroy
@@ -84,9 +97,22 @@ def booking_params
 		:stuffing,
 		:custom_clearance,
 		:custom_submission_date,
-		:vessel_etd,
-		:part
+		:vessel_eta,
+		:part,
+		:tally,
+		:declaration,
+		:vessel_name,
+		:payment_done,
+		:send_to_line,
+		:bl_draft,
+		:bl_dated,
+		:surrender,
+		images: []
 		)
+end
+
+def set_booking
+  @booking = Booking.find(params[:id])
 end
 
 

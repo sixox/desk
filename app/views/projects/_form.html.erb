@@ -39,6 +39,25 @@
 					<%= form.text_field :name, class: 'form-control', required: true %>
 				</div>
 			</div>
+			<div class="row mb-3">
+				<div class="form-group mb-2 mt-3">
+				<%= form.check_box :started, class: 'form-check-input' %>
+				<label class="form-check-label" for="hourly">
+					Started?
+				</label>
+				</div>
+			</div>
+			<div class="row mb-3">
+				  <div class="col-md-6">
+				    <%= form.label :password, class: 'form-label' %>
+				    <%= form.password_field :password, class: 'form-control' %>
+				  </div>
+
+				  <div class="col-md-6">
+				    <%= form.label :password_confirmation, class: 'form-label' %>
+				    <%= form.password_field :password_confirmation, class: 'form-control' %>
+				  </div>
+			</div>
 
 			<!-- Project Options -->
 			<div class="card">

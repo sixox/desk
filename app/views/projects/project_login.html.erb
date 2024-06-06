@@ -1,0 +1,26 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            Project Login
+          </div>
+          <div class="card-body">
+            <%= form_with url: project_login_path, local: true do |form| %>
+              <div class="mb-3">
+                <%= form.label :unique_number, 'PI Number', class: 'form-label' %>
+                <%= form.text_field :unique_number, class: 'form-control' %>
+              </div>
+              <div class="mb-3">
+                <%= form.label :password, class: 'form-label' %>
+                <%= form.password_field :password, class: 'form-control' %>
+              </div>
+              <%= form.submit 'Login', class: 'btn btn-primary' %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

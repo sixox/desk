@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   get 'game/quardo'
+  get 'project_login', to: 'projects#project_login'
+  post 'project_login', to: 'projects#authenticate'
   resources :vacations do
     member do
       patch "confirm", to: "vacations#confirm"
@@ -37,6 +39,9 @@ Rails.application.routes.draw do
   resources :projects do
     member do
       get :card
+      get :time_line
+      get :update_timeline
+
     end
     resources :ballance_projects
     resources :pis
@@ -46,6 +51,9 @@ Rails.application.routes.draw do
       member do
         get 'edit_picked_up'
         get 'edit_status'
+        get 'shipping'
+        patch :update_images
+        delete :delete_all_images
       end
     end
     collection do

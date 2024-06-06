@@ -81,11 +81,12 @@
 
 			<% end %>
 			<% if controller_name == 'projects' && action_name == 'show' %>
-
+			<% if current_user.sales? %>
 			<div class="row mt-2">
 				<div class="col-lg">
 					<%= link_to "Edit", edit_project_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
-					<%= link_to "Add Swift", new_project_swift_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
+					<%= link_to "Update Timeline", update_timeline_project_path(project), class: "btn btn-primary" %>
+					<%= link_to "Add Advance Swift", new_project_swift_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
 					<% if !project.pi%>
 					<%= link_to "Create PI", new_project_pi_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
 
@@ -103,10 +104,14 @@
 					<%= link_to new_project_booking_path(project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" do %>
 					<i class="bi bi-plus"></i> Add Booking
 					<% end %>
+
+
+
 					<% end %>
 
 				</div>
 			</div>
+			<% end %>
 			<% end %>
 		</div>
 	</div>

@@ -6,7 +6,10 @@ class Pi < ApplicationRecord
   has_one :generated_document, dependent: :destroy
   has_one_attached :document
   belongs_to :account, optional: true
-  validates :number, uniqueness: true
+  
+  validates :number, presence: true, uniqueness: true
+  validates :issue_date, :product, :quantity, :total_price, presence: true
+
 
 
 
