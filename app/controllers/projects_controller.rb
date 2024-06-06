@@ -117,6 +117,7 @@ class ProjectsController < ApplicationController
 	end
 
   def verify_project_access
+  	return if user_signed_in? 
     unless session[:project_id] == @project.id
       flash[:alert] = "Unauthorized access to the project"
       redirect_to project_login_path
