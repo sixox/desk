@@ -419,7 +419,7 @@
                         <div class="col-auto">
                           <small class="text-success">
                             <h5 class="mb-1 timeline-h5">STATUS:
-                              <% if booking.custom_submission_date.present? %>
+                              <% if booking.send_to_line.present? %>
                               <small class="text-success">docs delivered to line</small>
                               <% elsif booking.tally  %>
                               <small class="text-warning">processing 90%</small>
