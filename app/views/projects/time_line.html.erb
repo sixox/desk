@@ -117,7 +117,7 @@
                           <div class="col"></div>
                           <div class="col"></div>
                         </div>
-                        <% @project.swifts.each do |swift| %>
+                        <% @advance_swifts.each do |swift| %>
                         <div class="row">
                           <div class="col"><small class="text-warning"><%= number_with_delimiter(swift.amount.to_i, delimiter: ',') %></small></div>
                           <div class="col"><small class="text-success"><%= swift.confirmed.present? ? swift.confirm_at.strftime('%Y-%m-%d') : "-" %></small></div>
