@@ -22,6 +22,7 @@
                         <div class="col-auto">
                           <h6 class="card-subtitle text-secondary mb-3">
                             <% if @project.pi.document.attached? %>
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
                             <%= link_to "#{@project.pi.number}.PDF", @project.pi.document, class: "text-secondary", target: "_blank" %>
                             <% end %>
                           </h6>
@@ -89,13 +90,14 @@
                           </small>
                         </div>
                       </div>
-                      <% @project.swifts.each do |swift| %>
+                      <% @advance_swifts.each do |swift| %>
                       <div class="row d-flex justify-content-between">
                         <div class="col-auto">
                           <h6 class="card-subtitle text-secondary mb-3">
                             <% swift.documents.each do |document| %>
                             <div class="col-12 mb-2">
-                              <%= link_to "swift/#{@project.pi.number}/#{swift.id}.file", rails_blob_path(document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+                              <i class="bi bi-file-earmark-pdf-fill"></i>
+                              <%= link_to "swift/#{@project.pi.number}/#{swift.id}.PDF", rails_blob_path(document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
                             </div>
                             <% end %>
                           </h6>

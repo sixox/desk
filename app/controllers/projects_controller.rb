@@ -100,6 +100,8 @@ class ProjectsController < ApplicationController
 		    # Merge the two arrays
 		    @balance_swifts = (filtered_swifts + cis_swifts).uniq
 		    @total_balance_swift_amount = @balance_swifts.sum(&:amount)
+		    @advance_swifts = @project.swifts&.where(advance: true)
+
   end
 
   def update_timeline
