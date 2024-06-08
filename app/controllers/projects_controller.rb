@@ -3,6 +3,7 @@ class ProjectsController < ApplicationController
   before_action :authenticate_user!, except: [:project_login, :authenticate, :time_line]
 	before_action :set_project, only: %i[ show edit update destroy allocate card time_line update_timeline] 
   before_action :verify_project_access, only: :time_line
+  before_action :set_timeline, only: %i[ show time_line ]
 
 
 
@@ -18,7 +19,6 @@ class ProjectsController < ApplicationController
 		@sum_paid_dollar = @payment_orders_with_status_paid_dollar.sum(:amount)
 		@sum_paid_dirham = @payment_orders_with_status_paid_dirham.sum(:amount)
 		@sum_paid_rial = @payment_orders_with_status_paid_rial.sum(:amount)
-
 		@payment_orders_with_status_not_paid = filtered_payment_orders.where.not(status: ['wait for delivery', 'delivered'])
 
 
@@ -89,19 +89,6 @@ class ProjectsController < ApplicationController
   end
 
   def time_line
-  	    @project = Project.includes(:pi, :cis, :bookings, :swifts).find(params[:id])
-        @latest_booking = @project.bookings&.max_by(&:updated_at)
-        @any_bl_draft_attached = @project.bookings&.any? { |booking| booking.bl_draft.attached? }
-        @all_bookings_done = @project.bookings.all? { |booking| booking.payment_done }
-        filtered_swifts = @project.swifts.where.not(advance: true)
-		    # Collect Swifts from each Ci associated with the project
-		    cis_swifts = @project.cis.map(&:swift).compact
-
-		    # Merge the two arrays
-		    @balance_swifts = (filtered_swifts + cis_swifts).uniq
-		    @total_balance_swift_amount = @balance_swifts.sum(&:amount)
-		    @advance_swifts = @project.swifts&.where(advance: true)
-
   end
 
   def update_timeline
@@ -113,6 +100,21 @@ class ProjectsController < ApplicationController
 
 
 	private
+
+	def set_timeline
+		@project = Project.includes(:pi, :cis, :bookings, :swifts).find(params[:id])
+    @latest_booking = @project.bookings&.max_by(&:updated_at)
+    @any_bl_draft_attached = @project.bookings&.any? { |booking| booking.bl_draft.attached? }
+    @all_bookings_done = @project.bookings.all? { |booking| booking.payment_done }
+    filtered_swifts = @project.swifts.where.not(advance: true)
+    # Collect Swifts from each Ci associated with the project
+    cis_swifts = @project.cis.map(&:swift).compact
+
+    # Merge the two arrays
+    @balance_swifts = (filtered_swifts + cis_swifts).uniq
+    @total_balance_swift_amount = @balance_swifts.sum(&:amount)
+    @advance_swifts = @project.swifts&.where(advance: true)
+	end
 
 	def set_project
 		@project = Project.find(params[:id])

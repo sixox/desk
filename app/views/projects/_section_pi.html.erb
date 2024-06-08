@@ -13,15 +13,17 @@
           <div class="row d-flex justify-content-between">
             <div class="col-auto">
               <h6 class="card-subtitle text-secondary mb-3">
-                <% if @project.pi.document.attached? %>
-                <i class="bi bi-file-earmark-pdf-fill"></i>
-                <%= link_to "#{@project.pi.number}.PDF", @project.pi.document, class: "text-secondary", target: "_blank" %>
+                <% if @project.pi && @project.pi.document&.attached? %>
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                  <%= link_to "#{@project.pi.number}.PDF", rails_blob_path(@project.pi.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
                 <% end %>
               </h6>
             </div>
             <div class="col-auto" style="margin-top: -6px;">
               <small class="text-success">
-                <%= @project.pi.issue_date.strftime('%B %d') %>
+                <% if @project.pi %>
+                  <%= @project.pi.issue_date&.strftime('%B %d') %>
+                <% end %>
               </small>
             </div>
           </div>
