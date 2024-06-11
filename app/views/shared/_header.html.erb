@@ -172,23 +172,11 @@
     <% if user_signed_in?%>
 
     <ul class="navbar-nav">
-      <li class="nav-item dropdown">
-       <a class="nav-link dropdown-toggle iconClass" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-bell"></i> <!-- Bootstrap Icons bell icon -->
-        <% if @notifications %>
-        <span class="badge badge-danger">
-          <%= unread_notification_count %>
-        </span>
-
-      </a>
-      <ul class="m-1 p-1 dropdown-menu dropdown-menu-end notifMenu" aria-labelledby="navbarDropdown">
-
-       <%= render 'shared/notifications' %>
-
-     </ul>
-
-
-     <% end %>
+      <li class="nav-item ">
+       <h6 class="p-0 m-0" style="color: #ffec007a;"> <%= current_user.first_name.titleize %>
+         <br><span style="font-size: 11px;">    <%= Time.now.strftime('%Y-%m-%d') %></span>
+       </h6>
+       
    </li>
  </ul>
  <% end %>
