@@ -1,0 +1,199 @@
+<% if @project.cis.present? %>
+<div class="card border-0 shadow mt-2">
+	<div class="card-body p-xl-4">
+		<h2 class="card-title mb-2 text-success">Balance Payment <%= "Received" if @all_bookings_done %></h2>
+		<div class="row d-flex justify-content-between">
+			<div class="col-auto">
+				<h6 class="card-subtitle text-secondary mb-3">
+				</h6>
+			</div>
+			<div class="col-auto" style="margin-top: -6px;">
+				<small class="text-success">
+				</small>
+			</div>
+		</div>
+		<% @project.cis.each do |ci| %>
+
+
+		<div class="card card-custom mt-1">
+			<div class="card-body">
+				<% if ci.document.attached? %>
+				<div class="row d-flex justify-content-between">
+					<div class="col-auto">
+						<h6 class="text-<%= ci.swift.present? ? "success" : "warning" %>">
+							INVOCE <small class="fw-bold timeline-small"><%= ci.number %></small>
+						</h6>
+
+					</div>
+					<div class="col-auto">
+						<h6 class="fw-bold text-<%= ci.swift.present? ? "success" : "danger" %>">
+							<%= ci.swift.present? ? "PAID" : "UNPAID" %>
+						</h6>
+					</div>
+				</div>
+
+
+
+
+				<div class="row mt-4">
+					<div class="col">
+						<div class="card card-custom mt-1">
+							<div class="card-body text-center">
+								<h6 class="card-subtitle timeline-small">
+									gross weight
+									<hr>
+								</h6>
+								<small class="text-center text-secondary"><%= ci.gross_weight %> MT</small>
+
+							</div>
+						</div>
+					</div>
+					<div class="col">
+						<div class="card card-custom mt-1">
+							<div class="card-body text-center">
+								<h6 class="card-subtitle timeline-small">
+									net weight
+									<hr>
+								</h6>
+								<small class="text-center text-secondary"><%= ci.net_weight %> MT</small>
+
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="card card-custom mt-1">
+					<div class="card-body">
+						<div class="row text-center mt-3">
+							<div class="col">
+								<small class="fw-bold timeline-small">advance</small>
+								<hr>
+							</div>
+							<div class="col">
+								<small class="fw-bold timeline-small">balance</small>
+								<hr>
+							</div>
+
+							<div class="col">
+								<small class="fw-bold timeline-small">total</small>
+								<hr>
+							</div>
+						</div>
+						<div class="row text-center">
+							<div class="col border-end border-1 border-dark">
+								<small class="text-secondary"><%= number_with_delimiter(ci.advance_payment.to_i, delimiter: ',') %> <small style="font-size: 9px;"><%= @project.pi.currency %></small></small>
+							</div>
+							<div class="col border-end border-1 border-dark">
+								<small class="text-secondary"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %> <small style="font-size: 9px;"><%= @project.pi.currency %></small></small>
+							</div>
+							<div class="col">
+								<small class="text-secondary">
+									<%= number_with_delimiter(ci.total_price.to_i, delimiter: ',') %> <small style="font-size: 9px;"><%= @project.pi.currency %></small>
+								</small>
+							</div>          
+
+						</div>
+						<div class="row mt-5 d-flex justify-content-between">
+							<div class="col-auto">
+								<small class="text-secondary">
+									<i class="bi bi-file-earmark-pdf-fill"></i>
+									<%= link_to "INVOICE-#{ci.number}.PDF", rails_blob_path(ci.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+
+								</small>
+							</div>
+							<div class="col-auto">
+								<small class="text-secondary">
+									issue date: <span class="fw-bold"> <%= ci.issue_date&.strftime('%Y-%m-%d') %></span>
+								</small>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+
+				<% end %>
+			</div>
+		</div>
+		<% end %>
+		<hr>
+		<div class="card card-custom mt-1">
+			<div class="card-body">
+				<div class="row d-flex justify-content-between">
+					<div class="col-auto">
+						<h6 class="fw-bold timeline-small">
+							Swifts 
+						</h6>
+
+					</div>
+				</div>
+				<div class="row timeline-small mt-3">
+					<div class="col">Swift</div>
+					<div class="col">Amount</div>
+					<div class="col">Confirmed</div>
+					<div class="col"></div>
+				</div>
+				<hr>
+				<% @balance_swifts.each do |swift| %>
+				<div class="row">
+					<div class="col">
+						<small class="timeline-small">
+							<% swift.documents.each do |document| %>
+							<i class="bi bi-file-earmark-pdf-fill"></i>
+							<%= link_to ".PDF", rails_blob_path(document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+							<% end %>
+						</small>
+					</div>
+					<div class="col"><small class="text-warning"><%= number_with_delimiter(swift.amount.to_i, delimiter: ',') %></small></div>
+					<div class="col"><small class="text-success"><%= swift.confirmed.present? ? swift.confirm_at.strftime('%Y-%m-%d') : "-" %></small></div>
+					<div class="col"><small class="text-secondary"><%= swift.currency %></small></div>
+				</div>
+				<% end %>
+				<% if @balance_swifts.second %>
+				<hr>
+				<small class="mt-2 timeline-small">total <span class="text-secondary fw-bold"> 
+					<%= number_with_delimiter(@total_balance_swift_amount.to_i, delimiter: ',') %></span> <span style="font-size: 9px;"> <%= @balance_swifts.second.currency %></span></small>
+					<% end %>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<% else %>
+
+	<div class="card border-0 shadow mt-2">
+		<div class="card-body p-xl-4">
+			<h2 class="card-title mb-2 text-warning">Balance Payment</h2>
+			<div class="row d-flex justify-content-between">
+				<div class="col-auto">
+					<h6 class="card-subtitle text-secondary mb-3">
+					</h6>
+				</div>
+				<div class="col-auto" style="margin-top: -6px;">
+					<small class="text-success">
+					</small>
+				</div>
+			</div>
+			<p class="card-text m-0">
+				<div class="row">
+					<div class="col">
+						Amount
+						<br>
+						<small class="text-warning">0</small>
+					</div>
+					<div class="col">
+						Confirmed at
+						<br>
+						<small class="text-warning">-</small>
+					</div>
+					<div class="col">
+						<br>
+						<small> <%= @project.pi.currency %></small>
+					</div>
+				</div>
+
+			</p>
+		</div>
+	</div>
+	<% end %>

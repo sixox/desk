@@ -1,0 +1,51 @@
+<% if @project.any_booking_stuffing_finished? %>
+<div class="card border-0 shadow">
+	<div class="card-body p-xl-4">
+		<% if @project.bookings.last&.custom_submission_date.present? %>
+		<h2 class="card-title mb-2 text-success">Documents Delivered</h2>
+		<% else %>
+		<h2 class="card-title mb-2 text-success">Documents</h2>
+		<% end %>
+		<% @project.bookings.each do |booking| %>
+		<div class="card card-custom mt-1">
+			<div class="card-body">
+
+				<div class="row d-flex justify-content-between mt-2">
+					<div class="col-auto">
+						<h6 class="card-subtitle text-secondary">
+							<span class="text-danger"> <i class="bi bi-box-seam-fill"></i> </span><span class="text-secondary"> <%= booking.quantity %> </span><small style="font-size: 10px;">containers</small>
+						</h6>
+					</div>
+					<div class="col-auto">
+						<small class="text-success">
+							<h5 class="mb-1 timeline-h5">STATUS:
+								<% if booking.send_to_line.present? %>
+								<small class="text-success">docs delivered to line</small>
+								<% elsif booking.tally  %>
+								<small class="text-warning">processing 90%</small>
+								<% elsif booking.declaration %>
+								<span class="text-warning">processing 50%</span>
+								<% elsif booking.filled != booking.quantity %>
+								<span class="text-danger">not started</span>
+								<% else %>
+								<span class="text-warning">started</span>
+								<% end %>
+
+
+							</h5>
+						</small>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<% end %>
+	</div>
+</div>
+<% else %>
+<div class="card border-0 shadow">
+	<div class="card-body p-xl-4">
+		<h2 class="card-title mb-2 text-warning">Documents</h2>
+	</div>
+</div>
+<% end %>

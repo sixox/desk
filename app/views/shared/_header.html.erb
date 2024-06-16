@@ -49,10 +49,10 @@
           <li>
             <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
           </li>
-         
+          
           <% end %>
           <% if current_user.sales? || current_user.marketing? %>
-           <li>
+          <li>
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
           <% end %>
@@ -91,7 +91,7 @@
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
           <% if current_user.is_manager %>
-                    <li><%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "dropdown-item", target: "_blank" %></li>
+          <li><%= link_to "Dashboard", "http://37.221.21.214:8111/Reports/powerbi/1.2.0?rs:Embed=true", class: "dropdown-item", target: "_blank" %></li>
 
           <% end %>
           <% end %>
@@ -177,9 +177,9 @@
          <br><span style="font-size: 11px;">    <%= Time.now.strftime('%Y-%m-%d') %></span>
        </h6>
        
-   </li>
- </ul>
- <% end %>
-</div>
+     </li>
+   </ul>
+   <% end %>
+ </div>
 </div>
 </nav>

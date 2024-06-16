@@ -1,0 +1,144 @@
+<% if @any_bl_draft_attached %>
+<div class="card border-0 shadow mt-2">
+	<div class="card-body p-xl-4">
+		<h2 class="card-title mb-2 text-success">Shipping</h2>
+		<% @project.bookings.each do |booking| %>
+		<div class="card card-custom mt-1">
+			<div class="card-body">
+				<h6 class="card-subtitle text-secondary mt-1 mb-3">
+					to: <span class="text-success"><%= booking.pod.titleize %></span>
+				</h6>
+				<div class="card card-custom mt-1">
+					<div class="card-body">
+						<div class="row d-flex justify-content-between mt-2">
+
+							<div class="col-auto">
+
+								<h6 class="card-subtitle text-<%= booking.bl_draft.attached? ? "success" : "warning" %>">
+									<small>BL Draft</small></h6>
+
+								</div>
+								<div class="col-auto">
+									<h6 class="card-subtitle text-secondary">
+										<small class="timeline-small">
+											<% if booking.bl_draft.attached? %>
+											<i class="bi bi-file-earmark-pdf-fill"></i>
+											<%= link_to "#{booking.number}.PDF", rails_blob_path(booking.bl_draft), class: 'timeline-small' %>
+											<% else %>
+											-
+											<% end %>
+										</small>
+									</h6>
+								</div>
+
+							</div>
+						</div>
+					</div>
+					<div class="card card-custom mt-1">
+						<div class="card-body">
+							<div class="row d-flex justify-content-between mt-2">
+
+								<div class="col-auto">
+
+									<h6 class="card-subtitle text-<%= booking.vessel_eta.present? ? "success" : "warning" %>">
+										<small>Vessel</small> </h6>
+
+									</div>
+									<% if booking.vessel_eta.present? %>
+									<div class="col-auto">
+										<h6 class="card-subtitle timeline-small" style="margin-top: -23px;">
+											<% if booking.vessel_name.present? %>
+											<small style="font-size: 9px;">NAME</small>
+											<br>
+											<% end %>
+											<small class="timeline-small"> 
+												<%= booking.vessel_name %>
+											</small>
+										</h6>
+									</div>
+									<div class="col-auto">
+										<h6 class="card-subtitle timeline-small" style="margin-top: -23px;">
+											<small style="font-size: 9px;">ETA</small>
+											<br>
+											<small class=""> 
+												<%= booking.vessel_eta.strftime('%Y-%m-%d') %>
+											</small>                                
+										</h6>
+									</div>
+									<% end  %>
+
+								</div>
+							</div>
+						</div>
+						<div class="card card-custom mt-1">
+							<div class="card-body">
+								<div class="row d-flex justify-content-between mt-2">
+
+									<div class="col-auto">
+
+										<h6 class="card-subtitle text-<%= booking.bl_dated.attached? ? "success" : "warning" %>">
+											<small>Dated Bl</small> </h6>
+
+										</div>
+										<div class="col-auto">
+											<h6 class="card-subtitle text-secondary">
+												<small class="text-secondary timeline-small"> 
+													<% if booking.bl_dated.attached? %>
+													<i class="bi bi-file-earmark-pdf-fill timeline-small"></i>
+													<%= link_to "DATED.PDF", rails_blob_path(booking.bl_dated), class: 'timeline-small' %>
+													<% else %>
+													<% end %>
+												</small>
+											</h6>
+										</div>
+
+									</div>
+								</div>
+							</div>
+							<div class="card card-custom mt-1">
+								<div class="card-body">
+									<div class="row d-flex justify-content-between mt-2">
+
+										<div class="col-auto">
+
+											<h6 class="card-subtitle text-<%= booking.surrender.attached? ? "success" : "warning" %>">
+												<small>Surrender</small> </h6>
+
+											</div>
+											<div class="col-auto">
+												<h6 class="card-subtitle text-secondary">
+													<small class="text-secondary timeline-small"> 
+														<% if booking.surrender.attached? %>
+														<i class="bi bi-file-earmark-pdf-fill timeline-small"></i>
+														<%= link_to "SURRENDER.PDF", rails_blob_path(booking.surrender), class: 'timeline-small' %>
+														<% else %>
+														<% end %>
+													</small>
+												</h6>
+											</div>
+
+										</div>
+									</div>
+								</div>
+								<div class="row mt-5 d-flex justify-content-between">
+									<div class="col-auto">
+									</div>
+									<div class="col-auto" style="margin-top: -6px;">
+										<small class="text-secondary">
+											last update: <span class="fw-bold"> <%= booking.updated_at.strftime('%Y-%m-%d') %></span>
+										</small>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<% end %>
+					</div>
+				</div>
+				<% else %>
+				<div class="card border-0 shadow mt-2">
+					<div class="card-body p-xl-4">
+						<h2 class="card-title mb-2 text-warning">Shipping</h2>
+					</div>
+				</div>
+				<% end %>
