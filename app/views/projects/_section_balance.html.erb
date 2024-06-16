@@ -144,7 +144,7 @@
                 <div class="col"></div>
               </div>
               <hr>
-              <% if  @balance_swifts %>
+              <% if  @balance_swifts.any? %>
               <% @balance_swifts.each do |swift| %>
               <div class="row">
                 <div class="col">
@@ -165,7 +165,7 @@
               <% else %>
               <div class="row">
                 <div class="col">
-                  <small class="timeline-small">
+                  <small class="text-danger fw-bold">
                     None received
                   </small>
                 </div>
