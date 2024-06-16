@@ -144,6 +144,7 @@
                 <div class="col"></div>
               </div>
               <hr>
+              <% if  @balance_swifts %>
               <% @balance_swifts.each do |swift| %>
               <div class="row">
                 <div class="col">
@@ -158,7 +159,19 @@
                 <div class="col"><small class="text-success"><%= swift.confirmed.present? ? swift.confirm_at.strftime('%Y-%m-%d') : "-" %></small></div>
                 <div class="col"><small class="text-secondary"><%= swift.currency %></small></div>
               </div>
+              
+              
               <% end %>
+              <% else %>
+              <div class="row">
+                <div class="col">
+                  <small class="timeline-small">
+                    None received
+                  </small>
+                </div>
+              </div>
+              <% end %>
+
               <% if @balance_swifts.second %>
               <hr>
               <small class="mt-2 timeline-small">total <span class="text-secondary fw-bold"> 
