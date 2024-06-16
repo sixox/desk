@@ -24,9 +24,10 @@
           <% @project.cis.each do |ci| %>
 
 
+          
+          <% if ci.document.attached? %>
           <div class="card card-custom mt-1">
             <div class="card-body">
-              <% if ci.document.attached? %>
               <div class="row d-flex justify-content-between">
                 <div class="col-auto">
                   <h6 class="text-<%= ci.swift.present? ? "success" : "warning" %>">
@@ -120,11 +121,11 @@
                 </div>
               </div>
 
-
-
-              <% end %>
             </div>
           </div>
+
+          <% end %>
+          
           <% end %>
           <hr>
           <div class="card card-custom mt-1">
