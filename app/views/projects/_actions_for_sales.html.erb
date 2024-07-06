@@ -54,12 +54,16 @@
 						</h6>
 					</div>
 					<div class="col-auto">
+						<% if @project.pi.payment_term != '0'  %>
 						<small class="text-success">
 							<%= link_to new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">ADVANCE SWIFT</span>
 							<% end %>
 
 						</small>
+						<% else %>
+						<span class="mb-1 timeline-h5 text-info">WITHOUT ADVANCE</span>
+						<% end %>
 					</div>
 				</div>
 
