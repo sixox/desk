@@ -1,7 +1,7 @@
 <% if current_user.sales? %>
 <div class="card border-0 shadow mt-2">
-	<div class="card-body p-xl-4">
-		<h2 class="card-title mb-2 text-success">Actions</h2>
+	<div class="card-body p-xl-4" style="background: #ced1e1;">
+		<h2 class="card-title mb-2 text-success"><i class="bi bi-gear-fill"></i> Actions</h2>
 		<div class="card card-custom mt-1">
 			<div class="card-body">
 
@@ -187,8 +187,13 @@
 							<span class="mb-1 timeline-h5">EDIT CI</span>
 							<% end %>
 							<span class="text-primary"> | </span>
+							<% if ci.swift.present? %>
+								<span class="mb-1 timeline-h5 text-info">Swift attached already</span>
+							<% else %>
+							
 							<%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">BALANCE SWIFT</span>
+							<% end %>
 							<% end %>
 						</small>
 					</div>

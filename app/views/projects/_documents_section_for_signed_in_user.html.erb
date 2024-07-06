@@ -2,9 +2,9 @@
 <div class="card border-0 shadow">
 	<div class="card-body p-xl-4">
 		<% if @project.bookings.last&.custom_submission_date.present? %>
-		<h2 class="card-title mb-2 text-success">Documents Delivered</h2>
+		<h2 class="card-title mb-2 text-success"><i class="bi bi-clipboard-check-fill"></i> Documents Delivered</h2>
 		<% else %>
-		<h2 class="card-title mb-2 text-success">Documents</h2>
+		<h2 class="card-title mb-2 text-success"><i class="bi bi-clipboard-fill"></i> Documents</h2>
 		<% end %>
 		<% @project.bookings.each do |booking| %>
 		<div class="card card-custom mt-1">

@@ -1,7 +1,7 @@
 <% if @any_bl_draft_attached %>
 <div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4">
-		<h2 class="card-title mb-2 text-success">Shipping</h2>
+		<h2 class="card-title mb-2 text-success"> <i class="bi bi-airplane-fill"></i> Shipping</h2>
 		<% @project.bookings.each do |booking| %>
 		<div class="card card-custom mt-1">
 			<div class="card-body">
@@ -138,7 +138,7 @@
 				<% else %>
 				<div class="card border-0 shadow mt-2">
 					<div class="card-body p-xl-4">
-						<h2 class="card-title mb-2 text-warning">Shipping</h2>
+						<h2 class="card-title mb-2 text-warning"><i class="bi bi-airplane-fill"> Shipping</h2>
 					</div>
 				</div>
 				<% end %>

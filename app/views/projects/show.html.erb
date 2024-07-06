@@ -2,10 +2,10 @@
 	<% if @project.pi %>
 	<div class="row mt-5">
 		<div class="col-6">
-		 <%= render 'projects/pi_section_for_signed_in_user'%>
+			<%= render 'projects/pi_section_for_signed_in_user'%>
 		</div>
 		<div class="col-6">
-		 <%= render 'projects/advance_section_for_signed_in_user'%>
+			<%= render 'projects/advance_section_for_signed_in_user'%>
 		</div>
 
 		
@@ -16,14 +16,14 @@
 			<%= render 'projects/bookings_section_for_signed_in_user'%>
 			<%= render 'projects/balances_section_for_signed_in_user'%>
 		</div>
-			<div class="col-6">
-				
-				<%= render 'projects/documents_section_for_signed_in_user'%>
-				<%= render 'projects/shipping_section_for_signed_in_user'%>
-				<%= render 'projects/actions_for_sales'%>
-				
-								
-			</div>
+		<div class="col-6">
+
+			<%= render 'projects/documents_section_for_signed_in_user'%>
+			<%= render 'projects/shipping_section_for_signed_in_user'%>
+			<%= render 'projects/actions_for_sales'%>
+
+
+		</div>
 	</div>
 
 
@@ -35,202 +35,57 @@
 
 
 
-						<% else %>
+	<% else %>
 
-						<% if current_user.sales? %>
-			<div class="row mt-2">
-				<div class="col-lg">
-					<%= link_to "Edit", edit_project_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
-					<%= link_to "Update Timeline", update_timeline_project_path(@project), class: "btn btn-primary" %>
-					<%= link_to "Timeline", time_line_project_path, class: "btn btn-info" %>
-					<%= link_to "Add Advance Swift", new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
-					<% if !@project.pi%>
-					<%= link_to "Create PI", new_project_pi_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
-
-
-					<% else %>
-
-					<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
-					<i class="bi bi-plus"></i> Add CI
-					<% end %>
+	<% if current_user.sales? %>
+	<div class="row mt-2">
+		<div class="col-lg">
+			<%= link_to "Edit", edit_project_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-primary" %>
+			<%= link_to "Update Timeline", update_timeline_project_path(@project), class: "btn btn-primary" %>
+			<%= link_to "Timeline", time_line_project_path, class: "btn btn-info" %>
+			<%= link_to "Add Advance Swift", new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-warning" %>
+			<% if !@project.pi%>
+			<%= link_to "Create PI", new_project_pi_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" %>
 
 
-					<%= link_to new_project_ballance_project_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
-					<i class="bi bi-plus"></i> Allocate
-					<% end %>
-					<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" do %>
-					<i class="bi bi-plus"></i> Add Booking
-					<% end %>
+			<% else %>
 
-
-
-					<% end %>
-
-				</div>
-			</div>
+			<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+			<i class="bi bi-plus"></i> Add CI
 			<% end %>
 
-						<% end %>
+
+			<%= link_to new_project_ballance_project_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+			<i class="bi bi-plus"></i> Allocate
+			<% end %>
+			<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-secondary" do %>
+			<i class="bi bi-plus"></i> Add Booking
+			<% end %>
 
 
 
-						<br><br><br>
+			<% end %>
 
-						<!-- <br>
+		</div>
+	</div>
+	<% end %>
 
-						<%= render 'projects/project', project: @project, bookings: @bookings %>
-
-
-						<% if @project.swifts %>
-						<div class="card mb-5" id="ci_items">
-							<div class="card-body">
-								<div class="d-flex justify-content-between align-items-center">
-									<h5 class="card-title text-center mb-0">Swifts</h5>
-								</div>
-								<row class="m-2">
-									<div class="col-sm">
-										<table class="table">
-											<thead>
-												<tr>
-													<th scope="col" class="col-sm-1">#</th>
-													<th scope="col" class="col-sm-2">Amount</th>
-													<th scope="col" class="col-sm-2">Deposited Amount</th>
-													<th scope="col" class="col-sm-2">From</th>
-
-													<th scope="col" class="col-sm-2">To</th>
-													<th scope="col" class="col-sm-2">Currency</th>
-													<th scope="col" class="col-sm-2">Project</th>
-													<th scope="col" class="col-sm-2">Document</th>
-													<th scope="col" class="col-sm-2">Type</th>
+	<% end %>
 
 
 
+	<br><br><br>
+
+						<br>
+
+						
 
 
-													<th scope="col" class="col-sm-2">Status</th>
-													<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
-
-												</tr>
-											</thead>
-											<tbody>
-												<% @project.swifts.order(created_at: :desc).each do |swift| %>
-												<tr style="font-size: 12px;" class="<%= 
-												if swift.confirmed.present?
-													'table-success'
-												elsif swift.rejected.present?
-													'table-danger'
-												else
-													'table-warning'
-												end
-
-											%>">
-											<th scope="row">
-												<%= swift.id %>
-											</th>
-											<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
-											<td class="fw-bold"><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
-											<td><%= swift.from %></td>
-
-											<td><%= swift.bank.name %></td>
-											<td><%= swift.currency %></td>
-											<% if swift.ci.present? %>
-											<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
-											<% else %>
-											<td><%= link_to swift.project.number, project_path(swift.project) %></td>
-											<% end %>
-											<td><% swift.documents.each do |file| %>
-												<small> 
-													<%= link_to file.filename, rails_blob_path(file, disposition: 'attachment') %> 
-												</small>
-												<% end %>
-											</td>
-											<td><%= swift.advance ? "Advance" : "Balance" %></td>
-											<td><%= 
-											if swift.confirmed.present?
-												"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
-											elsif swift.rejected.present?
-												"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
-											else
-												'Wait for deposite'
-											end
-										%></td>
-										<td style="text-align: right;">
-											<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
-											<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>
-												<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-												<% end %></span>
-												|
-												<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
-												<i class="bi bi-calendar-x-fill" style="color: red;"></i>
-												<% end %>
-
-												<% end %>
-
-
-											</td>
-										</tr>
-										<% end %>
-									</tbody>
-								</table>
-
-							</div>
-						</row>
-
-
-					</div>
-				</div>
-
-				<% end %>
+						
 
 
 
-				<% if @project.pi %>
-				<%= render 'pis/pi', pi: @pi, project: @project %>
-				<% if @project.cis.present? %>
-				<div class="card mb-5" id="ci_items">
-					<div class="card-body">
-						<div class="d-flex justify-content-between align-items-center">
-							<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
-
-							<%= link_to "Add CI", new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
-
-						</div>
-						<% @cis.each do |ci|%>
-						<%= render 'cis/ci', ci: ci, project: @project %>
-						<% end %>
-
-					</div>
-				</div>
-
-
-
-
-
-				<% end %>
-
-				<% if @project.bookings.present? %>
-				<div class="card mb-5" id="ci_items">
-					<div class="card-body">
-						<div class="d-flex justify-content-between align-items-center">
-							<h5 class="card-title text-center mb-0">Bookings</h5>
-							<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" } do %>
-							<i class="bi bi-plus"></i> Add Booking
-							<% end %>
-
-
-						</div>
-						<% @bookings.each do |booking|%>
-						<h6 class="text-info mt-2">
-							<%= booking.part ? "part #{booking.part}" : "" %>
-						</h6>
-						<%= render 'bookings/booking', booking: booking, project: @project %>
-
-						<% end %>
-
-					</div>
-				</div>
-				<% end %>
-				<% end %> -->
+				
 
 
 				<% if @payment_orders_with_status_paid_dollar.present? || @payment_orders_with_status_paid_dirham.present? || @payment_orders_with_status_paid_rial.present? %>

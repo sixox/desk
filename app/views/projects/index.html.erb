@@ -16,8 +16,13 @@
 
 
 
+<div class="row">
 
 	<% @projects.each do |project| %>
-	<%= render 'projects/project', project: project, bookings: project.bookings %>
+      <div class="col-4 mb-3">
+			<%= render 'projects/project', project: project, bookings: project.bookings %>
+		</div>
+
 	<% end %>
+	</div>
 </div>
