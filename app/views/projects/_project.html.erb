@@ -4,10 +4,7 @@
 
 		<div class="row d-flex justify-content-between mt-2">
 			<div class="col-auto">
-				<span class="text-danger" style="font-size: 11px;">No.</span> <span class="text-muted fw-bold" style="font-size: 16px;" ><%= project.number %></span>
-			</div>
-			<div class="col-auto">
-				<small class="text-danger fw-bold">
+				<span class="text-danger fw-bold">
 					<% if !project.pi.present? %>
 					<% has_pi = false %>
 					NO_PI
@@ -15,8 +12,12 @@
 					<% else%>
 					<% has_pi = true %>
 					<% end %>
-				</small>
+				</span>
 			</div>
+			<div class="col-auto">
+				 <span class="fw-bold" style="font-size: 19px; color: #0c590c;" ><%= project.number %></span>
+			</div>
+			
 		</div>
 		<% if has_pi %>
 		<% all_bookings_done = project.bookings.all? { |booking| booking.payment_done } %>
