@@ -1,173 +1,71 @@
-<%= link_to project_path(project), class: "text-decoration-none" do %>
-<div class="card border-0 shadow">
-	<div class="card-body pb-3 pr-3 pt-1 pl-1">
-
-		<div class="row d-flex justify-content-between mt-2">
-			<div class="col-auto">
-				<span class="text-danger fw-bold">
-					<% if !project.pi.present? %>
-					<% has_pi = false %>
-					NO_PI
-					
-					<% else%>
-					<% has_pi = true %>
-					<% end %>
-				</span>
-			</div>
-			<div class="col-auto">
-				 <span class="fw-bold" style="font-size: 19px; color: #0c590c;" ><%= project.number %></span>
-			</div>
-			
-		</div>
-		<% if has_pi %>
-		<% all_bookings_done = project.bookings.all? { |booking| booking.payment_done } %>
-		<%     any_bl_draft_attached = project.bookings&.any? { |booking| booking.bl_draft.attached? }
- 		%>
-		<p class="card-text mt-3">
-			<small><%= project.pi.quantity.to_i %></small> MT <small><%= project.pi.product %></small> - <small><%= project.pi.packing_type %></small>
-			<br> 
-			<small><%= project.pi.incoterm %> <%= project.pi.pod %></small> PORT
-			<br>
-		</p>
-		<hr>
-
-		<div style="font-size: 10px;" >
-			<div class="row">
-				<div class="col-4 fw-bold">
-					<span class="text-success"> <i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> PI</span> 
-				</div>
-				<div class="col-4">
-					<% if project.swifts.present? %>
-						<span class="text-success fw-bold"> <i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Advance</span>
-					<% else %>
-						<span class="text-warning"> <i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Advance</span>
-					<% end %>
-					
-				</div>
-				<div class="col-4">
-					<% if project.bookings.present? %>
-						<span class="text-success fw-bold"> <i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Booking</span>
-					<% else %>
-						<span class="text-warning"> <i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Booking</span>
-					<% end %>
-				
-				</div>
-					
-			</div>
-			<div class="row">
-				<div class="col-4">
-					<% if project.any_booking_stuffing_finished? %>
-						<span class="text-success fw-bold"> <i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Documents</span>
-					<% else %>
-						<span class="text-warning"> <i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Documents</span>
-					<% end %>
-					 
-				</div>
-				<div class="col-4">
-					<% if any_bl_draft_attached %>
-						<span class="text-success fw-bold"> <i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Shipping</span>
-					<% else %>
-						<span class="text-warning"> <i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Shipping</span>
-					<% end %>
-				</div>
-				<div class="col-4">
-					<% if project.cis.present? %>
-						<span class="text-success fw-bold"> <i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Invoice</span>
-					<% else %>
-						<span class="text-warning"> <i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Invoice</span>
-					<% end %>
-				</div>
-			</div>		
-		</div>
-
-		<% end %>
-
-
-
-	</div>
-</div>
+<%= link_to project_path(project), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
+  <div class="card h-100 w-100 border-0 shadow">
+    <div class="card-body d-flex flex-column">
+      <div class="row d-flex justify-content-between mt-2">
+        <div class="col-auto">
+          <span class="text-danger fw-bold">
+            <% if !project.pi.present? %>
+              NO_PI
+            <% end %>
+          </span>
+        </div>
+        <div class="col-auto">
+          <span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= project.number %></span>
+        </div>
+      </div>
+      <% if project.pi.present? %>
+        <p class="card-text mt-3">
+          <small><%= project.pi.quantity.to_i %></small> MT <small><%= project.pi.product %></small> - <small><%= project.pi.packing_type %></small>
+          <br>
+          <small><%= project.pi.incoterm %> <%= project.pi.pod %></small> PORT
+          <br>
+        </p>
+        <hr>
+        <div style="font-size: 10px;">
+          <div class="row">
+            <div class="col-4 fw-bold">
+              <span class="text-success"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> PI</span>
+            </div>
+            <div class="col-4">
+              <% if project.swifts.present? %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Advance</span>
+              <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Advance</span>
+              <% end %>
+            </div>
+            <div class="col-4">
+              <% if project.bookings.present? %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Booking</span>
+              <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Booking</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-4">
+              <% if project.any_booking_stuffing_finished? %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Documents</span>
+              <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Documents</span>
+              <% end %>
+            </div>
+            <div class="col-4">
+              <% if project.bookings.any? { |booking| booking.bl_draft.attached? } %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Shipping</span>
+              <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Shipping</span>
+              <% end %>
+            </div>
+            <div class="col-4">
+              <% if project.cis.present? %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Invoice</span>
+              <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Invoice</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
 <% end %>
-
-
-
-
-<!-- <div class="card mb-5">
-	<div class="card-body">
-		<div class="row">
-			<div class="col-lg-2">
-				<div class="d-flex justify-content-start">
-					<p class="fw-bold">Project <span class="text-warning"><%= link_to project.number, project_path(project) %></span> </p>
-				</div>
-			</div>
-			<% if project.pi %>
-			<div class="col-lg-2">
-				<p class="fw-bold">PI <span class="text-warning"><%= project.pi.number %></span> </p>				
-			</div>
-			<div class="col-lg-4">
-				<p class="fw-bold"><span class="text-warning"><%= project.pi.quantity %></span> MT <span class="text-warning"><%= project.pi.packing_type %></span>, <span class="text-warning"><%= project.pi.product %></span>
-				</p>				
-			</div>
-			<div class="col-lg">
-				<span class="fw-bold text-warning">
-					<%= project.pi.pod %>
-				</span>
-			</div>
-			<% end %>
-			<div class="col-lg-2">
-				<div class="d-flex justify-content-end">
-					<p class="fw-bold"> 
-						<%= risk_level_tag(project) %>
-					</p>
-				</div>
-			</div>
-		</div>
-		<% if bookings %>			
-		<div class="row">
-			<% bookings.each do |booking| %>
-			<div class="col-lg">
-
-				<span class="fw-bold">
-					Booking number
-					<span class="text-warning"><%= booking.number %></span> <br>
-				</span>
-				Total  
-				<small class="text-warning"> <%= booking.quantity%></small>
-				-
-				<i class="bi bi-file-arrow-up-fill"></i> 
-				<small class="text-warning"> <%= booking.picked_up%></small>
-				<i class="bi bi-database-fill-check"></i>
-				<small class="text-warning"><%= booking.filled %></small>
-				<i class="bi bi-database-exclamation"></i>
-				<small class="text-warning"><%= booking.empty %></small>
-				<br>
-				<small class="fw-bold">Status
-					<span class="text-info"><%= booking.status %></span>
-				</small>
-
-
-
-
-			</div>
-			<% end %>
-		</div>
-		<% end %>
-		<% if @allocates %>
-
-		<div class="row mt-2">
-
-			<% @allocates.each do |allocate| %>
-			<div class="col-lg">
-				<p class="fw-bold">
-					<small class="text-warning"><%= allocate.quantity %></small> MT from
-					Balance number
-					<small class="text-warning"><%= link_to allocate.ballance.number, ballance_path(allocate.ballance_id) %></small>
-				</p>
-
-			</div>
-			<% end %>
-		</div>
-
-		<% end %>
-		
-	</div>
-</div> -->
