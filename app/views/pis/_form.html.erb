@@ -30,7 +30,7 @@
 
 		<div class="col-lg-12">
 			<div class="row bg-semi">
-				<div class="col-lg-5 mb-2">
+				<div class="col-lg-7 mb-2">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							PI number
@@ -39,34 +39,31 @@
 						<%= form.text_field :number, class: 'form-control' %>
 					</div>
 				</div>
-				<div class="col-lg-3 mb-2">
-				</div>
-				<div class="col-lg-4 mb-2">
+
+				<div class="col-lg-5">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
-							Validity
+							Issue Date
 							<span class="text-danger">*</span>
-							<div class="input-group mt-2">
-								<%= form.number_field :validity, class: "form-control" %>
-								<span class="input-group-text">Days</span>
-							</div>
+							<%= form.date_field :issue_date, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
 				
+				
+				
 			</div>
 
 			<div class="row">
-				<div class="col-lg-5">
+				<div class="col-lg-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Seller
-							<span class="text-danger">*</span>
 							<%= form.text_field :seller, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-5">
+				<div class="col-lg-4">
 					<div class="form-group mb-2">
 						<label class="mb-2 mt-3">
 							Customer
@@ -75,16 +72,16 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-2">
+				<div class="col-lg-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
-							Term
-							<span class="text-danger">*</span>
-							<%= form.text_field :incoterm, value: form.object.incoterm || "CFR", class: 'form-control mt-2' %>
+							Bank Account
+   							 <%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select mt-2'} %>
 
 						</label>
 					</div>
 				</div>
+				
 
 
 			</div>
@@ -94,7 +91,7 @@
 				<div class="col-lg-5 mb-2">
 					<div class="form-group  ">
 
-						<label class="mb-2 mt-1">
+						<label class="mb-2 mt-3">
 							Product
 							<span class="text-danger">*</span>
 							<%= form.select :product, options_for_select(Pi::PRODUCT, selected: form.object.product), { prompt: 'Select product' }, { class:"form-select mt-2" } %>
@@ -105,19 +102,19 @@
 				</div>
 				<div class="col-lg-4">
 					<div class="form-group">
-						<label class="mb-2 mt-1">
+						<label class="mb-2 mt-3">
 							Packing
 							<span class="text-danger">*</span>
 							<%= form.select :packing_type, options_for_select(Pi::PACKING_TYPE, selected: form.object.packing_type), { prompt: 'Select packing' }, { class:"form-select mt-2 " } %>
 						</label>
 					</div>	
 				</div>
+				
 				<div class="col-lg-3">
 					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Quantity
-							<span class="text-danger">*</span>
-							<%= form.number_field :quantity, id: "quantity_field", class: "form-control mt-2" %>
+						<label class="mb-2 mt-3">
+							Tolerance %							
+							<%= form.number_field :tolerance, class: "form-control mt-2", value: @pi.tolerance || 10 %>
 
 
 						</label>
@@ -128,7 +125,18 @@
 
 
 			<div class="row">
-				<div class="col-lg-3">
+				<div class="col-lg-4">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Quantity
+							<span class="text-danger">*</span>
+							<%= form.number_field :quantity, id: "quantity_field", class: "form-control mt-2" %>
+
+
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-4">
 					<div class="form-group ">
 						<label class="mb-2 mt-3">
 							Unit Price
@@ -140,16 +148,8 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-3">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Advance %
-							<span class="text-danger">*</span>
-							<%= form.text_field :payment_term, class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
-				<div class="col-lg-3">
+				
+				<div class="col-lg-4">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Total Price
@@ -158,6 +158,21 @@
 							<%= form.number_field :total_price,:step => "0.0001", class: "form-control mt-2" %>
 
 
+						</label>
+					</div>
+				</div>
+					
+
+			</div>
+			<div class="row bg-semi">
+				<div class="col-lg">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Advance %
+							
+							<small style="font-size: 10px;">Enter '0' if the PI does not include an advance payment</small> 							<span class="text-danger">*</span>
+
+							<%= form.text_field :payment_term, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
@@ -170,19 +185,14 @@
 						</label>
 					</div>
 				</div>
-
-
-
 				
-
 			</div>
 
-			<div class="row bg-semi">
+			<div class="row">
 				<div class="col-lg-5">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Loading Port
-							<span class="text-danger">*</span>
 							<%= form.text_field :pol, class: 'form-control mt-2' %>
 
 						</label>
@@ -201,72 +211,27 @@
 				<div class="col-lg-2">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
-							Frieght
-							<%= form.number_field :shipment_rate,:step => "0.0001", class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
-
-				
-
-				
-				
-				
-			</div>
-			<div class="row">
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Bank Account
+							Term
 							<span class="text-danger">*</span>
-   							 <%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select'} %>
+							<%= form.text_field :incoterm, value: form.object.incoterm || "CFR", class: 'form-control mt-2' %>
 
 						</label>
 					</div>
 				</div>
-				<div class="col-lg-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Packing Count							
-							<%= form.number_field :packing_count, class: "form-control mt-2" %>
 
-
-						</label>
-					</div>
-				</div>
-				<div class="col-lg-3">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Tolerance %
-							<span class="text-danger">*</span>
-							
-							<%= form.number_field :tolerance, class: "form-control mt-2" %>
-
-
-						</label>
-					</div>
-				</div>
 				
-			</div>
-			<div class="row">
+
+				
+				
 				
 			</div>
 			<div class="row bg-semi">
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Issue Date
-							<%= form.date_field :issue_date, class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
 				
-
-				<div class="col-lg">
+				
+				<div class="col-lg mb-2">
 					<div class="form-group">
-						<label class="mb-2 mt-1">
+						<label class="mb-2 mt-3">
 							Delivery Time
-							<span class="text-danger">*</span>
 							<div class="input-group mt-2">
 								<%= form.number_field :delivery_time, class: "form-control" %>
 								<span class="input-group-text">Days</span>
@@ -274,11 +239,27 @@
 						</label>
 					</div>
 				</div>
+				<div class="col-lg mb-2">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Validity
+							<div class="input-group mt-2">
+								<%= form.number_field :validity, class: "form-control" %>
+								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				
+				
+				
 			</div>
+			
+			
 			<% if !@pi.document.id %>
 			<div class="row">
 				<div class="form-group">
-					<label class="mb-2 mt-1">
+					<label class="mb-4 mt-2">
 						Upload Document
 						<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
 					</label>
