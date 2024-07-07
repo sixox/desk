@@ -1,5 +1,5 @@
 <% if @project.any_booking_stuffing_finished? %>
-<div class="card border-0 shadow">
+<div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4">
 		<% if @project.bookings.last&.custom_submission_date.present? %>
 		<h2 class="card-title mb-2 text-success"><i class="bi bi-clipboard-check-fill"></i> Documents Delivered</h2>
@@ -43,7 +43,7 @@
 	</div>
 </div>
 <% else %>
-<div class="card border-0 shadow">
+<div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4">
 		<h2 class="card-title mb-2 text-warning">Documents</h2>
 	</div>

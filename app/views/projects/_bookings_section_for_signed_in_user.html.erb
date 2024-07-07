@@ -1,5 +1,5 @@
 <% if @project.bookings.present? %>
-<div class="card border-0 shadow">
+<div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4">
 		<h2 class="card-title mb-2 text-success"> <i class="bi bi-calendar2-event-fill"></i> Bookings</h2>
 		<% @project.bookings.each do |booking|%>
@@ -121,7 +121,7 @@
 </div>
 
 <% else %>
-<div class="card border-0 shadow">
+<div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4">
 		<h2 class="card-title mb-2 text-warning"> <i class="calendar2-fill"></i> Booking</h2>
 

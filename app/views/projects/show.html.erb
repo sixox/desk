@@ -1,28 +1,35 @@
 <div class="col-lg-10 mx-auto mt-5">
 	<% if @project.pi %>
-	<div class="row mt-5">
-		<div class="col-6">
-			<%= render 'projects/pi_section_for_signed_in_user'%>
-		</div>
-		<div class="col-6">
-			<%= render 'projects/advance_section_for_signed_in_user'%>
-		</div>
+	<div class="card border-0 shadow">
+		<div class="card-body" style="background-color: #f3f3f2;">
+			<div class="card-header text-white " style="background-color: #fbfbfb">
+				<div class="row d-flex justify-content-between mt-2 mb-2">
+					<div class="col-auto">
+						<span class="fw-bold" style="font-size: 25px; color: #0c590c;"><%= @project.number %></span>
+					</div>
+					<div class="col-auto mt-2">
+						<span style="color: #49af98;">
+				            <%= @project.pi.customer.nickname %>
+				          </span>
+					</div>
+					
 
-		
-	</div>
-
-	<div class="row mt-2">
-		<div class="col-6">
-			<%= render 'projects/bookings_section_for_signed_in_user'%>
-			<%= render 'projects/balances_section_for_signed_in_user'%>
-		</div>
-		<div class="col-6">
-
-			<%= render 'projects/documents_section_for_signed_in_user'%>
-			<%= render 'projects/shipping_section_for_signed_in_user'%>
-			<%= render 'projects/actions_for_sales'%>
-
-
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-6">
+					<%= render 'projects/pi_section_for_signed_in_user'%>
+					<%= render 'projects/bookings_section_for_signed_in_user'%>
+					<%= render 'projects/balances_section_for_signed_in_user'%>
+				</div>
+				<div class="col-6">
+					<%= render 'projects/advance_section_for_signed_in_user'%>
+					<%= render 'projects/documents_section_for_signed_in_user'%>
+					<%= render 'projects/shipping_section_for_signed_in_user'%>
+					<%= render 'projects/actions_for_sales'%>
+				</div>
+			</div>
+			
 		</div>
 	</div>
 
