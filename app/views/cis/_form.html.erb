@@ -16,22 +16,64 @@
 		<div class="row">
 			<div class="col-lg-6">
 				<div class="d-flex justify-content-start">
-					<h4>Commercial invoice</h4>
+					<h4>Invoice</h4>
 				</div>
 			</div>
 			<div class="col-lg-6">
 				<div class="d-flex justify-content-end">
 					<% if @project.pi %>
-					<small class="text-secondary">Project: <%= @project.number %></small><br>
-					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
+					<span class="fw-bold" style="font-size: 25px; color: #0c590c;"><%= @project.number %></span>
+					<div>
+						<small>PI: <%= @project.pi.number %></small>
+					</div>
+					
 					<% end %>
 				</div>
 			</div>
 		</div>
+		<% if @project.pi %>
+		<div class="row">
+			<div class="col-lg">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-1 small-timeline">
+							<small>PI: <%= @project.pi.number %></small>
+						</label>
+
+
+					</div>
+				</div>
+				
+				
+		</div>
+		<div class="row">
+				<div class="col-lg">
+					<div class="form-group  ">
+
+						<label class="mb-2 mt-1">
+							<small>
+							<%= @project.pi.product %>
+							</small>
+						</label>
+
+
+					</div>
+				</div>
+				<div class="col-lg">
+					<small><%= @project.pi.incoterm %> <%= @project.pi.pod %></small> 
+				</div>
+				<div class="col-lg">
+					<small>
+						<%= @project.pi.unit_price %> <span style="font-size: 10px;"> <%= @project.pi.currency %></span>
+					</small>
+				</div>
+			</div>
+			<% end %>
+			<hr>
 
 		<div class="col-lg-12">
-			<div class="row bg-semi">
-				<div class="col-lg-7">
+			<div class="row bg-semi ">
+				<div class="col-lg-7 mb-2">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							CI number
@@ -40,30 +82,22 @@
 						<%= form.text_field :number, class: 'form-control' %>
 					</div>
 				</div>
-				<div class="col-lg-5">
-					<div class="form-group mb-2">
+				<div class="col-lg-5 mb-2">
+					<div class="form-group">
 						<label class="mb-2 mt-3">
-							Buyer
-							<div class="mt-2"> <%= @project.pi.customer.nickname %></div>
+							Issue Date
+							<span class="text-danger">*</span>
+							<%= form.date_field :issue_date, class: "form-control mt-2" %>
 						</label>
 					</div>
-					
 				</div>
+				
 			</div>
+			
 
 
 			<div class="row">
-				<div class="col-lg">
-					<div class="form-group  ">
-
-						<label class="mb-2 mt-1">
-							Product
-							<div class="mt-2"><%= @project.pi.product %></div>
-						</label>
-
-
-					</div>
-				</div>
+				
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
@@ -155,15 +189,7 @@
 			</div>
 
 			<div class="row bg-semi">
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Issue Date
-							<span class="text-danger">*</span>
-							<%= form.date_field :issue_date, class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
+				
 				<div class="col-lg-5">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
