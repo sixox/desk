@@ -59,6 +59,7 @@
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Seller
+							<span class="text-danger">*</span>
 							<%= form.text_field :seller, class: "form-control mt-2" %>
 						</label>
 					</div>
@@ -261,6 +262,7 @@
 				<div class="form-group">
 					<label class="mb-4 mt-2">
 						Upload Document
+						<span class="text-danger">*</span>
 						<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
 					</label>
 				</div>

@@ -8,7 +8,7 @@ class Pi < ApplicationRecord
   belongs_to :account, optional: true
   
   validates :number, presence: true, uniqueness: true
-  validates :issue_date, :product, :quantity, :total_price, :packing_type, :unit_price, :payment_term, :currency, :pod, presence: true
+  validates :issue_date, :product, :quantity, :total_price, :packing_type, :unit_price, :payment_term, :currency, :pod, :seller, :document, presence: true
 
 
 
