@@ -62,7 +62,9 @@
 
 						</small>
 						<% else %>
-						<span class="mb-1 timeline-h5 text-info">WITHOUT ADVANCE</span>
+						<span class="mb-1 timeline-h5 text-info">WITHOUT ADVANCE / <%= link_to new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+							<span class="mb-1 timeline-h5">BALANCE SWIFT</span>
+							<% end %></span>
 						<% end %>
 					</div>
 				</div>
