@@ -20,59 +20,35 @@
 				</div>
 			</div>
 			<div class="col-lg-6">
+				<div class="row">
 				<div class="d-flex justify-content-end">
 					<% if @project.pi %>
-					<span class="fw-bold" style="font-size: 25px; color: #0c590c;"><%= @project.number %></span>
-					<div>
-						<small>PI: <%= @project.pi.number %></small>
-					</div>
+					<span class="fw-bold" style="font-size: 20px; color: #0c590c;">
+						
+						<%= @project.number %>
+						
+					</span>
+					
 					
 					<% end %>
 				</div>
-			</div>
-		</div>
-		<% if @project.pi %>
-		<div class="row">
-			<div class="col-lg">
-					<div class="form-group  ">
-
-						<label class="mb-2 mt-1 small-timeline">
-							<small>PI: <%= @project.pi.number %></small>
-						</label>
-
-
-					</div>
 				</div>
-				
-				
-		</div>
-		<div class="row">
-				<div class="col-lg">
-					<div class="form-group  ">
+				<div class="row mt-2">
+				<div class="d-flex justify-content-end">
+					<% if @project.pi %>
 
-						<label class="mb-2 mt-1">
-							<small>
-							<%= @project.pi.product %>
-							</small>
-						</label>
-
-
-					</div>
+					<span class="fw-bold" style="font-size: 14px; color: #0c590c;">
+						<span class="text-secondary fw-light">PI number: </span>
+						<%= @project.pi.number %></span>
+					
+					
+					<% end %>
 				</div>
-				<div class="col-lg">
-					<small><%= @project.pi.incoterm %> <%= @project.pi.pod %></small> 
-				</div>
-				<div class="col-lg">
-					<small>
-						<%= @project.pi.unit_price %> <span style="font-size: 10px;"> <%= @project.pi.currency %></span>
-					</small>
 				</div>
 			</div>
-			<% end %>
-			<hr>
-
+		</div>
 		<div class="col-lg-12">
-			<div class="row bg-semi ">
+		<div class="row bg-semi mt-3 ">
 				<div class="col-lg-7 mb-2">
 					<div class="form-group">
 						<label class="mb-2 mt-3">
@@ -92,11 +68,55 @@
 					</div>
 				</div>
 				
+		</div>
+		</div>
+		<div>
+		<hr>
+		<% if @project.pi %>
+		<div class="border border-1 text-center" style="background-color: #e5c06f36;">
+		<div class="row">
+			<div class="col-lg">
+				<small>Product</small>
 			</div>
+			<div class="col-lg">
+				<small>POD</small>
+			</div>
+			<div class="col-lg">
+				<small>Unit Price</small>
+			</div>
+		</div>
+		
+		<div class="row">
+				<div class="col-lg">
+					<div class="form-group  ">
+
+							<small>
+							<%= @project.pi.product %>
+							</small>
+
+
+					</div>
+				</div>
+				<div class="col-lg">
+					<small><%= @project.pi.incoterm %> <%= @project.pi.pod %></small> 
+				</div>
+				<div class="col-lg">
+					<small>
+						<%= @project.pi.unit_price %> <small style="font-size: 10px;"> <%= @project.pi.currency %></small>
+					</small>
+				</div>
+			</div>
+			</div>
+			<% end %>
+			<hr>
+		</div>
+
+		<div class="col-lg-12">
+			
 			
 
 
-			<div class="row">
+			<div class="row bg-semi mt-2 mb-2">
 				
 				<div class="col-lg">
 					<div class="form-group">
@@ -125,23 +145,24 @@
 			</div>
 
 
-			<div class="row bg-semi">
+			<div class="row mt-2 mb-2">
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Payment Term
+							Advance Payment
 							<span class="text-danger">*</span>
-							<div class="mt-2"><%= @project.pi.payment_term %></div>
+							<%= form.number_field :advance_payment, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
-							Advance Payment
-							<%= form.number_field :advance_payment, class: "form-control mt-2" %>
+							Total Price
+							<span class="text-danger">*</span>
+							<%=  form.number_field :total_price, class: "form-control mt-2" %>
 						</label>
-					</div>
+					</div>	
 				</div>
 				<div class="col-lg">
 					<div class="form-group">
@@ -158,31 +179,25 @@
 			</div>
 
 
-			<div class="row bg-semi">
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Total Price
-							<span class="text-danger">*</span>
-							<%=  form.number_field :total_price, class: "form-control mt-2" %>
-						</label>
-					</div>	
+			<div class="row bg-semi mt-2">
+				<div class="col-lg-8">
+					<% if !@ci.document.id %>
+							<div class="form-group">
+								<label class="mb-2 mt-1">
+									Upload Document
+									<span class="text-danger">*</span>
+									<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
+								</label>
+							</div>
+					<% else %>
+					<% end %>
 				</div>
-				<div class="col-lg">
+				<div class="col-lg-4">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
 							Account							
-    					<%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select'} %>
+    					<%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select mt-2'} %>
 
-						</label>
-					</div>
-				</div>
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Currency
-							<span class="text-danger">*</span>
-							<div class="mt-2"><%= @project.pi.currency %></div>
 						</label>
 					</div>
 				</div>
@@ -190,32 +205,10 @@
 
 			<div class="row bg-semi">
 				
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Validity
-							<span class="text-danger">*</span>
-							<div class="input-group mt-2">
-								<%= form.number_field :validity, class: "form-control" %>
-								<span class="input-group-text">Days</span>
-							</div>
-						</label>
-					</div>
-				</div>
+				
 				<div class="col-lg-2"></div>
 			</div>
-			<% if !@ci.document.id %>
-			<div class="row">
-				<div class="form-group">
-					<label class="mb-2 mt-1">
-						Upload Document
-						<span class="text-danger">*</span>
-						<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
-					</label>
-				</div>
-			</div>
-			<% else %>
-			<% end %>
+			
 
 		</div>
 	</div>
