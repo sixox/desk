@@ -74,11 +74,11 @@
 		<hr>
 		<% if @project.pi %>
 		<div class="border border-1 text-center" style="background-color: #e5c06f36;">
-		<div class="row">
+		<div class="row border-bottom">
 			<div class="col-lg">
 				<small>Product</small>
 			</div>
-			<div class="col-lg">
+			<div class="col-lg ">
 				<small>POD</small>
 			</div>
 			<div class="col-lg">
@@ -214,7 +214,7 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<%= form.submit 'Add CI to project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+	<%= form.submit 'Save changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
 	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
 <% end %>
