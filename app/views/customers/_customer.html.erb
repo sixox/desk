@@ -13,30 +13,49 @@
 				</div>
 				<div class="col-lg-11">
 					<div class="row">
+						<% dollar_to_dirham = 3.67 %>
+
 						<div class="col-lg-3">
 							<span class="text-secondary fw-bold border-bottom mb-2">INVOICES</span>
 							<br>
-							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_cis[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
-							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_cis[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div> 					
+							<div class="mt-2">
+								<% total_invoices_dirham = customer.sum_of_cis[:dirham].to_i + (customer.sum_of_cis[:dollar].to_i * dollar_to_dirham) %>
+								<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham, delimiter: ',') %></span>
+								<small class="text-success" style="font-size: 10px;">dirham</small>
+							</div>
 						</div>
+
 						<div class="col-lg-3">
-							<span class="text-secondary fw-bold border-bottom mb-2">BALANCE SWIFTS</span>						<br>
-							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_balance_swifts[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
-							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_balance_swifts[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div> 						
+							<span class="text-secondary fw-bold border-bottom mb-2">BALANCE SWIFTS</span>
+							<br>
+							<div class="mt-2">
+								<% total_balance_swifts_dirham = customer.sum_balance_swifts[:dirham].to_i + (customer.sum_balance_swifts[:dollar].to_i * dollar_to_dirham) %>
+								<span class="fw-bold"><%= number_with_delimiter(total_balance_swifts_dirham, delimiter: ',') %></span>
+								<small class="text-success" style="font-size: 10px;">dirham</small>
+							</div>
 						</div>
+
 						<div class="col-lg-3">
 							<span class="text-secondary fw-bold border-bottom mb-2">ADVANCE SWIFTS</span>
 							<br>
-							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_swifts_with_advance[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
-							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_swifts_with_advance[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div>  						
+							<div class="mt-2">
+								<% total_advance_swifts_dirham = customer.sum_of_swifts_with_advance[:dirham].to_i + (customer.sum_of_swifts_with_advance[:dollar].to_i * dollar_to_dirham) %>
+								<span class="fw-bold"><%= number_with_delimiter(total_advance_swifts_dirham, delimiter: ',') %></span>
+								<small class="text-success" style="font-size: 10px;">dirham</small>
+							</div>
 						</div>
+
 						<div class="col-lg-3">
 							<span class="text-secondary fw-bold border-bottom mb-2">PENDING</span>
 							<br>
-							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.customer_remain_payments[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
-							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.customer_remain_payments[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div>  						
+							<div class="mt-2">
+								<% total_pending_dirham = customer.customer_remain_payments[:dirham].to_i + (customer.customer_remain_payments[:dollar].to_i * dollar_to_dirham) %>
+								<span class="fw-bold"><%= number_with_delimiter(total_pending_dirham, delimiter: ',') %></span>
+								<small class="text-success" style="font-size: 10px;">dirham</small>
+							</div>
 						</div>
 					</div>
+
 				</div>
 
 				<% if current_user.sales? && action_name == "show" %>
