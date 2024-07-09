@@ -49,10 +49,9 @@ class Customer < ApplicationRecord
 
   def sum_of_cis
     pis_with_currency = self.pis.includes(:cis).where.not(cis: { id: nil })
-
-    {
-      dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.sum,
-      dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.sum
+      {
+        dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum,
+        dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum
     }
   end
 
