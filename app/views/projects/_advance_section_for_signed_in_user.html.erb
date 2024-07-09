@@ -52,7 +52,7 @@
 		</div>
 	</div>
 	<% else %>
-	<div class="card border-0 shadow">
+	<div class="card border-0 shadow mt-2">
 		<div class="card-body p-xl-4">
 			<h2 class="card-title mb-2 text-<%= (@project.pi.payment_term == '0' || @project.swifts.first&.advance.present?) ? "success" : "warning" %>"><%= @project.pi.payment_term == '0' ? "need no Advance Payment" : "Advance payment" %></h2>
 			<div class="row d-flex justify-content-between">

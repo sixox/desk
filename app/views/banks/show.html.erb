@@ -526,6 +526,7 @@
 									<tr>
 										<th scope="col" class="col-sm-1">#</th>
 										<th scope="col" class="col-sm-2">Amount</th>
+										<th scope="col" class="col-sm-2">Deposited</th>
 										<th scope="col" class="col-sm-6">Details</th>
 										<th scope="col" style="text-align: right;" class="col-sm-2 text-right">Issue Date</th>
 									</tr>
@@ -542,6 +543,8 @@
 										<%= link_to payment_order.id, payment_order_path(payment_order), class: "notifLink" %>
 									</th>
 									<td class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></td>
+									<td class="fw-bold"><%= number_with_delimiter(payment_order.exchange_amount, delimiter: ',') %></td>
+
 									<td><%= payment_order.details %></td>
 									<td style="text-align: right;"><%= payment_order.created_at.strftime('%d %b') %></td>
 								</tr>
