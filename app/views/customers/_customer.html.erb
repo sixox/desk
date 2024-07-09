@@ -1,20 +1,47 @@
+<li class="shadow-lg mb-2 bg-body rounded list-group-item position-relative" id="customer_item_<%= customer.id %>">
 
-<li class="shadow-lg mb-2 bg-body rounded list-group-item" id="customer_item_<%= customer.id %>">
 
 	<div class="card border-0 shadow mt-2">
 		<div class="card-body p-xl-4" style="background: #db54540f;">
 			<div class="row">
-				<div class="col-lg">
+				<div class="col-lg-1">
 					<div class="d-flex justify-content-start">
-						<p class="fw-bold" style="color: #49af98;">
+						<small class="fw-bold" style="color: #49af98;">
 							<%= (current_user.sales? && current_user.is_manager) ? customer.name.titleize : customer.nickname.titleize %>
-						</p>
+						</small>
 					</div>
 				</div>
-				<% if current_user.sales? %>
-				<div class="col-lg">
+				<div class="col-lg-11">
+					<div class="row">
+						<div class="col-lg-3">
+							<span class="text-secondary fw-bold border-bottom mb-2">INVOICES</span>
+							<br>
+							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_cis[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
+							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_cis[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div> 					
+						</div>
+						<div class="col-lg-3">
+							<span class="text-secondary fw-bold border-bottom mb-2">BALANCE SWIFTS</span>						<br>
+							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_balance_swifts[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
+							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_balance_swifts[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div> 						
+						</div>
+						<div class="col-lg-3">
+							<span class="text-secondary fw-bold border-bottom mb-2">ADVANCE SWIFTS</span>
+							<br>
+							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_swifts_with_advance[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
+							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.sum_of_swifts_with_advance[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div>  						
+						</div>
+						<div class="col-lg-3">
+							<span class="text-secondary fw-bold border-bottom mb-2">PENDING</span>
+							<br>
+							<div class="mt-2"> <span class="fw-bold"> <%= number_with_delimiter(customer.customer_remain_payments[:dollar].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dollar</small></div>
+							<div> <span class="fw-bold"> <%= number_with_delimiter(customer.customer_remain_payments[:dirham].to_i, delimiter: ',') %></span> <small class="text-success" style="font-size: 10px;">dirham</small></div>  						
+						</div>
+					</div>
+				</div>
+
+				<% if current_user.sales? && action_name == "show" %>
+				<!-- <div class="col-lg">
 					<div class="d-flex justify-content-end">
-						
 						<%= link_to edit_customer_path(customer), data: { controller: "bs-modal-form" }, class: "btn btn-success btn-sm m-1" do %>
 						<i class="bi bi-pencil-fill"></i> EDIT
 						<% end %> 
@@ -22,21 +49,10 @@
 						<%= link_to customer_path(customer), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this customer, this action can not be undo!' }, class: "btn btn-danger btn-sm m-1" do %>
 						<i class="bi bi-pencil-fill"></i> DELETE
 						<% end %>
-
-
-
-
 					</div>
-
-				</div>
+				</div> -->
 				<% end %>
-			</div>
-
-			<div class="card card-custom mt-1">
-				<div class="card-body">
-				</div>
 			</div>
 		</div>
 	</div>
-
 </li>

@@ -2,7 +2,7 @@ class Customer < ApplicationRecord
   belongs_to :user
   has_many :pis
 
-  def total_swift_amount
+  def total_swift
     project_ids = self.pis.map { |pi| pi.project_id }.compact
     ci_ids = self.pis.flat_map { |pi| pi.cis.map(&:id) }
 
@@ -15,7 +15,7 @@ class Customer < ApplicationRecord
     }
   end
 
-  def swifts_from_cis_and_projects_without_advance
+  def balance_swifts
     project_ids = self.pis.map { |pi| pi.project_id }.compact
     ci_ids = self.pis.flat_map { |pi| pi.cis.map(&:id) }
 
@@ -25,14 +25,14 @@ class Customer < ApplicationRecord
     swifts_from_cis + swifts_from_projects
   end
 
-  def swifts_from_projects_with_advance
+  def advance_swifts
     project_ids = self.pis.map { |pi| pi.project_id }.compact
 
     Swift.where(project_id: project_ids, advance: true)
   end
 
-  def sum_of_swifts_without_advance
-    swifts = swifts_from_cis_and_projects_without_advance
+  def sum_balance_swifts
+    swifts = balance_swifts
     {
       dollar: swifts.select { |s| s.currency == 'dollar' }.sum(&:amount),
       dirham: swifts.select { |s| s.currency == 'dirham' }.sum(&:amount)
@@ -40,14 +40,14 @@ class Customer < ApplicationRecord
   end
 
   def sum_of_swifts_with_advance
-    swifts = swifts_from_projects_with_advance
+    swifts = advance_swifts
     {
       dollar: swifts.select { |s| s.currency == 'dollar' }.sum(&:amount),
       dirham: swifts.select { |s| s.currency == 'dirham' }.sum(&:amount)
     }
   end
 
-  def sum_of_ci_balance_payment
+  def sum_of_cis
     pis_with_currency = self.pis.includes(:cis).where.not(cis: { id: nil })
 
     {
@@ -56,9 +56,9 @@ class Customer < ApplicationRecord
     }
   end
 
-  def ci_balance_payment_minus_sum_of_swifts_without_advance
-    ci_balance_payment = sum_of_ci_balance_payment
-    swifts_without_advance = sum_of_swifts_without_advance
+  def customer_remain_payments
+    ci_balance_payment = sum_of_cis
+    swifts_without_advance = sum_balance_swifts
 
     {
       dollar: ci_balance_payment[:dollar] - swifts_without_advance[:dollar],

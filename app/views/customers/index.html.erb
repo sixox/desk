@@ -18,8 +18,9 @@
 			</div>
 			<ul class="list-group mt-5 mb-5" id="customer_items">
 				<% @customers.reverse.each do |customer| %>
-
-				<%= render 'customers/customer', customer: customer %>
+				  <%= link_to customer_path(customer), class: "text-decoration-none" do %>
+						<%= render 'customers/customer', customer: customer %>
+				  <% end %>
 				<% end %>
 			</ul>
 		</div>

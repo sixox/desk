@@ -1,1 +1,92 @@
-hello
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="card mb-5">
+		<div class="card-body">
+			<ul class="list-group mt-5 mb-5" id="customer_items">
+				<%= render 'customers/customer', customer: @customer %>
+			</ul>
+		</div>
+	</div>
+
+	<hr>
+	total_swift : <%= @customer.total_swift %> <hr>
+	balance_swifts: <br>
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Amount</th>
+				<th scope="col">Deposited</th>
+				<th scope="col">currency</th>
+				<th scope="col">Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% @customer.balance_swifts.each do |swift| %>
+
+
+				<tr>
+					<th scope="row"><%= swift.id %></th>
+					<td><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+					<td><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
+					<td><%= swift.currency %></td>
+					<td><%= 
+					if swift.confirmed.present?
+						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
+					elsif swift.rejected.present?
+						"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
+					else
+						'Wait for deposite'
+					end
+				%></td>
+				</tr>
+			
+
+			<% end %>
+		</tbody>
+	</table>
+	<hr>
+	sum_balance_swifts: <%= @customer.sum_balance_swifts %>
+	<hr>
+		advance swift: <br>
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Amount</th>
+				<th scope="col">Deposited</th>
+				<th scope="col">currency</th>
+				<th scope="col">Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% @customer.advance_swifts.each do |swift| %>
+
+
+				<tr>
+					<th scope="row"><%= swift.id %></th>
+					<td><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+					<td><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
+					<td><%= swift.currency %></td>
+					<td><%= 
+					if swift.confirmed.present?
+						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
+					elsif swift.rejected.present?
+						"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
+					else
+						'Wait for deposite'
+					end
+				%></td>
+				</tr>
+			
+
+			<% end %>
+		</tbody>
+	</table>
+	<hr>
+	sum_balance_swifts: <%= @customer.sum_of_swifts_with_advance %>
+	<hr>
+
+	sum of cis: <%= @customer.sum_of_cis %>
+
+
+</div>
