@@ -20,7 +20,7 @@
 							<br>
 							<div class="mt-2">
 								<% total_invoices_dirham = customer.sum_of_cis[:dirham].to_i + (customer.sum_of_cis[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham, delimiter: ',') %></span>
+								<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham.to_i, delimiter: ',') %></span>
 								<small class="text-success" style="font-size: 10px;">dirham</small>
 							</div>
 						</div>
@@ -30,7 +30,7 @@
 							<br>
 							<div class="mt-2">
 								<% total_balance_swifts_dirham = customer.sum_balance_swifts[:dirham].to_i + (customer.sum_balance_swifts[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_balance_swifts_dirham, delimiter: ',') %></span>
+								<span class="fw-bold"><%= number_with_delimiter(total_balance_swifts_dirham.to_i, delimiter: ',') %></span>
 								<small class="text-success" style="font-size: 10px;">dirham</small>
 							</div>
 						</div>
@@ -40,7 +40,7 @@
 							<br>
 							<div class="mt-2">
 								<% total_advance_swifts_dirham = customer.sum_of_swifts_with_advance[:dirham].to_i + (customer.sum_of_swifts_with_advance[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_advance_swifts_dirham, delimiter: ',') %></span>
+								<span class="fw-bold"><%= number_with_delimiter(total_advance_swifts_dirham.to_i, delimiter: ',') %></span>
 								<small class="text-success" style="font-size: 10px;">dirham</small>
 							</div>
 						</div>
@@ -50,7 +50,7 @@
 							<br>
 							<div class="mt-2">
 								<% total_pending_dirham = customer.customer_remain_payments[:dirham].to_i + (customer.customer_remain_payments[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_pending_dirham, delimiter: ',') %></span>
+								<span class="fw-bold"><%= number_with_delimiter(total_pending_dirham.to_i, delimiter: ',') %></span>
 								<small class="text-success" style="font-size: 10px;">dirham</small>
 							</div>
 						</div>
