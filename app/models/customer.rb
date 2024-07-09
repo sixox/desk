@@ -1,10 +1,12 @@
 class Customer < ApplicationRecord
   belongs_to :user
   has_many :pis
+  has_many :cis, through: :pis
+  has_many :projects, through: :pis
 
   def total_swift
-    project_ids = self.pis.map { |pi| pi.project_id }.compact
-    ci_ids = self.pis.flat_map { |pi| pi.cis.map(&:id) }
+    project_ids = projects.pluck(:id)
+    ci_ids = cis.pluck(:id)
 
     swifts_from_projects = Swift.where(project_id: project_ids)
     swifts_from_cis = Swift.where(ci_id: ci_ids)
@@ -16,8 +18,8 @@ class Customer < ApplicationRecord
   end
 
   def balance_swifts
-    project_ids = self.pis.map { |pi| pi.project_id }.compact
-    ci_ids = self.pis.flat_map { |pi| pi.cis.map(&:id) }
+    project_ids = projects.pluck(:id)
+    ci_ids = cis.pluck(:id)
 
     swifts_from_projects = Swift.where(project_id: project_ids, advance: [nil, false])
     swifts_from_cis = Swift.where(ci_id: ci_ids)
@@ -26,8 +28,7 @@ class Customer < ApplicationRecord
   end
 
   def advance_swifts
-    project_ids = self.pis.map { |pi| pi.project_id }.compact
-
+    project_ids = projects.pluck(:id)
     Swift.where(project_id: project_ids, advance: true)
   end
 
@@ -49,9 +50,9 @@ class Customer < ApplicationRecord
 
   def sum_of_cis
     pis_with_currency = self.pis.includes(:cis).where.not(cis: { id: nil })
-      {
-        dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum,
-        dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum
+    {
+      dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum,
+      dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum
     }
   end
 

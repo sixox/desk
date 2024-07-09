@@ -88,5 +88,11 @@
 
 	sum of cis: <%= @customer.sum_of_cis %>
 
+	<hr>
+	projects
+	<% @customer.pis.each do |pi|%>
+		<%= link_to pi.project.number, project_path(pi.project) %>
+	<% end %>
+
 
 </div>
