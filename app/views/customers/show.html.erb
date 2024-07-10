@@ -6,6 +6,27 @@
 			</ul>
 		</div>
 	</div>
+	<div class="card mt-4 mb-5">
+		<% @customer.pis.each do |pi| %>
+		<div class="card mb-2">
+		<div class="row">
+			<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
+				<%= render 'projects/project', project: pi.project, bookings: pi.project.bookings %>
+			</div>
+			<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
+				<%= render 'customers/project_swifts', pi: pi, project: pi.project %>
+			</div>
+			<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
+				<%= render 'customers/project_cis', pi: pi, cis: pi.cis %>
+			</div>
+		</div>
+		</div>
+		<% end %>
+	</div>
+</div>
+
+
+
 
 	<hr>
 	total_swift : <%= @customer.total_swift %> <hr>

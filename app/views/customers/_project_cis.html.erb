@@ -1,0 +1,55 @@
+
+<div class="card h-100 w-100 border-0 shadow mb-2">
+  <div class="card-body d-flex flex-column">
+    <div class="row mt-2">
+      <div class="col">
+        
+            <div class="row d-flex justify-content-between">
+              <div class="col-auto">
+                <h6 class="fw-bold timeline-small">
+                  Invoices 
+                </h6>
+              </div>
+            </div>
+            <div class="row timeline-small mt-3">
+              <div class="col">CI</div>
+              <div class="col">Amount</div>
+              <div class="col">Date</div>
+              <div class="col"></div>
+            </div>
+            <hr>
+            <% cis.each do |ci| %>
+            <div class="row border-bottom">
+              <div class="col">
+                <small class="timeline-small">
+                  
+                  <% if ci.document.attached? %>
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <%= link_to ".PDF", rails_blob_path(ci.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+                  <% end %>
+
+                  
+                </small>
+              </div>
+              <div class="col"><small class="text-warning"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %></small></div>
+              <div class="col"><small class="text-success"><%= ci.issue_date.strftime('%Y-%m-%d')  %></small></div>
+              <div class="col"><small class="text-secondary"><%= ci.swift.present? ? "paid" : "unpaid" %></small></div>
+            </div>
+
+            <% end %>
+            <% if cis.second %>
+            <hr>
+            <div class="row d-flex justify-content-between">
+              <div class="col-auto">
+
+              </div>
+              <div class="col-auto">
+              </div>
+            </div>
+            <% end %>
+            
+        </div>
+        
+      </div>
+    </div>
+  </div>

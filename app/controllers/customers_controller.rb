@@ -10,6 +10,7 @@ class CustomersController < ApplicationController
   end
 
   def show
+    @swifts = @customer.all_swifts
   end
 
   def new

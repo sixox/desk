@@ -81,4 +81,11 @@ class Customer < ApplicationRecord
       dirham: ci_balance_payment[:dirham] - swifts_without_advance[:dirham]
     }
   end
+
+  def all_swifts
+    project_swifts = self.pis.includes(project: :swifts).flat_map { |pi| pi.project.swifts }
+    ci_swifts = self.cis.includes(:swift).flat_map(&:swift).compact
+
+    (project_swifts + ci_swifts).sort_by(&:created_at)
+  end
 end

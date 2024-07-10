@@ -44,6 +44,28 @@ class Project < ApplicationRecord
     bookings.any? { |booking| booking.filled == booking.quantity }
   end
 
+
+ DOLLAR_TO_DIRHAM = 3.67
+
+  def total_swifts_amount
+    project_swifts_amount = self.swifts.sum do |swift|
+      swift.amount * (swift.currency == 'dollar' ? DOLLAR_TO_DIRHAM : 1)
+    end
+
+    cis_swifts_amount = self.cis.includes(:swift).sum do |ci|
+      ci.swift ? ci.swift.amount * (ci.swift.currency == 'dollar' ? DOLLAR_TO_DIRHAM : 1) : 0
+    end
+
+    project_swifts_amount + cis_swifts_amount
+  end
+
+    def total_swifts
+	    project_swifts = self.swifts
+	    cis_swifts = self.cis.includes(:swift).map(&:swift).compact
+
+	    project_swifts + cis_swifts
+	  end
+
   private
 
 	def calculate_risk_based_on_impact_and_likelihood
