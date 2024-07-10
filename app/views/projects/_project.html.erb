@@ -9,7 +9,11 @@
           </span>
           <% else %>
           <span style="color: #49af98;">
+            <% if title == "PROJECT" %>
+            <span class="fw-bold">PROJECT</span>
+            <% else %>
             <%= project.pi.customer.nickname %>
+            <% end %>
           </span>
           <% end %>
         </div>

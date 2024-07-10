@@ -1,17 +1,18 @@
 <div class="col-lg-10 mx-auto mt-5">
 	<div class="card mb-5">
 		<div class="card-body">
-			<ul class="list-group mt-5 mb-5" id="customer_items">
+			<%= link_to "Back to all customers", customers_path %>
+			<ul class="list-group mt-1 mb-5" id="customer_items">
 				<%= render 'customers/customer', customer: @customer %>
 			</ul>
 		</div>
 	</div>
-	<div class="card mt-4 mb-5">
+	<div class="card mt-5 mb-5">
 		<% @customer.pis.each do |pi| %>
 		<div class="card mb-2">
 		<div class="row">
 			<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
-				<%= render 'projects/project', project: pi.project, bookings: pi.project.bookings %>
+				<%= render 'projects/project', project: pi.project, bookings: pi.project.bookings, title: "PROJECT" %>
 			</div>
 			<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
 				<%= render 'customers/project_swifts', pi: pi, project: pi.project %>
@@ -23,135 +24,4 @@
 		</div>
 		<% end %>
 	</div>
-</div>
-
-
-
-
-	<hr>
-	total_swift : <%= @customer.total_swift %> <hr>
-	balance_swifts: <br>
-	<table class="table">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Amount</th>
-				<th scope="col">Deposited</th>
-				<th scope="col">currency</th>
-				<th scope="col">Status</th>
-			</tr>
-		</thead>
-		<tbody>
-			<% @customer.balance_swifts.each do |swift| %>
-
-
-				<tr>
-					<th scope="row"><%= swift.id %></th>
-					<td><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
-					<td><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
-					<td><%= swift.currency %></td>
-					<td><%= 
-					if swift.confirmed.present?
-						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
-					elsif swift.rejected.present?
-						"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
-					else
-						'Wait for deposite'
-					end
-				%></td>
-				</tr>
-			
-
-			<% end %>
-		</tbody>
-	</table>
-	<hr>
-	sum_balance_swifts: <%= @customer.sum_balance_swifts %>
-	<hr>
-		advance swift: <br>
-	<table class="table">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Amount</th>
-				<th scope="col">Deposited</th>
-				<th scope="col">currency</th>
-				<th scope="col">Status</th>
-			</tr>
-		</thead>
-		<tbody>
-			<% @customer.advance_swifts.each do |swift| %>
-
-
-				<tr>
-					<th scope="row"><%= swift.id %></th>
-					<td><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
-					<td><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
-					<td><%= swift.currency %></td>
-					<td><%= 
-					if swift.confirmed.present?
-						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
-					elsif swift.rejected.present?
-						"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
-					else
-						'Wait for deposite'
-					end
-				%></td>
-				</tr>
-			
-
-			<% end %>
-		</tbody>
-	</table>
-	<hr>
-	sum_balance_swifts: <%= @customer.sum_of_swifts_with_advance %>
-	<hr>
-
-	sum of cis: <%= @customer.sum_of_cis %>
-<br>
-	<h5>CIs</h5>
-	<table class="table">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">balance amount</th>
-				<th scope="col">project</th>
-				<th scope="col">pi</th>
-			</tr>
-		</thead>
-		<tbody>
-
-		<% @customer.cis.each do |ci| %>
-		<tr>
-			<th scope="row"><%= ci.number %></th>
-			<th scope="row"><%= ci.balance_payment %> <%= ci.pi.currency %></th>
-			<th scope="row"><%= ci.pi.project.number %></th>
-			<th scope="row"><%= ci.pi.number %></th>
-		</tr>
-		<% end %>
-	
-</tbody>
-</table>
-
-	<hr>
-	projects
-	<% @customer.pis.each do |pi|%>
-		<%= link_to pi.project.number, project_path(pi.project) %>
-	<% end %>
-	<br><br><hr>
-	<% if current_user.sales? && action_name == "show" %>
-				<div class="col-lg">
-					<div class="d-flex justify-content-end">
-						<%= link_to edit_customer_path(@customer), data: { controller: "bs-modal-form" }, class: "btn btn-success btn-sm m-1" do %>
-						<i class="bi bi-pencil-fill"></i> EDIT
-						<% end %> 
-
-						<%= link_to customer_path(@customer), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this customer, this action can not be undo!' }, class: "btn btn-danger btn-sm m-1" do %>
-						<i class="bi bi-pencil-fill"></i> DELETE
-						<% end %>
-					</div>
-				</div>
-				<% end %>
-
-
 </div>

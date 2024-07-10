@@ -2,7 +2,7 @@
 	<% dollar_to_dirham = 3.67 %>
 	<div class="card border-0 shadow mt-2">
 		<div class="card-body p-xl-4">
-			<h4 class="card-title mb-2 text-success"> <i class="bi bi-person-fill"></i> <%= (current_user.sales? && current_user.is_manager) ? customer.name.titleize : customer.nickname.titleize %></h4>
+			<h4 class="card-title mb-2 text-success"> <i class="bi bi-person-fill"></i> <%= customer.nickname.titleize %></h4>
 			<div class="card card-custom mt-1">
 				<div class="card-body">
 					<div class="row d-flex text-center">

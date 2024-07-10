@@ -3,10 +3,12 @@ class CustomersController < ApplicationController
   before_action :set_customer, only: %i[show edit update destroy]
 
   def index
-    @customers = Customer.includes(pis: [:cis, :project]).all
-    @customers = @customers.sort_by do |customer|
-      total_invoices_dirham(customer)
-    end
+    @customers = Customer.includes(pis: [:cis, :project]).order(:nickname)
+
+    # @customers = Customer.includes(pis: [:cis, :project]).all
+    # @customers = @customers.sort_by do |customer|
+    #   total_invoices_dirham(customer)
+    # end
   end
 
   def show
