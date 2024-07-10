@@ -23,10 +23,7 @@
               <div class="col">
                 <small class="timeline-small">
                   
-                  <% if ci.document.attached? %>
-                    <i class="bi bi-file-earmark-pdf-fill"></i>
-                    <%= link_to ".PDF", rails_blob_path(ci.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
-                  <% end %>
+                  <%= ci.number %>
 
                   
                 </small>
