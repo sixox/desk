@@ -1,76 +1,79 @@
 <li class="shadow-lg mb-2 bg-body rounded list-group-item position-relative" id="customer_item_<%= customer.id %>">
-
-
+	<% dollar_to_dirham = 3.67 %>
 	<div class="card border-0 shadow mt-2">
-		<div class="card-body p-xl-4" style="background: #db54540f;">
-			<div class="row">
-				<div class="col-lg-1">
-					<div class="d-flex justify-content-start">
-						<small class="fw-bold" style="color: #49af98;">
-							<%= (current_user.sales? && current_user.is_manager) ? customer.name.titleize : customer.nickname.titleize %>
-						</small>
+		<div class="card-body p-xl-4">
+			<h4 class="card-title mb-2 text-success"> <i class="bi bi-person-fill"></i> <%= (current_user.sales? && current_user.is_manager) ? customer.name.titleize : customer.nickname.titleize %></h4>
+			<div class="card card-custom mt-1">
+				<div class="card-body">
+					<div class="row d-flex text-center">
+						<div class="col-5">
+							<h6 class="card-subtitle text-secondary mb-3">
+								<span class="text-secondary">  </span><small class="text-secondary"><%= customer.cis.count %> INVOICES</small>
+							</h6>
+						</div>
+						<div class="col-5">
+							<h6 class="card-subtitle text-secondary mb-3">
+								<span class="text-secondary">  </span><small class="text-secondary"><%= customer.total_swift_count %> SWIFTS</small>
+							</h6>
+						</div>
+						<div class="col">
+							
+						</div>
 					</div>
-				</div>
-				<div class="col-lg-11">
 					<div class="row">
-						<% dollar_to_dirham = 3.67 %>
-
-						<div class="col-lg-3">
-							<span class="text-secondary fw-bold border-bottom mb-2">INVOICES</span>
-							<br>
-							<div class="mt-2">
-								<% total_invoices_dirham = customer.sum_of_cis[:dirham].to_i + (customer.sum_of_cis[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham.to_i, delimiter: ',') %></span>
-								<small class="text-success" style="font-size: 10px;">dirham</small>
+						<div class="col-5 border-end">
+							<div class="row text-center">
+								<div class="col">
+									<small class="fw-bold timeline-small">unpaid</small>
+									<hr>
+									<div class="mt-2">
+										<% total_invoices_dirham = customer.sum_of_cis_without_swift[:dirham].to_i + (customer.sum_of_cis_without_swift[:dollar].to_i * dollar_to_dirham) %>
+										<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham.to_i, delimiter: ',') %></span>
+										<small class="text-success" style="font-size: 10px;">dirham</small>
+									</div>
+								</div>
+								<div class="col">
+									<small class="fw-bold timeline-small">total</small>
+									<hr>
+									<div class="mt-2">
+										<% total_invoices_dirham = customer.sum_of_cis[:dirham].to_i + (customer.sum_of_cis[:dollar].to_i * dollar_to_dirham) %>
+										<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham.to_i, delimiter: ',') %></span>
+										<small class="text-success" style="font-size: 10px;">dirham</small>
+									</div>
+								</div>
 							</div>
 						</div>
-
-						<div class="col-lg-3">
-							<span class="text-secondary fw-bold border-bottom mb-2">BALANCE SWIFTS</span>
-							<br>
-							<div class="mt-2">
-								<% total_balance_swifts_dirham = customer.sum_balance_swifts[:dirham].to_i + (customer.sum_balance_swifts[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_balance_swifts_dirham.to_i, delimiter: ',') %></span>
-								<small class="text-success" style="font-size: 10px;">dirham</small>
+						<div class="col-5 border-end">
+							<div class="row text-center">
+								<div class="col">
+									<small class="fw-bold timeline-small">Advance</small>
+									<hr>
+									<div class="mt-2">
+										<% total_advance_swifts_dirham = customer.sum_of_swifts_with_advance[:dirham].to_i + (customer.sum_of_swifts_with_advance[:dollar].to_i * dollar_to_dirham) %>
+										<span class="fw-bold"><%= number_with_delimiter(total_advance_swifts_dirham.to_i, delimiter: ',') %></span>
+										<small class="text-success" style="font-size: 10px;">dirham</small>
+									</div>
+								</div>
+								<div class="col">
+									<small class="fw-bold timeline-small">Balance</small>
+									<hr>
+									<div class="mt-2">
+										<% total_balance_swifts_dirham = customer.sum_balance_swifts[:dirham].to_i + (customer.sum_balance_swifts[:dollar].to_i * dollar_to_dirham) %>
+										<span class="fw-bold"><%= number_with_delimiter(total_balance_swifts_dirham.to_i, delimiter: ',') %></span>
+										<small class="text-success" style="font-size: 10px;">dirham</small>
+									</div>
+								</div>
 							</div>
 						</div>
-
-						<div class="col-lg-3">
-							<span class="text-secondary fw-bold border-bottom mb-2">ADVANCE SWIFTS</span>
-							<br>
-							<div class="mt-2">
-								<% total_advance_swifts_dirham = customer.sum_of_swifts_with_advance[:dirham].to_i + (customer.sum_of_swifts_with_advance[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_advance_swifts_dirham.to_i, delimiter: ',') %></span>
-								<small class="text-success" style="font-size: 10px;">dirham</small>
-							</div>
+						<div class="col d-flex align-items-center">
+						  <% total_pending_dirham = customer.customer_remain_payments[:dirham].to_i + (customer.customer_remain_payments[:dollar].to_i * dollar_to_dirham) %>
+						  <span class="fw-bold"><%= number_with_delimiter(total_pending_dirham.to_i, delimiter: ',') %>&nbsp </span>
+						  <small class="text-success" style="font-size: 10px;"> dirham</small>
 						</div>
 
-						<div class="col-lg-3">
-							<span class="text-secondary fw-bold border-bottom mb-2">PENDING</span>
-							<br>
-							<div class="mt-2">
-								<% total_pending_dirham = customer.customer_remain_payments[:dirham].to_i + (customer.customer_remain_payments[:dollar].to_i * dollar_to_dirham) %>
-								<span class="fw-bold"><%= number_with_delimiter(total_pending_dirham.to_i, delimiter: ',') %></span>
-								<small class="text-success" style="font-size: 10px;">dirham</small>
-							</div>
-						</div>
-					</div>
+					</div>		
 
 				</div>
-
-				<% if current_user.sales? && action_name == "show" %>
-				<!-- <div class="col-lg">
-					<div class="d-flex justify-content-end">
-						<%= link_to edit_customer_path(customer), data: { controller: "bs-modal-form" }, class: "btn btn-success btn-sm m-1" do %>
-						<i class="bi bi-pencil-fill"></i> EDIT
-						<% end %> 
-
-						<%= link_to customer_path(customer), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this customer, this action can not be undo!' }, class: "btn btn-danger btn-sm m-1" do %>
-						<i class="bi bi-pencil-fill"></i> DELETE
-						<% end %>
-					</div>
-				</div> -->
-				<% end %>
 			</div>
 		</div>
 	</div>

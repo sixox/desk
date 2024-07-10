@@ -17,6 +17,14 @@ class Customer < ApplicationRecord
     }
   end
 
+  def total_swift_count
+    project_ids = projects.pluck(:id)
+    ci_ids = cis.pluck(:id)
+    a = Swift.where(project_id: project_ids).count
+    b = Swift.where(ci_id: ci_ids).count
+    a + b
+  end
+
   def balance_swifts
     project_ids = projects.pluck(:id)
     ci_ids = cis.pluck(:id)
@@ -53,6 +61,14 @@ class Customer < ApplicationRecord
     {
       dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum,
       dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum
+    }
+  end
+
+  def sum_of_cis_without_swift
+    pis_with_currency = self.pis.includes(:cis).where.not(cis: { id: nil })
+    {
+      dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.select { |ci| ci.swift.nil? }.map(&:balance_payment) }.compact.sum,
+      dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.select { |ci| ci.swift.nil? }.map(&:balance_payment) }.compact.sum
     }
   end
 
