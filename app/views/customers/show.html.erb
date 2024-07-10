@@ -105,7 +105,7 @@
 		<% pi.cis.each do |ci| %>
 		<tr>
 			<th scope="row"><%= ci.number %></th>
-			<th scope="row"><%= ci.balance_payment %></th>
+			<th scope="row"><%= ci.balance_payment %> <%= pi.currency %></th>
 			<th scope="row"><%= pi.project.number %></th>
 			<th scope="row"><%= pi.number %></th>
 		</tr>
