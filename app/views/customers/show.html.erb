@@ -88,6 +88,32 @@
 
 	sum of cis: <%= @customer.sum_of_cis %>
 
+	CIs
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">balance amount</th>
+				<th scope="col">project</th>
+				<th scope="col">pi</th>
+			</tr>
+		</thead>
+		<tbody>
+	<% pis_with_currency = @customer.pis.includes(:cis).where.not(cis: { id: nil }) %>
+
+	<% pis_with_currency.each do |pi| %>
+		<% pi.cis.each do |ci| %>
+		<tr>
+			<th scope="row"><%= ci.number %></th>
+			<th scope="row"><%= ci.balance_payment %></th>
+			<th scope="row"><%= pi.project.number %></th>
+			<th scope="row"><%= pi.number %></th>
+		</tr>
+		<% end %>
+	<% end %>
+</tbody>
+</table>
+
 	<hr>
 	projects
 	<% @customer.pis.each do |pi|%>
