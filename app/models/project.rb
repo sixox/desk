@@ -66,14 +66,7 @@ class Project < ApplicationRecord
 	    project_swifts + cis_swifts
 	  end
 
-	    def total_cis_amount_in_dirham
-		    dollar_amount = self.cis.where(currency: 'dollar').sum(:balance_payment)
-		    dirham_amount = self.cis.where(currency: 'dirham').sum(:balance_payment)
-
-		    total_amount_dirhams = dirham_amount + (dollar_amount * DOLLAR_TO_DIRHAM)
-
-		    total_amount_dirhams
-		  end
+	    
 
   private
 

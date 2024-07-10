@@ -82,10 +82,11 @@ class Customer < ApplicationRecord
     }
   end
 
-  def all_swifts
-    project_swifts = self.pis.includes(project: :swifts).flat_map { |pi| pi.project.swifts }
-    ci_swifts = self.cis.includes(:swift).flat_map(&:swift).compact
+def all_swifts
+  project_swifts = self.pis.includes(project: :swifts).flat_map { |pi| pi.project&.swifts.to_a }.compact
+  ci_swifts = self.cis.includes(:swift).flat_map(&:swift).compact
 
-    (project_swifts + ci_swifts).sort_by(&:created_at)
-  end
+  (project_swifts + ci_swifts).sort_by(&:created_at)
+end
+
 end
