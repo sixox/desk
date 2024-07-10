@@ -41,6 +41,11 @@
 
               </div>
               <div class="col-auto">
+               <div class="mt-2">
+                    
+                    <span class="fw-bold"><%= number_with_delimiter(pi.cis.sum(:balance_payment).to_i, delimiter: ',') %></span>
+                    <small class="text-success" style="font-size: 10px;"><%= pi.currency %></small>
+                  </div>
               </div>
             </div>
             <% end %>
