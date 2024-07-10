@@ -36,10 +36,11 @@
 
           </li>
 
-          <% if current_user.sales? %>
+          
           <li class="">
             <%= link_to "Customers", customers_path, class: "dropdown-item" %>
           </li>
+          <% if current_user.sales? %>
           <% if current_user.is_manager %>
           <li>
             <%= link_to 'Banks', banks_path, class: 'dropdown-item' %>
