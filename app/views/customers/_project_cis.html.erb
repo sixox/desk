@@ -28,7 +28,8 @@
                   
                 </small>
               </div>
-              <div class="col"><small class="text-muted fw-bold"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %></small></div>
+              <div class="col"><small class="text-muted fw-bold"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %></small><br>
+                <small class="timeline-small" style="font-size: 10px ;"><%= ci.pi.currency %></small></div>
               <div class="col"><small class="text-success"><%= ci.issue_date.strftime('%Y-%m-%d')  %></small></div>
               <div class="col"><small class="text-secondary"><%= ci.swift.present? ? "paid" : "unpaid" %></small></div>
             </div>
