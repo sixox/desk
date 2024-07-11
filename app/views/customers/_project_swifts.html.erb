@@ -12,23 +12,20 @@
               </div>
             </div>
             <div class="row timeline-small mt-3">
-              <div class="col">Swift</div>
               <div class="col">Amount</div>
+              <div class="col">Currency</div>
               <div class="col">Confirmed</div>
               <div class="col"></div>
             </div>
             <hr>
             <% project.total_swifts.each do |swift| %>
             <div class="row border-bottom">
+              <div class="col"><small class="text-muted fw-bold"><%= number_with_delimiter(swift.amount.to_i, delimiter: ',') %></small></div>
               <div class="col">
                 <small class="timeline-small">
-                  <% swift.documents.each do |document| %>
-                  <i class="bi bi-file-earmark-pdf-fill"></i>
-                  <%= link_to ".PDF", rails_blob_path(document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
-                  <% end %>
+                  <%= swift.currency %>
                 </small>
               </div>
-              <div class="col"><small class="text-warning"><%= number_with_delimiter(swift.amount.to_i, delimiter: ',') %></small></div>
               <div class="col"><small class="text-success"><%= swift.confirmed.present? ? swift.confirm_at.strftime('%Y-%m-%d') : "-" %></small></div>
               <div class="col"><small class="text-secondary"><%= swift.advance ? "advance" : "balance" %></small></div>
             </div>
@@ -36,14 +33,18 @@
             <% end %>
             <% if @swifts.second %>
             <hr>
-            <div class="row d-flex justify-content-between">
+            <div class="row d-flex justify-content-between text-center">
               <div class="col-auto">
-
+                <div class="">
+                    <small class="timeline-small border-bottom"> advance</small><br>
+                    <small class="fw-bold"><%= number_with_delimiter(project.total_swifts_amount.to_i, delimiter: ',') %></small>
+                    <small class="text-success" style="font-size: 10px;">dirham</small>
+                </div>
               </div>
               <div class="col-auto">
-                <div class="mt-2">
-                    
-                    <span class="fw-bold"><%= number_with_delimiter(project.total_swifts_amount.to_i, delimiter: ',') %></span>
+                <div class="">
+                    <small class="timeline-small border-bottom"> balance </small><br>
+                    <small class="fw-bold"><%= number_with_delimiter(project.total_swifts_amount.to_i, delimiter: ',') %></small>
                     <small class="text-success" style="font-size: 10px;">dirham</small>
                   </div>
               </div>
