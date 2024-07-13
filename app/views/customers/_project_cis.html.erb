@@ -15,7 +15,7 @@
               <div class="col">CI</div>
               <div class="col">Amount</div>
               <div class="col">Date</div>
-              <div class="col"></div>
+              <div class="col-1"></div>
             </div>
             <hr>
             <% cis.each do |ci| %>
@@ -28,10 +28,14 @@
                   
                 </small>
               </div>
-              <div class="col"><small class="text-muted fw-bold"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %></small><br>
+              <div class="col"><small class="text-muted fw-bold"><%= number_with_delimiter(ci.balance_payment.to_i, delimiter: ',') %></small> 
                 <small class="timeline-small" style="font-size: 10px ;"><%= ci.pi.currency %></small></div>
               <div class="col"><small class="text-success"><%= ci.issue_date.strftime('%Y-%m-%d')  %></small></div>
-              <div class="col"><small class="text-secondary"><%= ci.swift.present? ? "paid" : "unpaid" %></small></div>
+              <div class="col-1">
+                <% if ci.swift.present?%>
+                <small class="text-success"><i class="bi bi-check-square-fill"></i></small>
+                <% end %>
+                </div>
             </div>
 
             <% end %>

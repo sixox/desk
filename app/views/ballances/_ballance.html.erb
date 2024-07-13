@@ -1,4 +1,50 @@
-	<div class="card mb-5">
+<%= link_to ballance_path(ballance), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
+  <div class="card h-100 w-100 border-0 shadow">
+    <div class="card-body d-flex flex-column">
+      <div class="row d-flex justify-content-between mt-2">
+        <div class="col-auto">
+          <% if !ballance.spi.present? %>
+          <span class="text-danger fw-bold">
+              NO_PI
+          </span>
+          <% else %>
+          <span style="color: #49af98;">
+            <% if title == "BALLANCE" %>
+            <span class="fw-bold">Inventory</span>
+            <% else %>
+            <%= ballance.supplier.name %>
+            <% end %>
+          </span>
+          <% end %>
+        </div>
+        <div class="col-auto">
+          <span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= ballance.number %></span>
+        </div>
+      </div>
+      <% if ballance.spi.present? %>
+        <p class="card-text mt-3">
+          <small><%= ballance.spi.quantity.to_i %></small> MT <small><%= ballance.product %></small> - <small><%= ballance.spi.packing_type %></small>
+          <br>
+
+        </p>
+       
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+
+
+
+
+
+
+
+
+
+
+
+	<!-- <div class="card mb-5">
 		<div class="card-body">
 			<div class="row">
 				<div class="col-lg-2">
@@ -51,4 +97,4 @@
 			</div>
 			<% end %>
 		</div>
-	</div>
+	</div> -->

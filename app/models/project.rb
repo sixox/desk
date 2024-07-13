@@ -66,6 +66,28 @@ class Project < ApplicationRecord
 	    project_swifts + cis_swifts
 	  end
 
+	    def sum_balance_swifts
+	    swifts.where(advance: [nil, false]).sum do |swift|
+		      swift.currency == 'dollar' ? swift.amount * DOLLAR_TO_DIRHAM : swift.amount
+		    end
+		  end
+
+		  # Method to sum swift amounts from associated cis, with currency conversion
+		  def sum_cis_swifts
+		    cis.includes(:swift).sum do |ci|
+		      if ci.swift
+		        ci.swift.currency == 'dollar' ? ci.swift.amount * DOLLAR_TO_DIRHAM : ci.swift.amount
+		      else
+		        0
+		      end
+		    end
+		  end
+
+		  # Combined method to get total swifts amount in dirham
+		  def total_balance_swifts
+		    sum_balance_swifts + sum_cis_swifts
+		  end
+
 	    
 
   private

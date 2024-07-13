@@ -1,5 +1,5 @@
 <div class="col-lg-10 mx-auto mt-5">
-		<%= link_to 'View Projects List', list_projects_path, class: 'btn btn-warning m-2' %>
+	<%= link_to 'View Projects List', list_projects_path, class: 'btn btn-warning m-2' %>
 
 	<div class="card mt-4 mb-4">
 		<div class="card-body">
@@ -16,12 +16,13 @@
 
 
 
-<div class="row">
-  <% @projects.each do |project| %>
-    <div class="col-12 col-md-4 mb-3 d-flex align-items-stretch">
-      <%= render 'projects/project', project: project, bookings: project.bookings, title: "" %>
-    </div>
-  <% end %>
+	<div class="row">
+		<% @projects.each do |project| %>
+		<div class="col-12 col-md-4 mb-3 d-flex align-items-stretch">
+			<%= render 'projects/project', project: project, bookings: project.bookings, title: "" %>
+		</div>
+		<% end %>
+	</div>
 </div>
 
 

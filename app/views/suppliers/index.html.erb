@@ -19,7 +19,7 @@
 		</div>
 		<ul class="list-group" id="supplier_items">
 			<% @suppliers.reverse.each do |supplier| %>
-			<%= render 'suppliers/supplier', supplier: supplier %>
+			<%= render 'suppliers/supplier', supplier: supplier, title: "" %>
 			<% end %>
 		</ul>
 		<% end %>

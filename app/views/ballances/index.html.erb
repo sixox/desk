@@ -14,7 +14,14 @@
 	</div>
 
 
-	<% @ballances.each do |ballance| %>
-	<%= render 'ballances/ballance', ballance: ballance %>
-	<% end %>
+	
+	<div class="row">
+		<% @ballances.each do |ballance| %>
+		<div class="col-12 col-md-4 mb-3 d-flex align-items-stretch">
+			<%= render 'ballances/ballance', ballance: ballance, title: "" %>
+		</div>
+		<% end %>
+	</div>
+
+
 </div>

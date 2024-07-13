@@ -36,14 +36,14 @@
             <div class="row d-flex justify-content-between text-center">
               <div class="col-auto">
                 <div class="">
-                    <small class="timeline-small border-bottom"> advance</small><br>
-                    <small class="fw-bold"><%= number_with_delimiter(project.total_swifts_amount.to_i, delimiter: ',') %></small>
+                    <small class="timeline-small border-bottom"> total balance</small><br>
+                    <small class="fw-bold"><%= number_with_delimiter(project.total_balance_swifts.to_i, delimiter: ',') %></small>
                     <small class="text-success" style="font-size: 10px;">dirham</small>
                 </div>
               </div>
               <div class="col-auto">
                 <div class="">
-                    <small class="timeline-small border-bottom"> balance </small><br>
+                    <small class="timeline-small border-bottom"> total swifts </small><br>
                     <small class="fw-bold"><%= number_with_delimiter(project.total_swifts_amount.to_i, delimiter: ',') %></small>
                     <small class="text-success" style="font-size: 10px;">dirham</small>
                   </div>

@@ -5,6 +5,6 @@ class Sci < ApplicationRecord
   has_many :payment_orders
 
   has_one_attached :document
-
+  validates :net_weight, :gross_weight, :total_price, :balance_payment, :number, :issue_date, :advance_payment, presence: true
 
 end

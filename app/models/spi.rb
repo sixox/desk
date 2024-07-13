@@ -7,4 +7,8 @@ class Spi < ApplicationRecord
   
   has_one_attached :document
 
+
+  validates :issue_date, :document, presence: true
+
+
 end

@@ -1,0 +1,50 @@
+<div class="card border-0 shadow mt-2">
+	<div class="card-body p-xl-4">
+		<h2 class="card-title mb-2 text-success"> <i class="bi bi-file-earmark-check-fill"></i> Performa Invoice</h2>
+		<div class="row d-flex justify-content-between">
+			<div class="col-auto">
+				<h6 class="card-subtitle text-secondary mb-3">
+					<% if spi && spi.document&.attached? %>
+					<i class="bi bi-file-earmark-pdf-fill"></i>
+					<%= link_to "#{spi.number}.PDF", rails_blob_path(ballance.pi.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+					<% end %>
+				</h6>
+			</div>
+			<div class="col-auto" style="margin-top: -6px;">
+				<small class="text-success">
+					<%= spi.issue_date&.strftime('%B %d') %>
+					
+				</small>
+			</div>
+		</div>
+		<p class="card-text m-0">
+			<br>
+			<small><%= spi.quantity.to_i %></small> MT <small><%= spi.product %></small> - <small><%= spi.packing_type %></small>
+			<br> 
+			<small>  <%= spi.seller.present? ? "seller: #{spi.seller}" : "" %></small>
+			<br>
+			<hr>
+			<div class="row">
+				<div class="col">
+					price
+					<br>
+					<small class="text-warning"><%= spi.unit_price.to_i %></small>
+				</div>
+				<div class="col">
+					advance
+					<br>
+					<small class="text-warning"><%= spi.term %>% </small>
+				</div>
+				<div class="col">total 
+					<br>
+					<small class="text-warning"><%= number_with_delimiter(spi.total_price.to_i, delimiter: ',') %></small>
+					<br>
+				</div>
+				<div class="col">
+					<br>
+					<small> currency</small>
+				</div>
+			</div>
+		</p>
+	</div>
+</div>

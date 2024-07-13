@@ -17,23 +17,17 @@
 							</h6>
 						</div>
 						<div class="col">
-							
+							<h6 class="card-subtitle text-secondary mb-3">
+								<span class="text-secondary">  </span><small class="text-secondary">TOTAL</small>
+							</h6>
 						</div>
 					</div>
 					<div class="row">
 						<div class="col-5 border-end">
 							<div class="row text-center">
+								
 								<div class="col">
-									<small class="fw-bold timeline-small">unpaid</small>
-									<hr>
-									<div class="mt-2">
-										<% total_invoices_dirham = customer.sum_of_cis_without_swift[:dirham].to_i + (customer.sum_of_cis_without_swift[:dollar].to_i * dollar_to_dirham) %>
-										<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham.to_i, delimiter: ',') %></span>
-										<small class="text-success" style="font-size: 10px;">dirham</small>
-									</div>
-								</div>
-								<div class="col">
-									<small class="fw-bold timeline-small">total</small>
+									<small class="fw-bold timeline-small">total issued invoices</small>
 									<hr>
 									<div class="mt-2">
 										<% total_invoices_dirham = customer.sum_of_cis[:dirham].to_i + (customer.sum_of_cis[:dollar].to_i * dollar_to_dirham) %>
@@ -65,7 +59,9 @@
 								</div>
 							</div>
 						</div>
-						<div class="col d-flex align-items-center">
+						<div class="col text-center">
+							<small class="fw-bold timeline-small">Debts</small>
+									<hr>
 						  <% total_pending_dirham = customer.customer_remain_payments[:dirham].to_i + (customer.customer_remain_payments[:dollar].to_i * dollar_to_dirham) %>
 						  <span class="fw-bold"><%= number_with_delimiter(total_pending_dirham.to_i, delimiter: ',') %>&nbsp </span>
 						  <small class="text-success" style="font-size: 10px;"> dirham</small>

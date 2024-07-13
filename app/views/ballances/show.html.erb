@@ -1,90 +1,143 @@
 <div class="col-lg-10 mx-auto mt-5">
-		<%= render 'ballances/ballance', ballance: @ballance %>
+	<% if @ballance.spi %>
+	<div class="card border-0 shadow">
+		<div class="card-body" style="background-color: #f3f3f2;">
+			<div class="card-header text-white " style="background-color: #fbfbfb">
+				<div class="row d-flex justify-content-between mt-2 mb-2">
+					<div class="col-auto">
+						<span class="fw-bold" style="font-size: 25px; color: #0c590c;"><%= @ballance.number %></span> 
+					</div>
+					<div class="col-auto m-2">
+						- <span style="color: #49af98;">
+							<%= @ballance.supplier.name %>
+						</span>
+					</div>
+					
+					
 
-
-	<% if !@ballance.spi %>
-		<%= link_to "Create PI", new_ballance_spi_path(@ballance), data: { controller: "bs-modal-form" } %>
-		<% else %>
-			<%= render 'spis/spi', spi: @spi, ballance: @ballance %>
-			<% if !@ballance.scis.present? %>
-				<%= link_to "Create CI", new_ballance_sci_path(@ballance), data: { controller: "bs-modal-form" } %>
-				<% else %>
-
-					<div class="card mb-5" id="ci_items">
-						<div class="card-body">
-							<div class="d-flex justify-content-between align-items-center">
-								<h5 class="card-title text-center mb-0">Commercial Invoices (CIs)</h5>
-								<%= link_to new_ballance_sci_path(@ballance), data: { controller: "bs-modal-form" } do %>
-								<i class="bi bi-plus"></i> Add CI
-								<% end %>
-
-
-							</div>
-							<% @scis.each do |sci|%>
-							<%= render 'scis/sci', sci: sci, ballance: @ballance %>
-							<% end %>
-
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-6">
+					<%= render 'ballances/pi_section', ballance: @ballance , spi: @spi%>
+					
+				</div>
+				<div class="col-6">
+					<%= render 'ballances/actions', ballance: @ballance, spi:@spi, scis: @scis %>
+					
+					
+				</div>
+			</div>
+			<% if @scis.present? %>
+			<div class="card border-0 shadow mt-2">
+				<div class="card-body p-xl-4">
+					<h2 class="card-title mb-2 text-success"><i class="bi bi-currency-exchange"></i> INVOICES</h2>
+					<div class="row d-flex justify-content-between">
+						<div class="col-auto">
+							<h6 class="card-subtitle text-secondary mb-3">
+							</h6>
+						</div>
+						<div class="col-auto" style="margin-top: -6px;">
+							<small class="text-success">
+							</small>
 						</div>
 					</div>
-
+					<div class="row mt-1">
+						<% @scis.each do |ci| %>
+						<div class="col-12 col-md-4 mb-3 d-flex align-items-stretch">
+							<%= render 'ballances/ci_section', ballance: @ballance, ci: ci, title: "" %>
+						</div>
+						<% end %>
+					</div>
+				</div>
+			</div>
 			<% end %>
+			
+			
+		</div>
+	</div>
 
+	<% else %>
 	<% end %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	<br><br><br><br><br>
 	<% if @payment_orders_with_status_paid_dollar.present? || @payment_orders_with_status_paid_dirham.present? || @payment_orders_with_status_paid_rial.present? %>
-				<div class="row mb-2 bg-body rounded">
-					<h4 class="text-secondary mt-2">Paid Payment Orders</h4>
-					<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
-						<h6 class="text-muted mt-1">Rial</h6>
-						<div>
-							<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_rial, sum: @sum_paid_rial %>
+	<div class="row mb-2 bg-body rounded">
+		<h4 class="text-secondary mt-2">Paid Payment Orders</h4>
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-muted mt-1">Rial</h6>
+			<div>
+				<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_rial, sum: @sum_paid_rial %>
 
-						</div>
+			</div>
+		</div>
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-muted mt-1">Dollar</h6>
+			<div>
+				<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_dollar, sum: @sum_paid_dollar %>
+
+			</div>
+		</div>
+
+	</div>
+	<div class="row mb-2 bg-body rounded">
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-muted mt-1">Dirham</h6>
+			<div>
+				<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_dirham, sum: @sum_paid_dirham %>
+
+			</div>
+		</div>
+		<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
+			<h6 class="text-danger mt-1">Summery</h6>
+			<div></div>
+		</div>
+
+	</div>
+	<% end %>
+	<% if @payment_orders_with_status_not_paid.present?  %>
+	<div class="card mb-5">
+		<div class="card-body">
+			<div class="row mb-3">
+				<div class="col-lg-6">
+					<div class="d-flex justify-content-start">
+						<h3>Not Paid Payment Orders</h3>
 					</div>
-					<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
-						<h6 class="text-muted mt-1">Dollar</h6>
-						<div>
-							<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_dollar, sum: @sum_paid_dollar %>
-
-						</div>
-					</div>
-
 				</div>
-				<div class="row mb-2 bg-body rounded">
-					<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
-						<h6 class="text-muted mt-1">Dirham</h6>
-						<div>
-							<%= render 'payment_orders/report', payment_orders: @payment_orders_with_status_paid_dirham, sum: @sum_paid_dirham %>
 
-						</div>
-					</div>
-					<div class="col-lg shadow-lg mb-2 m-1 bg-body rounded">
-						<h6 class="text-danger mt-1">Summery</h6>
-						<div></div>
-					</div>
-
-				</div>
+			</div>
+			<ul class="list-group" id="payment_order_items">
+				<% @payment_orders_with_status_not_paid.each do |payment_order| %>
+				<%= render 'payment_orders/payment_order', payment_order: payment_order %>
 				<% end %>
-				<% if @payment_orders_with_status_not_paid.present?  %>
-				<div class="card mb-5">
-					<div class="card-body">
-						<div class="row mb-3">
-							<div class="col-lg-6">
-								<div class="d-flex justify-content-start">
-									<h3>Not Paid Payment Orders</h3>
-								</div>
-							</div>
-
-						</div>
-						<ul class="list-group" id="payment_order_items">
-							<% @payment_orders_with_status_not_paid.each do |payment_order| %>
-							<%= render 'payment_orders/payment_order', payment_order: payment_order %>
-							<% end %>
-						</ul>
-					</div>
-				</div>
-				<% end %>
+			</ul>
+		</div>
+	</div>
+	<% end %>
 
 
 </div>
