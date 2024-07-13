@@ -6,7 +6,7 @@
 				<h6 class="card-subtitle text-secondary mb-3">
 					<% if spi && spi.document&.attached? %>
 					<i class="bi bi-file-earmark-pdf-fill"></i>
-					<%= link_to "#{spi.number}.PDF", rails_blob_path(ballance.pi.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+					<%= link_to "#{spi.number}.PDF", rails_blob_path(ballance.spi.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
 					<% end %>
 				</h6>
 			</div>
