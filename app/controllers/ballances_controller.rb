@@ -19,7 +19,10 @@ class BallancesController < ApplicationController
 
 	def index
 		@q = Ballance.ransack(params[:q])
-		@ballances = @q.result.order(updated_at: :desc)
+		@ballances = @q.result.order(number: :asc)  # Sort alphabetically by number
+
+		# @q = Ballance.ransack(params[:q])
+		# @ballances = @q.result.order(updated_at: :desc)
 	end
 
 	def new	
