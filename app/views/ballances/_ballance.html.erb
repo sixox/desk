@@ -17,11 +17,6 @@
           </span>
           <% end %>
         </div>
-        <% if ballance.spi.present? %>
-        <div class="col-auto">
-        	<small class="text-secondary">PI-<%= ballance.spi.number%></small>
-        </div>
-        <% end %>
         <div class="col-auto">
           <span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= ballance.number %></span>
         </div>
@@ -31,6 +26,13 @@
           <small><%= ballance.spi.quantity.to_i %></small> MT <small><%= ballance.product %></small> - <small><%= ballance.spi.packing_type %></small>
           <br>
 
+        </p>
+        <p>
+        	
+        
+        	<small class="text-muted">PI No: <span class="text-danger"><%= ballance.spi.number%></span></small>
+        
+       
         </p>
        
       <% end %>
