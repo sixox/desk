@@ -1,0 +1,20 @@
+<div class="card border-0 shadow mt-2">
+	<div class="card-body p-xl-4">
+		<h2 class="card-title mb-2 text-success"> <i class="bi bi-file-earmark-check-fill"></i> Allocations</h2>
+		
+		<div class="row">
+			<% allocates.each do |allocate| %>
+			<div class="col-12 col-md-6">
+				<small class="text-secondary">
+					<span class="fw-bold"><%= allocate.quantity %></span> MT 
+					<i class="bi bi-arrow-right"></i>
+					<%= link_to project_path(allocate.project) do %>
+					<span class=""><%= allocate.project.number %></span>
+					<% end %>
+
+				</small>
+			</div>			
+			<% end %>
+		</div>
+	</div>
+</div>

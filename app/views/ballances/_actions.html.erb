@@ -27,8 +27,16 @@
 							<%= link_to edit_ballance_spi_path(ballance, spi), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">EDIT PI</span>
 							<% end %>
-
 						</small>
+						<small class="text-primary">
+							|
+						</small>
+						<small class="text-success">
+							<%= link_to new_ballance_ballance_project_path(ballance), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+							<span class="mb-1 timeline-h5">ALLOCATE</span>
+							<% end %>
+						</small>
+
 					</div>
 				</div>
 

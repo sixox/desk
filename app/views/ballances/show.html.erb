@@ -20,6 +20,9 @@
 			<div class="row mt-2">
 				<div class="col-6">
 					<%= render 'ballances/pi_section', ballance: @ballance , spi: @spi%>
+					<% if @allocates %>
+					<%= render 'ballances/allocate', allocates: @allocates %>
+					<% end %>
 					
 				</div>
 				<div class="col-6">

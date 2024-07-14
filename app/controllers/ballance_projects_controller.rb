@@ -1,7 +1,7 @@
 class BallanceProjectsController < ApplicationController
 
   before_action :authenticate_user!
-  before_action :find_project
+  before_action :find_ballance
 
 
 
@@ -12,12 +12,12 @@ class BallanceProjectsController < ApplicationController
 
   def create
     @ballance_project = BallanceProject.new(ballance_project_params)
-    @ballance_project.project = @project
+    @ballance_project.ballance = @ballance
     respond_to do |format|
 
       if @ballance_project.save
-        format.html { redirect_to project_url(@project), notice: "Allocate was successfully created." }
-        format.json { render :show, status: :created, location: @project } 
+        format.html { redirect_to ballance_url(@ballance), notice: "Allocate was successfully created." }
+        format.json { render :show, status: :created, location: @ballance } 
       else
         render :new
       end
@@ -26,8 +26,8 @@ class BallanceProjectsController < ApplicationController
 
   private
 
-  def find_project
-    @project = Project.find(params[:project_id])
+  def find_ballance
+    @ballance = Ballance.find(params[:ballance_id])
   end
 
   def ballance_project_params

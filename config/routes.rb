@@ -69,6 +69,7 @@ Rails.application.routes.draw do
     end
   end
   resources :ballances do
+    resources :ballance_projects
     resources :spis
     resources :scis
   end

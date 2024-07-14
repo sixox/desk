@@ -19,8 +19,10 @@
 		</div>
 		<p class="card-text m-0">
 			<br>
-			<small><%= spi.quantity.to_i %></small> MT <small><%= spi.product %></small> - <small><%= spi.packing_type %></small>
-			<br> 
+			<div class="text-info">
+				<small><%= spi.quantity.to_i %></small> MT <small><%= spi.product %></small> - <small><%= spi.packing_type %></small>
+			</div>
+			
 			<small>  <%= spi.seller.present? ? "seller: #{spi.seller}" : "" %></small>
 			<br>
 			<hr>
@@ -42,7 +44,7 @@
 				</div>
 				<div class="col">
 					<br>
-					<small> currency</small>
+					<small class="timeline-small">dirham</small>
 				</div>
 			</div>
 		</p>
