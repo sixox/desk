@@ -17,6 +17,11 @@
           </span>
           <% end %>
         </div>
+        <% if ballance.spi.present? %>
+        <div class="col-auto">
+        	<small class="text-secondary">PI-<%= ballance.spi.number%></small>
+        </div>
+        <% end %>
         <div class="col-auto">
           <span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= ballance.number %></span>
         </div>
