@@ -1,107 +1,48 @@
 <%= link_to ballance_path(ballance), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
-  <div class="card h-100 w-100 border-0 shadow">
-    <div class="card-body d-flex flex-column">
-      <div class="row d-flex justify-content-between mt-2">
-        <div class="col-auto">
-          <% if !ballance.spi.present? %>
-          <span class="text-danger fw-bold">
-              NO_PI
-          </span>
-          <% else %>
-          <span style="color: #49af98;">
-            <% if title == "BALLANCE" %>
-            <span class="fw-bold">Inventory</span>
-            <% else %>
-            <%= ballance.supplier.name %>
-            <% end %>
-          </span>
-          <% end %>
-        </div>
-        <div class="col-auto">
-          <span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= ballance.number %></span>
-        </div>
-      </div>
-      <% if ballance.spi.present? %>
-        <p class="card-text mt-3">
-          <small><%= ballance.spi.quantity.to_i %></small> MT <small><%= ballance.product %></small> - <small><%= ballance.spi.packing_type %></small>
-          <br>
-
-        </p>
-        <p>
-        	
-        
-        	<small class="text-muted">PI No: <span class="text-danger"><%= ballance.spi.number%></span></small>
-        
-       
-        </p>
-       
-      <% end %>
-    </div>
-  </div>
-<% end %>
-
-
-
-
-
-
-
-
-
-
-
-
-	<!-- <div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-2">
-					<div class="d-flex justify-content-start">
-						<p class="fw-bold">Inventory <span class="text-warning"><%= link_to ballance.number, ballance_path(ballance) %></span> </p>
-					</div>
-				</div>
-				<% if ballance.spi %>
-				<div class="col-lg-2">
-					<p class="fw-bold">PI <span class="text-warning"><%= ballance.spi.number %></span> </p>				
-				</div>
-				<div class="col-lg-6">
-					<p class="fw-bold"><span class="text-warning"><%= ballance.spi.quantity %></span> MT <span class="text-warning"><%= ballance.spi.packing_type %></span>, <span class="text-warning"><%= ballance.spi.product %></span>, from <span class="text-warning"><%= ballance.supplier.name %></span>
-					</p>				
-				</div>
-
+<div class="card h-100 w-100 border-0 shadow">
+	<div class="card-body d-flex flex-column">
+		<div class="row d-flex justify-content-between mt-2">
+			<div class="col-auto">
+				<% if !ballance.spi.present? %>
+				<span class="text-danger fw-bold">
+					NO_PI
+				</span>
+				<% else %>
+				<span style="color: #49af98;">
+					<% if title == "BALLANCE" %>
+					<span class="fw-bold">Inventory</span>
+					<% else %>
+					<%= ballance.supplier.name %>
+					<% end %>
+				</span>
 				<% end %>
-				<div class="col-lg-2">
-					<div class="d-flex justify-content-end">
-						<p class="fw-bold">Status 
-							<% if ballance.status%>
-							<span class="text-warning"><%= ballance.status %></span> 
-							<% else %>
-							<span class="text-warning">Unknown</span> 
-							<% end %>
-
-						</p>
-					</div>
-				</div>
 			</div>
-			<% if @allocates %>
-			<div class="row">
-				<div class="col-lg">
-					<p class="fw-bold">Not allocated
-						<span class="text-warning"><%= ballance.not_allocated_quantity.present? ? ballance.not_allocated_quantity.to_i : 0 %>
-						</span>
-						MT
-					</p>
-				</div>
-				<% @allocates.each do |allocate| %>
-				<div class="col-lg">
-					<p class="fw-bold">
-						<small class="text-warning"><%= allocate.quantity %></small> MT to
-						Project number
-						<small class="text-warning"><%= link_to allocate.project.number, project_path(allocate.project_id) %></small>
-					</p>
-				</div>
-				<% end %>
-
+			<div class="col-auto">
+				<span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= ballance.number %></span>
 			</div>
-			<% end %>
 		</div>
-	</div> -->
+		<% if ballance.spi.present? %>
+		<p class="card-text mt-3">
+			<small><%= ballance.spi.quantity.to_i %></small> MT <small><%= ballance.product %></small> - <small><%= ballance.spi.packing_type %></small>
+			<br>
+
+		</p>
+		<p>
+			<hr class="mt-0">
+			<div class="row d-flex justify-content-between">
+				<div class="col-auto">
+
+					<small class="text-muted">PI No: <span class="text-danger"><%= ballance.spi.number%></span></small>
+				</div>
+				<div class="col-auto">
+					<small class="text-muted">Remains: <span class="text-danger"><%= ballance.remaining_quantity%></span> MT</small> 
+				</div>
+			</div>
+
+
+		</p>
+
+		<% end %>
+	</div>
+</div>
+<% end %>

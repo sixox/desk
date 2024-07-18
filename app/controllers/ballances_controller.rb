@@ -6,7 +6,7 @@ class BallancesController < ApplicationController
 		@spi = @ballance.spi if @ballance.spi
 		@scis = @ballance.scis if @ballance.scis
 		@allocates = @ballance.ballance_projects
-		@remains = @ballance.spi.quantity.to_i - @allocates.sum(:quantity).to_i
+	    @remains = @ballance.remaining_quantity
 		filtered_payment_orders = @ballance.payment_orders
 		@payment_orders_with_status_paid_dollar = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'dollar')
 		@payment_orders_with_status_paid_dirham = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'dirham')
