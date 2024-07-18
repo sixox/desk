@@ -14,16 +14,16 @@
   <div class="accordion" id="sortAccordion">
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingOne">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
           Sort By
         </button>
       </h2>
       <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#sortAccordion">
         <div class="accordion-body">
           <div class="list-group">
-            <%= link_to 'Created At', ballances_path(sort: 'created_at', q: params[:q]), class: 'list-group-item list-group-item-action' %>
-            <%= link_to 'Number', ballances_path(sort: 'number', q: params[:q]), class: 'list-group-item list-group-item-action' %>
-            <%= link_to 'Remaining Quantity', ballances_path(sort: 'remaining_quantity', q: params[:q]), class: 'list-group-item list-group-item-action' %>
+            <%= link_to 'Created At', ballances_path(sort: 'created_at', direction: 'desc', q: params[:q]), class: 'list-group-item list-group-item-action' %>
+            <%= link_to 'Number', ballances_path(sort: 'number', direction: 'desc', q: params[:q]), class: 'list-group-item list-group-item-action' %>
+            <%= link_to 'Remaining Quantity', ballances_path(sort: 'remaining_quantity', direction: 'desc', q: params[:q]), class: 'list-group-item list-group-item-action' %>
           </div>
         </div>
       </div>

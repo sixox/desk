@@ -18,11 +18,20 @@ class BallancesController < ApplicationController
 
 	end
 
-	def index
-		@q = Ballance.ransack(params[:q])
-		@sort_column = params[:sort] || 'number'
-		@ballances = @q.result.order(@sort_column => :desc)
-	end
+	  def index
+	    @q = Ballance.ransack(params[:q])
+	    @sort_column = params[:sort] || 'number'
+	    @sort_order = params[:direction] || 'desc'
+
+	    @ballances = @q.result
+
+	    if @sort_column == 'remaining_quantity'
+	      @ballances = @ballances.sort_by(&:remaining_quantity)
+	      @ballances.reverse! if @sort_order == 'desc'
+	    else
+	      @ballances = @ballances.order(@sort_column => @sort_order.to_sym)
+	    end
+	  end
 
 	def new	
 		@ballance = Ballance.new
