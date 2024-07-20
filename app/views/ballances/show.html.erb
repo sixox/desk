@@ -61,6 +61,9 @@
 	</div>
 
 	<% else %>
+	<%= link_to new_ballance_spi_path(@ballance), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+							<span class="mb-1 timeline-h5">CREATE PI</span>
+							<% end %>
 	<% end %>
 
 
