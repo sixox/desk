@@ -1,0 +1,36 @@
+<li class="shadow-lg mb-2 bg-body rounded list-group-item position-relative" id="customer_item_<%= document.id %>">
+	<div class="card border-0 shadow mt-2">
+		<div class="card-body p-xl-4">
+			<h4 class="card-title mb-2 text-success"> <i class="bi bi-file-earmark-pdf-fill"></i> <%= document.name.titleize %></h4>
+			<div class="card card-custom mt-1">
+				<div class="card-body">
+					<div class="row d-flex mt-3">
+						<div class="col-9">
+							<h6 class="card-subtitle text-secondary mb-3">
+								<span class="text-secondary">  </span><small class="text-secondary"><%= document.description %></small>
+							</h6>
+						</div>
+						<div class="col">
+							<h6 class="card-subtitle text-secondary mb-3">
+								<span class="text-secondary">  </span><small class="text-secondary"><%= time_ago_in_words(document.created_at) %> ago</small>
+							</h6>
+						</div>
+						
+					</div>
+					<% if action_name == 'show' %>
+					<div class="row d-flex mb-4 mt-4">
+						<% document.documents.each do |attachment| %>
+						<small>
+							<%= link_to attachment.filename, rails_blob_path(attachment, disposition: "attachment"), class: "text-decoration-none" %>
+						</small> 
+
+
+						<% end %>
+						
+					</div>	
+					<% end %>	
+				</div>
+			</div>
+		</div>
+	</div>
+</li>

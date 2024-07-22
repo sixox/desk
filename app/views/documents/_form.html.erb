@@ -1,0 +1,38 @@
+<%= form_with model: @document, local: true do |form| %>
+  <div class="modal-body">
+    <% if @document.errors.any? %>
+      <div class="alert alert-danger">
+        <h3><%= pluralize(@document.errors.count, 'error') %> prohibited this document from being saved:</h3>
+        <ul>
+          <% @document.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= form.label :name, class: 'form-label' %>
+      <%= form.text_field :name, class: 'form-control' %>
+    </div>
+    <div class="form-group">
+      <%= form.label :type, class: 'form-label' %>
+      <%= form.select :title, options_for_select(Document::DOCUMENTS_TYPES, selected: form.object.title), { prompt: 'Select type' }, { class:"form-select mt-2" } %>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :description, class: 'form-label' %>
+      <%= form.text_area :description, class: 'form-control' %>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :documents, class: 'form-label' %>
+      <%= form.file_field :documents, multiple: true, class: 'form-control' %>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <%= form.submit 'Add Document', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </div>
+<% end %>

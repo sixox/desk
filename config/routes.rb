@@ -137,6 +137,8 @@ Rails.application.routes.draw do
 
   resources :letter_heads
   resources :accounts
+  resources :documents
+
 
 
   get 'member/:id', to: 'members#show', as: 'member'
