@@ -2,7 +2,7 @@
 	<h3>Banks</h3>
 	<row class="m-2">
 		<div class="col-sm">
-			<% if current_user.accounting? && current_user.is_manager %>
+			<% if current_user.accounting? || current_user.admin? %>
 			<%= link_to new_transfer_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
 			Transfer
 			<% end %>
