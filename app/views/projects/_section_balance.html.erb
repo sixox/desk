@@ -3,7 +3,7 @@
   <div class="timeline-body">
     <div class="timeline-meta">
       <div class="d-inline-flex flex-column px-2 py-1 text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 text-md-end">
-        <span class="fw-bold"><%= @project.swifts.last.updated_at.strftime('%Y-%m-%d') %></span>
+        <span class="fw-bold"><%= @project.swifts.last&.updated_at&.strftime('%Y-%m-%d') %></span>
         <span>Balance Payment</span>
       </div>
     </div>
