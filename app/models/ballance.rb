@@ -5,6 +5,7 @@ class Ballance < ApplicationRecord
 	has_many :ballance_projects
   has_many :projects, through: :ballance_projects
   has_many :payment_orders
+  validates :product, :name, presence: true
 
   validates :number, presence: true, format: { with: /\A14\d{2}-\d{3}\z/, message: "must be in the format '14xx-xxx'" }, uniqueness: true
 
