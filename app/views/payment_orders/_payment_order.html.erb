@@ -115,6 +115,12 @@
 		<div class="col-lg-2 mb-2">
 			<div class="d-flex justify-content-end">
 
+				<% if user_signed_in? && current_user.admin? %>
+				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-pencil-fill"></i>
+					<% end %>
+				<% end %>
+
 				<% if user_signed_in? && current_user.is_manager && !payment_order.rejected_at  %>
 				<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
 					(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
