@@ -12,8 +12,8 @@ class Booking < ApplicationRecord
   validates :number, :pod, :container_type, :quantity, presence: true
 
 
-  LINE = ['HDS', 'hoopad','hormoz marin']
-  FORWARDER = ['Daryabar', 'hormoz marin']
+  LINE = ['RASHA', 'BLUE', 'AVASH', 'DARYA BAAR', 'TUSHEHBAR', 'ARYA LAND', 'NAVBAN DARYA', 'CORVET', 'KUSHAN DARYA', 'ARTEMIS DARYA', 'NOVEL', 'ECON', 'RADIAN DARYA', 'KALADARAN']
+  FORWARDER = ['RASHA', 'BLUE', 'AVASH', 'DARYA BAAR', 'TUSHEHBAR', 'ARYA LAND', 'NAVBAN DARYA', 'CORVET', 'KUSHAN DARYA', 'ARTEMIS DARYA', 'NOVEL', 'ECON', 'RADIAN DARYA', 'KALADARAN']
   CONTAINER_TYPE = ['20-foot', '40-foot']
 
   def empty
