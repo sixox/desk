@@ -1,6 +1,6 @@
 class BanksController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_bank, only: %i[show edit update destroy]
+  before_action :set_bank, only: %i[show edit update destroy transactions]
 
   def index
     @banks = Bank.all
@@ -51,6 +51,22 @@ class BanksController < ApplicationController
   def destroy
     @bank.destroy
     redirect_to banks_url, notice: 'Bank was successfully destroyed.'
+  end
+
+  def transactions
+
+    # Fetch transactions for the bank, including associated data to prevent N+1 query problem
+    transactions = @bank.transactions.includes(:transactionable)
+
+    # Filter transactions by date range if provided
+    if params[:start_date].present? && params[:end_date].present?
+      start_date = Date.parse(params[:start_date])
+      end_date = Date.parse(params[:end_date]).end_of_day
+      transactions = transactions.where(created_at: start_date..end_date)
+    end
+
+    # Paginate the transactions using Kaminari
+    @transactions = transactions.page(params[:page]).per(10)  # Adjust 'per' to the number of transactions per page
   end
 
   private

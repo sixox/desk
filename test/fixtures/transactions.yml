@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  deposit_amount: 1
+  withdrawal_amount: 1
+  balance_before_transaction: 1
+  balance_after_transaction: 1
+  transactionable: one
+  transactionable_type: Transactionable
+  bank: one
+
+two:
+  deposit_amount: 1
+  withdrawal_amount: 1
+  balance_before_transaction: 1
+  balance_after_transaction: 1
+  transactionable: two
+  transactionable_type: Transactionable
+  bank: two

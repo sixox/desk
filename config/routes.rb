@@ -115,7 +115,12 @@ Rails.application.routes.draw do
       get 'edit_amount_before_confirm'
     end
   end
-  resources :banks
+  resources :banks do
+    member do
+      get :transactions
+    end
+  end
+
   resources :transfers do
     member do
       patch "confirm", to: "transfers#confirm"

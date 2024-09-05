@@ -13,6 +13,8 @@ class PaymentOrder < ApplicationRecord
   has_one_attached :document
   has_one_attached :receipt
   has_many :comments, as: :commentable, dependent: :destroy
+  has_many :transactions, as: :transactionable
+
 
   attr_accessor :skip_coo_confirmation_requirement
 

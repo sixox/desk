@@ -75,12 +75,19 @@ class SwiftsController < ApplicationController
 
 	  # Fetch the bank related to @swift
 	  bank = @swift.bank
+	  current_balance = bank.account_balance
 
 	  # Calculate new amount using deposited_amount
 	  new_amount = bank.account_balance.to_i + @swift.deposited_amount.to_i
 
 	  # Save the swift and update the bank's account balance
 	  if @swift.save && bank.update(account_balance: new_amount)
+	  	transaction = @swift.transactions.create(
+			      deposit_amount: @swift.deposited_amount.to_i , 
+			      bank: bank,
+			      balance_before_transaction: current_balance.to_i,
+			      balance_after_transaction: new_amount.to_i
+			    )
 	    redirect_to swifts_path, notice: 'Swift confirmed successfully.'
 	  else
 	    render :show, status: :unprocessable_entity

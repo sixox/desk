@@ -356,19 +356,23 @@ class PaymentOrdersController < ApplicationController
 		if params[:payment_order].key?(:receipt) || params[:payment_order].key?('receipt')
 			@payment_order.assign_attributes(payment_order_params)
 		    @bank = @payment_order.bank
+		    current_balance = @bank.account_balance.to_i
 		  
 			if @payment_order.currency == @bank.currency
 		      # Scenario 1: Currencies match, proceed normally
 		      if @payment_order.exchange_amount.present?
 		      	new_amount = @bank.account_balance - @payment_order.exchange_amount
+		      	withdrawal_amount = @payment_order.exchange_amount.to_i
 		      else
 		      	new_amount = @bank.account_balance - @payment_order.amount.to_f
+		      	withdrawal_amount = @payment_order.amount.to_i
 		      end
 			elsif @payment_order.currency != @bank.currency && (@payment_order.exchange_amount.present? || params[:payment_order][:exchange_amount].present?)
 		      # Scenario 2: Currencies don't match, but exchange_amount is provided
 		      if @payment_order.valid?
 		        @payment_order.save
 		        new_amount = @bank.account_balance - @payment_order.exchange_amount.to_f
+		        withdrawal_amount = @payment_order.exchange_amount.to_i
 		      else
 		        render :show and return
 		      end
@@ -379,7 +383,12 @@ class PaymentOrdersController < ApplicationController
 		      render :show and return
 		    end
 		    if @bank.update(account_balance: new_amount)
-		      # Handle success
+		      transaction = @payment_order.transactions.create(
+			      withdrawal_amount: withdrawal_amount , 
+			      bank: @bank,
+			      balance_before_transaction: current_balance.to_i,
+			      balance_after_transaction: new_amount.to_i
+			    )
 		    else
 		      format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
 		      # Handle error

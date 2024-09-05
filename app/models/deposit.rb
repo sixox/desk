@@ -1,5 +1,7 @@
 class Deposit < ApplicationRecord
   belongs_to :bank
+  has_many :transactions, as: :transactionable
+
 
   has_one_attached :document
   validate :document_presence

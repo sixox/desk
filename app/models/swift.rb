@@ -2,6 +2,8 @@ class Swift < ApplicationRecord
   belongs_to :bank
   belongs_to :ci, optional: true
   belongs_to :project, optional: true
+  has_many :transactions, as: :transactionable
+
 
   has_many_attached :documents
 
