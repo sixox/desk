@@ -1,10 +1,18 @@
 <div class="col-lg-10 mx-auto mt-5">
 	<section>
-		<div class="row">
-			<div class="col-12 mt-3 mb-1">
+		<div class="row mt-4 mb-3">
+				<div class="col-lg-6">
+		          <div class="d-flex justify-content-start">
 				<h4 class="text-uppercase"><%= @bank.name %></h4>
 				<p><%= @bank.kind ? "Exchange" : "Bank Account" %></p>
 			</div>
+		</div>
+		<div class="col-lg-6">
+		          <div class="d-flex justify-content-end">
+				<%= link_to 'View Transactions', transactions_bank_path(@bank), class: 'btn btn-primary btn-lg' %>
+
+			</div>
+		</div>
 		</div>
 		<div class="row">
 			<div class="col-xl-6 col-md-12 mb-4">
