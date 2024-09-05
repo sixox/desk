@@ -54,7 +54,6 @@ class BanksController < ApplicationController
   end
 
   def transactions
-
     # Fetch transactions for the bank, including associated data to prevent N+1 query problem
     transactions = @bank.transactions.includes(:transactionable)
 
@@ -65,9 +64,13 @@ class BanksController < ApplicationController
       transactions = transactions.where(created_at: start_date..end_date)
     end
 
+    # Sort transactions to show the latest ones first
+    transactions = transactions.order(created_at: :desc)
+
     # Paginate the transactions using Kaminari
     @transactions = transactions.page(params[:page]).per(10)  # Adjust 'per' to the number of transactions per page
   end
+
 
   private
 
