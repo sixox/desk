@@ -68,7 +68,7 @@ class BanksController < ApplicationController
     transactions = transactions.order(created_at: :desc)
 
     # Paginate the transactions using Kaminari
-    @transactions = transactions.page(params[:page]).per(10)  # Adjust 'per' to the number of transactions per page
+    @transactions = transactions.page(params[:page]).per(30)  # Adjust 'per' to the number of transactions per page
   end
 
 
