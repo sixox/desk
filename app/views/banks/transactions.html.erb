@@ -10,7 +10,7 @@
         </div>
         <div class="col-lg-6 mt-2">
           <div class="d-flex justify-content-end">
-            <h6>balance <span class="text-primary"> <%= @bank.account_balance %></span> <small> <%= @bank.currency %></small></h6>
+            <h6>balance <span class="text-primary"> <%= number_with_delimiter(@bank.account_balance, delimiter: ',')  %></span> <small> <%= @bank.currency %></small></h6>
           </div>
         </div>
       </div>
