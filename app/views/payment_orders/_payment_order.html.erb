@@ -118,12 +118,15 @@
 		<div class="col-lg-2 mb-2">
 			<div class="d-flex justify-content-end">
 
-				<% if user_signed_in? && current_user.id == 29 && !payment_order.rejected_at && (current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) %>
+				<% if user_signed_in? && current_user.id == 29 && !payment_order.rejected_at %>
+
+				<% if (payment_order.coo_confirm && !payment_order.accounting_confirm ) || (!payment_order.department_confirm && current_user.role == payment_order.user.role ) %>
 
 					<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
 					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
 					<% end %>
 
+				<% end %>
 				<% end %>
 
 
