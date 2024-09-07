@@ -33,7 +33,7 @@
                   <% if transaction.transactionable_type == "PaymentOrder" %>
                     <%= link_to "P.O #{transaction.transactionable_id}", payment_order_path(transaction.transactionable_id), class: 'link-nodecor-po' %>
                   <% else %>
-                  <%= transaction.transactionable_type %>
+                  <%= transaction.transactionable_type %> <%= transaction.transactionable_id %>
                   <% end %>
                 </td>
                 <td class="<%= transaction.deposit_amount.present? ? 'text-success' : '' %>">
