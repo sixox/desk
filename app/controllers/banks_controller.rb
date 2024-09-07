@@ -71,6 +71,12 @@ class BanksController < ApplicationController
     @transactions = transactions.page(params[:page]).per(30)  # Adjust 'per' to the number of transactions per page
   end
 
+  def transaction
+    @transactions = Transaction.all.includes(:transactionable).order(created_at: :desc).page(params[:page]).per(30)
+  end
+
+
+
 
   private
 

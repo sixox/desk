@@ -119,6 +119,9 @@ Rails.application.routes.draw do
     member do
       get :transactions
     end
+    collection do
+      get :transaction
+    end
   end
 
   resources :transfers do
