@@ -99,6 +99,9 @@ class PaymentOrdersController < ApplicationController
 		elsif current_user.accounting?
 			@payment_order.accounting_confirm = true
 			@payment_order.accounting_confirmed_at = Time.now
+			if current_user.id == 29
+				@payment_order.shaghayegh_confirm = true
+			end
 			if @payment_order.user.accounting?
 				@payment_order.department_confirm = true
 				@payment_order.department_confirmed_at = Time.now
