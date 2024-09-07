@@ -64,7 +64,7 @@
                 </td>
                 <td><%= number_with_delimiter(transaction.balance_before_transaction, delimiter: ',') %></td>
                 <td> <span class="fw-bold bg-warning"> <%= number_with_delimiter(transaction.balance_after_transaction, delimiter: ',') %></span></td>
-                <td><%= time_ago_in_words(transaction.created_at) %> ago</td>
+                <td> <small> <%= (transaction.created_at + 3.5.hours).strftime("%Y-%m-%d %H:%M:%S") %> </small></td>
               </tr>
             <% end %>
           </tbody>
