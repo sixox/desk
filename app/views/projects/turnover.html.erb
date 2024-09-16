@@ -3,8 +3,72 @@
 <% if @all_payments_done %>
   <p>All payments are done for this project.</p>
 
-  <%=  @advance_payments.count %>
-  <%=  @balance_payments.count %>
+ <hr>
+
+ <h2>Payments for <%= @project.name %></h2>
+
+<!-- Advance Payments -->
+<h3>Advance Payments</h3>
+<% if @advance_payments.any? %>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        <th>Balance ID</th>
+        <th>Status</th>
+        <th>CEO Confirmed At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @advance_payments.each do |payment_order| %>
+        <tr>
+          <td><%= payment_order.id %></td>
+          <td><%= number_to_currency(payment_order.amount) %></td>
+          <td><%= payment_order.currency %></td>
+          <td><%= payment_order.balance_id %></td>
+          <td><%= payment_order.status %></td>
+          <td><%= payment_order.ceo_confirm_at.present? ? payment_order.ceo_confirm_at.strftime('%B %d, %Y %H:%M') : 'Not Confirmed' %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No advance payments found.</p>
+<% end %>
+
+<!-- Balance Payments -->
+<h3>Balance Payments</h3>
+<% if @balance_payments.any? %>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        <th>Balance ID</th>
+        <th>Status</th>
+        <th>CEO Confirmed At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @balance_payments.each do |payment_order| %>
+        <tr>
+          <td><%= payment_order.id %></td>
+          <td><%= number_to_currency(payment_order.amount) %></td>
+          <td><%= payment_order.currency %></td>
+          <td><%= payment_order.balance_id %></td>
+          <td><%= payment_order.status %></td>
+          <td><%= payment_order.ceo_confirm_at.present? ? payment_order.ceo_confirm_at.strftime('%B %d, %Y %H:%M') : 'Not Confirmed' %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No balance payments found.</p>
+<% end %>
+
 
 
 
