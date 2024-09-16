@@ -41,6 +41,7 @@ Rails.application.routes.draw do
       get :card
       get :time_line
       get :update_timeline
+      get :turnover
 
     end
     resources :ballance_projects

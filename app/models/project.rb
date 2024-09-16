@@ -88,6 +88,12 @@ class Project < ApplicationRecord
 		    sum_balance_swifts + sum_cis_swifts
 		  end
 
+	def remaining_quantity
+    pi_quantity = self.pi&.quantity.to_i
+    allocated_quantity = self.ballance_projects.sum(:quantity).to_i
+    pi_quantity - allocated_quantity
+  end
+
 	    
 
   private

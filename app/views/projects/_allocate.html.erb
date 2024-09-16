@@ -1,0 +1,31 @@
+<div class="card border-0 shadow mt-2">
+	<div class="card-body p-xl-4">
+		<h2 class="card-title mb-2 text-success"> <i class="bi bi-arrow-right-circle-fill"></i> Allocations</h2>
+		
+		<div class="row">
+			<% allocates.each do |allocate| %>
+			<div class="col-12 col-md-6">
+				<small class="text-secondary">
+					<span class="fw-bold"><%= allocate.quantity %></span> MT 
+					<i class="bi bi-arrow-right"></i>
+					<%= link_to ballance_path(allocate.ballance) do %>
+					<span class=""><%= allocate.ballance.number %></span>
+					<% end %>
+
+				</small>
+			</div>			
+			<% end %>
+		</div>
+		<hr>
+		<div class="row d-flex justify-content-between">
+			<div class="col-auto">
+			</div>
+			<div class="col-auto" style="margin-top: -6px;">
+				<small class="text-secondary">
+					total remains <span class="text-success fw-bold"> <%= @remains %></span> MT
+					
+				</small>
+			</div>
+		</div>
+	</div>
+</div>

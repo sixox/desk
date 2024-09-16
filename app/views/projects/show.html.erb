@@ -20,6 +20,9 @@
 			<div class="row mt-2">
 				<div class="col-6">
 					<%= render 'projects/pi_section_for_signed_in_user'%>
+					<% if @allocates.present? %>
+					<%= render 'projects/allocate', allocates: @allocates %>
+					<% end %>
 					<%= render 'projects/advance_section_for_signed_in_user'%>
 					<%= render 'projects/balances_section_for_signed_in_user'%>
 				</div>

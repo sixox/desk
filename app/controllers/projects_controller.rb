@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
 	
   before_action :authenticate_user!, except: [:project_login, :authenticate, :time_line]
-	before_action :set_project, only: %i[ show edit update destroy allocate card time_line update_timeline] 
+	before_action :set_project, only: %i[ show edit update destroy allocate card time_line update_timeline turnover] 
   before_action :verify_project_access, only: :time_line
   before_action :set_timeline, only: %i[ show time_line ]
 
@@ -20,6 +20,7 @@ class ProjectsController < ApplicationController
 		@sum_paid_dirham = @payment_orders_with_status_paid_dirham.sum(:amount)
 		@sum_paid_rial = @payment_orders_with_status_paid_rial.sum(:amount)
 		@payment_orders_with_status_not_paid = filtered_payment_orders.where.not(status: ['wait for delivery', 'delivered'])
+		@remains = @project.remaining_quantity
 
 
 
@@ -94,7 +95,18 @@ class ProjectsController < ApplicationController
   	@pi = @project.pi
   end
 
-
+  def turnover
+	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
+	  balance_projects = @project.ballance_projects
+	  @advance_payments = []
+	  @balance_payments = []
+		balance_projects.each do |balance_project|
+		  @advance_payments.push(*PaymentOrder.where(project: nil, ballance: balance_project))
+		end
+		balance_projects.each do |balance_project|
+		  @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project))
+		end
+  end
 
 
 

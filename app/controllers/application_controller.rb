@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  include AmountConverter
+
 
   helper_method :count_not_confirmed_vacations
 
