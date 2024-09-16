@@ -3,13 +3,8 @@
 <% if @all_payments_done %>
   <p>All payments are done for this project.</p>
 
-  <% @advance_payments.each do |payment|%>
-    <%= payment.amount %>
-  <% end %>
-
-  <% @balance_payments.each do |payment|%>
-    <%= payment.amount %>
-  <% end %>
+  <%=  @advance_payments.count %>
+  <%=  @balance_payments.count %>
 
 
 
