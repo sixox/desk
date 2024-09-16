@@ -98,14 +98,17 @@ class ProjectsController < ApplicationController
   def turnover
 	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
 	  balance_projects = @project.ballance_projects
-	  @advance_payments = []
-	  @balance_payments = []
+		@advance_payments = []
+		@balance_payments = []
+
 		balance_projects.each do |balance_project|
 		  @advance_payments.push(*PaymentOrder.where(project: nil, ballance: balance_project))
 		end
+
 		balance_projects.each do |balance_project|
 		  @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project))
 		end
+
   end
 
 
