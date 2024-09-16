@@ -102,11 +102,11 @@ class ProjectsController < ApplicationController
 		@balance_payments = []
 
 		balance_projects.each do |balance_project|
-		  @advance_payments.push(*PaymentOrder.where(project: nil, ballance: balance_project))
+		  @advance_payments.push(*PaymentOrder.where(project: nil, ballance: balance_project.ballance))
 		end
 
 		balance_projects.each do |balance_project|
-		  @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project))
+		  @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
 		end
 
   end
