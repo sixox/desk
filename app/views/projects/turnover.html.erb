@@ -65,7 +65,7 @@
   </tbody>
 </table>
 
-<h2> Swifts</h2>
+<h2>Swifts</h2>
 <table class="table">
   <thead>
     <tr>
@@ -78,12 +78,13 @@
     <% @received_swifts.each do |swift| %>
       <tr>
         <td><%= swift[:id] %></td>
-        <td><%= swift[:amount] %></td>
+        <td><%= number_with_precision(swift[:amount], precision: 2, delimiter: ',') %></td>
         <td><%= swift[:date].strftime("%Y-%m-%d") if swift[:date] %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
 
 
 total:
