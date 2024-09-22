@@ -132,6 +132,8 @@ class ProjectsController < ApplicationController
 	    @received_swifts << { id: swift.id, amount: amount.to_i, date: date }
 
 	  end
+	  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
+
 
 
 	  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
