@@ -119,6 +119,8 @@ class ProjectsController < ApplicationController
 	    end
 	  end
 
+	  @payments = @advance_payments + @balance_payments
+
   end
 
 
