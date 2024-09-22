@@ -124,7 +124,7 @@ def turnover
 	require 'bigdecimal'
 	require 'bigdecimal/util' # Allows String and Integer to use .to_d
 
-	@received_swifts = []
+	@received_swifts = {}
 
 	# Gather received swifts
 	@project.total_swifts.each do |swift|
