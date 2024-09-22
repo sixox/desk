@@ -183,40 +183,46 @@ end
 	end
 
 def calculate_return_days
+  total_weighted_days = 0
+  total_investment = @payments.sum { |payment| payment[:amount] }
   remaining_payment = 0
   payment_index = 0
-  swift_index = 0 # Initialize swift_index here
-  swift_ids = @received_swifts.keys.sort # Get sorted IDs of swifts
-  total_weighted_amount = 0
+  swift_ids = @received_swifts.keys.sort
 
   # Traverse through payments and swifts
-  while payment_index < @payments.size && swift_index < swift_ids.size
+  while payment_index < @payments.size && remaining_payment < total_investment
     payment = @payments[payment_index]
-    swift_id = swift_ids[swift_index]
+    swift_id = swift_ids[payment_index] # Matching by index for simplicity
     swift = @received_swifts[swift_id]
 
     payment_date = payment[:date]
     swift_date = swift[:date]
-    days_between = (swift_date - payment_date).to_i # Days until this payment is covered by a swift
+    days_between = (swift_date - payment_date).to_i
 
     if payment[:amount] - remaining_payment <= swift[:amount]
       # If swift covers the remaining payment
       paid_amount = payment[:amount] - remaining_payment
       remaining_payment = 0
-      total_weighted_amount += paid_amount * days_between
+      total_weighted_days += paid_amount * days_between
       swift[:amount] -= paid_amount
       payment_index += 1
     else
       # If swift does not fully cover the payment
       remaining_payment = payment[:amount] - swift[:amount]
-      total_weighted_amount += swift[:amount] * days_between
+      total_weighted_days += swift[:amount] * days_between
       swift[:amount] = 0
-      swift_index += 1
+      payment_index += 1
     end
   end
 
-  @total_weighted_amount = total_weighted_amount
+  # Calculate the average days to return the investment
+  if total_investment > 0
+    @total_weighted_days = total_weighted_days / total_investment
+  else
+    @total_weighted_days = 0
+  end
 end
+
 
 
 
