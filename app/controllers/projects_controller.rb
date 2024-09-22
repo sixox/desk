@@ -95,7 +95,8 @@ class ProjectsController < ApplicationController
   	@pi = @project.pi
   end
 
-	def turnover
+	
+def turnover
   @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
   balance_projects = @project.ballance_projects
   @advance_payments = []
@@ -120,7 +121,7 @@ class ProjectsController < ApplicationController
     end
   end
 
-  @received_swifts = {}
+  @received_swifts = []
 
   # Gather received swifts
   @project.total_swifts.each do |swift|
@@ -129,13 +130,13 @@ class ProjectsController < ApplicationController
     amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
     date = swift.created_at
 
-    @received_swifts[swift.id] = { id: swift.id, amount: amount.to_f.round(2), date: date }
+    @received_swifts << { id: swift.id, amount: amount.to_f.round(2), date: date }
   end
 
   Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
 
   @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
-  @received_swifts = @received_swifts.values.sort_by { |swift| swift[:date] }
+  @received_swifts.sort_by! { |swift| swift[:date] }
 
   # Now calculate the days until we get the money back
   calculate_return_days
