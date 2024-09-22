@@ -104,7 +104,7 @@ class ProjectsController < ApplicationController
 	  balance_projects.each do |balance_project|
 	    # Adjust advance payment based on project.pi.quantity ratio
 	    adjusted_advance_payments = PaymentOrder.where(project: nil, ballance: balance_project.ballance).map do |payment|
-	      adjusted_amount = payment.amount * @project.pi.quantity / balance_project.spi.quantity
+	      adjusted_amount = payment.amount * @project.pi.quantity / balance_project.ballance.spi.quantity
 	      payment.attributes.merge(amount: adjusted_amount) # Adjust the amount in the hash
 	    end
 
