@@ -78,7 +78,7 @@
     <% @received_swifts.each do |payment| %>
       <tr>
         <td><%= payment[:id] %></td>
-        <td><%= payment[:amount] %></td>
+        <td><%= payment[:amount].to_i %></td>
         <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
       </tr>
     <% end %>
