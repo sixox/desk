@@ -176,7 +176,7 @@ class ProjectsController < ApplicationController
 	  end
 
 	  # Calculate DSO by dividing total weighted days by total payments
-	  @dso = total_payments.zero? ? 0 : (total_weighted_days.to_f / @total_payments).round(2)
+	  @dso = @total_payments.zero? ? 0 : (total_weighted_days.to_f / @total_payments).round(2)
 	end
 
 
