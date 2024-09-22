@@ -105,7 +105,7 @@ class ProjectsController < ApplicationController
 	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
 	    advance_orders.each do |payment_order|
 	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
-	      amount *= (@project.cis.sum(:net_wight) / balance_project.ballance.spi.quantity)
+	      amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
 	      @advance_payments << { id: payment_order.id,amount: amount, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
