@@ -95,100 +95,31 @@ class ProjectsController < ApplicationController
   	@pi = @project.pi
   end
 
-	def turnover
+  def turnover
 	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
 	  balance_projects = @project.ballance_projects
-	  @advance_payments = []
-	  @balance_payments = []
+		@advance_payments = []
+		@balance_payments = []
 
-	  # Calculate adjusted advance payments
 	  balance_projects.each do |balance_project|
-	    spi_quantity = balance_project.ballance.spi.quantity
-	    pi_quantity = @project.pi.quantity
-
-	    # Debugging output
-	    Rails.logger.debug "Balance Project ID: #{balance_project.id}, SPI Quantity: #{spi_quantity}, PI Quantity: #{pi_quantity}"
-
-	    adjusted_advance_payments = PaymentOrder.where(project: nil, ballance: balance_project.ballance).map do |payment|
-	      # Adjust the amount using the quantities
-	      adjusted_amount = spi_quantity.zero? ? 0 : payment.amount * pi_quantity.to_f / spi_quantity.to_f
-
-	      # Log the original amount and the adjusted amount for comparison
-	      Rails.logger.debug "Payment ID: #{payment.id}, Original Amount: #{payment.amount}, Adjusted Amount: #{adjusted_amount}"
-
-	      # Use adjusted amount in the hash
-	      { id: payment.id, amount: adjusted_amount, currency: payment.currency, ballance_id: payment.ballance_id, status: payment.status, ceo_confirmed_at: payment.ceo_confirmed_at }
-	    end
-
-	    @advance_payments.push(*adjusted_advance_payments)
-	  end
-
-	  # Fetch balance payments without adjustments
-	  balance_projects.each do |balance_project|
-	    @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
-	  end
-
-	  # Combine payments and create payment_hash
-	  @payments = @advance_payments + @balance_payments
-
-	  # Initialize a hash to store payment date and amount
-	  @payment_hash = @payments.map do |p|
-	    amount = p[:currency] == "dollar" ? convert_amount(p[:amount]) : p[:amount]
-	    { amount: amount, date: p[:ceo_confirmed_at] }
-	  end
-
-	  @swifts = @project.total_swifts.sort_by(&:created_at)
-
-	  # Process swifts
-	  @swift_hash = @swifts.map do |s|
-	    amount = s.currency == "dollar" ? convert_amount(s.amount) : s.amount
-	    { amount: amount, date: s.created_at }
-	  end
-
-	  @total_payments = @payment_hash.sum { |p| p[:amount] }
-	  @total_swifts = @swift_hash.sum { |s| s[:amount] }
-
-	  # Calculate total weighted days
-	  total_weighted_days = 0
-	  total_swift_amount = 0
-
-	  @swift_hash.each do |swift|
-	    swift_amount = swift[:amount]
-	    swift_date = swift[:date]
-
-	    # Continue applying payments until the swift is covered
-	    while swift_amount > 0 && !@payment_hash.empty?
-	      payment = @payment_hash.first
-	      payment_amount = payment[:amount]
-	      payment_date = payment[:date]
-
-	      # Amount to apply from this payment
-	      apply_amount = [swift_amount, payment_amount].min
-	      days_outstanding = (swift_date - payment_date).to_i
-
-	      # Calculate weighted days (amount * days outstanding)
-	      total_weighted_days += apply_amount * days_outstanding
-	      total_swift_amount += apply_amount
-
-	      # Update the payment amount and swift amount
-	      payment[:amount] -= apply_amount
-	      swift_amount -= apply_amount
-
-	      # Remove the payment if it's fully applied
-	      @payment_hash.shift if payment[:amount] <= 0
+	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
+	    advance_orders.each do |payment_order|
+	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
+	      amount *= (@project.cis.sum(:net_wight) / balance_project.ballance.spi.quantity)
+	      @advance_payments << { id: payment_order.id,amount: amount, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
-	  # Calculate DSO by dividing total weighted days by total payments
-	  @dso = @total_payments.zero? ? 0 : (total_weighted_days.to_f / @total_payments).round(2)
-	end
+	  # Gather balance payments
+	  balance_projects.each do |balance_project|
+	    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
+	    balance_orders.each do |payment_order|
+	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
+	      @balance_payments << { id: payment_order.id,amount: amount, date: payment_order.ceo_confirmed_at }
+	    end
+	  end
 
-
-
-
-
-
-
+  end
 
 
 
