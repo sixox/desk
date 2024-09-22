@@ -128,6 +128,8 @@ class ProjectsController < ApplicationController
 
 	    amount = swift.currency == "dirham" ? swift.amount : convert_amount(swift.amount)
 	    date = swift.created_at
+	      Rails.logger.debug "Swift ID: #{swift.id}, Amount: #{swift.amount}, Converted Amount: #{amount}, Date: #{date}, Currency: #{swift.currency}"
+
 	    @received_swifts << { id: swift.id, amount: amount, date: date }
 	  end
 
