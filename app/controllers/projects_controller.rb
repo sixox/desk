@@ -117,7 +117,7 @@ class ProjectsController < ApplicationController
 	      spi_quantity = balance_project.ballance.spi.quantity
 	      Rails.logger.debug "Net Weight Sum: #{net_weight_sum}, SPI Quantity: #{spi_quantity}"
 
-	      amount *= (net_weight_sum / spi_quantity)
+	      amount *= (net_weight_sum.to_i / spi_quantity)
 	      Rails.logger.debug "Final Calculated Amount (after multiplication): #{amount}"
 
 	      @advance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
