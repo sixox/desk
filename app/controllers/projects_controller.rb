@@ -105,9 +105,21 @@ class ProjectsController < ApplicationController
 	  balance_projects.each do |balance_project|
 	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
 	    advance_orders.each do |payment_order|
+	      # Log the original amount
+	      Rails.logger.debug "Original Payment Order Amount: #{payment_order.amount}, Currency: #{payment_order.currency}"
+
 	      # Use float values for currency conversion
 	      amount = payment_order.currency == "dirham" ? payment_order.amount.to_f : payment_order.amount.to_f * 3.67
-	      amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
+	      Rails.logger.debug "Converted Amount: #{amount}"
+
+	      # Perform the multiplication and log the result
+	      net_weight_sum = @project.cis.sum(:net_weight)
+	      spi_quantity = balance_project.ballance.spi.quantity
+	      Rails.logger.debug "Net Weight Sum: #{net_weight_sum}, SPI Quantity: #{spi_quantity}"
+
+	      amount *= (net_weight_sum / spi_quantity)
+	      Rails.logger.debug "Final Calculated Amount (after multiplication): #{amount}"
+
 	      @advance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
@@ -116,8 +128,10 @@ class ProjectsController < ApplicationController
 	  balance_projects.each do |balance_project|
 	    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
 	    balance_orders.each do |payment_order|
-	      # Use float values for currency conversion
+	      # Same logging for balance payments
 	      amount = payment_order.currency == "dirham" ? payment_order.amount.to_f : payment_order.amount.to_f * 3.67
+	      Rails.logger.debug "Balance Payment Amount: #{amount}"
+	      
 	      @balance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
@@ -128,21 +142,24 @@ class ProjectsController < ApplicationController
 	  @project.total_swifts.each do |swift|
 	    next unless swift.confirmed
 
-	    # Use float values for swift amounts
 	    amount = swift.currency == "dirham" ? swift.amount.to_f : swift.amount.to_f * 3.67
 	    date = swift.created_at
+
+	    Rails.logger.debug "Swift ID: #{swift.id}, Amount: #{swift.amount}, Converted Amount: #{amount}, Date: #{date}, Currency: #{swift.currency}"
 
 	    @received_swifts << { id: swift.id, amount: amount, date: date }
 	  end
 
+	  # Final log to compare in both log and view
 	  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
-
+	  
 	  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
 	  @received_swifts = @received_swifts.sort_by { |swift| swift[:date] }
 
 	  # Now calculate the days until we get the money back
 	  calculate_return_days
 	end
+
 
 
 
