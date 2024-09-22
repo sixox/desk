@@ -96,95 +96,87 @@ class ProjectsController < ApplicationController
   end
 
 	def turnover
-	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
-	  balance_projects = @project.ballance_projects
-	  @advance_payments = []
-	  @balance_payments = []
+  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
+  balance_projects = @project.ballance_projects
+  @advance_payments = []
+  @balance_payments = []
 
-		balance_projects.each do |balance_project|
-		  # Get the spi quantity for the current balance project
-		  spi_quantity = balance_project.ballance.spi.quantity
-		  pi_quantity = @project.pi.quantity
+  balance_projects.each do |balance_project|
+    spi_quantity = balance_project.ballance.spi.quantity
+    pi_quantity = @project.pi.quantity
 
-		  # Debugging output
-		  Rails.logger.debug "Balance Project ID: #{balance_project.id}, SPI Quantity: #{spi_quantity}, PI Quantity: #{pi_quantity}"
+    # Debugging output
 
-		  adjusted_advance_payments = PaymentOrder.where(project: nil, ballance: balance_project.ballance).map do |payment|
-		    # Adjust the amount using the quantities
-		    adjusted_amount = if spi_quantity.zero?
-		                        0
-		                      else
-		                        payment.amount * pi_quantity.to_f / spi_quantity.to_f
-		                      end
+    adjusted_advance_payments = PaymentOrder.where(project: nil, ballance: balance_project.ballance).map do |payment|
+      # Adjust the amount using the quantities
+      adjusted_amount = spi_quantity.zero? ? 0 : payment.amount * pi_quantity.to_f / spi_quantity.to_f
 
-		    # Log the original amount and the adjusted amount for comparison
-		    Rails.logger.debug "Payment ID: #{payment.id}, Original Amount: #{payment.amount}, Adjusted Amount: #{adjusted_amount}"
+      # Log the original amount and the adjusted amount for comparison
 
-		    payment.attributes.merge(amount: adjusted_amount) # Adjust the amount in the hash
-		  end
+      # Use adjusted amount in the hash
+      payment.attributes.merge(amount: adjusted_amount)
+    end
 
-		  @advance_payments.push(*adjusted_advance_payments)
-		end
+    @advance_payments.push(*adjusted_advance_payments)
+  end
 
+  balance_projects.each do |balance_project|
+    @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
+  end
 
+  # Combine payments and sort them by confirmation date
+  @payments = (@advance_payments + @balance_payments).sort_by { |p| p["ceo_confirmed_at"] }
+  @swifts = @project.total_swifts.sort_by(&:created_at)
 
-	  balance_projects.each do |balance_project|
-	    @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
-	  end
+  # Initialize a hash to store payment date and amount
+  @payment_hash = @payments.map do |p|
+    amount = p["currency"] == "dollar" ? convert_amount(p["amount"]) : p["amount"]
+    { amount: amount, date: p["ceo_confirmed_at"] }
+  end
 
-	  # Combine payments and sort them by confirmation date
-	  @payments = (@advance_payments + @balance_payments).sort_by { |p| p["ceo_confirmed_at"] }
-	  @swifts = @project.total_swifts.sort_by(&:created_at)
+  @swift_hash = @swifts.map do |s|
+    amount = s.currency == "dollar" ? convert_amount(s.amount) : s.amount
+    { amount: amount, date: s.created_at }
+  end
 
-	  # Initialize a hash to store payment date and amount
-	  @payment_hash = @payments.map do |p|
-	    amount = p["currency"] == "dollar" ? convert_amount(p["amount"]) : p["amount"]
-	    { amount: amount, date: p["ceo_confirmed_at"] }
-	  end
+  @total_payments = @payment_hash.sum { |p| p[:amount] }
+  @total_swifts = @swift_hash.sum { |s| s[:amount] }
 
-	  @swift_hash = @swifts.map do |s|
-	    amount = s.currency == "dollar" ? convert_amount(s.amount) : s.amount
-	    { amount: amount, date: s.created_at }
-	  end
+  # Calculate total weighted days
+  total_weighted_days = 0
+  total_swift_amount = 0
 
-	  @total_payments = @payment_hash.sum { |p| p[:amount] }
-	  @total_swifts = @swift_hash.sum { |s| s[:amount] }
+  @swift_hash.each do |swift|
+    swift_amount = swift[:amount]
+    swift_date = swift[:date]
 
-	  # Calculate total weighted days
-	  total_weighted_days = 0
-	  total_swift_amount = 0
+    # Continue applying payments until the swift is covered
+    while swift_amount > 0 && !@payment_hash.empty?
+      payment = @payment_hash.first
+      payment_amount = payment[:amount]
+      payment_date = payment[:date]
 
-	  @swift_hash.each do |swift|
-	    swift_amount = swift[:amount]
-	    swift_date = swift[:date]
+      # Amount to apply from this payment
+      apply_amount = [swift_amount, payment_amount].min
+      days_outstanding = (swift_date - payment_date).to_i
 
-	    # Continue applying payments until the swift is covered
-	    while swift_amount > 0 && !@payment_hash.empty?
-	      payment = @payment_hash.first
-	      payment_amount = payment[:amount]
-	      payment_date = payment[:date]
+      # Calculate weighted days (amount * days outstanding)
+      total_weighted_days += apply_amount * days_outstanding
+      total_swift_amount += apply_amount
 
-	      # Amount to apply from this payment
-	      apply_amount = [swift_amount, payment_amount].min
-	      days_outstanding = (swift_date - payment_date).to_i
+      # Update the payment amount and swift amount
+      payment[:amount] -= apply_amount
+      swift_amount -= apply_amount
 
-	      # Calculate weighted days (amount * days outstanding)
-	      total_weighted_days += apply_amount * days_outstanding
-	      total_swift_amount += apply_amount
+      # Remove the payment if it's fully applied
+      @payment_hash.shift if payment[:amount] <= 0
+    end
+  end
 
-	      # Update the payment amount and swift amount
-	      payment[:amount] -= apply_amount
-	      swift_amount -= apply_amount
+  # Calculate DSO by dividing total weighted days by total payments
+  @dso = total_payments.zero? ? 0 : (total_weighted_days.to_f / total_payments).round(2)
+end
 
-	      # Remove the payment if it's fully applied
-	      @payment_hash.shift if payment[:amount] <= 0
-	    end
-	  end
-
-	  # Calculate DSO by dividing total weighted days by total payments
-	  @dso = total_weighted_days.to_f / @total_payments
-	  @dso = @dso.round(2)
-	end
 
 
 
