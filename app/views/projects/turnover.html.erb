@@ -75,17 +75,16 @@
     </tr>
   </thead>
   <tbody>
-    <% @received_swifts.each do |swift| %>
+    <% @received_swifts.each do |swift_id, swift_data| %>
       <tr>
-        <td><%= swift[:id] %></td>
-        <td><%= number_with_precision(swift[:amount], precision: 2, delimiter: ',') %></td>
-        <td><%= swift[:date].strftime("%Y-%m-%d") if swift[:date] %></td>
+        <td><%= swift_id %></td>
+        <td><%= number_with_precision(swift_data[:amount], precision: 2, delimiter: ',') %></td>
+        <td><%= swift_data[:date].strftime("%Y-%m-%d") if swift_data[:date] %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-swift:
-<%= Swift.find(302).amount * 3.67 %>
+
 
 
 <hr><hr>
