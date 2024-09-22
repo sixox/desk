@@ -96,77 +96,51 @@ class ProjectsController < ApplicationController
   end
 
 	def turnover
-	  require 'bigdecimal'
+  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
+  balance_projects = @project.ballance_projects
+  @advance_payments = []
+  @balance_payments = []
 
-	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
-	  balance_projects = @project.ballance_projects
-	  @advance_payments = []
-	  @balance_payments = []
+  # Gather advance payments
+  balance_projects.each do |balance_project|
+    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
+    advance_orders.each do |payment_order|
+      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
+      amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
+      @advance_payments << { id: payment_order.id, amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+    end
+  end
 
-	  net_weight_sum = BigDecimal(@project.cis.sum(:net_weight).to_s)
-	  
-	  Rails.logger.debug "Net Weight Sum: #{net_weight_sum}"
+  # Gather balance payments
+  balance_projects.each do |balance_project|
+    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
+    balance_orders.each do |payment_order|
+      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
+      @balance_payments << { id: payment_order.id, amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+    end
+  end
 
-	  balance_projects.each do |balance_project|
-	    spi_quantity = BigDecimal(balance_project.ballance.spi.quantity.to_s)
-	    Rails.logger.debug "SPI Quantity: #{spi_quantity}"
+  @received_swifts = {}
 
-	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
-	    advance_orders.each do |payment_order|
-	      amount = BigDecimal(payment_order.amount.to_s)
-	      Rails.logger.debug "Advance Order Amount Before Currency Conversion: #{amount}"
+  # Gather received swifts
+  @project.total_swifts.each do |swift|
+    next unless swift.confirmed
 
-	      if payment_order.currency != "dirham"
-	        amount *= BigDecimal('3.67')
-	      end
-	      Rails.logger.debug "Advance Order Amount After Currency Conversion: #{amount}"
+    amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
+    date = swift.created_at
 
-	      # Avoid early integer or float conversion to maintain precision
-	      adjusted_amount = amount * (net_weight_sum / spi_quantity)
-	      Rails.logger.debug "Adjusted Amount (Advance): #{adjusted_amount}"
+    @received_swifts[swift.id] = { id: swift.id, amount: amount.to_f.round(2), date: date }
+  end
 
-	      @advance_payments << { id: payment_order.id, amount: adjusted_amount.to_f.round(2), date: payment_order.ceo_confirmed_at }
-	    end
-	  end
+  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
 
-	  balance_projects.each do |balance_project|
-	    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
-	    balance_orders.each do |payment_order|
-	      amount = BigDecimal(payment_order.amount.to_s)
-	      Rails.logger.debug "Balance Order Amount Before Currency Conversion: #{amount}"
+  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
+  @received_swifts = @received_swifts.values.sort_by { |swift| swift[:date] }
 
-	      if payment_order.currency != "dirham"
-	        amount *= BigDecimal('3.67')
-	      end
-	      Rails.logger.debug "Balance Order Amount After Currency Conversion: #{amount}"
+  # Now calculate the days until we get the money back
+  calculate_return_days
+end
 
-	      @balance_payments << { id: payment_order.id, amount: amount.to_f.round(2), date: payment_order.ceo_confirmed_at }
-	    end
-	  end
-
-	  @received_swifts = []
-
-	  @project.total_swifts.each do |swift|
-	    next unless swift.confirmed
-
-	    amount = BigDecimal(swift.amount.to_s)
-	    Rails.logger.debug "Swift Amount Before Currency Conversion: #{amount}"
-
-	    if swift.currency != "dirham"
-	      amount *= BigDecimal('3.67')
-	    end
-	    Rails.logger.debug "Swift Amount After Currency Conversion: #{amount}"
-
-	    @received_swifts << { id: swift.id, amount: amount.to_f.round(2), date: swift.created_at }
-	  end
-
-	  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
-
-	  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
-	  @received_swifts = @received_swifts.sort_by { |swift| swift[:date] }
-
-	  calculate_return_days
-	end
 
 
 
