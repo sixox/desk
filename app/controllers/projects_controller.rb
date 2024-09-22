@@ -145,6 +145,7 @@ def turnover
 
   @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
   @received_swifts.sort_by! { |swift| swift[:date] }
+  Rails.logger.debug "after @received_swifts: #{@received_swifts.inspect}"
 
   # Now calculate the days until we get the money back
   calculate_return_days
