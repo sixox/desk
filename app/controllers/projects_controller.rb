@@ -119,6 +119,16 @@ class ProjectsController < ApplicationController
 	    end
 	  end
 
+	    @received_swifts = []
+
+		  @project.total_swifts.each do |swift|
+		    next unless swift.confirmed
+
+		    amount = swift.currency == "dirham" ? swift.amount : convert_amount(swift.amount)
+		    date = swift.created_at
+		    @received_swifts << { id: swift.id, amount: amount, date: date }
+		  end
+
 	  @payments = @advance_payments + @balance_payments
 
   end

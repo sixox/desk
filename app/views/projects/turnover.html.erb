@@ -65,6 +65,26 @@
   </tbody>
 </table>
 
+<h2> Swifts</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Amount</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @received_swifts.each do |payment| %>
+      <tr>
+        <td><%= payment[:id] %></td>
+        <td><%= payment[:amount] %></td>
+        <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
 
 
 
