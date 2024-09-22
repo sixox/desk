@@ -121,12 +121,12 @@ class ProjectsController < ApplicationController
 
 	  # Initialize a hash to store payment date and amount
 	  @payment_hash = @payments.map do |p|
-	    amount = p["currency"] == "dolar" ? convert_amount(p["amount"]) : p["amount"]
+	    amount = p["currency"] == "dollar" ? convert_amount(p["amount"]) : p["amount"]
 	    { amount: amount, date: p["ceo_confirmed_at"] }
 	  end
 
 	  @swift_hash = @swifts.map do |s|
-	    amount = s.currency == "dolar" ? convert_amount(s.amount) : s.amount
+	    amount = s.currency == "dollar" ? convert_amount(s.amount) : s.amount
 	    { amount: amount, date: s.created_at }
 	  end
 
