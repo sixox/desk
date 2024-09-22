@@ -105,17 +105,13 @@ class ProjectsController < ApplicationController
 	    spi_quantity = balance_project.ballance.spi.quantity
 	    pi_quantity = @project.pi.quantity
 
-	    # Debugging output
 	    Rails.logger.debug "Balance Project ID: #{balance_project.id}, SPI Quantity: #{spi_quantity}, PI Quantity: #{pi_quantity}"
 
 	    adjusted_advance_payments = PaymentOrder.where(project: nil, ballance: balance_project.ballance).map do |payment|
-	      # Adjust the amount using the quantities
 	      adjusted_amount = spi_quantity.zero? ? 0 : payment.amount * pi_quantity.to_f / spi_quantity.to_f
 
-	      # Log the original amount and the adjusted amount for comparison
 	      Rails.logger.debug "Payment ID: #{payment.id}, Original Amount: #{payment.amount}, Adjusted Amount: #{adjusted_amount}"
 
-	      # Use adjusted amount in the hash
 	      payment.attributes.merge(amount: adjusted_amount)
 	    end
 
@@ -152,32 +148,31 @@ class ProjectsController < ApplicationController
 	    swift_amount = swift[:amount]
 	    swift_date = swift[:date]
 
-	    # Continue applying payments until the swift is covered
 	    while swift_amount > 0 && !@payment_hash.empty?
 	      payment = @payment_hash.first
 	      payment_amount = payment[:amount]
 	      payment_date = payment[:date]
 
-	      # Amount to apply from this payment
 	      apply_amount = [swift_amount, payment_amount].min
 	      days_outstanding = (swift_date - payment_date).to_i
 
-	      # Calculate weighted days (amount * days outstanding)
 	      total_weighted_days += apply_amount * days_outstanding
 	      total_swift_amount += apply_amount
 
-	      # Update the payment amount and swift amount
 	      payment[:amount] -= apply_amount
 	      swift_amount -= apply_amount
 
-	      # Remove the payment if it's fully applied
 	      @payment_hash.shift if payment[:amount] <= 0
 	    end
 	  end
 
 	  # Calculate DSO by dividing total weighted days by total payments
 	  @dso = @total_payments.zero? ? 0 : (total_weighted_days.to_f / @total_payments).round(2)
+
+	  # Log for debugging
+	  Rails.logger.debug "Total Payments: #{@total_payments}, Total Weighted Days: #{total_weighted_days}, DSO: #{@dso}"
 	end
+
 
 
 
