@@ -109,6 +109,62 @@ class ProjectsController < ApplicationController
 		  @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
 		end
 
+		  # Combine payments and sort them by confirmation date
+	  payments = (@advance_payments + @balance_payments).sort_by(&:ceo_confirmed_at)
+	  swifts = @project.total_swifts.sort_by(&:created_at)
+
+	  # Initialize a hash to store payment date and amount
+		payment_hash = payments.map do |p|
+		  amount = p.currency == "dolar" ? convert_amount(p.amount) : p.amount
+		  { amount: amount, date: p.ceo_confirmed_at }
+		end
+
+		swift_hash = swifts.map do |s|
+		  amount = s.currency == "dolar" ? convert_amount(s.amount) : s.amount
+		  { amount: amount, date: s.created_at }
+		end
+
+		@total_payments = payment_hash.sum { |p| p[:amount] }
+		@total_swifts = swift_hash.sum { |s| s[:amount] }
+
+		# Calculate the profit (total swifts received - total payments made)
+		@profit = @total_swifts - @total_payments
+
+
+	  total_weighted_days = 0
+	  total_swift_amount = 0
+
+	  swift_hash.each do |swift|
+	    swift_amount = swift[:amount]
+	    swift_date = swift[:date]
+
+	    # Continue applying payments until the swift is covered
+	    while swift_amount > 0 && !payment_hash.empty?
+	      payment = payment_hash.first
+	      payment_amount = payment[:amount]
+	      payment_date = payment[:date]
+
+	      # Amount to apply from this payment
+	      apply_amount = [swift_amount, payment_amount].min
+	      days_outstanding = (swift_date - payment_date).to_i
+
+	      # Calculate weighted days (amount * days outstanding)
+	      total_weighted_days += apply_amount * days_outstanding
+	      total_swift_amount += apply_amount
+
+	      # Update the payment amount and swift amount
+	      payment[:amount] -= apply_amount
+	      swift_amount -= apply_amount
+
+	      # Remove the payment if it's fully applied
+	      payment_hash.shift if payment[:amount] <= 0
+	    end
+	  end
+
+	  # Calculate DSO
+	  @dso = total_weighted_days.to_f / total_swift_amount
+    @dso = @dso.round(2)
+
   end
 
 

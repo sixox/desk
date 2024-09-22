@@ -25,7 +25,7 @@
       <% @advance_payments.each do |payment_order| %>
         <tr>
           <td><%= payment_order.id %></td>
-          <td><%=  number_with_delimiter(payment_order.amount, delimiter: ',')%></td>
+          <td><%= number_with_delimiter(payment_order.amount, delimiter: ',')%></td>
           <td><%= payment_order.currency %></td>
           <td><%= payment_order.ballance_id %></td>
           <td><%= payment_order.status %></td>
@@ -69,6 +69,35 @@
   <p>No balance payments found.</p>
 <% end %>
 
+<% if @project.total_swifts %>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        
+        <th>Status</th>
+        <th>CEO Confirmed At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @balance_payments.each do |payment_order| %>
+        <tr>
+          <td><%= payment_order.id %></td>
+          <td><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></td>
+          <td><%= payment_order.currency %></td>
+          <td><%= payment_order.ballance_id %></td>
+          <td><%= payment_order.status %></td>
+          <td><%= payment_order.ceo_confirmed_at.present? ? payment_order.ceo_confirmed_at.strftime('%B %d, %Y %H:%M') : 'Not Confirmed' %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No balance payments found.</p>
+<% end %>
+
 
 
 
@@ -76,3 +105,12 @@
   <p>Some payments are still pending for this project.</p>
 <% end %>
 </div>
+
+
+dso = <%= @dso %>
+<hr>
+total swift = <%= @total_swifts %>
+<hr>
+total payment = <%= @total_payments %>
+<hr>
+total profit = <%= @profit %>
