@@ -71,7 +71,7 @@
 
     <!-- Swifts -->
     <h3>Swifts</h3>
-    <% if @project.total_swifts.any? %>
+    <% if @swifts.any? %>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -82,7 +82,7 @@
           </tr>
         </thead>
         <tbody>
-          <% @project.total_swifts.each do |swift| %>
+          <% @swifts.each do |swift| %>
             <tr>
               <td><%= swift.id %></td>
               <td><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
@@ -106,7 +106,7 @@
         </tr>
       </thead>
       <tbody>
-        <% payment_hash.each do |payment| %>
+        <% @payment_hash.each do |payment| %>
           <tr>
             <td><%= number_with_delimiter(payment[:amount], delimiter: ',') %></td>
             <td><%= payment[:date].strftime('%B %d, %Y') %></td>
@@ -125,7 +125,7 @@
         </tr>
       </thead>
       <tbody>
-        <% swift_hash.each do |swift| %>
+        <% @swift_hash.each do |swift| %>
           <tr>
             <td><%= number_with_delimiter(swift[:amount], delimiter: ',') %></td>
             <td><%= swift[:date].strftime('%B %d, %Y') %></td>

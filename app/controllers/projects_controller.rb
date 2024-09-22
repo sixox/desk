@@ -95,7 +95,7 @@ class ProjectsController < ApplicationController
   	@pi = @project.pi
   end
 
-  def turnover
+	def turnover
 	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
 	  balance_projects = @project.ballance_projects
 	  @advance_payments = []
@@ -116,22 +116,22 @@ class ProjectsController < ApplicationController
 	  end
 
 	  # Combine payments and sort them by confirmation date
-	  payments = (@advance_payments + @balance_payments).sort_by { |p| p["ceo_confirmed_at"] }
-	  swifts = @project.total_swifts.sort_by(&:created_at)
+	  @payments = (@advance_payments + @balance_payments).sort_by { |p| p["ceo_confirmed_at"] }
+	  @swifts = @project.total_swifts.sort_by(&:created_at)
 
 	  # Initialize a hash to store payment date and amount
-	  payment_hash = payments.map do |p|
+	  @payment_hash = @payments.map do |p|
 	    amount = p["currency"] == "dolar" ? convert_amount(p["amount"]) : p["amount"]
 	    { amount: amount, date: p["ceo_confirmed_at"] }
 	  end
 
-	  swift_hash = swifts.map do |s|
+	  @swift_hash = @swifts.map do |s|
 	    amount = s.currency == "dolar" ? convert_amount(s.amount) : s.amount
 	    { amount: amount, date: s.created_at }
 	  end
 
-	  @total_payments = payment_hash.sum { |p| p[:amount] }
-	  @total_swifts = swift_hash.sum { |s| s[:amount] }
+	  @total_payments = @payment_hash.sum { |p| p[:amount] }
+	  @total_swifts = @swift_hash.sum { |s| s[:amount] }
 
 	  # Calculate the profit (total swifts received - total payments made)
 	  @profit = @total_swifts - @total_payments
@@ -139,13 +139,13 @@ class ProjectsController < ApplicationController
 	  total_weighted_days = 0
 	  total_swift_amount = 0
 
-	  swift_hash.each do |swift|
+	  @swift_hash.each do |swift|
 	    swift_amount = swift[:amount]
 	    swift_date = swift[:date]
 
 	    # Continue applying payments until the swift is covered
-	    while swift_amount > 0 && !payment_hash.empty?
-	      payment = payment_hash.first
+	    while swift_amount > 0 && !@payment_hash.empty?
+	      payment = @payment_hash.first
 	      payment_amount = payment[:amount]
 	      payment_date = payment[:date]
 
@@ -162,7 +162,7 @@ class ProjectsController < ApplicationController
 	      swift_amount -= apply_amount
 
 	      # Remove the payment if it's fully applied
-	      payment_hash.shift if payment[:amount] <= 0
+	      @payment_hash.shift if payment[:amount] <= 0
 	    end
 	  end
 
@@ -170,6 +170,7 @@ class ProjectsController < ApplicationController
 	  @dso = total_weighted_days.to_f / total_swift_amount
 	  @dso = @dso.round(2)
 	end
+
 
 
 
