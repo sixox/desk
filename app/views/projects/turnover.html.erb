@@ -136,15 +136,9 @@
 
     <!-- Displaying Calculated DSO -->
     <h3>Calculated DSO</h3>
-    <p>DSO: <%= @dso %></p>
+    <p>DSO: <%= @dso %> Days</p>
 
-    <!-- Summary Information -->
-    <hr>
-    <p>Total Swift Amount: <%= number_with_delimiter(@total_swifts, delimiter: ',') %></p>
-    <hr>
-    <p>Total Payment Amount: <%= number_with_delimiter(@total_payments, delimiter: ',') %></p>
-    <hr>
-    <p>Total Profit: <%= number_with_delimiter(@profit, delimiter: ',') %></p>
+
 
   <% else %>
     <p>Some payments are still pending for this project.</p>

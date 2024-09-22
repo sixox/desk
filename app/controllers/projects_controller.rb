@@ -133,9 +133,7 @@ class ProjectsController < ApplicationController
 	  @total_payments = @payment_hash.sum { |p| p[:amount] }
 	  @total_swifts = @swift_hash.sum { |s| s[:amount] }
 
-	  # Calculate the profit (total swifts received - total payments made)
-	  @profit = @total_swifts - @total_payments
-
+	  # Calculate total weighted days
 	  total_weighted_days = 0
 	  total_swift_amount = 0
 
@@ -166,10 +164,11 @@ class ProjectsController < ApplicationController
 	    end
 	  end
 
-	  # Calculate DSO
-	  @dso = total_weighted_days.to_f / total_swift_amount
+	  # Calculate DSO by dividing total weighted days by total payments
+	  @dso = total_weighted_days.to_f / @total_payments
 	  @dso = @dso.round(2)
 	end
+
 
 
 
