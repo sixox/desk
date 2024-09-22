@@ -185,6 +185,7 @@ end
 def calculate_return_days
   remaining_payment = 0
   payment_index = 0
+  swift_index = 0 # Initialize swift_index here
   swift_ids = @received_swifts.keys.sort # Get sorted IDs of swifts
   total_weighted_amount = 0
 
@@ -216,6 +217,7 @@ def calculate_return_days
 
   @total_weighted_amount = total_weighted_amount
 end
+
 
 
 
