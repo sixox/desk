@@ -121,19 +121,21 @@ def turnover
     end
   end
 
-	  @received_swifts = {}
+  @received_swifts = {}
 
-	  @project.total_swifts.each do |swift|
-	    next unless swift.confirmed
+  @project.total_swifts.each do |swift|
+    next unless swift.confirmed
 
-	    amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
-	    @received_swifts[swift.id] = { amount: amount.to_f, date: swift.created_at }
-	  end
+    amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
+    @received_swifts[swift.id] = { amount: amount.to_f, date: swift.created_at }
+  end
 
-	  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
+  # Sort by date
+  @received_swifts = @received_swifts.sort_by { |swift_id, swift_data| swift_data[:date] }.to_h
+
+  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
 
   @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
-  @received_swifts.sort_by! { |swift| swift[:date] }
 
   # Now calculate the days until we get the money back
   calculate_return_days
