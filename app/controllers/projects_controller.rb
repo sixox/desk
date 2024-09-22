@@ -121,16 +121,24 @@ def turnover
     end
   end
 
+	require 'bigdecimal'
+	require 'bigdecimal/util' # Allows String and Integer to use .to_d
+
 	@received_swifts = []
 
 	# Gather received swifts
 	@project.total_swifts.each do |swift|
 	  next unless swift.confirmed
 
-	  amount = swift.currency == "dirham" ? swift.amount.to_f : swift.amount.to_f * 3.67
+	  amount = if swift.currency == "dirham"
+	             swift.amount.to_d
+	           else
+	             (swift.amount.to_d * BigDecimal("3.67"))
+	           end.round(2)
+
 	  date = swift.created_at
 
-	  @received_swifts << { id: swift.id, amount: amount.round(2), date: date }
+	  @received_swifts << { id: swift.id, amount: amount.to_f, date: date }
 	end
 
 	Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
