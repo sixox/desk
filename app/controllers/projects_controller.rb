@@ -98,43 +98,38 @@ class ProjectsController < ApplicationController
   def turnover
 	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
 	  balance_projects = @project.ballance_projects
-	  @advance_payments = []
-	  @balance_payments = []
+		@advance_payments = []
+		@balance_payments = []
 
-	  balance_projects.each do |balance_project|
-	    # Adjust advance payment based on project.pi.quantity ratio
-	    adjusted_advance_payments = PaymentOrder.where(project: nil, ballance: balance_project.ballance).map do |payment|
-	      adjusted_amount = payment.amount * @project.pi.quantity / balance_project.ballance.spi.quantity
-	      payment.attributes.merge(amount: adjusted_amount) # Adjust the amount in the hash
-	    end
+		balance_projects.each do |balance_project|
+		  @advance_payments.push(*PaymentOrder.where(project: nil, ballance: balance_project.ballance))
+		end
 
-	    @advance_payments.push(*adjusted_advance_payments)
-	  end
+		balance_projects.each do |balance_project|
+		  @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
+		end
 
-	  balance_projects.each do |balance_project|
-	    @balance_payments.push(*PaymentOrder.where(project: @project, ballance: balance_project.ballance))
-	  end
-
-	  # Combine payments and sort them by confirmation date
-	  payments = (@advance_payments + @balance_payments).sort_by { |p| p["ceo_confirmed_at"] }
+		  # Combine payments and sort them by confirmation date
+	  payments = (@advance_payments + @balance_payments).sort_by(&:ceo_confirmed_at)
 	  swifts = @project.total_swifts.sort_by(&:created_at)
 
 	  # Initialize a hash to store payment date and amount
-	  payment_hash = payments.map do |p|
-	    amount = p["currency"] == "dolar" ? convert_amount(p["amount"]) : p["amount"]
-	    { amount: amount, date: p["ceo_confirmed_at"] }
-	  end
+		payment_hash = payments.map do |p|
+		  amount = p.currency == "dolar" ? convert_amount(p.amount) : p.amount
+		  { amount: amount, date: p.ceo_confirmed_at }
+		end
 
-	  swift_hash = swifts.map do |s|
-	    amount = s.currency == "dolar" ? convert_amount(s.amount) : s.amount
-	    { amount: amount, date: s.created_at }
-	  end
+		swift_hash = swifts.map do |s|
+		  amount = s.currency == "dolar" ? convert_amount(s.amount) : s.amount
+		  { amount: amount, date: s.created_at }
+		end
 
-	  @total_payments = payment_hash.sum { |p| p[:amount] }
-	  @total_swifts = swift_hash.sum { |s| s[:amount] }
+		@total_payments = payment_hash.sum { |p| p[:amount] }
+		@total_swifts = swift_hash.sum { |s| s[:amount] }
 
-	  # Calculate the profit (total swifts received - total payments made)
-	  @profit = @total_swifts - @total_payments
+		# Calculate the profit (total swifts received - total payments made)
+		@profit = @total_swifts - @total_payments
+
 
 	  total_weighted_days = 0
 	  total_swift_amount = 0
@@ -168,9 +163,9 @@ class ProjectsController < ApplicationController
 
 	  # Calculate DSO
 	  @dso = total_weighted_days.to_f / total_swift_amount
-	  @dso = @dso.round(2)
-	end
+    @dso = @dso.round(2)
 
+  end
 
 
 
