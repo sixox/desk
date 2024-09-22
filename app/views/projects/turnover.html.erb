@@ -75,11 +75,11 @@
     </tr>
   </thead>
   <tbody>
-    <% @received_swifts.each do |payment| %>
+    <% @received_swifts.each do |swift| %>
       <tr>
-        <td><%= payment[:id] %></td>
-        <td><%= payment[:amount].to_i %></td>
-        <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
+        <td><%= swift[:id] %></td>
+        <td><%= swift[:amount] %></td>
+        <td><%= swift[:date].strftime("%Y-%m-%d") if swift[:date] %></td>
       </tr>
     <% end %>
   </tbody>

@@ -105,9 +105,9 @@ class ProjectsController < ApplicationController
 	  balance_projects.each do |balance_project|
 	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
 	    advance_orders.each do |payment_order|
-	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
+	      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
 	      amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
-	      @advance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
+	      @advance_payments << { id: payment_order.id, amount: amount.to_i, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
@@ -115,8 +115,8 @@ class ProjectsController < ApplicationController
 	  balance_projects.each do |balance_project|
 	    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
 	    balance_orders.each do |payment_order|
-	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
-	      @balance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
+	      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
+	      @balance_payments << { id: payment_order.id, amount: amount.to_i, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
@@ -126,15 +126,12 @@ class ProjectsController < ApplicationController
 	  @project.total_swifts.each do |swift|
 	    next unless swift.confirmed
 
-	    amount = swift.currency == "dirham" ? swift.amount : convert_amount(swift.amount)
+	    amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
 	    date = swift.created_at
-	      Rails.logger.debug "Swift ID: #{swift.id}, Amount: #{swift.amount}, Converted Amount: #{amount}, Date: #{date}, Currency: #{swift.currency}"
 
-	    @received_swifts << { id: swift.id, amount: amount, date: date }
-	      Rails.logger.debug "@received_swifts after adding: #{@received_swifts.inspect}"
+	    @received_swifts << { id: swift.id, amount: amount.to_i, date: date }
 
 	  end
-	  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
 
 
 	  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
