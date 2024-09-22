@@ -96,29 +96,31 @@ class ProjectsController < ApplicationController
   end
 
 	def turnover
+	  require 'bigdecimal'  # Ensure BigDecimal is available
+
 	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
 	  balance_projects = @project.ballance_projects
 	  @advance_payments = []
 	  @balance_payments = []
 
-	  # Gather advance payments
+	  # Use BigDecimal for precise calculations of net_weight and payment amounts
+	  net_weight_sum = BigDecimal(@project.cis.sum(:net_weight).to_s)
+	  
 	  balance_projects.each do |balance_project|
+	    spi_quantity = BigDecimal(balance_project.ballance.spi.quantity.to_s)
+
+	    # Gather advance payments
 	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
 	    advance_orders.each do |payment_order|
-	      # Convert amount to integer (or bigint)
-	      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : (payment_order.amount.to_f * 3.67).to_i
-	      Rails.logger.debug "Converted Advance Payment Amount: #{amount}"
+	      amount = BigDecimal(payment_order.amount.to_s)
+	      if payment_order.currency != "dirham"
+	        amount *= BigDecimal('3.67')  # Handle currency conversion
+	      end
 
-	      # Convert sum of net weight and quantity to integers
-	      net_weight_sum = @project.cis.sum(:net_weight).to_i
-	      spi_quantity = balance_project.ballance.spi.quantity.to_i
-	      Rails.logger.debug "Net Weight Sum (Int): #{net_weight_sum}, SPI Quantity (Int): #{spi_quantity}"
-
-	      # Perform the multiplication with integers
+	      # Avoid early conversion to integers for precision
 	      amount *= (net_weight_sum / spi_quantity)
-	      Rails.logger.debug "Final Calculated Amount (Int): #{amount}"
 
-	      @advance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
+	      @advance_payments << { id: payment_order.id, amount: amount.to_f.round(2), date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
@@ -126,11 +128,12 @@ class ProjectsController < ApplicationController
 	  balance_projects.each do |balance_project|
 	    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
 	    balance_orders.each do |payment_order|
-	      # Convert balance payment amount to integer (or bigint)
-	      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : (payment_order.amount.to_f * 3.67).to_i
-	      Rails.logger.debug "Converted Balance Payment Amount: #{amount}"
+	      amount = BigDecimal(payment_order.amount.to_s)
+	      if payment_order.currency != "dirham"
+	        amount *= BigDecimal('3.67')  # Handle currency conversion
+	      end
 
-	      @balance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
+	      @balance_payments << { id: payment_order.id, amount: amount.to_f.round(2), date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
@@ -140,16 +143,16 @@ class ProjectsController < ApplicationController
 	  @project.total_swifts.each do |swift|
 	    next unless swift.confirmed
 
-	    # Convert swift amount to integer (or bigint)
-	    amount = swift.currency == "dirham" ? swift.amount.to_i : (swift.amount.to_f * 3.67).to_i
-	    date = swift.created_at
+	    amount = BigDecimal(swift.amount.to_s)
+	    if swift.currency != "dirham"
+	      amount *= BigDecimal('3.67')  # Handle currency conversion
+	    end
 
-	    Rails.logger.debug "Converted Swift Amount: #{amount}, Date: #{date}"
-
-	    @received_swifts << { id: swift.id, amount: amount, date: date }
+	    # Convert amount to float only for final output
+	    @received_swifts << { id: swift.id, amount: amount.to_f.round(2), date: swift.created_at }
 	  end
 
-	  # Log final @received_swifts to check amounts
+	  # Log the final result to verify correctness
 	  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
 
 	  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
@@ -158,6 +161,7 @@ class ProjectsController < ApplicationController
 	  # Now calculate the days until we get the money back
 	  calculate_return_days
 	end
+
 
 
 
