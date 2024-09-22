@@ -95,18 +95,19 @@ class ProjectsController < ApplicationController
   	@pi = @project.pi
   end
 
-  def turnover
+	def turnover
 	  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
 	  balance_projects = @project.ballance_projects
-		@advance_payments = []
-		@balance_payments = []
+	  @advance_payments = []
+	  @balance_payments = []
 
+	  # Gather advance payments
 	  balance_projects.each do |balance_project|
 	    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
 	    advance_orders.each do |payment_order|
 	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
 	      amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
-	      @advance_payments << { id: payment_order.id,amount: amount, date: payment_order.ceo_confirmed_at }
+	      @advance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
@@ -115,23 +116,27 @@ class ProjectsController < ApplicationController
 	    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
 	    balance_orders.each do |payment_order|
 	      amount = payment_order.currency == "dirham" ? payment_order.amount : convert_amount(payment_order.amount)
-	      @balance_payments << { id: payment_order.id,amount: amount, date: payment_order.ceo_confirmed_at }
+	      @balance_payments << { id: payment_order.id, amount: amount, date: payment_order.ceo_confirmed_at }
 	    end
 	  end
 
-	    @received_swifts = []
+	  @received_swifts = []
 
-		  @project.total_swifts.each do |swift|
-		    next unless swift.confirmed
+	  # Gather received swifts
+	  @project.total_swifts.each do |swift|
+	    next unless swift.confirmed
 
-		    amount = swift.currency == "dirham" ? swift.amount : convert_amount(swift.amount)
-		    date = swift.created_at
-		    @received_swifts << { id: swift.id, amount: amount, date: date }
-		  end
+	    amount = swift.currency == "dirham" ? swift.amount : convert_amount(swift.amount)
+	    date = swift.created_at
+	    @received_swifts << { id: swift.id, amount: amount, date: date }
+	  end
 
-	  @payments = @advance_payments + @balance_payments
+	  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
+	  @received_swifts = @received_swifts.sort_by { |swift| swift[:date] }
 
-  end
+	  # Now calculate the days until we get the money back
+	  calculate_return_days
+	end
 
 
 
@@ -166,6 +171,40 @@ class ProjectsController < ApplicationController
 
 	def project_params
 		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started )
+	end
+
+	def calculate_return_days
+	  remaining_payment = 0
+	  payment_index = 0
+	  swift_index = 0
+	  total_weighted_amount = 0
+
+	  # Traverse through payments and swifts
+	  while payment_index < @payments.size && swift_index < @received_swifts.size
+	    payment = @payments[payment_index]
+	    swift = @received_swifts[swift_index]
+
+	    payment_date = payment[:date]
+	    swift_date = swift[:date]
+	    days_between = (swift_date - payment_date).to_i # Days until this payment is covered by a swift
+
+	    if payment[:amount] - remaining_payment <= swift[:amount]
+	      # If swift covers the remaining payment
+	      paid_amount = payment[:amount] - remaining_payment
+	      remaining_payment = 0
+	      total_weighted_amount += paid_amount * days_between
+	      swift[:amount] -= paid_amount
+	      payment_index += 1
+	    else
+	      # If swift does not fully cover the payment
+	      remaining_payment = payment[:amount] - swift[:amount]
+	      total_weighted_amount += swift[:amount] * days_between
+	      swift[:amount] = 0
+	      swift_index += 1
+	    end
+	  end
+
+	  @total_weighted_amount = total_weighted_amount
 	end
 
 
