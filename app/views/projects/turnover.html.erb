@@ -1,48 +1,148 @@
 <div class="col-lg-10 mx-auto mt-5">
 
-<% if @all_payments_done %>
-  <p>All payments are done for this project.</p>
+  <% if @all_payments_done %>
+    <p>All payments are done for this project.</p>
 
-  <hr>
+    <hr>
 
-  <h2>Payments for <%= @project.name %></h2>
+    <h2>Payments for <%= @project.name %></h2>
 
-  <!-- Advance Payments -->
-  <h3>Advance Payments</h3>
-  <% if @advance_payments.any? %>
-    <pre><%= @advance_payments.map(&:attributes).to_json %></pre>
+    <!-- Advance Payments -->
+    <h3>Advance Payments</h3>
+    <% if @advance_payments.any? %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Balance ID</th>
+            <th>Status</th>
+            <th>CEO Confirmed At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @advance_payments.each do |payment_order| %>
+            <tr>
+              <td><%= payment_order["id"] %></td>
+              <td><%= number_with_delimiter(payment_order["amount"], delimiter: ',') %></td>
+              <td><%= payment_order["currency"] %></td>
+              <td><%= payment_order["ballance_id"] %></td>
+              <td><%= payment_order["status"] %></td>
+              <td><%= payment_order["ceo_confirmed_at"].present? ? payment_order["ceo_confirmed_at"].strftime('%B %d, %Y %H:%M') : 'Not Confirmed' %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No advance payments found.</p>
+    <% end %>
+
+    <!-- Balance Payments -->
+    <h3>Balance Payments</h3>
+    <% if @balance_payments.any? %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Balance ID</th>
+            <th>Status</th>
+            <th>CEO Confirmed At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @balance_payments.each do |payment_order| %>
+            <tr>
+              <td><%= payment_order["id"] %></td>
+              <td><%= number_with_delimiter(payment_order["amount"], delimiter: ',') %></td>
+              <td><%= payment_order["currency"] %></td>
+              <td><%= payment_order["ballance_id"] %></td>
+              <td><%= payment_order["status"] %></td>
+              <td><%= payment_order["ceo_confirmed_at"].present? ? payment_order["ceo_confirmed_at"].strftime('%B %d, %Y %H:%M') : 'Not Confirmed' %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No balance payments found.</p>
+    <% end %>
+
+    <!-- Swifts -->
+    <h3>Swifts</h3>
+    <% if @swifts.any? %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @swifts.each do |swift| %>
+            <tr>
+              <td><%= swift.id %></td>
+              <td><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
+              <td><%= swift.currency %></td>
+              <td><%= swift.created_at.strftime('%B %d, %Y %H:%M') %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No swifts found.</p>
+    <% end %>
+
+    <!-- Payment Hash (For DSO Calculation) -->
+    <h3>Payment Hash (Used in DSO Calculation)</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @payment_hash.each do |payment| %>
+          <tr>
+            <td><%= number_with_delimiter(payment[:amount], delimiter: ',') %></td>
+            <td><%= payment[:date].strftime('%B %d, %Y') %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <!-- Swift Hash (For DSO Calculation) -->
+    <h3>Swift Hash (Used in DSO Calculation)</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @swift_hash.each do |swift| %>
+          <tr>
+            <td><%= number_with_delimiter(swift[:amount], delimiter: ',') %></td>
+            <td><%= swift[:date].strftime('%B %d, %Y') %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <!-- Displaying Calculated DSO -->
+    <h3>Calculated DSO</h3>
+    <p>DSO: <%= @dso %> Days</p>
+
+
+
   <% else %>
-    <p>No advance payments found.</p>
+    <p>Some payments are still pending for this project.</p>
   <% end %>
-
-  <!-- Balance Payments -->
-  <h3>Balance Payments</h3>
-  <% if @balance_payments.any? %>
-    <pre><%= @balance_payments.map(&:attributes).to_json %></pre>
-  <% else %>
-    <p>No balance payments found.</p>
-  <% end %>
-
-  <!-- Swift Hash -->
-  <h3>Swift Hash (Used in DSO Calculation)</h3>
-  <% if @swift_hash.any? %>
-    <pre><%= @swift_hash.to_json %></pre>
-  <% else %>
-    <p>No swifts found.</p>
-  <% end %>
-
-  <!-- Calculated DSO -->
-  <h3>Calculated DSO</h3>
-  <p>DSO: <%= @dso.round %> days</p>
-
-  <hr>
-  <p>Total Swift: <%= number_with_delimiter(@total_swifts, delimiter: ',') %></p>
-  <hr>
-  <p>Total Payment: <%= number_with_delimiter(@total_payments, delimiter: ',') %></p>
-  <hr>
-  <p>Total Profit: <%= number_with_delimiter(@profit, delimiter: ',') %></p>
-
-<% else %>
-  <p>Some payments are still pending for this project.</p>
-<% end %>
 </div>
+
+
