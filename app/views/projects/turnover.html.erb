@@ -2,50 +2,11 @@
 
 <% if @all_payments_done %>
   <p>All payments are completed.</p>
+  <h2>Results</h2>
+<p>Total Days Until Money Back: <%= @return_days %></p>
 <% else %>
   <p>Some payments are still pending.</p>
 <% end %>
 
-<h2>Results</h2>
-<p>Total Days Until Money Back: <%= @final_days %></p>
-<p>Profit: <%= number_to_currency(@profit) %></p>
 
-<h3>Payments</h3>
-<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Amount</th>
-      <th>Date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @payments.each do |payment_id, payment_data| %>
-      <tr>
-        <td><%= payment_id %></td>
-        <td><%= number_with_precision(payment_data[:amount], precision: 2, delimiter: ',') %></td>
-        <td><%= payment_data[:date].strftime("%Y-%m-%d") %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
 
-<h3>Received Swifts</h3>
-<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Amount</th>
-      <th>Date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @received_swifts.each do |swift_id, swift_data| %>
-      <tr>
-        <td><%= swift_id %></td>
-        <td><%= number_with_precision(swift_data[:amount], precision: 2, delimiter: ',') %></td>
-        <td><%= swift_data[:date].strftime("%Y-%m-%d") %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
