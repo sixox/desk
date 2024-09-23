@@ -1,4 +1,4 @@
-<% if  current_user.id == 30 || current_user.admin? || current_user.sales? || (current_user.is_manager && current_user.procurement?)%>
+<% if  current_user.id == 30 || current_user.admin? || current_user.sales? || (current_user.is_manager && current_user.procurement?) || (current_user.seo?)%>
 <div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4" style="background: #ced1e1;">
 		<h2 class="card-title mb-2 text-success"><i class="bi bi-gear-fill"></i> Actions</h2>
@@ -175,6 +175,10 @@
 						<small class="text-success">
 							<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">NEW CI</span>
+							<% end %>
+							<span class="text-primary"> | </span>
+							<%= link_to turnover_project_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+							<span class="mb-1 timeline-h5">DAYS SALES OUTSTANDING</span>
 							<% end %>
 
 						</small>
