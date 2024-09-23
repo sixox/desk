@@ -185,40 +185,39 @@ class ProjectsController < ApplicationController
 		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started )
 	end
 
-	def calculate_return_days_and_profit(payments, received_swifts)
-    final = 0
-    total_payments = payments.sum { |_, payment| payment[:amount] }
-    remaining_payment_amount = 0
+def calculate_return_days_and_profit(payments, received_swifts)
+  final = 0
+  total_payments = payments.sum { |_, payment| payment[:amount] }
+  remaining_payment_amount = 0
 
-    payments = payments.to_a
-    received_swifts = received_swifts.to_a
-    payment_index = 0
-    swift_index = 0
+  payments = payments.to_a
+  received_swifts = received_swifts.to_a
+  payment_index = 0
+  swift_index = 0
 
-    # Traverse through payments and swifts
-    while payment_index < payments.size && swift_index < received_swifts.size
-      payment_id, payment = payments[payment_index]
-      swift_id, swift = received_swifts[swift_index]
+  # Traverse through payments and swifts
+  while payment_index < payments.size && swift_index < received_swifts.size
+    payment_id, payment = payments[payment_index]
+    swift_id, swift = received_swifts[swift_index]
 
-      days_between = (swift[:date] - payment[:date]).to_i.abs
+    days_between = (swift[:date] - payment[:date]).to_i.abs
 
-      if payment[:amount] >= swift[:amount]
-        final += swift[:amount] * days_between
-        payment[:amount] -= swift[:amount]
-        swift[:amount] = 0
-        swift_index += 1 # Move to the next swift
-      else
-        final += payment[:amount] * days_between
-        swift[:amount] -= payment[:amount]
-        remaining_payment_amount += (payment[:amount] - swift[:amount])
-        payment_index += 1 # Move to the next payment
-      end
+    if payment[:amount] >= swift[:amount]
+      final += swift[:amount] * days_between
+      payment[:amount] -= swift[:amount]
+      swift_index += 1 # Move to the next swift
+    else
+      final += payment[:amount] * days_between
+      swift[:amount] -= payment[:amount]
+      remaining_payment_amount += (payment[:amount] - swift[:amount])
+      payment_index += 1 # Move to the next payment
     end
-
-    profit = remaining_payment_amount
-
-    { return_days: total_payments > 0 ? final / total_payments : 0, profit: profit }
   end
+
+  profit = remaining_payment_amount
+
+  { return_days: total_payments > 0 ? final / total_payments : 0, profit: profit }
+end
 
 
 
