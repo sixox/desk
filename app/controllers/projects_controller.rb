@@ -102,6 +102,7 @@ def turnover
 		@advance_payments = {}
     @balance_payments = {}
 
+
     # Gather advance payments
     balance_projects.each do |balance_project|
       advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
@@ -135,10 +136,7 @@ def turnover
 
     # Combine advance and balance payments into a single hash
     @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
-    @pay = {}
-    @rec = {}
-    @pay = @payments
-    @rec = @received_swifts
+
     # Calculate return days and profit
     calculate_return_days_and_profit
   end
@@ -231,15 +229,4 @@ def calculate_return_days_and_profit
   # Log final results
   Rails.logger.debug "Total Payments: #{@total_payments}, Final: #{@final}, Profit: #{@profit}, Return Days: #{@return_days}"
 end
-
-
-
-
-
-
-
-
-
-
-
 end
