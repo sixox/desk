@@ -137,9 +137,9 @@ class ProjectsController < ApplicationController
     @payments = @advance_payments.merge(@balance_payments).sort_by { |_, payment_data| payment_data[:date] }.to_h
 
     # Calculate return days and profit
-    result = calculate_return_days_and_profit(@payments, @received_swifts)
-    @final_days = result[:return_days]
-    @profit = result[:profit]
+    # result = calculate_return_days_and_profit(@payments, @received_swifts)
+    # @final_days = result[:return_days]
+    # @profit = result[:profit]
   end
 
 
