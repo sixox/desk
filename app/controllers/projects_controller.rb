@@ -137,7 +137,7 @@ def turnover
   @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
 
   # Calculate return days and profit
-  @final_days, @profit = calculate_return_days(@payments, @received_swifts)
+  @final_days, @profit = calculate_return_days_and_profit(@payments, @received_swifts)
 end
 
 
