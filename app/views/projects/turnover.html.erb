@@ -4,86 +4,44 @@
   <p>All payments are done for this project.</p>
 
 
-  <h2>Advance Payments</h2>
-<table class="table">
+ <table>
   <thead>
     <tr>
-            <th>ID</th>
-
+      <th>Payment ID</th>
       <th>Amount</th>
       <th>Date</th>
     </tr>
   </thead>
   <tbody>
-    <% @advance_payments.each do |payment| %>
+    <% @payments.each do |payment_id, payment| %>
       <tr>
-        <td><%= payment[:id] %></td>
-        <td><%= payment[:amount] %></td>
+        <td><%= payment_id %></td>
+        <td><%= number_with_precision(payment[:amount], precision: 2, delimiter: ',') %></td>
         <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
-<h2>Balance Payments</h2>
-<table class="table">
+<table>
   <thead>
     <tr>
-      <th>ID</th>
+      <th>Swift ID</th>
       <th>Amount</th>
       <th>Date</th>
     </tr>
   </thead>
   <tbody>
-    <% @balance_payments.each do |payment| %>
-      <tr>
-        <td><%= payment[:id] %></td>
-        <td><%= payment[:amount] %></td>
-        <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<h2> Payments</h2>
-<table class="table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Amount</th>
-      <th>Date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @payments.each do |payment| %>
-      <tr>
-        <td><%= payment[:id] %></td>
-        <td><%= payment[:amount] %></td>
-        <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<h2>Swifts</h2>
-<table class="table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Amount</th>
-      <th>Date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @received_swifts.each do |swift_id, swift_data| %>
+    <% @received_swifts.each do |swift_id, swift| %>
       <tr>
         <td><%= swift_id %></td>
-        <td><%= number_with_precision(swift_data[:amount], precision: 2, delimiter: ',') %></td>
-        <td><%= swift_data[:date].strftime("%Y-%m-%d") if swift_data[:date] %></td>
+        <td><%= number_with_precision(swift[:amount], precision: 2, delimiter: ',') %></td>
+        <td><%= swift[:date].strftime("%Y-%m-%d") if swift[:date] %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
 
 
 

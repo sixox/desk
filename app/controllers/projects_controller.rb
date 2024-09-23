@@ -99,8 +99,8 @@ class ProjectsController < ApplicationController
 def turnover
   @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
   balance_projects = @project.ballance_projects
-  @advance_payments = []
-  @balance_payments = []
+  @advance_payments = {}
+  @balance_payments = {}
 
   # Gather advance payments
   balance_projects.each do |balance_project|
@@ -108,7 +108,7 @@ def turnover
     advance_orders.each do |payment_order|
       amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
       amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
-      @advance_payments << { id: payment_order.id, amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+      @advance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
     end
   end
 
@@ -117,7 +117,7 @@ def turnover
     balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
     balance_orders.each do |payment_order|
       amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
-      @balance_payments << { id: payment_order.id, amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+      @balance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
     end
   end
 
@@ -130,16 +130,18 @@ def turnover
     @received_swifts[swift.id] = { amount: amount.to_f, date: swift.created_at }
   end
 
-  # Sort by date
+  # Sort @received_swifts by date
   @received_swifts = @received_swifts.sort_by { |swift_id, swift_data| swift_data[:date] }.to_h
 
-  Rails.logger.debug "Final @received_swifts: #{@received_swifts.inspect}"
+  # Combine advance and balance payments into a single hash
+  @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
 
-  @payments = (@advance_payments + @balance_payments).sort_by { |payment| payment[:date] }
 
-  # Now calculate the days until we get the money back
+
+  # Calculate the days until we get the money back
   calculate_return_days
 end
+
 
 
 
@@ -184,24 +186,23 @@ end
 
 def calculate_return_days
   total_weighted_days = 0
-  total_investment = @payments.sum { |payment| payment[:amount] }
+  total_investment = @payments.values.sum { |payment| payment[:amount] }
   remaining_payment = 0
-  payment_index = 0
+  payment_ids = @payments.keys.sort
   swift_ids = @received_swifts.keys.sort
+  payment_index = 0
 
   # Traverse through payments
-  while payment_index < @payments.size && remaining_payment < total_investment
-    payment = @payments[payment_index]
+  while payment_index < payment_ids.size && remaining_payment < total_investment
+    payment_id = payment_ids[payment_index]
+    payment = @payments[payment_id]
 
     # Find the corresponding swift for the payment
-    swift = @received_swifts.find { |swift_id, _| swift_id == swift_ids[payment_index] }
+    swift_id = swift_ids[payment_index]
+    swift_data = @received_swifts[swift_id]
 
-    if swift.nil?
-      payment_index += 1
-      next
-    end
+    next unless swift_data
 
-    swift_id, swift_data = swift
     payment_date = payment[:date]
     swift_date = swift_data[:date]
     days_between = (swift_date - payment_date).to_i
