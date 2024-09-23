@@ -99,7 +99,7 @@ class ProjectsController < ApplicationController
 def turnover
     @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
     balance_projects = @project.ballance_projects
-    @advance_payments = {}
+		@advance_payments = {}
     @balance_payments = {}
 
     # Gather advance payments
@@ -135,7 +135,8 @@ def turnover
 
     # Combine advance and balance payments into a single hash
     @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
-
+    @pay = @payments
+    @rec = @received_swifts
     # Calculate return days and profit
     calculate_return_days_and_profit
   end

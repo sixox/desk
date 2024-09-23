@@ -1,3 +1,61 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <% if @project.bookings.present? && @all_payments_done  %>
+  
+ <div class="container">
+  <div class="row">
+    <div class="col-lg-6 col-12 mb-4">
+      <div class="card card-custom mt-1 h-100">
+        <div class="card-body d-flex flex-column">
+          <h3>Payments</h3>
+          <table class="table table-striped flex-grow-1">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @pay.each do |payment_id, payment_data| %>
+              <tr>
+                <td><%= payment_id %></td>
+                <td><%= number_with_precision(payment_data[:amount], precision: 2, delimiter: ',') %></td>
+                <td><%= payment_data[:date].strftime("%Y-%m-%d") %></td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 col-12 mb-4">
+      <div class="card card-custom mt-1 h-100">
+        <div class="card-body d-flex flex-column">
+          <h3>Received Swifts</h3>
+          <table class="table table-striped flex-grow-1">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @rec.each do |swift_id, swift_data| %>
+              <tr>
+                <td><%= swift_id %></td>
+                <td><%= number_with_precision(swift_data[:amount], precision: 2, delimiter: ',') %></td>
+                <td><%= swift_data[:date].strftime("%Y-%m-%d") %></td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
@@ -5,15 +63,15 @@
 
 
 
-<h1>Turnover Report</h1>
+  <h1>Turnover Report</h1>
 
-<% if @all_payments_done  %>
+
   <p>All payments are completed.</p>
   <h2>Results</h2>
-<p>Total Days Until Money Back: <%= @return_days %></p>
-<% else %>
+  <p>Total Days Until Money Back: <%= @return_days %></p>
+  <% else %>
   <p>Some payments are still pending.</p>
-<% end %>
+  <% end %>
 
 
-
+</div>
