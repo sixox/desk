@@ -3,8 +3,12 @@
 <% if @all_payments_done %>
   <p>All payments are done for this project.</p>
 
+<h2>Project Turnover</h2>
 
- <table>
+<p>Total weighted days to return investment: <%= @final_days %></p>
+<p>Remaining profit from payments: <%= number_to_currency(@profit, unit: 'AED') %></p>
+
+<table>
   <thead>
     <tr>
       <th>Payment ID</th>
@@ -13,11 +17,11 @@
     </tr>
   </thead>
   <tbody>
-    <% @payments.each do |payment_id, payment| %>
+    <% @payments.each do |payment_id, payment_data| %>
       <tr>
         <td><%= payment_id %></td>
-        <td><%= number_with_precision(payment[:amount], precision: 2, delimiter: ',') %></td>
-        <td><%= payment[:date].strftime("%Y-%m-%d") if payment[:date] %></td>
+        <td><%= number_with_precision(payment_data[:amount], precision: 2, delimiter: ',') %></td>
+        <td><%= payment_data[:date].strftime("%Y-%m-%d") %></td>
       </tr>
     <% end %>
   </tbody>
@@ -32,29 +36,17 @@
     </tr>
   </thead>
   <tbody>
-    <% @received_swifts.each do |swift_id, swift| %>
+    <% @received_swifts.each do |swift_id, swift_data| %>
       <tr>
         <td><%= swift_id %></td>
-        <td><%= number_with_precision(swift[:amount], precision: 2, delimiter: ',') %></td>
-        <td><%= swift[:date].strftime("%Y-%m-%d") if swift[:date] %></td>
+        <td><%= number_with_precision(swift_data[:amount], precision: 2, delimiter: ',') %></td>
+        <td><%= swift_data[:date].strftime("%Y-%m-%d") %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
 
-
-
-<hr><hr>
-<%= @received_swifts.inspect %>
-
-<hr><hr>
-
-
-
-total:
-
-<%= @total_weighted_amount %>
 
 
 

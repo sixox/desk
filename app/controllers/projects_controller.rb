@@ -136,10 +136,10 @@ def turnover
   # Combine advance and balance payments into a single hash
   @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
 
-
-
-  # Calculate the days until we get the money back
+  # Calculate return days and profit
+  @final_days, @profit = calculate_return_days(@payments, @received_swifts)
 end
+
 
 
 
@@ -183,48 +183,48 @@ end
 		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started )
 	end
 
-def calculate_return_days
-  total_weighted_days = 0
-  total_investment = @payments.values.sum { |payment| payment[:amount] }
-  remaining_payment = 0
-  payment_ids = @payments.keys.sort
-  swift_ids = @received_swifts.keys.sort
-  payment_index = 0
+	def calculate_return_days_and_profit
+	  final = 0
+	  total_payments = @payments.sum { |payment| payment[:amount] }
+	  remaining_payment_amount = 0
+	  swift_index = 0
 
-  # Traverse through payments
-  while payment_index < payment_ids.size && remaining_payment < total_investment
-    payment_id = payment_ids[payment_index]
-    payment = @payments[payment_id]
+	  # Sort payments and swifts by date
+	  sorted_payments = @payments.sort_by { |payment| payment[:date] }
+	  sorted_swifts = @received_swifts.sort_by { |_swift_id, swift_data| swift_data[:date] }.to_h
 
-    # Find the corresponding swift for the payment
-    swift_id = swift_ids[payment_index]
-    swift_data = @received_swifts[swift_id]
+	  # Traverse through payments and swifts
+	  sorted_payments.each do |payment|
+	    while payment[:amount] > 0 && swift_index < sorted_swifts.size
+	      swift_id, swift_data = sorted_swifts.to_a[swift_index]
+	      swift_date = swift_data[:date].to_date
+	      payment_date = payment[:date].to_date
+	      days_between = (swift_date - payment_date).to_i.abs # Ensure days_between is always positive
 
-    next unless swift_data
+	      if payment[:amount] >= swift_data[:amount]
+	        # Swift fully covers the payment
+	        final += swift_data[:amount] * days_between
+	        payment[:amount] -= swift_data[:amount]
+	        swift_index += 1 # Move to the next swift
+	      else
+	        # Swift partially covers the payment
+	        final += payment[:amount] * days_between
+	        swift_data[:amount] -= payment[:amount]
+	        payment[:amount] = 0 # Move to the next payment
+	      end
+	    end
 
-    payment_date = payment[:date]
-    swift_date = swift_data[:date]
-    days_between = (swift_date - payment_date).to_i
+	    # Any remaining amount in payments is considered profit
+	    remaining_payment_amount += payment[:amount] if payment[:amount] > 0
+	  end
 
-    if payment[:amount] - remaining_payment <= swift_data[:amount]
-      # If swift covers the remaining payment
-      paid_amount = payment[:amount] - remaining_payment
-      remaining_payment = 0
-      total_weighted_days += paid_amount * days_between
-      swift_data[:amount] -= paid_amount
-      payment_index += 1
-    else
-      # If swift does not fully cover the payment
-      remaining_payment = payment[:amount] - swift_data[:amount]
-      total_weighted_days += swift_data[:amount] * days_between
-      swift_data[:amount] = 0
-      payment_index += 1
-    end
-  end
+	  # Calculate final return days and profit
+	  return_days = total_payments > 0 ? final / total_payments : 0
+	  profit = remaining_payment_amount
 
-  # Calculate the average days to return the investment
-  @total_weighted_days = total_investment > 0 ? total_weighted_days / total_investment : 0
-end
+	  { return_days: return_days, profit: profit }
+	end
+
 
 
 
