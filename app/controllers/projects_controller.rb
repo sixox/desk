@@ -135,6 +135,8 @@ def turnover
 
     # Combine advance and balance payments into a single hash
     @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
+    @pay = {}
+    @rec = {}
     @pay = @payments
     @rec = @received_swifts
     # Calculate return days and profit
