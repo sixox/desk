@@ -1,92 +1,88 @@
 <div class="col-lg-10 mx-auto mt-5">
-  <% if @project.bookings.present? && @all_payments_done  %>
+  <% if @project.bookings.present? && @all_payments_done %>
   
- <div class="container">
-  <div class="row">
-    <div class="col-lg-6 col-12 mb-4">
-      <div class="card card-custom mt-1 h-100">
-        <div class="card-body d-flex flex-column">
-          <h3>Payments</h3>
-          <table class="table table-striped flex-grow-1">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Amount</th>
-                <th>Currency</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% balance_projects = @project.ballance_projects %>
-              <% pay = PaymentOrder.where(ballance: balance_projects.map(&:ballance)) %>
-              <% pay = pay.where('project IS NULL OR project = ?', @project).order(created_at: :asc) %>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 col-12 mb-4">
+          <div class="card card-custom mt-1 h-100">
+            <div class="card-body d-flex flex-column">
+              <h3>Payments</h3>
+              <table class="table table-striped flex-grow-1">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% balance_projects = @project.ballance_projects %>
+                  <% pay = [] %> <!-- Initialize an array to store all payments -->
 
+                  <% balance_projects.each do |balance_project| %>
+                    <% advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance) %>
+                    <% balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance) %>
+                    <% pay.concat(advance_orders) %> <!-- Add advance orders to the @payments array -->
+                    <% pay.concat(balance_orders) %> <!-- Add balance orders to the @payments array -->
+                  <% end %>
 
+                  <% pay.sort_by!(&:created_at) %> <!-- Sort payments by created_at -->
 
-              <% pay.each do |payment| %>
-              <tr>
-                <td><%= payment.id %></td>
-                <td><%= number_with_precision(payment.amount, delimiter: ',') %></td>
-                <td><%= payment.currency %></td>
-                <td><%= payment.status %></td>
-                <td><%= payment.ceo_confirmed_at.present? ? payment.ceo_confirmed_at.strftime("%Y-%m-%d") : "-" %></td>
-              </tr>
-              <% end %>
-            </tbody>
-          </table>
+                  <% pay.each do |payment| %>
+                  <tr>
+                    <td><%= payment.id %></td>
+                    <td><%= number_with_precision(payment.amount, delimiter: ',') %></td>
+                    <td><%= payment.currency %></td>
+                    <td><%= payment.status %></td>
+                    <td><%= payment.ceo_confirmed_at.present? ? payment.ceo_confirmed_at.strftime("%Y-%m-%d") : "-" %></td>
+                  </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 col-12 mb-4">
+          <div class="card card-custom mt-1 h-100">
+            <div class="card-body d-flex flex-column">
+              <h3>Swifts</h3>
+              <table class="table table-striped flex-grow-1">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @project.total_swifts.each do |swift| %>
+                  <tr>
+                    <td><%= swift.id %></td>
+                    <td><%= number_with_precision(swift.amount, delimiter: ',') %></td>
+                    <td><%= swift.currency %></td>
+                    <td><%= swift.confirmed ? "Confirmed" : "-" %></td>
+                    <td><%= swift.created_at.strftime("%Y-%m-%d") %></td>
+                  </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="col-lg-6 col-12 mb-4">
-      <div class="card card-custom mt-1 h-100">
-        <div class="card-body d-flex flex-column">
-          <h3>Swifts</h3>
-          <table class="table table-striped flex-grow-1">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Amount</th>
-                <th>Currency</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @project.total_swifts.each do |swift| %>
-              <tr>
-                <td><%= swift.id %></td>
-                <td><%= number_with_precision(swift.amount, delimiter: ',') %></td>
-                <td><%= swift.currency %></td>
-                <td><%= swift.confirmed ? "Confirmed" : "-" %></td>
-                <td><%= swift.created_at.strftime("%Y-%m-%d") %></td>
-                
-              </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    <h1>Turnover Report</h1>
+    <p>All payments are completed.</p>
+    <h2>Results</h2>
+    <p>Total Days Until Money Back: <%= @return_days %></p>
 
-
-
-
-
-
-
-  <h1>Turnover Report</h1>
-
-
-  <p>All payments are completed.</p>
-  <h2>Results</h2>
-  <p>Total Days Until Money Back: <%= @return_days %></p>
   <% else %>
-  <p>Some payments are still pending.</p>
+    <p>Some payments are still pending.</p>
   <% end %>
-
-
 </div>
