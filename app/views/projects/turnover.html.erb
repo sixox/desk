@@ -50,11 +50,11 @@
                     </tr>
                   </thead>
                   <tbody>
-                    
+
 
                     <% pay.each do |payment| %>
                     <tr>
-                      <td><%= link_to payment.id, payment_order_path(payment), class: 'link-nodecor-po' %>td>
+                      <td><%= link_to payment.id, payment_order_path(payment), class: 'link-nodecor-po' %></td>
                       <td class="fw-bold"><%= number_with_precision(payment.amount.to_i, precision: 0, delimiter: ',') %></td>
                       <td> <small> <%= payment.currency %></small></td>
                       <td><%= payment.status %></td>
