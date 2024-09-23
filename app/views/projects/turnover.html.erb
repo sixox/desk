@@ -1,6 +1,13 @@
+
+
+
+
+
+
+
 <h1>Turnover Report</h1>
 
-<% if @project.bookings.present? && @all_payments_done  %>
+<% if @all_payments_done  %>
   <p>All payments are completed.</p>
   <h2>Results</h2>
 <p>Total Days Until Money Back: <%= @return_days %></p>
