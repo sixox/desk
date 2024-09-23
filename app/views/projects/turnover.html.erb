@@ -33,10 +33,10 @@
                   <% pay.each do |payment| %>
                   <tr>
                     <td><%= payment.id %></td>
-                    <td><%= number_with_precision(payment.amount.to_i, precision: 0, delimiter: ',') %></td>
-                    <td><%= payment.currency %></td>
+                    <td class="fw-bold"><%= number_with_precision(payment.amount.to_i, precision: 0, delimiter: ',') %></td>
+                    <td> <small> <%= payment.currency %></small></td>
                     <td><%= payment.status %></td>
-                    <td><%= payment.ceo_confirmed_at.present? ? payment.ceo_confirmed_at.strftime("%Y-%m-%d") : "-" %></td>
+                    <td><small> <%= payment.ceo_confirmed_at.present? ? payment.ceo_confirmed_at.strftime("%Y-%m-%d") : "-" %></small></td>
                   </tr>
                   <% end %>
                 </tbody>
@@ -63,10 +63,10 @@
                   <% @project.total_swifts.each do |swift| %>
                   <tr>
                     <td><%= swift.id %></td>
-                    <td><%= number_with_precision(swift.amount.to_i, precision: 0, delimiter: ',') %></td>
-                    <td><%= swift.currency %></td>
+                    <td class="fw-bold"><%= number_with_precision(swift.amount.to_i, precision: 0, delimiter: ',') %></td>
+                    <td><small> <%= swift.currency %></small></td>
                     <td><%= swift.confirmed ? "Confirmed" : "-" %></td>
-                    <td><%= swift.created_at.strftime("%Y-%m-%d") %></td>
+                    <td><small> <%= swift.created_at.strftime("%Y-%m-%d") %></small></td>
                   </tr>
                   <% end %>
                 </tbody>
