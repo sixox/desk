@@ -96,49 +96,51 @@ class ProjectsController < ApplicationController
   end
 
 	
-def turnover
-  @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
-  balance_projects = @project.ballance_projects
-  @advance_payments = {}
-  @balance_payments = {}
+  def turnover
+    @all_payments_done = @project.bookings.all? { |booking| booking.payment_done }
+    balance_projects = @project.ballance_projects
+    @advance_payments = {}
+    @balance_payments = {}
 
-  # Gather advance payments
-  balance_projects.each do |balance_project|
-    advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
-    advance_orders.each do |payment_order|
-      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
-      amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
-      @advance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+    # Gather advance payments
+    balance_projects.each do |balance_project|
+      advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance)
+      advance_orders.each do |payment_order|
+        amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
+        amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
+        @advance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+      end
     end
-  end
 
-  # Gather balance payments
-  balance_projects.each do |balance_project|
-    balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
-    balance_orders.each do |payment_order|
-      amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
-      @balance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+    # Gather balance payments
+    balance_projects.each do |balance_project|
+      balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
+      balance_orders.each do |payment_order|
+        amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
+        @balance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+      end
     end
+
+    @received_swifts = {}
+
+    @project.total_swifts.each do |swift|
+      next unless swift.confirmed
+
+      amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
+      @received_swifts[swift.id] = { amount: amount.to_f, date: swift.created_at }
+    end
+
+    # Sort received swifts by date
+    @received_swifts = @received_swifts.sort_by { |_, swift_data| swift_data[:date] }.to_h
+
+    # Combine advance and balance payments into a single hash
+    @payments = @advance_payments.merge(@balance_payments).sort_by { |_, payment_data| payment_data[:date] }.to_h
+
+    # Calculate return days and profit
+    result = calculate_return_days_and_profit(@payments, @received_swifts)
+    @final_days = result[:return_days]
+    @profit = result[:profit]
   end
-
-  @received_swifts = {}
-
-  @project.total_swifts.each do |swift|
-    next unless swift.confirmed
-
-    amount = swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67
-    @received_swifts[swift.id] = { amount: amount.to_f, date: swift.created_at }
-  end
-
-  # Sort @received_swifts by date
-  @received_swifts = @received_swifts.sort_by { |swift_id, swift_data| swift_data[:date] }.to_h
-
-  # Combine advance and balance payments into a single hash
-  @payments = @advance_payments.merge(@balance_payments).sort_by { |payment_id, payment_data| payment_data[:date] }.to_h
-
-  # Calculate return days and profit
-  @final_days, @profit = calculate_return_days_and_profit(@payments, @received_swifts)
-end
 
 
 
@@ -183,47 +185,40 @@ end
 		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started )
 	end
 
-	def calculate_return_days_and_profit
-	  final = 0
-	  total_payments = @payments.sum { |payment| payment[:amount] }
-	  remaining_payment_amount = 0
-	  swift_index = 0
+	def calculate_return_days_and_profit(payments, received_swifts)
+    final = 0
+    total_payments = payments.sum { |_, payment| payment[:amount] }
+    remaining_payment_amount = 0
 
-	  # Sort payments and swifts by date
-	  sorted_payments = @payments.sort_by { |payment| payment[:date] }
-	  sorted_swifts = @received_swifts.sort_by { |_swift_id, swift_data| swift_data[:date] }.to_h
+    payments = payments.to_a
+    received_swifts = received_swifts.to_a
+    payment_index = 0
+    swift_index = 0
 
-	  # Traverse through payments and swifts
-	  sorted_payments.each do |payment|
-	    while payment[:amount] > 0 && swift_index < sorted_swifts.size
-	      swift_id, swift_data = sorted_swifts.to_a[swift_index]
-	      swift_date = swift_data[:date].to_date
-	      payment_date = payment[:date].to_date
-	      days_between = (swift_date - payment_date).to_i.abs # Ensure days_between is always positive
+    # Traverse through payments and swifts
+    while payment_index < payments.size && swift_index < received_swifts.size
+      payment_id, payment = payments[payment_index]
+      swift_id, swift = received_swifts[swift_index]
 
-	      if payment[:amount] >= swift_data[:amount]
-	        # Swift fully covers the payment
-	        final += swift_data[:amount] * days_between
-	        payment[:amount] -= swift_data[:amount]
-	        swift_index += 1 # Move to the next swift
-	      else
-	        # Swift partially covers the payment
-	        final += payment[:amount] * days_between
-	        swift_data[:amount] -= payment[:amount]
-	        payment[:amount] = 0 # Move to the next payment
-	      end
-	    end
+      days_between = (swift[:date] - payment[:date]).to_i.abs
 
-	    # Any remaining amount in payments is considered profit
-	    remaining_payment_amount += payment[:amount] if payment[:amount] > 0
-	  end
+      if payment[:amount] >= swift[:amount]
+        final += swift[:amount] * days_between
+        payment[:amount] -= swift[:amount]
+        swift[:amount] = 0
+        swift_index += 1 # Move to the next swift
+      else
+        final += payment[:amount] * days_between
+        swift[:amount] -= payment[:amount]
+        remaining_payment_amount += (payment[:amount] - swift[:amount])
+        payment_index += 1 # Move to the next payment
+      end
+    end
 
-	  # Calculate final return days and profit
-	  return_days = total_payments > 0 ? final / total_payments : 0
-	  profit = remaining_payment_amount
+    profit = remaining_payment_amount
 
-	  { return_days: return_days, profit: profit }
-	end
+    { return_days: total_payments > 0 ? final / total_payments : 0, profit: profit }
+  end
 
 
 
