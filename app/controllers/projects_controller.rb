@@ -199,7 +199,11 @@ def calculate_return_days_and_profit
     payment = sorted_payments[payment_index][1]  # Get the payment data
     swift = sorted_swifts[swift_index][1]        # Get the swift data
 
-    days_between = (swift[:date] - payment[:date]).to_i.abs
+    # Convert dates to DateTime objects to ensure proper subtraction
+    payment_date = payment[:date].to_datetime
+    swift_date = swift[:date].to_datetime
+
+    days_between = (swift_date - payment_date).to_i.abs
 
     # Log current values for debugging
     Rails.logger.debug "Payment Amount: #{payment[:amount]}, Swift Amount: #{swift[:amount]}, Days Between: #{days_between}, Current Final: #{@final}"
@@ -224,6 +228,7 @@ def calculate_return_days_and_profit
   # Log final results
   Rails.logger.debug "Total Payments: #{@total_payments}, Final: #{@final}, Profit: #{@profit}, Return Days: #{@return_days}"
 end
+
 
 
 
