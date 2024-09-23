@@ -139,7 +139,6 @@ def turnover
 
 
   # Calculate the days until we get the money back
-  calculate_return_days
 end
 
 
