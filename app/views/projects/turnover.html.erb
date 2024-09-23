@@ -1,5 +1,16 @@
 <div class="col-lg-10 mx-auto mt-5">
   <% if @project.bookings.present? && @all_payments_done %>
+  <% balance_projects = @project.ballance_projects %>
+  <% pay = [] %> <!-- Initialize an array to store all payments -->
+
+  <% balance_projects.each do |balance_project| %>
+  <% advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance) %>
+  <% balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance) %>
+  <% pay.concat(advance_orders) %> <!-- Add advance orders to the @payments array -->
+  <% pay.concat(balance_orders) %> <!-- Add balance orders to the @payments array -->
+  <% end %>
+
+  <% pay.sort_by!(&:created_at) %> <!-- Sort payments by created_at -->
   <div class="card border-0 shadow mt-2">
     <div class="card-body p-xl-4" style="background: #ced1e1;">
       <div class="card card-custom mt-2 mb-4">
@@ -39,29 +50,32 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <% balance_projects = @project.ballance_projects %>
-                    <% pay = [] %> <!-- Initialize an array to store all payments -->
-
-                    <% balance_projects.each do |balance_project| %>
-                    <% advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance) %>
-                    <% balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance) %>
-                    <% pay.concat(advance_orders) %> <!-- Add advance orders to the @payments array -->
-                    <% pay.concat(balance_orders) %> <!-- Add balance orders to the @payments array -->
-                    <% end %>
-
-                    <% pay.sort_by!(&:created_at) %> <!-- Sort payments by created_at -->
-
                     <% pay.each do |payment| %>
                     <tr>
-                      <td><%= payment.id %></td>
-                      <td class="fw-bold"><%= number_with_precision(payment.amount.to_i, precision: 0, delimiter: ',') %></td>
-                      <td> <small> <%= payment.currency %></small></td>
-                      <td><%= payment.status %></td>
-                      <td><small> <%= payment.ceo_confirmed_at.present? ? payment.ceo_confirmed_at.strftime("%Y-%m-%d") : "-" %></small></td>
+                      <td>
+                        <%= link_to payment.id, payment_order_path(payment) %>
+                      </td>
+                      <td class="fw-bold">
+                        <%= link_to number_with_precision(payment.amount.to_i, precision: 0, delimiter: ','), payment_order_path(payment) %>
+                      </td>
+                      <td>
+                        <small>
+                          <%= link_to payment.currency, payment_order_path(payment) %>
+                        </small>
+                      </td>
+                      <td>
+                        <%= link_to payment.status, payment_order_path(payment) %>
+                      </td>
+                      <td>
+                        <small>
+                          <%= link_to payment.ceo_confirmed_at.present? ? payment.ceo_confirmed_at.strftime("%Y-%m-%d") : "-", payment_order_path(payment) %>
+                        </small>
+                      </td>
                     </tr>
                     <% end %>
                   </tbody>
                 </table>
+
               </div>
             </div>
           </div>
