@@ -201,13 +201,18 @@ def calculate_return_days_and_profit
 
     days_between = (swift[:date] - payment[:date]).to_i.abs
 
+    # Log current values for debugging
+    Rails.logger.debug "Payment Amount: #{payment[:amount]}, Swift Amount: #{swift[:amount]}, Days Between: #{days_between}, Current Final: #{@final}"
+
     if payment[:amount] >= swift[:amount]
       @final += swift[:amount] * days_between
       payment[:amount] -= swift[:amount]
+      Rails.logger.debug "Updated Final: #{@final}, Remaining Payment Amount: #{payment[:amount]}, Moving to next Swift"
       swift_index += 1
     else
       @final += payment[:amount] * days_between
       swift[:amount] -= payment[:amount]
+      Rails.logger.debug "Updated Final: #{@final}, Remaining Swift Amount: #{swift[:amount]}, Moving to next Payment"
       payment_index += 1
     end
   end
@@ -215,7 +220,11 @@ def calculate_return_days_and_profit
   # Calculate profit
   @profit = @total_payments - @final
   @return_days = @total_payments > 0 ? @final / @total_payments : 0
+
+  # Log final results
+  Rails.logger.debug "Total Payments: #{@total_payments}, Final: #{@final}, Profit: #{@profit}, Return Days: #{@return_days}"
 end
+
 
 
 
