@@ -184,38 +184,39 @@ def turnover
 	end
 
 def calculate_return_days_and_profit
-    @final = 0
-    @total_payments = @payments.sum { |payment| payment[:amount] }
-    @remaining_payment_amount = 0
+  @final = 0
+  @total_payments = @payments.sum { |_id, payment| payment[:amount] }
+  @remaining_payment_amount = 0
 
-    # Sort payments and received swifts
-    sorted_payments = @payments.sort_by { |_id, payment_data| payment_data[:date] }
-    sorted_swifts = @received_swifts.sort_by { |_id, swift_data| swift_data[:date] }
+  # Sort payments and received swifts
+  sorted_payments = @payments.sort_by { |_id, payment_data| payment_data[:date] }
+  sorted_swifts = @received_swifts.sort_by { |_id, swift_data| swift_data[:date] }
 
-    payment_index = 0
-    swift_index = 0
+  payment_index = 0
+  swift_index = 0
 
-    while payment_index < sorted_payments.size && swift_index < sorted_swifts.size
-      payment = sorted_payments[payment_index][1]
-      swift = sorted_swifts[swift_index][1]
+  while payment_index < sorted_payments.size && swift_index < sorted_swifts.size
+    payment = sorted_payments[payment_index][1]  # Get the payment data
+    swift = sorted_swifts[swift_index][1]        # Get the swift data
 
-      days_between = (swift[:date] - payment[:date]).to_i.abs
+    days_between = (swift[:date] - payment[:date]).to_i.abs
 
-      if payment[:amount] >= swift[:amount]
-        @final += swift[:amount] * days_between
-        payment[:amount] -= swift[:amount]
-        swift_index += 1
-      else
-        @final += payment[:amount] * days_between
-        swift[:amount] -= payment[:amount]
-        payment_index += 1
-      end
+    if payment[:amount] >= swift[:amount]
+      @final += swift[:amount] * days_between
+      payment[:amount] -= swift[:amount]
+      swift_index += 1
+    else
+      @final += payment[:amount] * days_between
+      swift[:amount] -= payment[:amount]
+      payment_index += 1
     end
-
-    # Calculate profit
-    @profit = @total_payments - @final
-    @return_days = @total_payments > 0 ? @final / @total_payments : 0
   end
+
+  # Calculate profit
+  @profit = @total_payments - @final
+  @return_days = @total_payments > 0 ? @final / @total_payments : 0
+end
+
 
 
 
