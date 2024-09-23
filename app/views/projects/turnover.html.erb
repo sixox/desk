@@ -25,7 +25,8 @@
             <div class="col-auto">
               <h6 class="text-success">
 
-                <%= @return_days %> <small class="text-secondary">Days</small>
+                <%= number_with_precision(@return_days, precision: 1) %> <small class="text-secondary">Days</small>
+
 
 
               </h6>
