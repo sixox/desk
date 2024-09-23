@@ -19,19 +19,9 @@
             </thead>
             <tbody>
               <% balance_projects = @project.ballance_projects %>
-              <% advance_orders_all = [] %>
-              <% balance_orders_all = [] %>
+              <% pay = PaymentOrder.where(ballance: balance_projects.map(&:ballance)) %>
+              <% pay = pay.where('project IS NULL OR project = ?', @project).order(created_at: :asc) %>
 
-              <% balance_projects.each do |balance_project| %>
-                <% advance_orders = PaymentOrder.where(project: nil, ballance: balance_project.ballance) %>
-                <% balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance) %>
-                
-                <% advance_orders_all.concat(advance_orders) %>
-                <% balance_orders_all.concat(balance_orders) %>
-              <% end %>
-
-              <% pay = advance_orders_all + balance_orders_all %>
-              <% pay = pay.sort_by { |payment| payment.created_at } %>
 
 
               <% @pay.each do |payment| %>
