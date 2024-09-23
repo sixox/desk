@@ -2,7 +2,7 @@
   <% if @project.bookings.present? && @all_payments_done %>
   <div class="card border-0 shadow mt-2">
     <div class="card-body p-xl-4" style="background: #ced1e1;">
-      <div class="card card-custom mt-1">
+      <div class="card card-custom mt-2 mb-4">
         <div class="card-body">
 
           <div class="row d-flex justify-content-between mt-2">
@@ -12,12 +12,12 @@
               </h6>
             </div>
             <div class="col-auto">
-              <h4 class="text-success">
-                
-                <%= @return_days %> <small class="text-secondary">Days</small>
-                
+              <h6 class="text-success">
 
-              </h4>
+                <%= @return_days %> <small class="text-secondary">Days</small>
+
+
+              </h6>
             </div>
           </div>
         </div>
