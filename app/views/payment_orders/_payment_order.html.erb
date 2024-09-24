@@ -147,10 +147,7 @@
 					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
 					<i class="bi bi-pencil-fill"></i>
 					<% end %>
-					<% if current_user.admin? %>
-					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
-					<i class="bi bi-pencil-fill"></i>
-					<% end %>
+
 
 
 
@@ -162,6 +159,11 @@
 					<% end %>
 					<% end %>
 
+					<% if current_user.admin? %>
+					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-pencil-fill"></i>
+					<% end %>
+					<% end %>
 
 					<%= link_to payment_order_path(payment_order) do %>
 					<i class="bi bi-eye-fill"></i>
