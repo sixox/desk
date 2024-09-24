@@ -147,6 +147,10 @@
 					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
 					<i class="bi bi-pencil-fill"></i>
 					<% end %>
+					<% if current_user.admin? %>
+					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+					<i class="bi bi-pencil-fill"></i>
+					<% end %>
 
 
 
