@@ -147,6 +147,7 @@ Rails.application.routes.draw do
   resources :letter_heads
   resources :accounts
   resources :documents
+  resources :assessments
 
 
 

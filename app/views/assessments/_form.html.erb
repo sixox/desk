@@ -1,0 +1,45 @@
+<!-- app/views/assessments/_form.html.erb -->
+<%= form_with(model: assessment, local: true, class: 'form-horizontal') do |form| %>
+
+  <div class="form-group row">
+    <%= form.label :category, 'Category', class: 'col-sm-2 col-form-label' %>
+    <div class="col-sm-10">
+      <%= form.text_field :category, class: 'form-control', required: true %>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <%= form.label :category_point, 'Category Point', class: 'col-sm-2 col-form-label' %>
+    <div class="col-sm-10">
+      <%= form.number_field :category_point, class: 'form-control', required: true %>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <%= form.label :criterion, 'Criterion', class: 'col-sm-2 col-form-label' %>
+    <div class="col-sm-10">
+      <%= form.text_field :criterion, class: 'form-control', required: true %>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <%= form.label :definition, 'Definition', class: 'col-sm-2 col-form-label' %>
+    <div class="col-sm-10">
+      <%= form.text_area :definition, class: 'form-control', rows: 5, required: true %>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <%= form.label :title, 'Title', class: 'col-sm-2 col-form-label' %>
+    <div class="col-sm-10">
+      <%= form.text_field :title, class: 'form-control', required: true %>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-sm-10 offset-sm-2">
+      <%= form.submit form_button_label, class: 'btn btn-primary' %>
+    </div>
+  </div>
+
+<% end %>

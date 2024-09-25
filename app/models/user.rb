@@ -22,6 +22,12 @@ class User < ApplicationRecord
   has_many :historical_prices, dependent: :destroy
   has_many :generated_documents
 
+    # This association represents the forms that are about the user
+  has_many :assessment_forms_as_user, class_name: 'AssessmentForm', foreign_key: 'user_id', dependent: :destroy
+
+  # This association represents the forms the user is filling out (filler role)
+  has_many :assessment_forms_as_filler, class_name: 'AssessmentForm', foreign_key: 'filler_id', dependent: :destroy
+
 
 
   enum role: {

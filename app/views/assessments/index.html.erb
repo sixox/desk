@@ -1,0 +1,30 @@
+<!-- app/views/assessments/index.html.erb -->
+<div class="container mt-5">
+  <h1 class="mb-4">Assessments</h1>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Category Point</th>
+        <th>Criterion</th>
+        <th>Definition</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @assessments.each do |assessment| %>
+        <tr>
+          <td><%= assessment.category %></td>
+          <td><%= assessment.category_point %></td>
+          <td><%= assessment.criterion %></td>
+          <td><%= truncate(assessment.definition, length: 50) %></td>
+          <td><%= assessment.title %></td>
+         
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= link_to 'New Assessment', new_assessment_path, class: 'btn btn-success mt-4' %>
+</div>
