@@ -1,6 +1,8 @@
 <!-- app/views/assessments/index.html.erb -->
 <div class="container mt-5">
   <h1 class="mb-4">Assessments</h1>
+    <%= link_to 'New Assessment', new_assessment_path, class: 'btn btn-success mt-4' %>
+
 
   <table class="table table-striped">
     <thead>
@@ -26,5 +28,4 @@
     </tbody>
   </table>
 
-  <%= link_to 'New Assessment', new_assessment_path, class: 'btn btn-success mt-4' %>
 </div>
