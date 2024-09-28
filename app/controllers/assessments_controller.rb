@@ -1,6 +1,6 @@
 class AssessmentsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_filler, only: %i[index form update]
+  before_action :set_filler, only: %i[index form update_form]
   
   def index
     @unique_users = AssessmentForm.unique_users_for_filler(@filler)
@@ -28,12 +28,12 @@ class AssessmentsController < ApplicationController
     @assessment_forms = AssessmentForm.by_user_and_filler(@user, @filler)
   end
 
-  def update
+  def update_form
     # Loop through each assessment form ID and update it
     assessment_forms_params.each do |id, form_params|
       assessment_form = AssessmentForm.find(id)
       assessment_form.update(form_params)
-    end
+  end
 
     redirect_to assessments_path, notice: 'All assessment forms were successfully updated.'
   end

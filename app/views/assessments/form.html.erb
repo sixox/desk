@@ -1,6 +1,6 @@
 <h3>Fill Assessment Forms for <%= @user.name %></h3>
 
-<%= form_with(url: update_assessments_path, method: :patch, local: true) do |f| %>
+<%= form_with(url: update_form_assessments_path, method: :patch, local: true) do |f| %>
   <% @assessment_forms.each do |assessment_form| %>
     <div class="card mb-3">
       <div class="card-body">
