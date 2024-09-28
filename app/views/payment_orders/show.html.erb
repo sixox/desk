@@ -101,7 +101,7 @@
 						<% end %>
 						<% end %>
 						<!-- emran & gelare confirmation begin -->
-							<% if current_user.id == 15 && @payment_order.user.id.in?([25, 30]) && @payment_order.rejected_at.nil? && @payment_order.coo_confirm.blank? && @payment_order.hamed_confirm.blank? %>
+							<% if current_user.id == 15 && @payment_order.user.id.in?([25, 30, 31]) && @payment_order.rejected_at.nil? && @payment_order.coo_confirm.blank? && @payment_order.hamed_confirm.blank? %>
 							<%= link_to "Hamed confirm", hamed_confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm payment order, this action can not be undone!' }, class: "btn btn-warning text-center" %>
 							<% end %>
 						<!-- emran &gelare confirmation end -->
