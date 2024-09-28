@@ -49,6 +49,7 @@ class AssessmentsController < ApplicationController
     end
   end
 
+
   private
 
   def set_filler
@@ -60,15 +61,12 @@ class AssessmentsController < ApplicationController
   end
 
   def assessment_forms_params
-    # Use the nested structure correctly to allow for multiple forms
+    # Permit score and weight for all assessment forms dynamically
     params.require(:assessment_forms).permit(
-      # Permit fields for each assessment form
-      :total_score,
-      :weight,
-      :score,
-      :assessment_id,
-      :user_id,
-      :filler_id
-    ).to_h # Convert to hash if necessary
+      :total_score, 
+      :user_id, 
+      :filler_id, 
+      assessment_forms: [:score, :weight] # Explicitly permit score and weight
+    )
   end
 end
