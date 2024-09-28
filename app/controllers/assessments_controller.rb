@@ -31,6 +31,7 @@ class AssessmentsController < ApplicationController
   def update_form
     all_updated = true
 
+    # Iterate through each submitted assessment form parameter
     assessment_forms_params.each do |id, form_params|
       assessment_form = AssessmentForm.find(id)
       unless assessment_form.update(form_params)
@@ -59,13 +60,15 @@ class AssessmentsController < ApplicationController
   end
 
   def assessment_forms_params
+    # Use the nested structure correctly to allow for multiple forms
     params.require(:assessment_forms).permit(
-      :total_score, 
-      :weight, 
-      :score, 
-      :assessment_id, 
-      :user_id, 
+      # Permit fields for each assessment form
+      :total_score,
+      :weight,
+      :score,
+      :assessment_id,
+      :user_id,
       :filler_id
-    )
+    ).to_h # Convert to hash if necessary
   end
 end
