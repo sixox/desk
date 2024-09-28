@@ -1,9 +1,9 @@
 class AssessmentsController < ApplicationController
   before_action :authenticate_user!
+  before_action set_filler, only: %i[ index, form]
   
   def index
-    filler = current_user
-    @unique_users = AssessmentForm.unique_users_for_filler(filler)
+    @unique_users = AssessmentForm.unique_users_for_filler(@filler)
 
   end
 
@@ -24,7 +24,19 @@ class AssessmentsController < ApplicationController
     end
   end
 
+  def form
+    # Get the `user_id` from the parameters
+    @user = User.find(params[:user_id])
+
+    # Optionally, load the existing AssessmentForms for the user and filler, or initialize new ones
+    @assessment_forms = AssessmentForm.by_user_and_filler(@user, @filler)
+  end
+
   private
+
+  def set_filler
+    @filler = current_user
+  end
 
   def assessment_params
     params.require(:assessment).permit(:category, :category_point, :criterion, :definition, :title)

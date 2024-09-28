@@ -1,31 +1,37 @@
-<!-- app/views/assessments/index.html.erb -->
-<div class="container mt-5">
-  <h1 class="mb-4">Assessments</h1>
-    <%= link_to 'New Assessment', new_assessment_path, class: 'btn btn-success mt-4' %>
+<div class="col-lg-10 mx-auto mt-5">
 
+  <h3 class="mb-4">Assessment Forms for Fillers</h3>
 
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Category Point</th>
-        <th>Criterion</th>
-        <th>Definition</th>
-        <th>Title</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @assessments.each do |assessment| %>
-        <tr>
-          <td><%= assessment.category %></td>
-          <td><%= assessment.category_point %></td>
-          <td><%= assessment.criterion %></td>
-          <td><%= truncate(assessment.definition, length: 50) %></td>
-          <td><%= assessment.title %></td>
-         
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+  <div class="row">
+    <% @unique_users.each do |user| %>
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Assessment Form for <%= user.name %></h5>
 
+          <% assessment_form = AssessmentForm.by_user_and_filler(user, current_user).first %>
+
+          <% if assessment_form.present? && assessment_form.score.nil? %>
+          <!-- If the score is not filled yet -->
+          <p class="card-text">
+            The assessment form for <%= user.name %> is not filled yet.
+          </p>
+          <%= link_to "Fill Assessment Form", form_assessments_path(user_id: user.id), class: "btn btn-primary" %>
+          <% elsif assessment_form.present? && assessment_form.score.present? %>
+          <!-- If the score is already filled -->
+          <p class="card-text">
+            This form has already been filled.
+          </p>
+          
+          <% else %>
+          <!-- If no assessment form exists -->
+          <p class="card-text">
+            No assessment form is available for <%= user.name %> yet.
+          </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <% end %>
+  </div>
 </div>

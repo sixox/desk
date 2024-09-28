@@ -147,7 +147,11 @@ Rails.application.routes.draw do
   resources :letter_heads
   resources :accounts
   resources :documents
-  resources :assessments
+  resources :assessments do
+    collection do
+      get :form
+    end
+  end
 
 
 
