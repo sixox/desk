@@ -14,10 +14,10 @@
           </div>
         </div>
       </div>
-      <ul class="list-group mt-1">
-
+      <ul class="list-group mt-3">
+        <% @assessment_forms_ksa.each do |assessment_form| %>
         <li class="shadow-lg mb-2 bg-body rounded list-group-item">
-          <% @assessment_forms_ksa.each do |assessment_form| %>
+          
           <div class="form-group">
             <%= f.label "Score for #{assessment_form.assessment.title}", class: "form-label" %>
             <%= number_field_tag "assessment_forms[#{assessment_form.id}][score]", assessment_form.score, class: "form-control", min: 1, max: 10 %>
@@ -39,8 +39,9 @@
             </div>
             <% end %>
           </div>
-          <% end %>
-        </li>        
+          
+        </li> 
+        <% end %>       
       </ul>
     </div>
   </div>
