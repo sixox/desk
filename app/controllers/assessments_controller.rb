@@ -48,8 +48,9 @@ class AssessmentsController < ApplicationController
     else
       # If any update failed, render the form again with errors
       @user = User.find(params[:user_id]) # Retrieve the user again
-      @assessment_forms = AssessmentForm.by_user_and_filler(@user, @filler)
-      render :form # Render the form view to show errors
+    @assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" })
+    @assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" })
+    @assessment_forms_function = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "نتایج کلیدی عملکرد" })      render :form # Render the form view to show errors
     end
   end
 
