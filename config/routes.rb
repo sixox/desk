@@ -150,6 +150,7 @@ Rails.application.routes.draw do
   resources :assessments do
     collection do
       get :form
+      patch :update
     end
   end
 
