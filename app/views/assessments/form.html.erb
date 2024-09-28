@@ -1,36 +1,49 @@
-<h3>Fill Assessment Forms for <%= @user.name %></h3>
+<div class="col-lg-10 mx-auto mt-5">
+  <%= form_with(url: update_form_assessments_path(user_id: @user.id), method: :patch, local: true) do |f| %>
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="d-flex justify-content-start">
+            <h5>دانش و مهارت و توانایی (KSA)</h5>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="d-flex justify-content-end">
+            <h5><%= @assessment_forms_ksa.first.category_point %> POINT</h5>
+          </div>
+        </div>
+      </div>
+      <ul class="list-group mt-1">
 
-<%= form_with(url: update_form_assessments_path(user_id: @user.id), method: :patch, local: true) do |f| %>
-  <% @assessment_forms.each do |assessment_form| %>
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title"><%= assessment_form.assessment.title %></h5>
-        <p class="card-text"><%= assessment_form.assessment.category %></p>
-
-        <div class="form-group">
-          <%= f.label "Score for #{assessment_form.assessment.title}", class: "form-label" %>
-          <%= number_field_tag "assessment_forms[#{assessment_form.id}][score]", assessment_form.score, class: "form-control", min: 1, max: 10 %>
-          
-          <% if assessment_form.errors[:score].any? %>
+        <li class="shadow-lg mb-2 bg-body rounded list-group-item">
+          <% @assessment_forms_ksa.each do |assessment_form| %>
+          <div class="form-group">
+            <%= f.label "Score for #{assessment_form.assessment.title}", class: "form-label" %>
+            <%= number_field_tag "assessment_forms[#{assessment_form.id}][score]", assessment_form.score, class: "form-control", min: 1, max: 10 %>
+            
+            <% if assessment_form.errors[:score].any? %>
             <div class="text-danger">
               <%= assessment_form.errors[:score].join(", ") %>
             </div>
-          <% end %>
-        </div>
+            <% end %>
+          </div>
 
-        <div class="form-group">
-          <%= f.label "Weight for #{assessment_form.assessment.title}", class: "form-label" %>
-          <%= number_field_tag "assessment_forms[#{assessment_form.id}][weight]", assessment_form.weight, class: "form-control", min: 1, max: 3 %>
-          
-          <% if assessment_form.errors[:weight].any? %>
+          <div class="form-group">
+            <%= f.label "Weight for #{assessment_form.assessment.title}", class: "form-label" %>
+            <%= number_field_tag "assessment_forms[#{assessment_form.id}][weight]", assessment_form.weight, class: "form-control", min: 1, max: 3 %>
+            
+            <% if assessment_form.errors[:weight].any? %>
             <div class="text-danger">
               <%= assessment_form.errors[:weight].join(", ") %>
             </div>
+            <% end %>
+          </div>
           <% end %>
-        </div>
-      </div>
+        </li>        
+      </ul>
     </div>
+  </div>
+  <%= f.submit "Submit", class: "btn btn-success" %>
   <% end %>
-
-  <%= f.submit "Submit All Assessments", class: "btn btn-success" %>
-<% end %>
+</div>
