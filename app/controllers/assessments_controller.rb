@@ -1,6 +1,6 @@
 class AssessmentsController < ApplicationController
   before_action :authenticate_user!
-  before_action set_filler, only: %i[ index, form]
+  before_action :set_filler, only: %i[ index, form]
   
   def index
     @unique_users = AssessmentForm.unique_users_for_filler(@filler)
