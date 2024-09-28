@@ -1,21 +1,15 @@
 <div class="col-lg-10 mx-auto mt-5">
   <div class="card mt-4 mb-4 border-info">
     <div class="card-header bg-info text-white">
+      <div class="col-6">
+        <div class="d-flex justify-content-start">
       <h5 class="mb-0">Assessment Form for <%= @user.name.titleize %></h5>
     </div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6">
-          <p class="text-muted mb-1">Score Range</p>
-          <h4 class="text-dark">1 - 10</h4>
-        </div>
-        <div class="col-md-6">
-          <p class="text-muted mb-1">Weight Range</p>
-          <h4 class="text-dark">1 - 3</h4>
-        </div>
       </div>
-      <div class="text-center mt-3">
-        <small class="text-primary">Please provide your assessments below</small>
+      <div class="col-6">
+        <div class="d-flex justify-content-end">
+          <small class="text-muted">Score range: <span class="text-danger">1-10</span> Weight range:<span class="text-danger"> 1-3</span>   </small>
+        </div>
       </div>
     </div>
   </div>
@@ -29,7 +23,7 @@
       <div class="row">
         <div class="col-lg-6">
           <div class="d-flex justify-content-start">
-            
+
             <h5><%= @assessment_forms_ksa.first.assessment.category_point %> POINT</h5>
           </div>
         </div>
@@ -94,7 +88,7 @@
         </div>
         <div class="col-lg-6">
           <div class="d-flex justify-content-end">
-            
+
             <h5>رفتارها و کردارها (EVC)</h5>
           </div>
         </div>
@@ -111,7 +105,7 @@
         <tbody>
           <% @assessment_forms_evc.each do |assessment_form| %>
           <tr>
-            
+
             <td class="align-middle">
               <div class="form-group">
                 <%= number_field_tag "assessment_forms[#{assessment_form.id}][weight]", assessment_form.weight, class: "form-control", min: 1, max: 3 %>
@@ -155,7 +149,7 @@
         </div>
         <div class="col-lg-6">
           <div class="d-flex justify-content-end">
-            
+
             <h5>نتایج کلیدی عملکرد</h5>
           </div>
         </div>
@@ -172,7 +166,7 @@
         <tbody>
           <% @assessment_forms_ksa.each do |assessment_form| %>
           <tr>
-            
+
             <td class="align-middle">
               <div class="form-group">
                 <%= number_field_tag "assessment_forms[#{assessment_form.id}][weight]", assessment_form.weight, class: "form-control", min: 1, max: 3 %>
