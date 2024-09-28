@@ -7,7 +7,7 @@
     <div class="col-md-6 mb-4">
       <div class="card">
         <div class="card-body">
-          <% assessment_form = AssessmentForm.by_user_and_filler(user, @filler).first %>
+          <% assessment_form = AssessmentForm.by_user_and_filler(user, @filler).last %>
 
           <% if assessment_form.present? && assessment_form.score.nil? %>
           <!-- If the score is not filled yet -->
