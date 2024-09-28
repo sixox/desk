@@ -6,7 +6,9 @@ class Assessment < ApplicationRecord
 
   scope :management, -> { where(title: "management") }
   scope :superviser, -> { where(title: "superviser") }
-  scope :employee, -> { where(title: "employee") }
+  scope :employee, -> { where(title: "employee") 
+
+  scope :by_user_and_filler, -> (user, filler) { where(user_id: user.id, filler_id: filler.id) }
 
 
 
