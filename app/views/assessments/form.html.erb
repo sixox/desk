@@ -1,19 +1,30 @@
-<h3>Fill Assessment Forms for <%= @user.name %></h3>
+<h3>Fill Assessment Forms for <%= @user.name.titleize %></h3>
 
-<%= form_with(url: update_form_assessments_path, method: :patch, local: true) do |f| %>
+<%= form_with(url: update_assessments_path, method: :patch, local: true) do |f| %>
   <% @assessment_forms.each do |assessment_form| %>
     <div class="card mb-3">
       <div class="card-body">
         <h5 class="card-title"><%= assessment_form.assessment.title %></h5>
+        <p class="card-text"><%= assessment_form.assessment.definition %></p>
 
         <div class="form-group">
           <%= f.label "Score for #{assessment_form.assessment.title}", class: "form-label" %>
           <%= number_field_tag "assessment_forms[#{assessment_form.id}][score]", assessment_form.score, class: "form-control", min: 1, max: 10 %>
+          <% if assessment_form.errors[:score].any? %>
+            <div class="text-danger">
+              <%= assessment_form.errors[:score].join(", ") %>
+            </div>
+          <% end %>
         </div>
 
         <div class="form-group">
           <%= f.label "Weight for #{assessment_form.assessment.title}", class: "form-label" %>
           <%= number_field_tag "assessment_forms[#{assessment_form.id}][weight]", assessment_form.weight, class: "form-control", min: 1, max: 3 %>
+          <% if assessment_form.errors[:weight].any? %>
+            <div class="text-danger">
+              <%= assessment_form.errors[:weight].join(", ") %>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>

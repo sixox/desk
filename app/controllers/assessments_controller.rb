@@ -29,13 +29,23 @@ class AssessmentsController < ApplicationController
   end
 
   def update_form
-    # Loop through each assessment form ID and update it
+    all_updated = true
+
     assessment_forms_params.each do |id, form_params|
       assessment_form = AssessmentForm.find(id)
-      assessment_form.update(form_params)
-  end
+      unless assessment_form.update(form_params)
+        all_updated = false # Set the flag to false if any update fails
+      end
+    end
 
-    redirect_to assessments_path, notice: 'All assessment forms were successfully updated.'
+    if all_updated
+      redirect_to assessments_path, notice: 'All assessment forms were successfully updated.'
+    else
+      # If any update failed, render the form again with errors
+      @user = User.find(params[:user_id]) # Retrieve the user again
+      @assessment_forms = AssessmentForm.by_user_and_filler(@user, @filler)
+      render :form # Render the form view to show errors
+    end
   end
 
   private
