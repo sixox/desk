@@ -3,6 +3,9 @@ class AssessmentForm < ApplicationRecord
   belongs_to :user # for the `user` attribute (the form is about this user)
   belongs_to :filler, class_name: 'User' # for the `filler` (who is filling the form)
 
+  scope :by_user_and_filler, -> (user, filler) { where(user_id: user.id, filler_id: filler.id) }
+
+
   # validates :score, numericality: { only_integer: true, in: 1..10 }
   # validates :weight, numericality: { only_integer: true, in: 1..3 }
 
