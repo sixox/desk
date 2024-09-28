@@ -26,7 +26,7 @@ class AssessmentsController < ApplicationController
   def form
     @user = User.find(params[:user_id])
     @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" })
-    # @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" })
+    @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" })
     # @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "نتایج کلیدی عملکرد" })
 
 
