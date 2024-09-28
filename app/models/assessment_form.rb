@@ -7,8 +7,8 @@ class AssessmentForm < ApplicationRecord
   scope :by_user_and_filler, -> (user, filler) { where(user_id: user.id, filler_id: filler.id) }
 
   # Validation for score and weight
-  validates :score, presence: true, numericality: { only_integer: true, in: 1..10 }
-  validates :weight, presence: true, numericality: { only_integer: true, in: 1..3 }
+  # validates :score, presence: true, numericality: { only_integer: true, in: 1..10 }
+  # validates :weight, presence: true, numericality: { only_integer: true, in: 1..3 }
 
 
   # Before save callback to calculate total score
