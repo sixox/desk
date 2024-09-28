@@ -25,11 +25,8 @@ class AssessmentsController < ApplicationController
 
   def form
     @user = User.find(params[:user_id])
-    @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "category 1" })
-    @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "category 1" })
-    @assessment_forms = AssessmentForm.joins(:assessment).where(user_id: @user.id, filler_id: @filler.id, assessments: { category: "category 1" })
-
-
+    @assessment_forms = AssessmentForm.by_user_and_filler(@user, @filler)
+    
   end
 
   def update_form
