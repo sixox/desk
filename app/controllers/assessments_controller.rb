@@ -61,12 +61,7 @@ class AssessmentsController < ApplicationController
   end
 
   def assessment_forms_params
-    # Permit score and weight for all assessment forms dynamically
-    params.require(:assessment_forms).permit(
-      :total_score, 
-      :user_id, 
-      :filler_id, 
-      assessment_forms: [:score, :weight] # Explicitly permit score and weight
-    )
+    # Permit all parameters under assessment_forms
+    params.require(:assessment_forms).permit!.to_h
   end
 end
