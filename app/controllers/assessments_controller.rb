@@ -2,7 +2,9 @@ class AssessmentsController < ApplicationController
   before_action :authenticate_user!
   
   def index
-    @assessments = Assessment.all
+    filler = current_user
+    @unique_users = AssessmentForm.unique_users_for_filler(filler)
+
   end
 
   def show
@@ -26,5 +28,9 @@ class AssessmentsController < ApplicationController
 
   def assessment_params
     params.require(:assessment).permit(:category, :category_point, :criterion, :definition, :title)
+  end
+
+  def assessment_form_params
+    params.require(:assessment_form).permit(:total_score, :weight, :score, :assessment_id, :user_id, :filler_id)
   end
 end

@@ -3,17 +3,25 @@ class AssessmentForm < ApplicationRecord
   belongs_to :user # for the `user` attribute (the form is about this user)
   belongs_to :filler, class_name: 'User' # for the `filler` (who is filling the form)
 
+  # Scope to filter assessment forms by user and filler
   scope :by_user_and_filler, -> (user, filler) { where(user_id: user.id, filler_id: filler.id) }
 
+  # Validation for score and weight
+  validates :score, numericality: { only_integer: true, in: 1..10 }
+  validates :weight, numericality: { only_integer: true, in: 1..3 }
 
-  # validates :score, numericality: { only_integer: true, in: 1..10 }
-  # validates :weight, numericality: { only_integer: true, in: 1..3 }
+  # Before save callback to calculate total score
+  before_save :calculate_total_score
 
-  # before_save :calculate_total_score
+  # Class method to get unique users associated with a given filler
+  def self.unique_users_for_filler(filler)
+    where(filler_id: filler.id).select(:user_id).distinct.map { |af| af.user }
+  end
 
-  # private
+  private
 
-  # def calculate_total_score
-  #   self.total_score = score * weight
-  # end
+  # Method to calculate the total score
+  def calculate_total_score
+    self.total_score = score * weight
+  end
 end
