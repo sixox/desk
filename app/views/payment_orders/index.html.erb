@@ -23,6 +23,8 @@
 							<th scope="col">Deposite amount</th>
 							<th scope="col">Wage</th>
 							<th scope="col">Status</th>
+							<th scope="col">Document</th>
+
 							<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
 						</tr>
@@ -49,16 +51,21 @@
 					<td><%= transfer.wage.to_i %></td>
 
 					<td><%= 
-					if transfer.confirmed.present?
-						"Confirmed at #{transfer.confirmed_at&.strftime('%b %d')}"
-					elsif transfer.rejected.present?
-						"Rejected at #{transfer.rejected_at&.strftime('%b %d')}" 
+					if transfer.coo_confirmed.present?
+						"Confirmed by COO at #{transfer.coo_confirmed_at&.strftime('%b %d')}" 
 					else
-						'Wait for Confirm'
+						'Wait for COO Confirm'
 					end
 				%></td>
+				<td>
+					<% if transfer.document.attached? %>
+					<%= link_to 'View Document', url_for(transfer.document), target: '_blank' %>
+					<% else %>
+					no document
+					<% end %>
+				</td>
 				<td style="text-align: right;">
-					<% if !transfer.confirmed && !transfer.rejected && current_user.ceo? %>
+					<% if !transfer.confirmed && !transfer.rejected %>
 					<%= link_to confirm_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this transfer, this action can not be undo!' } do %>
 					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
 					<% end %>

@@ -256,7 +256,11 @@ class PaymentOrdersController < ApplicationController
 			@payment_orders = Kaminari.paginate_array(@payment_orders).page(params[:page]).per(6)
 		end
 		if current_user.ceo?
-    		@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false])
+    		@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [true])
+    	end
+
+    	if current_user.is_manager && current_user.procurement?
+    		@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [nil, false])
     	end
 
 		render 'index'
