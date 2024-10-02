@@ -20,8 +20,8 @@ class AssessmentForm < ApplicationRecord
   end
   
   def self.unique_fillers
-    # Fetch unique fillers from AssessmentForm
-    joins(:filler).select('DISTINCT fillers.*') # Assuming the filler is a User model
+    # Fetch unique fillers from AssessmentForm by joining with the User model
+    joins(:filler).select('DISTINCT users.*') # Correcting to select from users
   end
 
   private
