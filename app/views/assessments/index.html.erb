@@ -17,9 +17,7 @@
           <%= link_to "Fill Assessment Form", form_assessments_path(user_id: user.id), class: "btn btn-primary" %>
           <% elsif assessment_form.present? && assessment_form.score.present? %>
           <!-- If the score is already filled -->
-          <p class="card-text">
-            This form has already been filled.
-          </p>
+          
           
           <% else %>
           <!-- If no assessment form exists -->
