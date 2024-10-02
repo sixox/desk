@@ -42,6 +42,19 @@
         <% assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" }) %>
         <% assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" }) %>
         <% assessment_forms_function = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "نتایج کلیدی عملکرد" }) %>
+        <% point_ksa = assessment_forms_ksa.first.assessment.category_point %>
+        <% point_evc =  assessment_forms_evc.first.assessment.category_point %>
+        <% point_function =  assessment_forms_function.first.assessment.category_point %>
+        <% total_score_sum = assessment_forms_ksa.sum(&:total_score) %>
+        <% count = assessment_forms_ksa.count * 30 %>
+        <% ksa = (point_ksa * total_score_sum) / count %>
+        <% total_score_sum = assessment_forms_evc.sum(&:total_score) %>
+        <% count = assessment_forms_evc.count * 30 %>
+        <% evc = (point_evc * total_score_sum) / count %>
+        <% total_score_sum = assessment_forms_function.sum(&:total_score) %>
+        <% count = assessment_forms_function.count * 30 %>
+        <%= function = (point_function * total_score_sum) / count %>
+
 
         
         <div class="accordion-item">
@@ -58,8 +71,8 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="d-flex justify-content-start">
-                      <% point = assessment_forms_ksa.first.assessment.category_point %>
-                      <h5> <%= point %>POINT</h5>
+                      
+                      <h5> <%= point_ksa %>POINT</h5>
                     </div>
                   </div>
                   <div class="col-lg-6">
@@ -101,9 +114,7 @@
                   </tbody>
                 </table>
 
-                <% total_score_sum = assessment_forms_ksa.sum(&:total_score) %>
-                <% count = assessment_forms_ksa.count * 30 %>
-                <h6>Score: <%= ksa = (point * total_score_sum) / count %></h6>
+                <h6>Score: <%= ksa %></h6>
 
               </div>
             </div>
@@ -112,8 +123,8 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="d-flex justify-content-start">
-                      <% point =  assessment_forms_evc.first.assessment.category_point %>
-                      <h5><%= point %> POINT</h5>
+                      
+                      <h5><%= point_evc %> POINT</h5>
                     </div>
                   </div>
                   <div class="col-lg-6">
@@ -157,9 +168,8 @@
                   </tbody>
                 </table>
 
-                <% total_score_sum = assessment_forms_evc.sum(&:total_score) %>
-                <% count = assessment_forms_evc.count * 30 %>
-                <h6>Score: <%= evc = (point * total_score_sum) / count %></h6>
+                <h6>Score: <%= evc %></h6>
+                
 
               </div>
             </div>
@@ -168,8 +178,8 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="d-flex justify-content-start">
-                      <% point =  assessment_forms_function.first.assessment.category_point %>
-                      <h5><%= point %> POINT</h5>
+                      
+                      <h5><%= point_function %> POINT</h5>
                     </div>
                   </div>
                   <div class="col-lg-6">
@@ -212,9 +222,7 @@
                     <% end %>
                   </tbody>
                 </table>
-                <% total_score_sum = assessment_forms_function.sum(&:total_score) %>
-                <% count = assessment_forms_function.count * 30 %>
-                <h6>Score: <%= function = (point * total_score_sum) / count %></h6>
+                <h6>Score: <%= function %></h6>
               </div>
             </div> 
 
