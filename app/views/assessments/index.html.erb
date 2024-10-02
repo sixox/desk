@@ -4,32 +4,24 @@
 
   <div class="row">
     <% @unique_users.each do |user| %>
+    <% assessment_form = AssessmentForm.by_user_and_filler(user, @filler).last %>
+    <% if assessment_form.present? && assessment_form.score.nil? %>
     <div class="col-md-6 mb-4">
       <div class="card">
         <div class="card-body">
-          <% assessment_form = AssessmentForm.by_user_and_filler(user, @filler).last %>
+          
 
-          <% if assessment_form.present? && assessment_form.score.nil? %>
+          
           <!-- If the score is not filled yet -->
           <p class="card-text">
             The assessment form for <%= user.name.titleize %> is not filled yet.
           </p>
           <%= link_to "Fill Assessment Form", form_assessments_path(user_id: user.id), class: "btn btn-primary" %>
-          <% elsif assessment_form.present? && assessment_form.score.present? %>
-          <!-- If the score is already filled -->
-          <p class="card-text">
-            Assessment form for <%= user.name.titleize %> has already been filled.
-          </p>
           
-          <% else %>
-          <!-- If no assessment form exists -->
-          <p class="card-text">
-            No assessment form is available for <%= user.name.titleize %> yet.
-          </p>
-          <% end %>
         </div>
       </div>
     </div>
+    <% end %>
     <% end %>
   </div>
 
