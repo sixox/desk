@@ -53,15 +53,21 @@
         <% evc = (point_evc * total_score_sum) / count %>
         <% total_score_sum = assessment_forms_function.sum(&:total_score) %>
         <% count = assessment_forms_function.count * 30 %>
-        <%= function = (point_function * total_score_sum) / count %>
+        <% function = (point_function * total_score_sum) / count %>
 
 
         
         <div class="accordion-item">
           <h2 class="accordion-header" id="heading<%= a%>">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= a%>" aria-expanded="false" aria-controls="collapse<%= a%>">
-              <%= user.name.titleize %>
-            </button>
+            
+            <button class="accordion-button collapsed d-flex justify-content-between w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= a %>" aria-expanded="false" aria-controls="collapse<%= a %>">
+            <!-- Left-aligned total score -->
+            <span><%= user.name.titleize %></span>
+            <span><%= ksa + evc + function %> Points</span>
+
+            <!-- Right-aligned user name -->
+            
+          </button>
           </h2>
           <div id="collapse<%= a%>" class="accordion-collapse collapse" aria-labelledby="heading<%= a%>" data-bs-parent="#accordionExample">
             <div class="accordion-body">
