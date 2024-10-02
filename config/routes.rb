@@ -151,6 +151,7 @@ Rails.application.routes.draw do
     collection do
       get :form
       patch :update_form
+      get :all
     end
   end
 

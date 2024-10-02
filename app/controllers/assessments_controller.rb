@@ -6,6 +6,10 @@ class AssessmentsController < ApplicationController
     @unique_users = AssessmentForm.unique_users_for_filler(@filler)
   end
 
+  def all
+    @unique_fillers = AssessmentForm.unique_fillers
+  end
+
   def show
     @assessment = Assessment.find(params[:id])
   end
