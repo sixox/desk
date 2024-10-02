@@ -58,8 +58,8 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="d-flex justify-content-start">
-
-                      <h5><%= assessment_forms_ksa.first.assessment.category_point %> POINT</h5>
+                      <% point = assessment_forms_ksa.first.assessment.category_point %>
+                      <h5> <%= point %>POINT</h5>
                     </div>
                   </div>
                   <div class="col-lg-6">
@@ -102,7 +102,8 @@
                 </table>
 
                 <% total_score_ksa = assessment_forms_ksa.sum(&:total_score) %>
-                <h5>Total Score for KSA: <%= total_score_ksa %></h5>
+                <% count = assessment_forms_ksa.count * 30 %>
+                <h6>Score: <%= (point * total_score_ksa) / count %></h6>
 
               </div>
             </div>
