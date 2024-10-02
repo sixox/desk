@@ -47,13 +47,13 @@
         <% point_evc =  assessment_forms_evc.first.assessment.category_point %>
         <% point_function =  assessment_forms_function.first.assessment.category_point %>
         <% total_score_sum = assessment_forms_ksa.sum(&:total_score) %>
-        <% count = assessment_forms_ksa.count * 30 %>
+        <% count = assessment_forms_ksa.sum(&:weight) * 10 %>
         <% ksa = (point_ksa * total_score_sum) / count %>
         <% total_score_sum = assessment_forms_evc.sum(&:total_score) %>
-        <% count = assessment_forms_evc.count * 30 %>
+        <% count = assessment_forms_evc.sum(&:weight) * 10 %>
         <% evc = (point_evc * total_score_sum) / count %>
         <% total_score_sum = assessment_forms_function.sum(&:total_score) %>
-        <% count = assessment_forms_function.count * 30 %>
+        <% count = assessment_forms_function.sum(&:weight) * 10 %>
         <% function = (point_function * total_score_sum) / count %>
 
 
