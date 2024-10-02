@@ -18,6 +18,11 @@ class AssessmentForm < ApplicationRecord
   def self.unique_users_for_filler(filler)
     where(filler_id: filler.id).select(:user_id).distinct.map { |af| af.user }
   end
+  
+  def self.unique_fillers
+    # Fetch unique fillers from AssessmentForm
+    joins(:filler).select('DISTINCT fillers.*') # Assuming the filler is a User model
+  end
 
   private
 
