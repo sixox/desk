@@ -16,7 +16,7 @@
       <div class="accordion" id="accordionExample">
 
         <% AssessmentForm.unique_users_for_filler(filler).each do |user| %>
-        <%= render 'assessments/assessments', user: user, filler: @filler %>
+        <%= render 'assessments/assessments', user: user, filler: filler %>
         <% end %>
 
 
