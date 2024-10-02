@@ -62,8 +62,9 @@
             
             <button class="accordion-button collapsed d-flex justify-content-between w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= a %>" aria-expanded="false" aria-controls="collapse<%= a %>">
             <!-- Left-aligned total score -->
-            <span><%= user.name.titleize %></span>
-            <span><%= ksa + evc + function %> Points</span>
+            <span class="text-dark"><%= user.name.titleize %></span>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="text-primary"><%= ksa + evc + function %><span class="text-dark"> Points</span></span>
 
             <!-- Right-aligned user name -->
             
