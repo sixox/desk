@@ -38,6 +38,7 @@
       <div class="accordion" id="accordionExample">
         <% a = 1 %>
         <% @unique_users.each do |user| %>
+        <% if AssessmentForm.where(user_id: user.id, filler_id: @filler.id).all? { |af| af.total_score.present? } %>
 
         <% assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" }) %>
         <% assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" }) %>
@@ -238,6 +239,7 @@
         </div>
       </div>
       <% a += 1 %>
+      <% end %>
       <% end %>
 
 
