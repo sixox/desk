@@ -101,6 +101,9 @@
                   </tbody>
                 </table>
 
+                <% total_score_ksa = assessment_forms_ksa.sum(&:total_score) %>
+                <h5>Total Score for KSA: <%= total_score_ksa %></h5>
+
               </div>
             </div>
             <div class="card mb-5">
