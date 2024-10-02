@@ -101,9 +101,9 @@
                   </tbody>
                 </table>
 
-                <% total_score_ksa = assessment_forms_ksa.sum(&:total_score) %>
+                <% total_score_sum = assessment_forms_ksa.sum(&:total_score) %>
                 <% count = assessment_forms_ksa.count * 30 %>
-                <h6>Score: <%= (point * total_score_ksa) / count %></h6>
+                <h6>Score: <%= (point * total_score_sum) / count %></h6>
 
               </div>
             </div>
@@ -112,7 +112,8 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="d-flex justify-content-start">
-                      <h5><%= assessment_forms_ksa.first.assessment.category_point %> POINT</h5>
+                      <% point =  assessment_forms_evc.first.assessment.category_point %>
+                      <h5><%= point %> POINT</h5>
                     </div>
                   </div>
                   <div class="col-lg-6">
@@ -156,6 +157,10 @@
                   </tbody>
                 </table>
 
+                <% total_score_sum = assessment_forms_evc.sum(&:total_score) %>
+                <% count = assessment_forms_evc.count * 30 %>
+                <h6>Score: <%= (point * total_score_sum) / count %></h6>
+
               </div>
             </div>
             <div class="card mb-5">
@@ -163,7 +168,8 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="d-flex justify-content-start">
-                      <h5><%= assessment_forms_function.first.assessment.category_point %> POINT</h5>
+                      <% point =  assessment_forms_function.first.assessment.category_point %>
+                      <h5><%= point %> POINT</h5>
                     </div>
                   </div>
                   <div class="col-lg-6">
@@ -206,7 +212,9 @@
                     <% end %>
                   </tbody>
                 </table>
-
+                <% total_score_sum = assessment_forms_function.sum(&:total_score) %>
+                <% count = assessment_forms_function.count * 30 %>
+                <h6>Score: <%= (point * total_score_sum) / count %></h6>
               </div>
             </div> 
 
