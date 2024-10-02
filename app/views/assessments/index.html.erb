@@ -39,31 +39,185 @@
         <% a = 1 %>
         <% @unique_users.each do |user| %>
 
-        <% @assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" }) %>
-        <% @assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" }) %>
-        <% @assessment_forms_function = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "نتایج کلیدی عملکرد" }) %>
+        <% assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" }) %>
+        <% assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "رفتارها و کردارها (EVC)" }) %>
+        <% assessment_forms_function = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: @filler.id, assessments: { category: "نتایج کلیدی عملکرد" }) %>
 
         
         <div class="accordion-item">
           <h2 class="accordion-header" id="heading<%= a%>">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= a%>" aria-expanded="false" aria-controls="collapse<%= a%>">
-              <%= user.name %>
+              <%= user.name.titleize %>
             </button>
           </h2>
           <div id="collapse<%= a%>" class="accordion-collapse collapse" aria-labelledby="heading<%= a%>" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-              <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+
+             <div class="card mb-5">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="d-flex justify-content-start">
+
+                      <h5><%= assessment_forms_ksa.first.assessment.category_point %> POINT</h5>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="d-flex justify-content-end">
+                      <h5>دانش و مهارت و توانایی (KSA)</h5>
+                    </div>
+                  </div>
+                </div>
+                <table class="table table-bordered mt-3">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="col-1">Total</th>
+                      <th scope="col" class="col-1">Weight</th>
+                      <th scope="col" class="col-1">Performance</th>
+                      <th scope="col" class="col-9">Definition</th>
+                      <th scope="col" class="col-1">Criterion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% assessment_forms_ksa.each do |assessment_form| %>
+                    <tr>
+                      <td class="align-middle">
+                          <%= assessment_form.assessment.total_score %>
+                      </td>
+                      <td class="align-middle">
+                          <%= assessment_form.assessment.weight %>
+                      </td>
+                      <td class="align-middle">
+                        <%= assessment_form.assessment.score %>
+                      </td>
+                      <td class="align-right">
+                        <%= assessment_form.assessment.definition %>
+                      </td>
+                      <td class="align-right">
+                        <%= assessment_form.assessment.criterion %>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+
+              </div>
             </div>
+            <div class="card mb-5">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="d-flex justify-content-start">
+                      <h5><%= assessment_forms_ksa.first.assessment.category_point %> POINT</h5>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="d-flex justify-content-end">
+
+                      <h5>رفتارها و کردارها (EVC)</h5>
+                    </div>
+                  </div>
+                </div>
+                <table class="table table-bordered mt-3">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="col-1">Total</th>
+                      <th scope="col" class="col-1">Weight</th>
+                      <th scope="col" class="col-1">Performance</th>
+                      <th scope="col" class="col-9">Definition</th>
+                      <th scope="col" class="col-1">Criterion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% assessment_forms_evc.each do |assessment_form| %>
+                    <tr>
+
+                      <td class="align-middle">
+                          <%= assessment_form.assessment.total_score %>
+                      </td>
+                      <td class="align-middle">
+                          <%= assessment_form.assessment.weight %>
+                      </td>
+                      <td class="align-middle">
+                        <%= assessment_form.assessment.score %>
+                      </td>
+                      <td class="align-right">
+                        <%= assessment_form.assessment.definition %>
+                      </td>
+                      <td class="align-right">
+                        <%= assessment_form.assessment.criterion %>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+            <div class="card mb-5">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="d-flex justify-content-start">
+                      <h5><%= assessment_forms_function.first.assessment.category_point %> POINT</h5>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="d-flex justify-content-end">
+
+                      <h5>نتایج کلیدی عملکرد</h5>
+                    </div>
+                  </div>
+                </div>
+                <table class="table table-bordered mt-3">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="col-1">Total</th>
+                      <th scope="col" class="col-1">Weight</th>
+                      <th scope="col" class="col-1">Performance</th>
+                      <th scope="col" class="col-9">Definition</th>
+                      <th scope="col" class="col-1">Criterion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @assessment_forms_function.each do |assessment_form| %>
+                    <tr>
+
+                      <td class="align-middle">
+                          <%= assessment_form.assessment.total_score %>
+                      </td>
+                      <td class="align-middle">
+                          <%= assessment_form.assessment.weight %>
+                      </td>
+                      <td class="align-middle">
+                        <%= assessment_form.assessment.score %>
+                      </td>
+                      <td class="align-right">
+                        <%= assessment_form.assessment.definition %>
+                      </td>
+                      <td class="align-right">
+                        <%= assessment_form.assessment.criterion %>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+
+              </div>
+            </div> 
+
+
           </div>
         </div>
-        <% a += 1 %>
-        <% end %>
-
-
-
       </div>
+      <% a += 1 %>
+      <% end %>
+
+
+
     </div>
   </div>
+</div>
 
 
 
