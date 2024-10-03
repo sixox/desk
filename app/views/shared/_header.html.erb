@@ -138,7 +138,7 @@
         <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           HR
         </a>
-        <% if (current_user.is_manager || current_user.id == 10) %>
+        <% if (current_user.is_manager) %>
         <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
           <%= count_not_confirmed_vacations %>
         </span>
@@ -146,7 +146,7 @@
         <ul class="dropdown-menu text-white">
           <li><%= link_to "Documents", documents_path, class: "dropdown-item" %></li>
           <li><%= link_to "Assessments", assessments_path, class: "dropdown-item" %></li>
-          <% if current_user.is_manager %>
+          <% if current_user.is_manager || current_user.id == 10 %>
           <li><%= link_to "Vacations", managment_vacations_path, class: "dropdown-item" %></li>
           <% end %>
           <% if current_user.hr? %>
