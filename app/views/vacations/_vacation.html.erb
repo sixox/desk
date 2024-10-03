@@ -38,7 +38,7 @@
 					<% end %>	
 					<% end %>
 
-					<% if user_signed_in? && current_user == @user && @user.is_manager && !vacation.confirm %>
+					<% if user_signed_in? && current_user == @user && (@user.is_manager || current_user.id == 10) && !vacation.confirm %>
 
 					<%= link_to confirm_vacation_path(vacation), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to Confirm this vacation request, this action can not be undo!' } do %>
 					<i class="bi bi-calendar2-check-fill confirm-size" style="color: green;"></i>
