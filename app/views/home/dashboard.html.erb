@@ -3,18 +3,118 @@
 	<div class="card mt-3" style="background-color: floralwhite !important;">
 		<%= render 'home/paid_pos' %>
 		<div class="row mt-1">
+			<div class="col-12 col-lg-6">
+				
+				<div class="card-body pt-0">
+					<div class="card-title pb-1">
+						<small class="timeline-small">latest Payment Orders</small> 
+					</div>
+					<table class="table table-success table-striped table-hover">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col"><small>Amount</small></th>
+								<th scope="col"><small>Department</small></th>
+								<th scope="col"><small>Details</small></th>
+							</tr>
+						</thead>
+						<tbody>
+							<% @latest_payment_orders.each do |payment_order| %>
+							<tr>
+								<th scope="row"><small><%= payment_order.id %></small></th>
+								<td><span class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></span>
+									<small class="timeline-small"><%= payment_order.currency %></small>
+								</td>
+								<td><small><%= payment_order.role %></small></td>
+								<td><small title="<%= payment_order.details %>">show</small></td>
+							</tr>
+							<% end %>
+							
+							
+						</tbody>
+
+					</table>
+				</div>
+
+
+			</div>
+			<div class="col-12 col-lg-4">
+				
+				<div class="card-body pt-0">
+					<div class="card-title pb-1">
+						<small class="timeline-small">latest Payment Orders</small> 
+					</div>
+					<table class="table table-warning table-striped table-hover text-center">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col"><small>Amount</small></th>
+								<th scope="col"><small>Details</small></th>
+								<th scope="col"><small>Status</small></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th scope="row">1</th>
+								<td>Mark</td>
+								<td>Otto</td>
+								<td>@mdo</td>
+							</tr>	
+						</tbody>
+
+					</table>
+				</div>
+
+
+			</div>
 			<div class="col-12 col-lg-4">
 				
 				<div class="card-body pt-0">
 					<div class="card-title pb-1">
 						<small class="timeline-small">latest POs</small> 
 					</div>
+					<table class="table table-secondary table-striped table-hover text-center">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">First</th>
+								<th scope="col">Last</th>
+								<th scope="col">Handle</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th scope="row">1</th>
+								<td>Mark</td>
+								<td>Otto</td>
+								<td>@mdo</td>
+							</tr>
+							<tr>
+								<th scope="row">2</th>
+								<td>Jacob</td>
+								<td>Thornton</td>
+								<td>@fat</td>
+							</tr>
+							<tr>
+								<th scope="row">2</th>
+								<td>Jacob</td>
+								<td>Thornton</td>
+								<td>@fat</td>
+							</tr>
+							<tr>
+								<th scope="row">2</th>
+								<td>Jacob</td>
+								<td>Thornton</td>
+								<td>@fat</td>
+							</tr>
+							
+						</tbody>
+
+					</table>
 				</div>
 
 
 			</div>
-			<div class="col-12 col-lg-4">hello</div>
-			<div class="col-12 col-lg-4">hello</div>
 		</div>
 	</div>
 	

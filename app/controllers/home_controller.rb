@@ -23,7 +23,15 @@ class HomeController < ApplicationController
     @last_month_paid_rial = PaymentOrder.paid_by_currency(@last_month, 'Rial').sum(:amount)
     @last_month_paid_dollar = PaymentOrder.paid_by_currency(@last_month, 'Dollar').sum(:amount)
     @last_month_paid_dirham = PaymentOrder.paid_by_currency(@last_month, 'Dirham').sum(:amount)
+    # payment order end
 
+    #accounting tables start
+    @latest_payment_orders = PaymentOrder
+                          .joins(:user) # Use joins to avoid loading full user records
+                          .select('payment_orders.*, users.role') # Fetch only what you need, including user role
+                          .order(created_at: :desc)
+                          .limit(14)
+    # accounting tables end
 
 
 
