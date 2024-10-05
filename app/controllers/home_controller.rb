@@ -15,14 +15,24 @@ class HomeController < ApplicationController
     # vacation end
 
     # payment order start
-    @current_paid_rial = PaymentOrder.paid_by_currency(Date.current, 'Rial')
-    @current_paid_dollar = PaymentOrder.paid_by_currency(Date.current, 'Dollar')
-    @current_paid_dirham = PaymentOrder.paid_by_currency(Date.current, 'Dirham')
+    current_date = Date.current
+    last_month = current_date.last_month
 
-    @last_month = Date.current.last_month
-    @last_month_paid_rial = PaymentOrder.paid_by_currency(@last_month, 'Rial')
-    @last_month_paid_dollar = PaymentOrder.paid_by_currency(@last_month, 'Dollar')
-    @last_month_paid_dirham = PaymentOrder.paid_by_currency(@last_month, 'Dirham')
+    @paid_orders = PaymentOrder.paid_by_currency(current_date, nil)
+    .or(PaymentOrder.paid_by_currency(last_month, nil))
+    @current_paid_orders = @paid_orders.select { |order| order.created_at >= current_date.beginning_of_month }
+    .group_by(&:currency)
+
+    @last_month_paid_orders = @paid_orders.select { |order| order.created_at >= last_month.beginning_of_month }
+    .group_by(&:currency)
+
+    @current_paid_rial = @current_paid_orders['Rial'] || []
+    @current_paid_dollar = @current_paid_orders['Dollar'] || []
+    @current_paid_dirham = @current_paid_orders['Dirham'] || []
+
+    @last_month_paid_rial = @last_month_paid_orders['Rial'] || []
+    @last_month_paid_dollar = @last_month_paid_orders['Dollar'] || []
+    @last_month_paid_dirham = @last_month_paid_orders['Dirham'] || []
 
 
   end
