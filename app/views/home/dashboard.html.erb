@@ -1,6 +1,6 @@
 <div class="col-lg-10 mx-auto mt-1">
 	<%= render 'home/vacation' %>
-	<div class="card mt-3" style="background-color: floralwhite !important;">
+	<div class="card mt-3" style="background-color: floralwhite !important; border-color: papayawhip !important;">
 		<%= render 'home/paid_pos' %>
 		<div class="row mt-1">
 			<div class="col-12 col-lg-6">
@@ -9,12 +9,11 @@
 					<div class="card-title pb-1">
 						<small class="timeline-small">latest Payment Orders</small> 
 					</div>
-					<table class="table table-success table-striped table-hover">
+					<table class="table table-secondary table-striped table-hover">
 						<thead>
 							<tr>
 								<th scope="col">#</th>
 								<th scope="col"><small>Amount</small></th>
-								<th scope="col"><small>Department</small></th>
 								<th scope="col"><small>Details</small></th>
 							</tr>
 						</thead>
@@ -25,8 +24,7 @@
 								<td><span class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></span>
 									<small class="timeline-small"><%= payment_order.currency %></small>
 								</td>
-								<td><small><%= payment_order.role %></small></td>
-								<td><small title="<%= payment_order.details %>"><%= truncate(payment_order.details, length: 15) %></small></td>
+								<td><small title="<%= payment_order.details %>"><%= truncate(payment_order.details, length: 40) %></small></td>
 							</tr>
 							<% end %>
 							
@@ -69,7 +67,7 @@
 									<td><small class="fw-bold <%= transaction.deposit_amount.present? ? 'text-success' : 'text-danger' %>">
 										<%= transaction.deposit_amount.present? ? number_with_delimiter(transaction.deposit_amount, delimiter: ',') : number_with_delimiter(transaction.withdrawal_amount, delimiter: ',') %>
 									</small> </td>
-									<td> <small> <%= (transaction.created_at + 3.5.hours).strftime("%Y-%m-%d %H:%M:%S") %></small></td>
+									<td> <small> <%= (transaction.created_at + 3.5.hours).strftime("%Y-%m-%d %H:%M") %></small></td>
 								</tr>
 								<% end %>	
 							</tbody>
@@ -80,7 +78,7 @@
 
 				</div>
 				<div class="col-12 col-lg-3">
-					
+
 					<div class="card-body pt-0">
 						<div class="card-title pb-1">
 							<small class="timeline-small">latest POs</small> 
@@ -119,7 +117,7 @@
 									<td>Thornton</td>
 									<td>@fat</td>
 								</tr>
-								
+
 							</tbody>
 
 						</table>
@@ -129,5 +127,5 @@
 				</div>
 			</div>
 		</div>
-		
+
 	</div>
