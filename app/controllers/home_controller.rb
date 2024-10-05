@@ -7,9 +7,16 @@ class HomeController < ApplicationController
   end
 
   def dashboard
+
+    # vacation section start
     @vacations = Vacation.where("(DATE(start_at) <= ? AND DATE(end_at) >= ?) OR (DATE(start_at) <= ? AND DATE(end_at) >= ?)", Date.current, Date.current, Date.tomorrow, Date.tomorrow)
     @current_vacations = @vacations.select { |vacation| vacation.start_at.to_date <= Date.current && vacation.end_at.to_date >= Date.current }
     @vacations_for_tomorrow = @vacations.select { |vacation| vacation.start_at.to_date <= Date.tomorrow && vacation.end_at.to_date >= Date.tomorrow }
+    # vacation end
+
+    # payment order start
+    @paid_orders = PaymentOrder.paid_by_currency(Date.current, 'Rial').joins(:user)
+    .select('payment_orders.*, users.role as user_role')
 
   end
 end

@@ -1,0 +1,35 @@
+<div class="card" style="background-color: floralwhite !important; border-color: papayawhip !important;">
+	<div class="card-body pb-0 pt-0">
+		<div class="row ">
+			<div class="col-2">
+				<small class="timeline-small">Vacations</small>
+			</div>
+			<div class="col-4 timeline-small"><small><%= Time.now.strftime("%A") %>:</small>
+				<% if @current_vacations.any? %>
+				<% @current_vacations.each do |vacation| %>
+				<small class="text-warning"> <%= vacation.user.first_name.titleize %><%= vacation.hourly ? " (H)" : "" %> </small>
+				<small class="text-primary"> | </small>
+				<% end %>
+				<% else %>
+				<small class="text-primary">None</small>
+				<% end %>
+			</div>
+			<div class="col-4 timeline-small"><small><%= (Time.now + 1.day).strftime("%A") %>:</small>
+				<% if @vacations_for_tomorrow.any? %>
+				<% @vacations_for_tomorrow.each do |vacation| %>
+				<small class="text-warning"> <%= vacation.user.first_name.titleize %><%= vacation.hourly ? " (H)" : "" %> </small>
+				<small class="text-primary"> | </small>
+				<% end %>
+				<% else %>
+				<small class="text-primary">None</small>
+				<% end %>
+			</div>
+			<div class="col-2 text-center ">
+				<%= link_to new_vacation_path, data: { controller: "bs-modal-form" }, class: "badge text-bg-warning link-nodecor-po align-top fw-normal" do %>
+  						New Vacation
+		  		<% end %>
+			</div>
+
+		</div>
+	</div>
+</div>
