@@ -1,0 +1,89 @@
+<div class="row">
+	<div class="col-12 col-lg-6">
+		<div class="card-body pt-0">
+			<div class="card-title pb-1">
+				<small class="timeline-small">Total Payments - <%= Date.current.strftime("%B") %></small> 
+			</div>
+			<div class="row">
+				<div class="col-4">
+					<div class="card" style="background-color: white !important;">
+						<div class="card-body text-center mb-0 pb-0 mt-0 pt-0">
+							<div>
+								<div class="fw-bold dash-amount"><%= number_with_delimiter(@current_paid_dirham, delimiter: ',') %>
+								</div>
+								<small class="text-center timeline-small">Dirham</small>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-4">
+					<div class="card" style="background-color: white !important;">
+						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
+							<div>
+								<div class="fw-bold dash-amount"><%= number_with_delimiter(@current_paid_dollar, delimiter: ',') %>
+								</div>
+								<small class="text-center timeline-small">Dollar</small>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-4">
+					<div class="card" style="background-color: white !important;">
+						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
+							<div>
+								<div class="fw-bold dash-amount"><%= number_with_delimiter(@current_paid_rial, delimiter: ',') %>
+								</div>
+								<small class="text-center timeline-small">Rial</small>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<div class="col-12 col-lg-6">
+		<div class="card-body pt-0">
+			<div class="card-title pb-1">
+				<small class="timeline-small">Total Payments - <%= @last_month.strftime("%B") %></small> 
+			</div>
+			<div class="row">
+				<div class="col-4">
+					<div class="card" style="background-color: white !important;">
+						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
+							<div>
+								<div class="fw-bold dash-amount"><%= number_with_delimiter(@last_month_paid_dirham, delimiter: ',') %>
+								</div>
+								<small class="text-center timeline-small">Dirham</small>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-4">
+					<div class="card" style="background-color: white !important;">
+						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
+							<div>
+								<div class="fw-bold dash-amount"><%= number_with_delimiter(@last_month_paid_dollar, delimiter: ',') %>
+								</div>
+								<small class="text-center timeline-small">Dollar</small>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-4">
+					<div class="card" style="background-color: white !important;">
+						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
+							<div>
+								<div class="fw-bold dash-amount"><%= number_with_delimiter(@last_month_paid_rial, delimiter: ',') %>
+								</div>
+								<small class="text-center timeline-small">Rial</small>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+	</div>
+</div>
