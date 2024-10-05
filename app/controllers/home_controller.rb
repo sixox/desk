@@ -15,14 +15,16 @@ class HomeController < ApplicationController
     # vacation end
 
     # payment order start
-    @current_paid_rial = PaymentOrder.paid_by_currency(Date.current, 'Rial')
-    @current_paid_dollar = PaymentOrder.paid_by_currency(Date.current, 'Dollar')
-    @current_paid_dirham = PaymentOrder.paid_by_currency(Date.current, 'Dirham')
+    @current_paid_rial = PaymentOrder.paid_by_currency(Date.current, 'Rial').sum(:amount)
+    @current_paid_dollar = PaymentOrder.paid_by_currency(Date.current, 'Dollar').sum(:amount)
+    @current_paid_dirham = PaymentOrder.paid_by_currency(Date.current, 'Dirham').sum(:amount)
 
     @last_month = Date.current.last_month
-    @last_month_paid_rial = PaymentOrder.paid_by_currency(@last_month, 'Rial')
-    @last_month_paid_dollar = PaymentOrder.paid_by_currency(@last_month, 'Dollar')
-    @last_month_paid_dirham = PaymentOrder.paid_by_currency(@last_month, 'Dirham')
+    @last_month_paid_rial = PaymentOrder.paid_by_currency(@last_month, 'Rial').sum(:amount)
+    @last_month_paid_dollar = PaymentOrder.paid_by_currency(@last_month, 'Dollar').sum(:amount)
+    @last_month_paid_dirham = PaymentOrder.paid_by_currency(@last_month, 'Dirham').sum(:amount)
+
+
 
 
   end
