@@ -30,6 +30,7 @@ class HomeController < ApplicationController
                           .order(created_at: :desc)
                           .limit(14)
     @transactions = Transaction.all.includes(:transactionable).order(created_at: :desc).limit(14)
+    @banks = Bank.all
     # accounting tables end
 
 
