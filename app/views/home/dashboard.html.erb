@@ -26,7 +26,7 @@
 									<small class="timeline-small"><%= payment_order.currency %></small>
 								</td>
 								<td><small><%= payment_order.role %></small></td>
-								<td><small title="<%= payment_order.details %>"><%= payment_order.details %></small></td>
+								<td><small title="<%= payment_order.details %>"><%= truncate(payment_order.details, length: 20) %></small></td>
 							</tr>
 							<% end %>
 							
