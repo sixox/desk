@@ -93,7 +93,6 @@
 									<th scope="col">Balance</th>
 									<th scope="col">Expected</th>
 									<th scope="col">Currency</th>
-									<th scope="col">Updated</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -104,8 +103,6 @@
 									<td><small class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></small></td>
 									<td><small><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></small></td>
 									<td><small><%= bank.currency %></small></td>
-									<td><small><%= bank.updated_at&.strftime('%b %d')  %></small></td>
-									
 								</tr>
 								<% end %>
 								
@@ -131,7 +128,6 @@
 									<th scope="col">Balance</th>
 									<th scope="col">Expected</th>
 									<th scope="col">Currency</th>
-									<th scope="col">Updated</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -142,8 +138,6 @@
 									<td><small class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></small></td>
 									<td><small><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></small></td>
 									<td><small><%= bank.currency %></small></td>
-									<td><small><%= bank.updated_at&.strftime('%b %d')  %></small></td>
-									
 								</tr>
 								<% end %>
 								
