@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get 'home/dashboard'
   get 'game/quardo'
   get 'project_login', to: 'projects#project_login'
   post 'project_login', to: 'projects#authenticate'
