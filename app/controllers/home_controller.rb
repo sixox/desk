@@ -19,5 +19,11 @@ class HomeController < ApplicationController
     @current_paid_dollar = PaymentOrder.paid_by_currency(Date.current, 'Dollar')
     @current_paid_dirham = PaymentOrder.paid_by_currency(Date.current, 'Dirham')
 
+    @last_month = Date.current.last_month
+    @last_month_paid_rial = PaymentOrder.paid_by_currency(@last_month, 'Rial')
+    @last_month_paid_dollar = PaymentOrder.paid_by_currency(@last_month, 'Dollar')
+    @last_month_paid_dirham = PaymentOrder.paid_by_currency(@last_month, 'Dirham')
+
+
   end
 end
