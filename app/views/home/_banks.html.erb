@@ -1,0 +1,72 @@
+<div class="row">
+	<div class="col-12 col-lg-6">
+
+		<div class="card-body pt-0">
+			<div class="card-title pb-1">
+				<small class="timeline-small">Banks</small> 
+			</div>
+			<table class="table table-secondary table-striped table-hover">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Name</th>
+						<th scope="col">Balance</th>
+						<th scope="col">Expected</th>
+						<th scope="col">Currency</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% @banks[0...(@banks.size / 2)].each do |bank| %>
+					<tr>
+						<th scope="row"><small><%= link_to "#{bank.id}", bank_path(bank), class: 'link-nodecor-po' %></small></th>
+						<td><small><%= bank.name %></small></td>
+						<td><small class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></small></td>
+						<td><small><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></small></td>
+						<td><small><%= bank.currency %></small></td>
+					</tr>
+					<% end %>
+					
+
+				</tbody>
+
+			</table>
+		</div>
+
+
+	</div>
+	<div class="col-12 col-lg-6">
+
+		<div class="card-body pt-0">
+			<div class="card-title pb-1">
+				<small class="timeline-small">Banks</small> 
+			</div>
+			<table class="table table-secondary table-striped table-hover">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Name</th>
+						<th scope="col">Balance</th>
+						<th scope="col">Expected</th>
+						<th scope="col">Currency</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% @banks[(@banks.size / 2)..-1].each do |bank| %>
+					<tr>
+						<th scope="row"><small><%= link_to "#{bank.id}", bank_path(bank), class: 'link-nodecor-po' %></small></th>
+						<td><small><%= bank.name %></small></td>
+						<td><small class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></small></td>
+						<td><small><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></small></td>
+						<td><small><%= bank.currency %></small></td>
+					</tr>
+					<% end %>
+					
+
+				</tbody>
+
+			</table>
+		</div>
+
+
+	</div>
+</div>
