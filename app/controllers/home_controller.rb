@@ -15,8 +15,9 @@ class HomeController < ApplicationController
     # vacation end
 
     # payment order start
-    @paid_orders = PaymentOrder.paid_by_currency(Date.current, 'Rial').joins(:user)
-    .select('payment_orders.*, users.role as user_role')
+    @current_paid_rial = PaymentOrder.paid_by_currency(Date.current, 'Rial')
+    @current_paid_dollar = PaymentOrder.paid_by_currency(Date.current, 'Dollar')
+    @current_paid_dirham = PaymentOrder.paid_by_currency(Date.current, 'Dirham')
 
   end
 end
