@@ -21,7 +21,7 @@
 						<tbody>
 							<% @latest_payment_orders.each do |payment_order| %>
 							<tr>
-								<th scope="row"><small><%= payment_order.id %></small></th>
+								<th scope="row"><small><%= link_to "#{payment_order.id}", payment_order_path(payment_order), class: 'link-nodecor-po' %></small></th>
 								<td><span class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></span>
 									<small class="timeline-small"><%= payment_order.currency %></small>
 								</td>
@@ -38,84 +38,96 @@
 
 
 			</div>
-			<div class="col-12 col-lg-4">
+			<div class="col-12 col-lg-6">
 				
 				<div class="card-body pt-0">
 					<div class="card-title pb-1">
-						<small class="timeline-small">latest Payment Orders</small> 
+						<small class="timeline-small">latest Transactions</small> 
 					</div>
-					<table class="table table-warning table-striped table-hover text-center">
+					<table class="table table-secondary table-striped table-hover">
 						<thead>
 							<tr>
 								<th scope="col">#</th>
+								<th scope="col"><small>Bank</small></th>
+								
+								<th scope="col"><small>Type</small></th>
 								<th scope="col"><small>Amount</small></th>
-								<th scope="col"><small>Details</small></th>
-								<th scope="col"><small>Status</small></th>
+								<th scope="col"><small>Date</small></th>
 							</tr>
 						</thead>
 						<tbody>
+							<% @transactions.each do |transaction| %>
 							<tr>
-								<th scope="row">1</th>
-								<td>Mark</td>
-								<td>Otto</td>
-								<td>@mdo</td>
-							</tr>	
-						</tbody>
+								<th scope="row"><small><%= transaction.id %></small></th>
+								<td><small><%= transaction.bank.name %></small> </td>
+								
+								<td><small><% if transaction.transactionable_type == "PaymentOrder" %>
+									<%= link_to "P.O #{transaction.transactionable_id}", payment_order_path(transaction.transactionable_id), class: 'link-nodecor-po' %>
+									<% else %>
+									<%= transaction.transactionable_type %> <%= transaction.transactionable_id %>
+									<% end %></small> </td>
+									<td><small class="fw-bold <%= transaction.deposit_amount.present? ? 'text-success' : 'text-danger' %>">
+										<%= transaction.deposit_amount.present? ? number_with_delimiter(transaction.deposit_amount, delimiter: ',') : number_with_delimiter(transaction.withdrawal_amount, delimiter: ',') %>
+									</small> </td>
+									<td> <small> <%= (transaction.created_at + 3.5.hours).strftime("%Y-%m-%d %H:%M:%S") %></small></td>
+								</tr>
+								<% end %>	
+							</tbody>
 
-					</table>
-				</div>
-
-
-			</div>
-			<div class="col-12 col-lg-4">
-				
-				<div class="card-body pt-0">
-					<div class="card-title pb-1">
-						<small class="timeline-small">latest POs</small> 
+						</table>
 					</div>
-					<table class="table table-secondary table-striped table-hover text-center">
-						<thead>
-							<tr>
-								<th scope="col">#</th>
-								<th scope="col">First</th>
-								<th scope="col">Last</th>
-								<th scope="col">Handle</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<th scope="row">1</th>
-								<td>Mark</td>
-								<td>Otto</td>
-								<td>@mdo</td>
-							</tr>
-							<tr>
-								<th scope="row">2</th>
-								<td>Jacob</td>
-								<td>Thornton</td>
-								<td>@fat</td>
-							</tr>
-							<tr>
-								<th scope="row">2</th>
-								<td>Jacob</td>
-								<td>Thornton</td>
-								<td>@fat</td>
-							</tr>
-							<tr>
-								<th scope="row">2</th>
-								<td>Jacob</td>
-								<td>Thornton</td>
-								<td>@fat</td>
-							</tr>
-							
-						</tbody>
 
-					</table>
+
 				</div>
+				<div class="col-12 col-lg-3">
+					
+					<div class="card-body pt-0">
+						<div class="card-title pb-1">
+							<small class="timeline-small">latest POs</small> 
+						</div>
+						<table class="table table-secondary table-striped table-hover text-center">
+							<thead>
+								<tr>
+									<th scope="col">#</th>
+									<th scope="col">First</th>
+									<th scope="col">Last</th>
+									<th scope="col">Handle</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th scope="row">1</th>
+									<td>Mark</td>
+									<td>Otto</td>
+									<td>@mdo</td>
+								</tr>
+								<tr>
+									<th scope="row">2</th>
+									<td>Jacob</td>
+									<td>Thornton</td>
+									<td>@fat</td>
+								</tr>
+								<tr>
+									<th scope="row">2</th>
+									<td>Jacob</td>
+									<td>Thornton</td>
+									<td>@fat</td>
+								</tr>
+								<tr>
+									<th scope="row">2</th>
+									<td>Jacob</td>
+									<td>Thornton</td>
+									<td>@fat</td>
+								</tr>
+								
+							</tbody>
+
+						</table>
+					</div>
 
 
+				</div>
 			</div>
 		</div>
+		
 	</div>
-	
-</div>

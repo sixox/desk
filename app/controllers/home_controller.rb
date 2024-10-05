@@ -31,6 +31,7 @@ class HomeController < ApplicationController
                           .select('payment_orders.*, users.role') # Fetch only what you need, including user role
                           .order(created_at: :desc)
                           .limit(14)
+    @transactions = Transaction.all.includes(:transactionable).order(created_at: :desc).limit(14)
     # accounting tables end
 
 
