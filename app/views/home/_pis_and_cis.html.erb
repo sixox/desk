@@ -1,8 +1,6 @@
-
-<div class="row mt-1">
+<div class="row mt-1 d-flex align-items-stretch">
   <div class="col-12 col-lg-6">
-
-    <div class="card-body pt-0">
+    <div class="card-body pt-0 h-100">
       <div class="card-title pb-1">
         <small class="timeline-small fw-bold">Total PIs (dirham)</small> 
       </div>
@@ -10,12 +8,11 @@
     </div>
   </div>
   <div class="col-12 col-lg-6">
-
-    <div class="card-body pt-0">
+    <div class="card-body pt-0 h-100">
       <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">latest PIs</small> 
+        <small class="timeline-small fw-bold">Latest PIs</small> 
       </div>
-      <table class="table table-success table-striped table-hover table-sm">
+      <table class="table table-success table-striped table-hover table-sm h-100">
         <thead>
           <tr>
             <th scope="col">#</th>
@@ -29,19 +26,16 @@
           <tr>
             <th scope="row"><small><%= pi.number %></small></th>
             <td><small><%= link_to "#{pi.project_number}", project_path(pi.project_id), class: 'link-nodecor-po' %></small></td>
-            <td><small><%= pi.customer_nickname%></small></td>
-              <td><small><%= pi.project_name %></small>
-            </td>
+            <td><small><%= pi.customer_nickname %></small></td>
+            <td><small><%= pi.project_name %></small></td>
           </tr>
           <% end %>
-          
-          
         </tbody>
-
       </table>
     </div>
   </div>
 </div>
+
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
