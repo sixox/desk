@@ -58,7 +58,7 @@ class HomeController < ApplicationController
     @latest_pis = Pi.joins(:project, :customer)
                     .select('pis.*, projects.name AS project_name, projects.number As project_number, customers.nickname AS customer_nickname')
                     .order(created_at: :desc)
-                    .limit(7)
+                    .limit(6)
 
 
 
