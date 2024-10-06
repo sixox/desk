@@ -10,3 +10,32 @@
 </div>
 
 </div>
+
+
+<canvas id="piAmountChart" width="400" height="200"></canvas>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('piAmountChart').getContext('2d');
+    var piAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @months.to_json %>, // Array of month names
+        datasets: [{
+          label: 'Total PI Amount',
+          data: <%= raw @totals.to_json %>,  // Array of total PI amounts
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  });
+</script>
