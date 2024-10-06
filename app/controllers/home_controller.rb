@@ -34,8 +34,7 @@ class HomeController < ApplicationController
     # accounting tables end
 
     # sales started
-    @total_pi_by_month = (0..7).map do |n|
-      # Shift back by n months from the current date
+    @total_pi_by_month = (0..5).map do |n|
       month_date = Date.current.advance(months: -n)
       month_start = month_date.beginning_of_month
       month_end = month_date.end_of_month
@@ -52,19 +51,18 @@ class HomeController < ApplicationController
         end
       end
 
-      { month: month_date.strftime("%B %Y"), total: total }
+      { month: month_date.strftime("%B"), total: total }
     end
 
     # Reverse the array to have the oldest month first
     @total_pi_by_month.reverse!
 
     # Extract data for the chart
-    @months = @total_pi_by_month.map { |data| data[:month] }
+    @months = (0..5).map { |n| (Date.current.advance(months: -n).strftime("%B")) }.reverse
     @totals = @total_pi_by_month.map { |data| data[:total] }
 
     # Optionally, generate an array of colors for the chart
     @colors = generate_colors(@total_pi_by_month.size)
-
 
 
 

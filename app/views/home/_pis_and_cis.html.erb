@@ -1,0 +1,61 @@
+
+<div class="row mt-1">
+  <div class="col-12 col-lg-6">
+
+    <div class="card-body pt-0">
+      <div class="card-title pb-1">
+        <small class="timeline-small fw-bold">Total PIs (dirham)</small> 
+      </div>
+      <canvas id="piAmountChart" width="800" height="400"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('piAmountChart').getContext('2d');
+    var piAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @months.to_json %>, // Array of month names without year
+        datasets: [{
+          label: 'Total PI Amount (Dirham)',
+          data: <%= raw @totals.to_json %>,  // Array of total PI amounts
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'Sales in dirham'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' dirham';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
+        }
+      }
+    });
+  });
+</script>
