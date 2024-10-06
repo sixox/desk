@@ -36,7 +36,7 @@
             </td>
             <td>
               <small>
-                <%= "#{pi.quantity}/#{pi.product}/#{pi.pod}" %>
+                <%= pi.project.present? ? pi.project_name : "#{pi.quantity}/#{pi.product}/#{pi.pod}" %>
               </small>
             </td>
 
