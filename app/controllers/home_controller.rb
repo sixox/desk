@@ -34,7 +34,7 @@ class HomeController < ApplicationController
     # accounting tables end
 
     # sales started
-    @total_pi_by_month = (0..11).map do |n|
+    @total_pi_by_month = (0..7).map do |n|
       # Shift back by n months from the current date
       month_date = Date.current.advance(months: -n)
       month_start = month_date.beginning_of_month
