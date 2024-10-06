@@ -38,8 +38,6 @@ class HomeController < ApplicationController
       month_date = Date.current.advance(months: -n)
       month_start = month_date.beginning_of_month
       month_end = month_date.end_of_month
-
-      # Calculate total PI amount with currency conversion
       total = Pi.where(created_at: month_start..month_end).reduce(0) do |sum, pi|
         case pi.currency.downcase
         when "dirham"
@@ -53,16 +51,14 @@ class HomeController < ApplicationController
 
       { month: month_date.strftime("%B"), total: total }
     end
-
-    # Reverse the array to have the oldest month first
     @total_pi_by_month.reverse!
-
-    # Extract data for the chart
     @months = (0..5).map { |n| (Date.current.advance(months: -n).strftime("%B")) }.reverse
     @totals = @total_pi_by_month.map { |data| data[:total] }
-
-    # Optionally, generate an array of colors for the chart
     @colors = generate_colors(@total_pi_by_month.size)
+    @latest_pis = Pi.joins(:project, :customer)
+                    .select('pis.*, projects.name AS project_name, projects.number As project_number, customers.nickname AS customer_nickname')
+                    .order(created_at: :desc)
+                    .limit(5)
 
 
 
