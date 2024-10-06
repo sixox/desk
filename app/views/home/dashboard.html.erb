@@ -11,8 +11,10 @@
 
 </div>
 
-
-<canvas id="piAmountChart" width="400" height="200"></canvas>
+<div class="container mt-4">
+  <h2>Total PI Amount Over the Last 12 Months</h2>
+  <canvas id="piAmountChart" width="800" height="400"></canvas>
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -22,20 +24,44 @@
       data: {
         labels: <%= raw @months.to_json %>, // Array of month names
         datasets: [{
-          label: 'Total PI Amount',
+          label: 'Total PI Amount (Rial)',
           data: <%= raw @totals.to_json %>,  // Array of total PI amounts
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
           borderWidth: 1
         }]
       },
       options: {
+        responsive: true,
         scales: {
           y: {
-            beginAtZero: true
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Amount in Rial'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Month'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' Rial';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
           }
         }
       }
     });
   });
 </script>
+

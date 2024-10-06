@@ -34,27 +34,38 @@ class HomeController < ApplicationController
     # accounting tables end
 
     # sales started
-    @total_pi_by_month = (0..5).map do |n|
-      # Move `n` months back from the current date
-      month_start = Date.current.advance(months: -n).beginning_of_month
-      month_end = Date.current.advance(months: -n).end_of_month
+    @total_pi_by_month = (0..11).map do |n|
+      # Shift back by n months from the current date
+      month_date = Date.current.advance(months: -n)
+      month_start = month_date.beginning_of_month
+      month_end = month_date.end_of_month
 
+      # Calculate total PI amount with currency conversion
       total = Pi.where(created_at: month_start..month_end).reduce(0) do |sum, pi|
-        if pi.currency == "dirham"
+        case pi.currency.downcase
+        when "dirham"
           sum += pi.total_price.to_i
-        elsif pi.currency == "dollar"
+        when "dollar"
           sum += pi.total_price.to_i * 3.67
         else
           sum
         end
       end
 
-      { month: month_start.strftime("%B"), total: total }
+      { month: month_date.strftime("%B %Y"), total: total }
     end
 
-    # Extract the data for the chart
+    # Reverse the array to have the oldest month first
+    @total_pi_by_month.reverse!
+
+    # Extract data for the chart
     @months = @total_pi_by_month.map { |data| data[:month] }
     @totals = @total_pi_by_month.map { |data| data[:total] }
+
+    # Optionally, generate an array of colors for the chart
+    @colors = generate_colors(@total_pi_by_month.size)
+
+
 
 
     # sales end
@@ -62,4 +73,19 @@ class HomeController < ApplicationController
 
 
   end
+
+  private
+
+  def generate_colors(count)
+    # Generate a list of distinct colors
+    colors = []
+    count.times do
+      r = rand(0..255)
+      g = rand(0..255)
+      b = rand(0..255)
+      colors << "rgba(#{r}, #{g}, #{b}, 0.6)"
+    end
+    colors
+  end
+
 end
