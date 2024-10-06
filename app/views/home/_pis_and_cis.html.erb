@@ -26,10 +26,20 @@
           <% @latest_pis.each do |pi| %>
           <tr>
             <th scope="row"><small><%= pi.number %></small></th>
-            <td><small><%= link_to "#{pi.project_number}", project_path(pi.project_id), class: 'link-nodecor-po' %></small></td>
-            <td><small><%= pi.customer_nickname%></small></td>
-              <td><small><%= pi.project_name %></small>
+            <td>
+              <small>
+                <%= pi.project.present? ? link_to("#{pi.project_number}", project_path(pi.project_id), class: 'link-nodecor-po') : "none" %>
+              </small>
             </td>
+            <td>
+              <small><%= pi.customer_nickname %></small>
+            </td>
+            <td>
+              <small>
+                <%= "#{pi.quantity}/#{pi.product}/#{pi.pod}" %>
+              </small>
+            </td>
+
           </tr>
           <% end %>
           
