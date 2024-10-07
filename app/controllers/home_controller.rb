@@ -4,13 +4,16 @@ class HomeController < ApplicationController
   def index
     @q = User.ransack(params[:q])
     @users = @q.result.order(:created_at).page(params[:page]).per(10)
+    if current_user.id == 30
+      @allocations = Ballance_projects.all
+    end
   end
 
   def dashboard
 
     if current_user.is_manager
 
-      
+
 
     # vacation section start
     @vacations = Vacation.where("(DATE(start_at) <= ? AND DATE(end_at) >= ?) OR (DATE(start_at) <= ? AND DATE(end_at) >= ?)", Date.current, Date.current, Date.tomorrow, Date.tomorrow)
