@@ -4,7 +4,7 @@
       <div class="card-title pb-1">
         <small class="timeline-small fw-bold">Total Swifts (dirham)</small> 
       </div>
-<canvas id="swiftAmountChart" width="800" height="400"> </canvas>
+      <canvas id="swiftAmountChart" width="800" height="400"> </canvas>
     </div>
   </div>
   <div class="col-12 col-lg-6">
@@ -27,11 +27,11 @@
           <tr>
             <th scope="row"><small><%= swift.id %></small></th>
             <% if swift.ci.present? %>
-          <td><small><%= link_to swift.ci.project.number, project_path(swift.ci.project), class: 'link-nodecor-po' %></small></td>
-          <% else %>
-          <td><small><%= link_to swift.project.number, project_path(swift.project), class: 'link-nodecor-po' %></small></td>
-          <% end %>
-          <td><small><%= truncate(swift.from, length: 20) %></small></td>
+            <td><small><%= link_to swift.ci.project.number, project_path(swift.ci.project), class: 'link-nodecor-po' %></small></td>
+            <% else %>
+            <td><small><%= link_to swift.project.number, project_path(swift.project), class: 'link-nodecor-po' %></small></td>
+            <% end %>
+            <td><small><%= truncate(swift.from, length: 20) %></small></td>
             <td>
               <small><%= number_with_delimiter(swift.amount, delimiter: ',') %> <span class="timeline-small"><%= swift.currency %></span></small>
             </td>

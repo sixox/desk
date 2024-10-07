@@ -23,6 +23,19 @@ class HomeController < ApplicationController
     @last_month_paid_rial = PaymentOrder.paid_by_currency(@last_month, 'Rial').sum(:amount)
     @last_month_paid_dollar = PaymentOrder.paid_by_currency(@last_month, 'Dollar').sum(:amount)
     @last_month_paid_dirham = PaymentOrder.paid_by_currency(@last_month, 'Dirham').sum(:amount)
+
+    @total_payments_by_rial = (0..5).map do |n|
+      month_date = Date.current.advance(months: -n)
+      total = BigDecimal(PaymentOrder.paid_by_currency(month_date, 'rial').sum(:amount))
+      
+      { month: month_date.strftime("%B"), total: total }
+    end
+
+    @total_payments_by_rial.reverse!
+    @total_payments_var = @total_payments_by_rial.map { |data| data[:total] }
+
+
+
     # payment order end
 
     #accounting tables start
