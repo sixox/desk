@@ -4,7 +4,7 @@ class HomeController < ApplicationController
   def index
     @q = User.ransack(params[:q])
     @users = @q.result.order(:created_at).page(params[:page]).per(10)
-    if current_user.id == 30
+    if current_user.id == 30 || current_user.admin?
       @allocations = Ballance_projects.all
     end
   end
