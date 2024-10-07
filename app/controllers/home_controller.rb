@@ -58,7 +58,36 @@ class HomeController < ApplicationController
     @latest_pis = Pi.joins(:project, :customer)
                     .select('pis.*, projects.name AS project_name, projects.number As project_number, customers.nickname AS customer_nickname')
                     .order(created_at: :desc)
-                    .limit(5)
+                    .limit(6)
+
+
+
+    @total_ci_by_month = (0..5).map do |n|
+      month_date = Date.current.advance(months: -n)
+      month_start = month_date.beginning_of_month
+      month_end = month_date.end_of_month
+
+      # Preload associated Pi objects to avoid N+1 queries
+      total = Ci.includes(:pi).where(created_at: month_start..month_end).reduce(0) do |sum, ci|
+        case ci.pi.currency.downcase
+        when "dirham"
+          sum += ci.total_price.to_i
+        when "dollar"
+          sum += ci.total_price.to_i * 3.67
+        else
+          sum
+        end
+      end
+
+      { month: month_date.strftime("%B"), total: total }
+    end
+
+    @total_ci_by_month.reverse!
+    @totals_ci = @total_ci_by_month.map { |data| data[:total] }
+    @latest_cis = Ci.joins(project: :pi)  # Assuming the `Project` model has a `pi` association
+                .select('cis.*, projects.number AS project_number, pis.currency AS ci_currency')
+                .order(created_at: :desc)
+                .limit(6)
 
 
 

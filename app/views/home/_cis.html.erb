@@ -1,0 +1,101 @@
+<div class="row mt-1">
+  <div class="col-12 col-lg-6">
+    <div class="card-body pt-0">
+      <div class="card-title pb-1">
+        <small class="timeline-small fw-bold">Total Invoices (dirham)</small> 
+      </div>
+<canvas id="ciAmountChart" width="800" height="400"> </canvas>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card-body pt-0">
+      <div class="card-title pb-3">
+        <small class="timeline-small fw-bold">latest CIs</small> 
+      </div>
+      <table class="table table-primary table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col"><small>Project</small></th>
+            <th scope="col"><small>Amoune</small></th>
+            <th scope="col"><small>Status</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @latest_cis.each do |ci| %>
+          <tr>
+            <th scope="row"><small><%= ci.number %></small></th>
+            <td>
+              <small>
+                <%= link_to("#{ci.project_number}", project_path(ci.project_id), class: 'link-nodecor-po')  %>
+              </small>
+            </td>
+            <td>
+            <small><%= number_with_delimiter(ci.balance_payment, delimiter: ',') %> <span class="timeline-small"><%= ci.ci_currency %></span></small>
+            </td>
+            <td>
+            <small class="<%= ci.swift.present? ? 'text-success' : 'text-danger' %>">
+                <%= ci.swift.present? ? 'Paid' : 'Unpaid' %>
+              </small>
+            </td>
+
+          </tr>
+          <% end %>
+          
+          
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('ciAmountChart').getContext('2d');
+    var ciAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @months.to_json %>, // Array of month names without year
+        datasets: [{
+          label: 'Total CI Amount (Dirham)',
+          data: <%= raw @totals_ci.to_json %>,  // Array of total CI amounts
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'Invoices in dirham'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' dirham';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
+        }
+      }
+    });
+  });
+</script>
