@@ -95,7 +95,7 @@ class HomeController < ApplicationController
       month_end = month_date.end_of_month
 
       # Preload associated Pi objects to avoid N+1 queries
-      total = Swift.where(created_at: month_start..month_end).reduce(0) do |sum, swift|
+      total = Swift.where(created_at: month_start..month_end, rejected: [false, nil]).reduce(0) do |sum, swift|
         case swift.currency.downcase
         when "dirham"
           sum += swift.amount.to_i
@@ -112,7 +112,7 @@ class HomeController < ApplicationController
     @total_swift_by_month.reverse!
     @totals_swifts = @total_swift_by_month.map { |data| data[:total] }
 
-
+    @latest_swifts = Swift.order(created_at: :desc).limit(6)
 
     # sales end
 
