@@ -32,7 +32,27 @@ class HomeController < ApplicationController
     end
 
     @total_payments_by_rial.reverse!
-    @total_payments_var = @total_payments_by_rial.map { |data| data[:total] }
+    @total_payments_var_rial = @total_payments_by_rial.map { |data| data[:total] }
+
+    @total_payments_by_dirham = (0..5).map do |n|
+      month_date = Date.current.advance(months: -n)
+      total = BigDecimal(PaymentOrder.paid_by_currency(month_date, 'dirham').sum(:amount))
+      
+      { month: month_date.strftime("%B"), total: total }
+    end
+
+    @total_payments_by_dirham.reverse!
+    @total_payments_var_dirham = @total_payments_by_dirham.map { |data| data[:total] }
+
+    @total_payments_by_dollar = (0..5).map do |n|
+      month_date = Date.current.advance(months: -n)
+      total = BigDecimal(PaymentOrder.paid_by_currency(month_date, 'dollar').sum(:amount))
+      
+      { month: month_date.strftime("%B"), total: total }
+    end
+
+    @total_payments_by_dollar.reverse!
+    @total_payments_var_dollar = @total_payments_by_dollar.map { |data| data[:total] }
 
 
 

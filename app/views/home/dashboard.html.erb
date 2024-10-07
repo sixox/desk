@@ -17,8 +17,7 @@
 	</div>
 
 </div>
-<%= @total_payments_by_rial.inspect %>
-<%= @total_payments_var.map { |amount| number_with_delimiter(amount, delimiter: ',') }.inspect %>
+
 
 
 <canvas id="rialAmountChart" width="800" height="400"> </canvas>
@@ -33,7 +32,7 @@
         labels: <%= raw @months.to_json %>, // Array of month names without year
         datasets: [{
           label: 'Total Swifts Amount (Dirham)',
-          data: <%= raw @total_payments_var.to_json %>,  // Array of total CI amounts
+          data: <%= raw @total_payments_var_rial.to_json %>,  // Array of total CI amounts
           backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
           borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
           borderWidth: 1
@@ -61,6 +60,114 @@
             callbacks: {
               label: function(context) {
                 return 'Total: ' + context.parsed.y.toLocaleString() + ' rial';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
+        }
+      }
+    });
+  });
+</script>
+
+
+
+<canvas id="dirhamAmountChart" width="800" height="400"> </canvas>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('dirhamAmountChart').getContext('2d');
+    var dirhamAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @months.to_json %>, // Array of month names without year
+        datasets: [{
+          label: 'Total Swifts Amount (Dirham)',
+          data: <%= raw @total_payments_var_dirham.to_json %>,  // Array of total CI amounts
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'PO in rial'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' dirham';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
+        }
+      }
+    });
+  });
+</script>
+
+
+
+<canvas id="dollarAmountChart" width="800" height="400"> </canvas>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('dollarAmountChart').getContext('2d');
+    var dollarAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @months.to_json %>, // Array of month names without year
+        datasets: [{
+          label: 'Total Swifts Amount (Dirham)',
+          data: <%= raw @total_payments_var_dollar.to_json %>,  // Array of total CI amounts
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'PO in rial'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' dollar';
               }
             }
           },
