@@ -8,6 +8,8 @@ class HomeController < ApplicationController
 
   def dashboard
 
+    if current_user.is_manager
+
     # vacation section start
     @vacations = Vacation.where("(DATE(start_at) <= ? AND DATE(end_at) >= ?) OR (DATE(start_at) <= ? AND DATE(end_at) >= ?)", Date.current, Date.current, Date.tomorrow, Date.tomorrow)
     @current_vacations = @vacations.select { |vacation| vacation.start_at.to_date <= Date.current && vacation.end_at.to_date >= Date.current }
@@ -148,7 +150,9 @@ class HomeController < ApplicationController
     @latest_swifts = Swift.order(created_at: :desc).limit(6)
 
     # sales end
-
+  else
+    redirect_to action: :index
+  end
 
 
   end

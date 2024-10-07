@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'home/index', to: 'home#index'  # Ensure this route exists
+  get 'home/dashboard', to: 'home#dashboard'  # This should also exist
   get 'home/dashboard'
   get 'game/quardo'
   get 'project_login', to: 'projects#project_login'
@@ -14,7 +16,7 @@ Rails.application.routes.draw do
     end
   end
   devise_for :users
-  root 'home#index'
+  root 'home#dashboard'
   resources :customers
   resources :pis do
     member do
