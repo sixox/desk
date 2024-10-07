@@ -71,9 +71,9 @@ class HomeController < ApplicationController
       total = Ci.includes(:pi).where(created_at: month_start..month_end).reduce(0) do |sum, ci|
         case ci.pi.currency.downcase
         when "dirham"
-          sum += ci.total_price.to_i
+          sum += ci.balance_payment.to_i
         when "dollar"
-          sum += ci.total_price.to_i * 3.67
+          sum += ci.balance_payment.to_i * 3.67
         else
           sum
         end

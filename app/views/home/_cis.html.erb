@@ -4,7 +4,7 @@
       <div class="card-title pb-1">
         <small class="timeline-small fw-bold">Total Invoices (dirham)</small> 
       </div>
-<canvas id="ciAmountChart" width="800" height="400"> </canvas>
+      <canvas id="ciAmountChart" width="800" height="400"> </canvas>
     </div>
   </div>
   <div class="col-12 col-lg-6">
@@ -31,10 +31,10 @@
               </small>
             </td>
             <td>
-            <small><%= number_with_delimiter(ci.balance_payment, delimiter: ',') %> <span class="timeline-small"><%= ci.ci_currency %></span></small>
+              <small><%= number_with_delimiter(ci.balance_payment, delimiter: ',') %> <span class="timeline-small"><%= ci.ci_currency %></span></small>
             </td>
             <td>
-            <small class="<%= ci.swift.present? ? 'text-success' : 'text-danger' %>">
+              <small class="<%= ci.swift.present? ? 'text-success' : 'text-danger' %>">
                 <%= ci.swift.present? ? 'Paid' : 'Unpaid' %>
               </small>
             </td>

@@ -16,3 +16,55 @@
 	</div>
 
 </div>
+
+
+<canvas id="swiftAmountChart" width="800" height="400"> </canvas>
+
+ <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('swiftAmountChart').getContext('2d');
+    var swiftAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @months.to_json %>, // Array of month names without year
+        datasets: [{
+          label: 'Total Swifts Amount (Dirham)',
+          data: <%= raw @totals_swift.to_json %>,  // Array of total CI amounts
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'Swifts in dirham'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' dirham';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
+        }
+      }
+    });
+  });
+</script>
