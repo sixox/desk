@@ -45,21 +45,15 @@
         <thead>
           <tr>
             <th scope="col">#</th>
-            <th scope="col"><small>Project</small></th>
             <th scope="col"><small>inventory</small></th>
             <th scope="col"><small>PI-number</small></th>
-            <th scope="col"><small>Quantity</small></th>
           </tr>
         </thead>
         <tbody>
 			<% @allocations.each do |allocate| %>
           <tr>
             <th scope="row"><small><%= allocate.id %></small></th>
-            <td>
-              <small>
-                <%= link_to("#{allocate.project.number}", project_path(allocate.project_id), class: 'link-nodecor-po')  %>
-              </small>
-            </td>
+            
             <td>
               <small>
                 <%= link_to("#{allocate.ballance.number}", ballance_path(allocate.ballance_id), class: 'link-nodecor-po')  %>
@@ -68,11 +62,7 @@
             <td><small>
             	<%= allocate.ballance.spi.number %>
             </small></td>
-            <td>
-              <small>
-              	<%= allocate.quantity %>
-              </small>
-            </td>
+            
 
           </tr>
           <% end %>
