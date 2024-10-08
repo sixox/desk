@@ -85,7 +85,7 @@
         <tbody>
 			<% Ballance.all.each do |ballance| %>
           <tr>
-            <th scope="row"><small><%= link_to("#{ballance.number}", ballance_path(ballance_id), class: 'link-nodecor-po')  %></small></th>
+            <th scope="row"><small><%= link_to("#{ballance.number}", ballance_path(ballance.id), class: 'link-nodecor-po')  %></small></th>
             <td><small>
             	<%= allocate.ballance.spi.number %>
             </small></td>
