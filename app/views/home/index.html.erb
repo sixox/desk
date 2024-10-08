@@ -45,8 +45,9 @@
         <thead>
           <tr>
             <th scope="col">#</th>
+            <th scope="col"><small>Project</small></th>
             <th scope="col"><small>inventory</small></th>
-            <th scope="col"><small>PI-number</small></th>
+            <th scope="col"><small>Quantity</small></th>
           </tr>
         </thead>
         <tbody>
@@ -72,5 +73,43 @@
 
       </table>
       </div>
+		<div class="col-5">
+	      <table class="table table-primary table-striped table-hover">
+        <thead>
+          <tr>
+            <th scope="col">inventory</th>
+            <th scope="col"><small>PI</small></th>
+            <th scope="col"><small>projects</small></th>
+          </tr>
+        </thead>
+        <tbody>
+			<% @Ballance.all.each do |ballance| %>
+          <tr>
+            <th scope="row"><small><%= link_to("#{ballance.number}", ballance_path(ballance_id), class: 'link-nodecor-po')  %></small></th>
+            <td><small>
+            	<%= allocate.ballance.spi.number %>
+            </small></td>
+            <td>
+              <small>
+              	<% if ballance.ballance_projects.present? %>
+              		<% ballance.ballance_projects.each do |allocate| %>
+              			<span><%= allocate.project.number %> / </span>
+              		<% end %>
+              	<% else %>
+              	none
+              	<% end %>
+              </small>
+            </td>
+
+          </tr>
+          <% end %>
+          
+          
+        </tbody>
+
+      </table>
+      </div>
+
+
       <% end %>
 
