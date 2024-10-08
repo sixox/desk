@@ -83,7 +83,7 @@
           </tr>
         </thead>
         <tbody>
-			<% @Ballance.all.each do |ballance| %>
+			<% Ballance.all.each do |ballance| %>
           <tr>
             <th scope="row"><small><%= link_to("#{ballance.number}", ballance_path(ballance_id), class: 'link-nodecor-po')  %></small></th>
             <td><small>
