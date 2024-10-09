@@ -79,7 +79,10 @@
           <tr>
             <th scope="col">inventory</th>
             <th scope="col"><small>PI</small></th>
-            <th scope="col"><small>projects</small></th>
+            <th scope="col"><small>projects(count)</small></th>
+            <th scope="col"><small>invoices(count)</small></th>
+
+
           </tr>
         </thead>
         <tbody>
@@ -100,6 +103,7 @@
               	<% end %>
               </small>
             </td>
+            <td><small><%= ballance.scis.count %></small></td>
 
           </tr>
           <% end %>
