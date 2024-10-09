@@ -94,6 +94,7 @@
             </small></td>
             <td>
               <small>
+              	<%= ballance.ballance_projects.count %> projects: 
               	<% if ballance.ballance_projects.present? %>
               		<% ballance.ballance_projects.each do |allocate| %>
               			<span><%= allocate.project.number %> / </span>
