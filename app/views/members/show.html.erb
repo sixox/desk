@@ -44,4 +44,33 @@
 
 		</div>
 	</div>
+	<% if @fillers.any? %>
+	<h3 class="mb-4 mt-3">Assessment Forms</h3>
+
+	  <% @fillers.each do |filler| %>
+	  <div class="card mt-4 mb-4 border-info">
+	    <div class="card-header bg-info text-white">
+	      <div class="col">
+	        <div class="d-flex justify-content-start">
+	          <h5 class="mb-0"><%= filler.name.titleize %></h5>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	  <div class="card mb-5 mt-2">
+	    <div class="card-body">
+	      <div class="accordion" id="accordionExample">
+
+	        <% AssessmentForm.unique_users_for_filler(filler).each do |user| %>
+	        <%= render 'assessments/assessments', user: user, filler: filler %>
+	        <% end %>
+
+
+
+	      </div>
+	    </div>
+	  </div>
+	  <% end %>
+	  <% end %>
+
 </div>

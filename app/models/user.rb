@@ -77,5 +77,9 @@ class User < ApplicationRecord
     []
   end
 
+  def unique_fillers
+    assessment_forms_as_filler.includes(:user).map(&:user).uniq
+  end
+
 
 end

@@ -7,6 +7,8 @@ class MembersController < ApplicationController
 		.where(users: { role: @user.role })
 		.where.not(users: { id: @user.id })
 		@vacations = Vacation.all
+		@fillers = @user.unique_fillers
+
 
 	end
 
