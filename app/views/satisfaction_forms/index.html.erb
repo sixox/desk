@@ -1,5 +1,11 @@
 <div class="col-lg-10 mx-auto mt-5">
 
+  <% if current_user.is_manager %>
+    <% if current_user.hr? || current_user.ceo? || current_user.admin? %>
+      <%= link_to 'Result', result_satisfaction_forms_path, class: 'btn btn-secondary mt-3 mb-5'%>
+    <% end %>
+  <% end %>
+
 <%= form_with url: update_all_satisfaction_forms_path, method: :patch, local: true do |f| %>
   <div class="table-responsive">
     <table class="table table-bordered align-middle table-sm table-striped table-hover">
