@@ -1,3 +1,5 @@
+<% if current_user.is_manager %>
+    <% if current_user.hr? || current_user.ceo? || current_user.admin? || current_user.procurement? %>
 <div class="col-lg-10 mx-auto mt-5">
 <h1 class="mb-4 mt-2">Satisfaction Survey Results</h1>
 
@@ -60,3 +62,5 @@
 
 <%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-3' %>
 </div>
+<% end %>
+<% end %>
