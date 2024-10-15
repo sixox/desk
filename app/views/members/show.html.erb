@@ -49,21 +49,24 @@
 	<% if @fillers.any? %>
 	<h3 class="mb-4 mt-3">Assessment Forms</h3>
 
-	  
+	  <% @fillers.each do |filler| %>
 	  <div class="card mb-5 mt-2">
+	  	<div class="card-title">
+	  		<h5><%= filler.name %></h5>
+	  	</div>
 	    <div class="card-body">
 	      <div class="accordion" id="accordionExample">
 
-	        <% @fillers.each do |filler| %>
+	        
 	        <%= render 'assessments/assessments', user: @user, filler: filler %>
-	        <% end %>
+	        
 
 
 
 	      </div>
 	    </div>
 	  </div>
-	  
+	  <% end %>
 	  <% end %>
 
 	  <%# end of comment %>
