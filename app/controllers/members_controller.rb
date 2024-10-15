@@ -7,7 +7,7 @@ class MembersController < ApplicationController
 		.where(users: { role: @user.role })
 		.where.not(users: { id: @user.id })
 		@vacations = Vacation.all
-		@fillers = @user.unique_fillers
+	    @fillers = unique_fillers_for_user(@user)
 
 
 	end
@@ -39,6 +39,11 @@ class MembersController < ApplicationController
 
 	def user_personal_info_params
 		params.require(:user).permit(:first_name, :last_name)
+	end
+
+	def unique_fillers_for_user(user)
+	  # Fetch all assessment forms for the user and get unique fillers
+	  user.assessment_forms_as_user.includes(:filler).map(&:filler).uniq
 	end
 
 end	
