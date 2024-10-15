@@ -1,0 +1,72 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+<%= form_with url: update_all_satisfaction_forms_path, method: :patch, local: true do |f| %>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle table-sm table-striped table-hover">
+      <thead class="table-dark">
+        <tr>
+          
+          
+          
+          
+          
+          <th class="text-center">کاملا مخالفم</th>
+          <th class="text-center">مخالفم</th>
+          <th class="text-center">تا حدودی مخالفم</th>
+          <th class="text-center">تا حدودی موافقم</th>
+          <th class="text-center">موافقم</th>
+          <th class="text-center">کاملا موافقم</th>
+          <th class="text-end">Question</th>
+          <th class="text-center">Category</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% current_category = nil %>  <!-- Variable to track the current category -->
+        <% color_toggle = true %>
+        <% @satisfaction_forms.each do |satisfaction_form| %>
+        
+          <tr>
+            <!-- Check if the category has changed -->
+
+            <td class="text-center">
+              <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 6, satisfaction_form.answer == 6 %>
+            </td>
+             <td class="text-center">
+              <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 5, satisfaction_form.answer == 5 %>
+            </td>
+            <td class="text-center">
+              <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 4, satisfaction_form.answer == 4 %>
+            </td>
+            <td class="text-center">
+              <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 3, satisfaction_form.answer == 3 %>
+            </td>
+            <td class="text-center">
+              <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 2, satisfaction_form.answer == 2 %>
+            </td>
+            <td class="text-center">
+              <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 1, satisfaction_form.answer == 1 %>
+            </td>
+            <td class="text-end"><%= satisfaction_form.satisfaction.question %></td>
+
+
+
+
+            <% if current_category != satisfaction_form.satisfaction.category %>
+              <td class="text-center align-right <%= color_toggle ? 'table-warning' : 'table-secondary' %>" rowspan="<%= @satisfaction_forms.count { |sf| sf.satisfaction.category == satisfaction_form.satisfaction.category } %>">
+                <%= satisfaction_form.satisfaction.category %>
+              </td>
+              <% current_category = satisfaction_form.satisfaction.category %>
+              <% color_toggle = !color_toggle %>
+            <% end %>
+            
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%= f.submit "Submit All", class: "btn btn-primary mt-3" %>
+<% end %>
+
+<%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-3', data: { turbo: false } %>
+</div>

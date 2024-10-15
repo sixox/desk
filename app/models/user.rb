@@ -27,6 +27,9 @@ class User < ApplicationRecord
 
   # This association represents the forms the user is filling out (filler role)
   has_many :assessment_forms_as_filler, class_name: 'AssessmentForm', foreign_key: 'filler_id', dependent: :destroy
+  has_many :satisfaction_forms, dependent: :destroy
+  has_many :satisfactions, through: :satisfaction_forms
+
 
 
 

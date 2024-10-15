@@ -1,0 +1,2 @@
+module SatisfactionFormsHelper
+end

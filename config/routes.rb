@@ -158,6 +158,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :satisfaction_forms, only: [:index] do
+    collection do
+      patch :update_all  # For updating all forms at once
+    end
+  end
+
+
 
 
   get 'member/:id', to: 'members#show', as: 'member'

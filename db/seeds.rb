@@ -7,43 +7,198 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 ActiveRecord::Base.transaction do
-	User.create(email: "mohsen@desk.com", first_name: "mohsen", last_name: "dehghani", username: "sixox1", profile_title: "special", about: "write description here ..", role: :admin, is_manager: true, password: "login jikjik")
-	User.create(email: "amin@desk.com", first_name: "amin", last_name: "mohammadi", username: "sixox2", profile_title: "sales", about: "write description here ..", role: :sales, password: "@deX02@2546")
-	User.create(email: "saffar@desk.com", first_name: "saffar", last_name: "mohammadi", username: "sixox3", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@1616")
-	User.create(email: "farzin@desk.com", first_name: "farzin", last_name: "serajinejad", username: "sixox4", profile_title: "special", about: "write description here ..", role: :accounting, is_manager: true, password: "@deX02@9754")
-	User.create(email: "farnaz@desk.com", first_name: "farnaz", last_name: "jalili", username: "sixox5", profile_title: "sales", about: "write description here ..", role: :sales, password: "@deX02@0001")
-	User.create(email: "yasamin@desk.com", first_name: "yasamin", last_name: "heidary", username: "sixox6", profile_title: "special", about: "write description here ..", role: :sales, is_manager: true, password: "@deX02@0202")
-	User.create(email: "soheil@desk.com", first_name: "soheil", last_name: "jamshidi", username: "sixox8", profile_title: "special", about: "write description here ..", role: :hr, password: "@deX02@5251")
-	User.create(email: "reza@desk.com", first_name: "reza", last_name: "abedi", username: "sixox9", profile_title: "special", about: "write description here ..", role: :hr, is_manager: true, password: "@deX02@7291")
-	User.create(email: "masoud@desk.com", first_name: "masoud", last_name: "khosravi", username: "sixox10", profile_title: "coo", about: "write description here ..", role: :procurement, is_manager: true, password: "@deX02@52638")
-	User.create(email: "samira@desk.com", first_name: "samira", last_name: "farahani", username: "sixox11", profile_title: "logestic", about: "write description here ..", role: :sales, password: "@deX02@522673")
-	User.create(email: "shohre@desk.com", first_name: "shohre", last_name: "hokamiyan", username: "sixox12", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@522")
-	User.create(email: "mojtaba@desk.com", first_name: "mojtaba", last_name: "hokamiyan", username: "sixox13", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@8751")
-	User.create(email: "reza.d@desk.com", first_name: "reza", last_name: "doosti", username: "sixox14", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@9889")
-	User.create(email: "sepehr@desk.com", first_name: "sepehr", last_name: "mohammadi", username: "sixox15", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@1298")
-	User.create(email: "hamed@desk.com", first_name: "hamed", last_name: "iranshahy", username: "sixox16", profile_title: "procurement", about: "write description here ..", role: :procurement, password: "@deX02@1128")	
-	User.create(email: "mohadese@desk.com", first_name: "mohadese", last_name: "faris abadi", username: "sixox17", profile_title: "sales", about: "write description here ..", role: :sales, password: "@deX02@5554")
-	User.create(email: "homayon@desk.com", first_name: "homayon", last_name: "heidary", username: "sixox18", profile_title: "board", about: "write description here ..", role: :board, is_manager: true, password: "@deX02@87231")
-	User.create(email: "farzad@desk.com", first_name: "farzad", last_name: "yazdi", username: "sixox19", profile_title: "exchange", about: "write description here ..", role: :exchange, is_manager: true, password: "@deX02@29381")
-	User.create(email: "milad@desk.com", first_name: "milad", last_name: "yazdi", username: "sixox20", profile_title: "ceo", about: "write description here ..", role: :ceo, is_manager: true, password: "@deX02@54345")
-	User.create(email: "amir@desk.com", first_name: "amir", last_name: "yazdi", username: "sixox21", profile_title: "board", about: "write description here ..", role: :ceo, is_manager: true, password: "@deX02@273123")
-	User.create(email: "sarvenaz@desk.com", first_name: "sarvenaz", last_name: "ehteshaminia", username: "sixox22", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@726362")
-	User.create(email: "afsane@desk.com", first_name: "afsane", last_name: "sadeghi", username: "sixox23", profile_title: "exchange", about: "write description here ..", role: :exchange, password: "@deX02@127386")
-	User.create(email: "mostafa@desk.com", first_name: "mostafa", last_name: "baghban", username: "sixox24", profile_title: "exchange", about: "write description here ..", role: :exchange, password: "@deX02@78187")
-	User.create(email: "adnan@desk.com", first_name: "adnan", last_name: "mosavie", username: "sixox25", profile_title: "special", about: "write description here ..", role: :procurement, password: "@deX02@777")
-	User.create(email: "emran@desk.com", first_name: "emran", last_name: "hosiengholi khan", username: "sixox26", profile_title: "procurement", about: "write description here ..", role: :procurement, password: "@deX02@21828")
-	User.create(email: "hadi@desk.com", first_name: "hadi", last_name: "azizpour", username: "sixox27", profile_title: "hr", about: "write description here ..", role: :hr, password: "@deX02@823")
-	User.create(email: "amir.f@desk.com", first_name: "amir", last_name: "fakhim", username: "sixox28", profile_title: "special", about: "write description here ..", role: :marketing, is_manager: true, password: "@deX02@89dbt")
-	User.create(email: "behrad@desk.com", first_name: "behrad", last_name: "tarabi", username: "sixox29", profile_title: "accounting", about: "write description here ..", role: :accounting, password: "@deX02@8922@")
+	Satisfaction.create(
+		category: "شغل",
+		question: "کار من کار حرفه ای و جذاب است و به همین دلیل برایم خیلی جالب است"
+		)
+	Satisfaction.create(
+		category: "شغل",
+		question: "کار من کاری مفید و سودمند برای شرکت و جامعه است"
+		)
+	Satisfaction.create(
+		category: "شغل",
+		question: "کار من تالش برانگیز و خشنود کننده است"
+		)
+
+
+	Satisfaction.create(
+		category: "سرپرست/مافوق",
+		question: "سرپرستم برای انجام کار با من مشورت می کند و در حیطه کاری به من آزادی عمل می دهد"
+		)
+	Satisfaction.create(
+		category: "سرپرست/مافوق",
+		question: "هر وقت بخواهم می توانم به سرپرستم )مافوقم( رجوع کنم و او همیشه در دسترس است"
+		)
+	Satisfaction.create(
+		category: "سرپرست/مافوق",
+		question: "سرپرستم کار خوب را تحسین و تشویق می کند"
+		)
+	Satisfaction.create(
+		category: "سرپرست/مافوق",
+		question: "سرپرستم فردی صمیمی و خوش قلب است و آداب معاشرت را رعایت می کند و حرمت زیردستان را نگه می دارد"
+		)
+	Satisfaction.create(
+		category: "سرپرست/مافوق",
+		question: "سرپرستم در جریان مسائل و اوضاع واحد خود قرار دارد و در کارش خبره، ماهر و باهوش است"
+		)
+	Satisfaction.create(
+		category: "سرپرست/مافوق",
+		question: "سرپرستم وقتی کاری را به من می سپارد آن را به روشنی شرح می دهد"
+		)
+
+
+	Satisfaction.create(
+		category: "حقوق",
+		question: "حقوق ماهیانه ام معادل استحقاق من بوده و منصفانه است"
+		)
+	Satisfaction.create(
+		category: "حقوق",
+		question: "حقوق ماهیانه ام متناسب با تالش و زحمت من است"
+		)
+	Satisfaction.create(
+		category: "حقوق",
+		question: "حقوق دریافتی ام برای پرداخت مخارج عادی زندگی ام کافیست"
+		)
+	Satisfaction.create(
+		category: "حقوق",
+		question: "حقوق ماهیانه ام با توجه به بودجه و امکانات سازمانم سهم عادالنه ای است"
+		)
+	Satisfaction.create(
+		category: "حقوق",
+		question: "حقوق و مزایای دریافتی من به خوبی سازمان های مشابه می باشد"
+		)
+	Satisfaction.create(
+		category: "حقوق",
+		question: "سازمانم دارای سیستم پرداخت خوبی برای کارکنان میباشد و منافع کافی به کارکنان می رساند"
+		)
+
+
+	Satisfaction.create(
+		category: "همکاران",
+		question: "همکارانم احساس مسئولیت دارند و فعال و سخت کوش هستند"
+		)
+	Satisfaction.create(
+		category: "همکاران",
+		question: " همکارانم افرادی سازگار و خوش خلق اند"
+		)
+	Satisfaction.create(
+		category: "همکاران",
+		question: "همکارانم انسان های بلندنظر، باگذشت، امین، راز نگهدار و فادار و مورد اعتمادند"
+		)
+	Satisfaction.create(
+		category: "همکاران",
+		question: "همکارانم افرادی حرفه ای، و صمیمی هستند"
+		)
+	Satisfaction.create(
+		category: "همکاران",
+		question: "همکارانم مشوق هستند و در من انگیزه کار ایجاد می کنند"
+		)
+
+
+	Satisfaction.create(
+		category: "قابلیت ارتقاء",
+		question: "شغلم موجب افزایش دانش و تخصص من می شود"
+		)
+	Satisfaction.create(
+		category: "قابلیت ارتقاء",
+		question: "در شغل من ترفیعات و ارتقاء را بر حسب قابلیت و توانایی کارکنان به آنان می دهند"
+		)
+	Satisfaction.create(
+		category: "قابلیت ارتقاء",
+		question: "خط مشی و سیاستهای ارتقا و انتصاب عادالنه و منصفانه است"
+		)
+	Satisfaction.create(
+		category: "قابلیت ارتقاء",
+		question: "جایگاه شغلی ام متناسب با شایستگی ها و قابلیتهایم است"
+		)
+	Satisfaction.create(
+		category: "قابلیت ارتقاء",
+		question: "اگر کارکنان به خوبی به وظایفشان عمل کنند ترفیعات به طور منظم داده می شود"
+		)
+	Satisfaction.create(
+		category: "قابلیت ارتقاء",
+		question: "در شغل من امکان پیشرفت، رشد و ترفیع نسبتا مطلوب است"
+		)
+
+
+	Satisfaction.create(
+		category: "ارگونومی",
+		question: "فضای کار و اتاق کاری من مناسب است"
+		)
+	Satisfaction.create(
+		category: "ارگونومی",
+		question: "محیط کاری من، از نظر سر و صدا مناسب است"
+		)
+	Satisfaction.create(
+		category: "ارگونومی",
+		question: " محیط کاری من، از نور و تهویه مناسبی برخوردار است"
+		)
+	Satisfaction.create(
+		category: "ارگونومی",
+		question: "ساختمان مورد استفاده آسانسور، راهروها، فضای رستوران و ...( از کیفیت مناسبی برخوردار است"
+		)
 
 
 
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "احساس وابستگی عاطفی نسبت به سازمانم، دارم"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "بسیار خوشحال می شوم تا مابقی عمر شغلی خودم را در این سازمان بگذرانم"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "در حال حاضر، سازمانم را ترک نمی کنم، چراکه نسبت به افراد درون آن احساس تعلق دارم"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "در حال حاضر ترک این سازمان، مشکالت خانوادگی زیادی در زندگی ام ایجاد می نماید"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "رک این سازمان در شرایط فعلی از لحاظ اقتصادی برایم بسیار پرهزینه می باشد"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "اگر یک شغل بهتر در سازمانی دیگر به من پیشنهاد شود احساس میکنم درست نیست که آن را بپذیرم"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "به نظر من وفاداری به سازمان یک ارزش است و رفتن از این سازمان به سازمان دیگر کار درستی نیست"
+		)
+	Satisfaction.create(
+		category: "ماندگاری",
+		question: "بعضی وقت ها به فکر کار کردن در سازمان ها /شرکت های دیگر می افتم"
+		)
 
 
 
-
-
-
+	Satisfaction.create(
+		category: "سلامت روان",
+		question: "در شش ماه گذشته سرحال بوده و کامال احساس بهبودی و تندرستی می کنم"
+		)
+	Satisfaction.create(
+		category: "سلامت روان",
+		question: "در شش ماه گذشته احساس ضعف، بی حالی و بی رمقى بیماری و مریض حالی داشته ام"
+		)
+	Satisfaction.create(
+		category: "سلامت روان",
+		question: "در ماه های اخیر بر اثر نگرانی و دلشوره مشکل خواب زدگی یا مشکل به خواب رفتن داشته ام"
+		)
+	Satisfaction.create(
+		category: "سلامت روان",
+		question: "در ماه های اخیر احساس کرده ام که تحت استرس و فشار قرار دارم"
+		)
+	Satisfaction.create(
+		category: "سلامت روان",
+		question: "در شش ماه گذشته کارهایم را به خوبی انجام داده و از کیفیت و نحوه انجام کارهایم خشنود بوده ام"
+		)
+	Satisfaction.create(
+		category: "سلامت روان",
+		question: "تصمیم هایی که اخیرا گرفته ام به گونه ای بوده است که احساس مفید بودن، شایستگی و لیاقت بکنم"
+		)
 
 
 

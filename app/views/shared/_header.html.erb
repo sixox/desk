@@ -145,7 +145,8 @@
         <% end %>
         <ul class="dropdown-menu text-white">
           <li><%= link_to "Documents", documents_path, class: "dropdown-item" %></li>
-          <li><%= link_to "Assessments", assessments_path, class: "dropdown-item" %></li>
+          <li><%= link_to "Assessment Survay", assessments_path, class: "dropdown-item" %></li>
+          <li><%= link_to "Satisfaction Survay", satisfaction_forms_path, class: "dropdown-item" %></li>
           <% if current_user.is_manager || current_user.id == 10 %>
           <li><%= link_to "Vacations", managment_vacations_path, class: "dropdown-item" %></li>
           <% end %>
