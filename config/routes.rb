@@ -161,6 +161,7 @@ Rails.application.routes.draw do
   resources :satisfaction_forms, only: [:index] do
     collection do
       patch :update_all  # For updating all forms at once
+      get :result
     end
   end
 

@@ -6,6 +6,12 @@ class SatisfactionFormsController < ApplicationController
     @satisfaction_forms = current_user.satisfaction_forms.includes(:satisfaction)
   end
 
+
+  def result
+        @satisfactions = Satisfaction.includes(satisfaction_forms: :user).all
+
+  end
+
   # Update all SatisfactionForm records with submitted answers
   def update_all
     all_updated = true
@@ -18,7 +24,7 @@ class SatisfactionFormsController < ApplicationController
     end
 
     if all_updated
-      redirect_to satisfaction_forms_path, notice: 'All forms were successfully updated.'
+      redirect_to satisfaction_forms_path, notice: 'Your form was successfully sent.'
     else
       @satisfaction_forms = current_user.satisfaction_forms.includes(:satisfaction)
       flash.now[:alert] = 'Some forms could not be updated. Please check for errors.'

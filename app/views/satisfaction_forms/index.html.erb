@@ -68,5 +68,12 @@
   <%= f.submit "Submit All", class: "btn btn-primary mt-3" %>
 <% end %>
 
-<%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-3', data: { turbo: false } %>
+<%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-3 mb-5', data: { turbo: false } %>
+<% flash.each do |type, message| %>
+        <div class="alert <%= bootstrap_class_for_flash(type) %> alert-dismissible fade show" role="alert">
+          <%= message %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% end %>
+      <div id="notices"></div>
 </div>
