@@ -239,7 +239,7 @@ class PaymentOrdersController < ApplicationController
 	def confirmable
 		@in_page = "confirmable"
 		cu = current_user
-		if current_user.is_manager
+		if current_user.is_manager || current_user.id == 29
 			if cu.ceo?
 				@payment_orders = PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting.order(created_at: :desc)
 			elsif cu.procurement?
