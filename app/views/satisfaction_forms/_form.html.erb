@@ -1,13 +1,5 @@
-<div class="col-lg-10 mx-auto mt-5">
-
-  <% if current_user.is_manager %>
-  <% if current_user.hr? || current_user.ceo? || current_user.admin? || current_user.procurement? %>
-  <%= link_to 'Result', result_satisfaction_forms_path, class: 'btn btn-secondary mt-3 mb-5'%>
-  <% end %>
-  <% end %>
-  <% if @satisfaction_forms.first.answer.present? && @satisfaction_forms.last.answer.present?  %>
-
-    <div class="table-responsive">
+<%= form_with url: update_all_satisfaction_forms_path, method: :patch, local: true do |f| %>
+<div class="table-responsive">
   <table class="table table-bordered align-middle table-sm table-striped table-hover">
     <thead class="table-dark">
       <tr>
@@ -35,36 +27,23 @@
         <!-- Check if the category has changed -->
 
         <td class="text-center">
-          <% if satisfaction_form.answer == 6 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
+          <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 6, satisfaction_form.answer == 6 %>
         </td>
         <td class="text-center">
-          <% if satisfaction_form.answer == 5 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
+          <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 5, satisfaction_form.answer == 5 %>
         </td>
         <td class="text-center">
-          <% if satisfaction_form.answer == 4 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
+          <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 4, satisfaction_form.answer == 4 %>
         </td>
         <td class="text-center">
-          <% if satisfaction_form.answer == 3 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
+          <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 3, satisfaction_form.answer == 3 %>
         </td>
         <td class="text-center">
-          <% if satisfaction_form.answer == 2 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
+          <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 2, satisfaction_form.answer == 2 %>
         </td>
         <td class="text-center">
-          <% if satisfaction_form.answer == 1 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
+          <%= radio_button_tag "satisfaction_forms[#{satisfaction_form.id}][answer]", 1, satisfaction_form.answer == 1 %>
         </td>
-        
         <td class="text-end"><%= satisfaction_form.satisfaction.question %></td>
 
 
@@ -84,11 +63,14 @@
   </table>
 </div>
 
-
-  <% else %>
-  <%= render 'satisfaction_forms/form' %>
+<%= f.submit "Submit All", class: "btn btn-primary mt-3" %>
+<% end %>
+<% flash.each do |type, message| %>
+<div class="mt-3">
+  <div class="alert <%= bootstrap_class_for_flash(type) %> alert-dismissible fade show" role="alert">
+    <%= message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
   <% end %>
-
-  <%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-3 mb-5', data: { turbo: false } %>
-
+  <div id="notices"></div>
 </div>
