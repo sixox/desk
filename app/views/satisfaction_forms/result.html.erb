@@ -39,10 +39,17 @@
               <!-- Display the count and hover tooltip with user names -->
               
               <% if user_count > 0 %>
+                <% if current_user.admin?  %>
+                  <span title="<%= users_with_answer.map { |sf| sf.user.first_name }.join(', ') %>">
+                  <!-- Display count -->
+                  <%= user_count %>
+                </span>
+                <% else %>
                 <span>
                   <!-- Display count -->
                   <%= user_count %>
                 </span>
+                <% end %>
               <% else %>
                 0
               <% end %>
