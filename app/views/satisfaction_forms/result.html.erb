@@ -40,7 +40,7 @@
               
               <% if user_count > 0 %>
                 <% if current_user.admin?  %>
-                  <span title="<%= users_with_answer.map { |sf| sf.user.first_name }.join(', ') %>">
+                  <span title="<%= users_with_answer.map { |sf| sf.user.first_name.titleize }.join(', ') %>">
                   <!-- Display count -->
                   <%= user_count %>
                 </span>
