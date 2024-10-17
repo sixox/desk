@@ -110,6 +110,14 @@ class PaymentOrder < ApplicationRecord
     end
   end
 
+  def self.ransackable_attributes(auth_object = nil)
+    ['id', 'details', 'amount'] # Attributes of PaymentOrder to search on
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    ['project', 'ballance'] # Associations to allow search on
+  end
+
   private
 
   # def coo_confirmation_requires_bank
@@ -122,13 +130,7 @@ class PaymentOrder < ApplicationRecord
 
 
 
-  def self.ransackable_attributes(auth_object = nil)
-    ['first_name', 'last_name']
-  end
-
-  def self.ransackable_associations(auth_object = nil)
-    []
-  end
+ 
 
 
 

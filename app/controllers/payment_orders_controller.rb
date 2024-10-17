@@ -10,16 +10,26 @@ class PaymentOrdersController < ApplicationController
 	def show
 	end
 
-	def index
-		@in_page = "index"
-		cu = current_user
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.order(created_at: :desc).page(params[:page]).per(6)
-		else
-			@payment_orders = PaymentOrder.filtered_by_role(current_user).order(created_at: :desc).page(params[:page]).per(6)
-		end
+def index
+  @in_page = "index"
+  cu = current_user
+  
+  # Initialize Ransack search object with parameters from the view
+  @q = PaymentOrder.ransack(params[:q])
+  
+  # Check user roles and filter the results accordingly
+  if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo?)
+    @payment_orders = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+  else
+    # If the user is not a manager, admin, etc., apply specific filtering
+    @payment_orders = @q.result
+                        .filtered_by_role(current_user)
+                        .order(created_at: :desc)
+                        .page(params[:page])
+                        .per(6)
+  end
+end
 
-	end
 
 	def new	
 		@payment_order = current_user.payment_orders.new
@@ -151,121 +161,212 @@ class PaymentOrdersController < ApplicationController
 	end
 
 	def not_paid
-		@in_page = "notp"
-		current_user_role = current_user.role
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'wait for payment').order(created_at: :desc).page(params[:page]).per(6)
-		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for payment').order(created_at: :desc).page(params[:page]).per(6)
-		end
-		render 'index'
+	  @in_page = "notp"
+	  cu = current_user
+
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
+	  
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	    @payment_orders = @q.result
+	                        .where(status: 'wait for payment')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  else
+	    @payment_orders = @q.result
+	                        .joins(:user)
+	                        .where(users: { role: cu.role })
+	                        .where(status: 'wait for payment')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	  render 'index'
 	end
 
 	def not_confirmed
 	  @in_page = "not confirmed"
-	  current_user_role = current_user.role
-	  
-	  base_query = PaymentOrder.where(status: 'wait for confirm', reject_by: nil).order(created_at: :desc)
-	  
-	  if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
+	  cu = current_user
+
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
+
+	  base_query = @q.result.where(status: 'wait for confirm', reject_by: nil).order(created_at: :desc)
+
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
 	    @payment_orders = base_query.page(params[:page]).per(6)
 	  else
-	    @payment_orders = base_query.joins(:user).where(users: { role: current_user.role }).page(params[:page]).per(6)
+	    @payment_orders = base_query.joins(:user).where(users: { role: cu.role }).page(params[:page]).per(6)
 	  end
-	  
 	  render 'index'
 	end
 
-
 	def finished
-		@in_page = "finished"
-		current_user_role = current_user.role
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
-		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
+	  @in_page = "finished"
+	  cu = current_user
 
-		end
-		render 'index'
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
+
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	    @payment_orders = @q.result
+	                        .where(status: 'delivered')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  else
+	    @payment_orders = @q.result
+	                        .joins(:user)
+	                        .where(users: { role: cu.role })
+	                        .where(status: 'delivered')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	  render 'index'
 	end
 
 	def rejected
-		@in_page = "rejected"
-		current_user_role = current_user.role
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'rejected').order(created_at: :desc).page(params[:page]).per(6)
-		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'rejected').order(created_at: :desc).page(params[:page]).per(6)
+	  @in_page = "rejected"
+	  cu = current_user
 
-		end
-		render 'index'
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
+
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	    @payment_orders = @q.result
+	                        .where(status: 'rejected')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  else
+	    @payment_orders = @q.result
+	                        .joins(:user)
+	                        .where(users: { role: cu.role })
+	                        .where(status: 'rejected')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	  render 'index'
 	end
 
 	def pending
-		@in_page = "pending"
-		current_user_role = current_user.role
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where.not(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
-		else
+	  @in_page = "pending"
+	  cu = current_user
 
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where.not(status: 'delivered').order(created_at: :desc).page(params[:page]).per(6)
-		end
-		render 'index'
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
+
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	    @payment_orders = @q.result
+	                        .where.not(status: 'delivered')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  else
+	    @payment_orders = @q.result
+	                        .joins(:user)
+	                        .where(users: { role: cu.role })
+	                        .where.not(status: 'delivered')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	  render 'index'
 	end
 
 	def not_delivered
-		@in_page = "notd"
-		current_user_role = current_user.role
-		if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? )
-			@payment_orders = PaymentOrder.where(status: 'wait for delivery').order(created_at: :desc).page(params[:page]).per(6)
-		else
-			@payment_orders = PaymentOrder.joins(:user).where(users: { role: current_user.role }).where(status: 'wait for delivery').order(created_at: :desc).page(params[:page]).per(6)
-		end
-		render 'index'
+	  @in_page = "notd"
+	  cu = current_user
+
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
+
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	    @payment_orders = @q.result
+	                        .where(status: 'wait for delivery')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  else
+	    @payment_orders = @q.result
+	                        .joins(:user)
+	                        .where(users: { role: cu.role })
+	                        .where(status: 'wait for delivery')
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	  render 'index'
 	end
 
 	def mine
-		@in_page = "mine"
-		status = params[:status]
-		if status.present?
-		    @payment_orders = current_user.payment_orders.by_status(status).order(created_at: :desc).page(params[:page]).per(6)
-		else
-		    # Default behavior if no status parameter is provided
-		    @payment_orders = current_user.payment_orders.order(created_at: :desc).page(params[:page]).per(6)
-		end
-		render 'index'
+	  @in_page = "mine"
+	  cu = current_user
+	  status = params[:status]
+
+	  # Initialize Ransack search object
+	  @q = cu.payment_orders.ransack(params[:q])
+
+	  if status.present?
+	    @payment_orders = @q.result
+	                        .by_status(status)
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  else
+	    @payment_orders = @q.result
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	  render 'index'
 	end
 
 	def confirmable
-		@in_page = "confirmable"
-		cu = current_user
-		if current_user.is_manager || current_user.id == 29
-			if cu.ceo?
-				@payment_orders = PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting.order(created_at: :desc)
-			elsif cu.procurement?
-				@payment_orders = PaymentOrder.not_confirmed_by_coo.order(created_at: :desc)
-			elsif cu.accounting?
-				accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
-				@payment_orders = PaymentOrder.not_confirmed_by_accounting.order(created_at: :desc)
-				@payment_orders += accounting_pos
-				@payment_orders.sort_by!(&:created_at).reverse!
-			else
-				@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu).order(created_at: :desc)
-			end
+	  @in_page = "confirmable"
+	  cu = current_user
 
-			@payment_orders = Kaminari.paginate_array(@payment_orders).page(params[:page]).per(6)
-		end
-		if current_user.ceo?
-    		@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [true])
-    	end
+	  # Initialize Ransack search object
+	  @q = PaymentOrder.ransack(params[:q])
 
-    	if current_user.is_manager && current_user.procurement?
-    		@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [nil, false])
-    	end
+	  if cu.is_manager || cu.id == 29
+	    if cu.ceo?
+	      @payment_orders = @q.result
+	                          .not_confirmed_by_ceo_but_by_coo_and_accounting
+	                          .order(created_at: :desc)
+	    elsif cu.procurement?
+	      @payment_orders = @q.result
+	                          .not_confirmed_by_coo
+	                          .order(created_at: :desc)
+	    elsif cu.accounting?
+	      accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
+	      @payment_orders = @q.result
+	                          .not_confirmed_by_accounting
+	                          .order(created_at: :desc)
+	      @payment_orders += accounting_pos
+	      @payment_orders.sort_by!(&:created_at).reverse!
+	    else
+	      @payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
+	                          .order(created_at: :desc)
+	    end
 
-		render 'index'
+	    @payment_orders = Kaminari.paginate_array(@payment_orders).page(params[:page]).per(6)
+	  end
 
+	  if cu.ceo?
+	    @transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [true])
+	  end
+
+	  if cu.is_manager && cu.procurement?
+	    @transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [nil, false])
+	  end
+
+	  render 'index'
 	end
+
 
 	def reports
 		if ActiveRecord::Base.connection.adapter_name.downcase == 'sqlite'
