@@ -122,7 +122,8 @@
 			</div>
 		</div>
 		<div class="row mt-3">
-			<%= search_form_for @q, url: payment_orders_path do |f| %>
+			<%= search_form_for @q, url: request.path do |f| %>
+
 			  <div class="input-group mb-3">
 			    <%= f.search_field :id_or_details_or_amount_or_project_number_or_ballance_number_cont, 
 			                        class: "form-control", 
