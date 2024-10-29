@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  meeting: one
+  user: one
+  description: MyText
+  deadline: 2024-10-20
+
+two:
+  meeting: two
+  user: two
+  description: MyText
+  deadline: 2024-10-20

@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  secretary: one
+  title: MyString
+  date: 2024-10-20
+  participants: MyText
+  guests: MyString
+  details: MyText
+  is_secret: false
+
+two:
+  secretary: two
+  title: MyString
+  date: 2024-10-20
+  participants: MyText
+  guests: MyString
+  details: MyText
+  is_secret: false

@@ -1,0 +1,49 @@
+<%= form_with model: @meeting, local: true do |f| %>
+  <div class="form-group">
+    <%= f.label :title %>
+    <%= f.text_field :title, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :date %>
+    <%= f.date_field :date, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :guests %>
+    <%= f.text_field :guests, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :details %>
+    <%= f.text_area :details, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :participants %>
+    <%= f.collection_select :participant_ids, User.all, :id, :name, {}, { multiple: true, class: "form-control" } %>
+  </div>
+
+  <div id="actions-fields">
+    <h4>Actions</h4>
+    <%= f.fields_for :actions do |af| %>
+      <div class="nested-fields">
+        <%= af.label :description %>
+        <%= af.text_area :description, class: "form-control" %>
+
+        <%= af.label :deadline %>
+        <%= af.date_field :deadline, class: "form-control" %>
+
+        <%= af.label :user_id %>
+        <%= af.collection_select :user_id, User.all, :id, :name, {}, class: "form-control" %>
+
+        <%= af.hidden_field :_destroy %>
+        <%= link_to "Remove Action", "#", class: "remove-action btn btn-danger" %>
+      </div>
+    <% end %>
+
+    <%= link_to "Add Action", "#", id: "add-action", class: "btn btn-success" %>
+  </div>
+
+  <%= f.submit "Save Meeting", class: "btn btn-primary" %>
+<% end %>

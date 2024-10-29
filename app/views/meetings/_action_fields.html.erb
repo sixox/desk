@@ -1,0 +1,15 @@
+<div id="action-template" style="display: none;">
+  <div class="nested-fields">
+    <%= form.label :description %>
+    <%= form.text_area :description, class: "form-control" %>
+
+    <%= form.label :deadline %>
+    <%= form.date_field :deadline, class: "form-control" %>
+
+    <%= form.label :user_id %>
+    <%= form.collection_select :user_id, User.all, :id, :name, {}, class: "form-control" %>
+
+    <%= form.hidden_field :_destroy %>
+    <%= link_to "Remove Action", "#", class: "remove-action btn btn-danger" %>
+  </div>
+</div>
