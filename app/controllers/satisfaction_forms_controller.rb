@@ -11,7 +11,10 @@ class SatisfactionFormsController < ApplicationController
         @satisfactions = Satisfaction.includes(satisfaction_forms: :user).all
         @a = []
         User.all.each do |u|
-          if u.satisfaction_forms.first.answer.present? && u.satisfaction_forms.last.answer.present?
+          first_form = u.satisfaction_forms.first
+          last_form = u.satisfaction_forms.last
+
+          if first_form&.answer.present? && last_form&.answer.present?
             @a << u.name
           end
         end
