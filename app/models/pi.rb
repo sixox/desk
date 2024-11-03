@@ -45,6 +45,7 @@ class Pi < ApplicationRecord
    'SLACK WAX',
    'HEAVY BEHRAN',
    'HEAVY PARS',
+   'PETROLATUM'
    'IRANOL-SW10-AB',
    'IRANOL-SW10-TEH',
    'IRANOL-SW40',
