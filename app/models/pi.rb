@@ -1,4 +1,4 @@
-class Pi < ApplicationRecord
+  class Pi < ApplicationRecord
   belongs_to :user
   belongs_to :customer
   belongs_to :project, optional: true
@@ -46,7 +46,6 @@ class Pi < ApplicationRecord
    'HEAVY BEHRAN',
    'HEAVY PARS',
    'PETROLATUM',
-   'IRANOL-SW10-AB',
    'IRANOL-SW10-TEH',
    'IRANOL-SW40',
    'LIGHT BEHRAN',
