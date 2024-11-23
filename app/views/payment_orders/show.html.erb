@@ -88,7 +88,7 @@
 					<% if (current_user.ceo? && !@payment_order.ceo_confirm && @payment_order.coo_confirm && @payment_order.accounting_confirm && @payment_order.department_confirm) ||
 						(current_user.accounting? && !@payment_order.accounting_confirm && @payment_order.coo_confirm) ||
 						(current_user.procurement? && !@payment_order.coo_confirm) ||
-						(!@payment_order.department_confirm && current_user.role == @payment_order.user.role) || (current_user.cob? && !payment_order.cob_confirm && payment_order.ceo_confirm) %>
+						(!@payment_order.department_confirm && current_user.role == @payment_order.user.role) || (current_user.cob? && !@payment_order.cob_confirm && @payment_order.ceo_confirm) %>
 						<div class="text-center mt-3">
 							
 
