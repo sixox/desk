@@ -62,6 +62,7 @@
    'RPO GR-20',
    'RPO GR-40',
    'RPO HEAVY',
+   'LIGHT RPO',
    'RPO10',
    'RPO30',
    'RPO40',
