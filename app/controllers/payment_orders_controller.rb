@@ -18,7 +18,7 @@ def index
   @q = PaymentOrder.ransack(params[:q])
   
   # Check user roles and filter the results accordingly
-  if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo?)
+  if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? || current_user.cob?)
     @payment_orders = @q.result.order(created_at: :desc).page(params[:page]).per(6)
   else
     # If the user is not a manager, admin, etc., apply specific filtering
@@ -179,7 +179,7 @@ end
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 	  
-	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? ||cu.cob?
 	    @payment_orders = @q.result
 	                        .where(status: 'wait for payment')
 	                        .order(created_at: :desc)
@@ -206,7 +206,7 @@ end
 
 	  base_query = @q.result.where(status: 'wait for confirm', reject_by: nil).order(created_at: :desc)
 
-	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? || cu.cob?
 	    @payment_orders = base_query.page(params[:page]).per(6)
 	  else
 	    @payment_orders = base_query.joins(:user).where(users: { role: cu.role }).page(params[:page]).per(6)
@@ -221,7 +221,7 @@ end
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 
-	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.cob? || cu.ceo?
 	    @payment_orders = @q.result
 	                        .where(status: 'delivered')
 	                        .order(created_at: :desc)
@@ -246,7 +246,7 @@ end
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 
-	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.cob? || cu.accounting? || cu.ceo?
 	    @payment_orders = @q.result
 	                        .where(status: 'rejected')
 	                        .order(created_at: :desc)
@@ -271,7 +271,7 @@ end
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 
-	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.cob? || cu.accounting? || cu.ceo?
 	    @payment_orders = @q.result
 	                        .where.not(status: 'delivered')
 	                        .order(created_at: :desc)
@@ -296,7 +296,7 @@ end
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 
-	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo?
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.cob? || cu.accounting? || cu.ceo?
 	    @payment_orders = @q.result
 	                        .where(status: 'wait for delivery')
 	                        .order(created_at: :desc)
