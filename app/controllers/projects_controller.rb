@@ -109,7 +109,7 @@ def turnover
       advance_orders.each do |payment_order|
         amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
         amount *= (@project.cis.sum(:net_weight) / balance_project.ballance.spi.quantity)
-        @advance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+        @advance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.cob_confirmed_at }
       end
     end
 
@@ -118,7 +118,7 @@ def turnover
       balance_orders = PaymentOrder.where(project: @project, ballance: balance_project.ballance)
       balance_orders.each do |payment_order|
         amount = payment_order.currency == "dirham" ? payment_order.amount.to_i : payment_order.amount.to_i * 3.67
-        @balance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.ceo_confirmed_at }
+        @balance_payments[payment_order.id] = { amount: amount.to_i, date: payment_order.cob_confirmed_at }
       end
     end
 
