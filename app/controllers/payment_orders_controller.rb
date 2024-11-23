@@ -341,6 +341,11 @@ end
 	      @payment_orders = @q.result
 	                          .not_confirmed_by_ceo_but_by_coo_and_accounting
 	                          .order(created_at: :desc)
+	    elsif cu.cob?
+	    	@payment_orders = @q.result
+	                          .not_confirmed_by_cob_but_by_ceo_and_accounting
+	                          .order(created_at: :desc)
+
 	    elsif cu.procurement?
 	      @payment_orders = @q.result
 	                          .not_confirmed_by_coo

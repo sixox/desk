@@ -48,6 +48,17 @@ class PaymentOrder < ApplicationRecord
 
   }
 
+  scope :not_confirmed_by_cob_but_by_ceo_and_accounting, -> {
+    where(cob_confirm: [nil, false])
+    .where(coo_confirm: true)
+    .where(ceo_confirm: true)
+    .where(accounting_confirm: true)
+    .where(department_confirm: true)
+    .where(rejected_at: [nil, false])
+
+
+  }
+
   scope :not_confirmed_by_coo, -> {
     where(coo_confirm: [nil, false])
     .where(rejected_at: [nil, false])
