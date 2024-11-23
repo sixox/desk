@@ -46,6 +46,8 @@ end
 			ro = "COO"
 		elsif current_user.accounting?
 			ro = "Accounting"
+		elsif current_user.cob?
+			ro = "COB"
 		else
 			ro = "Manager"
 		end
@@ -92,7 +94,9 @@ end
 				accounting_user.notifications.create(payment_id: params[:id], message: 'Payment Order Confirmed and wait for payment',is_read: false, link_to_action: link_to_action)
 			end
 
-
+		elsif current_user.cob?
+			@payment_order.cob_confirm = true
+			@payment_order.cob_confirmed_at = Time.now	
 		elsif current_user.procurement?
 			@payment_order.coo_confirm = true
 			@payment_order.coo_confirmed_at = Time.now

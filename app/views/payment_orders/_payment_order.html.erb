@@ -134,7 +134,7 @@
 				<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
 					(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
 					(current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||
-					(!payment_order.department_confirm && current_user.role == payment_order.user.role) %>
+					(!payment_order.department_confirm && current_user.role == payment_order.user.role) || (current_user.cob? && !payment_order.cob_confirm && payment_order.ceo_confirm) %>
 
 					<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
 					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
@@ -178,43 +178,40 @@
 		</div>
 		<% end %>
 		<hr>
-		<div class="row">
+		<div class="row text-center">
 
-			<div class="col text-center">
-				<p class="confirm-job"> Manager </p> 
-				<p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
-				
+		  <div class="col">
+		    <p class="confirm-job">Manager</p>
+		    <p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
+		    <i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  </div>
 
-				<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  <div class="col">
+		    <p class="confirm-job">COO</p>
+		    <p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
+		    <i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  </div>
 
-			</div>
-			<div class="col text-center">
-				<p class="confirm-job">COO</p> 
-				<p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
-				
+		  <div class="col">
+		    <p class="confirm-job">Accounting</p>
+		    <p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
+		    <i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  </div>
 
-				<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  <div class="col">
+		    <p class="confirm-job">CEO</p>
+		    <p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
+		    <i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  </div>
 
-			</div>
-			<div class="col text-center">
-				<p class="confirm-job">Accounting </p>
-				<p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
-				
-
-				<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-
-			</div>
-			<div class="col text-center">
-				<p class="confirm-job">CEO</p>
-				<p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
-				
-				<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-				
-
-
-			</div>
+		  <div class="col">
+		    <p class="confirm-job">COB</p>
+		    <p class="confirmation-date"><%= payment_order.cob_confirmed_at&.strftime('%b %d') %></p>
+		    <i class="<%= payment_order.cob_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		  </div>
 
 		</div>
+
 	</li>
 
 

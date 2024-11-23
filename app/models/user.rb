@@ -42,7 +42,8 @@ class User < ApplicationRecord
     hr: 'hr',
     procurement: 'procurement',
     exchange: 'exchange',
-    board: 'board'    
+    board: 'board',
+    cob: 'cob'    
   }
 
 
