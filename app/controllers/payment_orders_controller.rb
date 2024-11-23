@@ -90,13 +90,21 @@ end
 		if current_user.ceo?
 			@payment_order.ceo_confirm = true
 			@payment_order.ceo_confirmed_at = Time.now
+			if @payment_order.user.ceo?
+				@payment_order.department_confirm = true
+				@payment_order.department_confirmed_at = Time.now
+			end
 			accounting_users.each do |accounting_user|
 				accounting_user.notifications.create(payment_id: params[:id], message: 'Payment Order Confirmed and wait for payment',is_read: false, link_to_action: link_to_action)
 			end
 
 		elsif current_user.cob?
 			@payment_order.cob_confirm = true
-			@payment_order.cob_confirmed_at = Time.now	
+			@payment_order.cob_confirmed_at = Time.now
+			if @payment_order.user.cob?
+				@payment_order.department_confirm = true
+				@payment_order.department_confirmed_at = Time.now
+			end	
 		elsif current_user.procurement?
 			@payment_order.coo_confirm = true
 			@payment_order.coo_confirmed_at = Time.now

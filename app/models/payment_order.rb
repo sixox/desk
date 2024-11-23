@@ -103,7 +103,7 @@ class PaymentOrder < ApplicationRecord
 
   def set_status
     if !rejected_at
-      if !cob_confirm
+      if !cob_confirm || !ceo_confirm
         self.status = "wait for confirm"
       else
         if !receipt.attached?
