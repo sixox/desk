@@ -88,7 +88,7 @@
 					<% if (current_user.ceo? && !@payment_order.ceo_confirm && @payment_order.coo_confirm && @payment_order.accounting_confirm && @payment_order.department_confirm) ||
 						(current_user.accounting? && !@payment_order.accounting_confirm && @payment_order.coo_confirm) ||
 						(current_user.procurement? && !@payment_order.coo_confirm) ||
-						(!@payment_order.department_confirm && current_user.role == @payment_order.user.role) || (current_user.cob? && !@payment_order.cob_confirm && @payment_order.ceo_confirm) %>
+						(!@payment_order.department_confirm && current_user.role == @payment_order.user.role) || (current_user.cob? && !@payment_order.cob_confirm && @payment_order.coo_confirm && @payment_order.accounting_confirm && @payment_order.department_confirm) %>
 						<div class="text-center mt-3">
 							
 
@@ -113,7 +113,7 @@
 						<% end %>
 						<% end %>
 					</li>
-					<% if current_user.accounting? && @payment_order.cob_confirm.present? %>
+					<% if current_user.accounting? && @payment_order.cob_confirm.present? && @payment_order.ceo_confirm.present? %>
 
 					<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
 						<%= render 'payment_orders/accounting_form', payment_order: @payment_order %>
