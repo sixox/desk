@@ -30,6 +30,8 @@ class User < ApplicationRecord
   has_many :satisfaction_forms, dependent: :destroy
   has_many :satisfactions, through: :satisfaction_forms
 
+  has_one_attached :signature
+
 
 
 

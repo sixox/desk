@@ -1,0 +1,36 @@
+<h1 class="mb-4">Upload Signatures for Users</h1>
+
+<%= form_with url: update_members_signatures_path, method: :patch, local: true, multipart: true do %>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle table-sm table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>User ID</th>
+          <th>Name</th>
+          <th>Current Signature</th>
+          <th>Upload New Signature</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.name %></td>
+            <td>
+              <% if user.signature.attached? %>
+                <%= image_tag user.signature, style: "max-width: 100px; height: auto;" %>
+              <% else %>
+                <p>No signature uploaded</p>
+              <% end %>
+            </td>
+            <td>
+              <%= file_field_tag "signatures[#{user.id}]", accept: "image/*", class: "form-control" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%= submit_tag "Upload Signatures", class: "btn btn-primary mt-3" %>
+<% end %>

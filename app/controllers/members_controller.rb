@@ -33,12 +33,30 @@ class MembersController < ApplicationController
 		end
 	end
 
+	def signatures
+	    @users = User.all
+	  end
+
+	def update_signatures
+	    @users = User.all
+	    signatures_params.each do |user_id, signature|
+	      user = User.find(user_id)
+	      user.signature.attach(signature) if signature
+	    end
+
+	    redirect_to root_path, notice: "Signatures updated successfully."
+    end
+
 
 
 	private
 
 	def user_personal_info_params
 		params.require(:user).permit(:first_name, :last_name)
+	end
+
+	def signatures_params
+      params.require(:signatures).permit!
 	end
 
 	def unique_fillers_for_user(user)
