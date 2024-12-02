@@ -1,4 +1,4 @@
-<% if  current_user.id == 30 || current_user.admin? || current_user.sales? || (current_user.is_manager && current_user.procurement?) || (current_user.ceo?)%>
+<% if  current_user.id == 30 || current_user.admin? || current_user.sales? || (current_user.is_manager && current_user.procurement?) || (current_user.ceo? || current_user.cob?)%>
 <div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4" style="background: #ced1e1;">
 		<h2 class="card-title mb-2 text-success"><i class="bi bi-gear-fill"></i> Actions</h2>

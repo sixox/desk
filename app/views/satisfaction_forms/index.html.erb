@@ -1,7 +1,7 @@
 <div class="col-lg-10 mx-auto mt-5">
 
   <% if current_user.is_manager %>
-  <% if current_user.hr? || current_user.ceo? || current_user.admin? || current_user.procurement? %>
+  <% if current_user.hr? || current_user.ceo? || current_user.cob? || current_user.admin? || current_user.procurement? %>
   <%= link_to 'Result', result_satisfaction_forms_path, class: 'btn btn-secondary mt-3 mb-5'%>
   <% end %>
   <% end %>
