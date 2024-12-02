@@ -101,6 +101,9 @@ Rails.application.routes.draw do
       get 'rejected'
     end
     resources :comments
+    
+    resources :rial_receipts
+
 
   end
   resources :comments

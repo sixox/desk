@@ -1,3 +1,24 @@
+
+<% if current_user.admin? %>
+<div class="row mt-5 mb-5">
+<% if @payment_order.currency == 'rial' && @payment_order.rial_receipt.nil? %>
+  <%= link_to new_payment_order_rial_receipt_path(@payment_order), data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+    <i class="bi bi-plus"></i> Create Rial Receipt
+  <% end %>
+<% elsif @payment_order.currency == 'rial' && @payment_order.rial_receipt.present? %>
+  <%= link_to 'View Rial Receipt', payment_order_rial_receipt_path(@payment_order, @payment_order.rial_receipt), class: 'btn btn-secondary' %>
+  <%= link_to 'Edit Rial Receipt', edit_payment_order_rial_receipt_path(@payment_order, @payment_order.rial_receipt), class: 'btn btn-warning' %>
+  <%= link_to 'Delete Rial Receipt', payment_order_rial_receipt_path(@payment_order, @payment_order.rial_receipt), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+<% end %>
+
+
+
+
+
+	
+</div>
+<% end %>
+
 <div class="col-lg-10 mx-auto mt-5">
 
 

@@ -1,0 +1,64 @@
+<%= form_with(model: [@payment_order, @rial_receipt], local: true, class: "needs-validation", novalidate: true) do |f| %>
+<div class="modal-content">
+  <div class="modal-body">
+    <div class="mb-3">
+      <%= f.label :in_words, "In Words", class: "form-label fw-bold" %>
+      <%= f.text_area :in_words, class: "form-control", rows: 3, placeholder: "Enter the amount in words..." %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :details, "Details", class: "form-label fw-bold" %>
+      <%= f.text_area :details, class: "form-control", rows: 3, placeholder: "Enter details (leave blank to use payment order details)", value: @rial_receipt.details || @payment_order.details %>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <%= f.label :receiver, "Receiver", class: "form-label fw-bold" %>
+        <%= f.text_field :receiver, class: "form-control", placeholder: "Receiver's name", value: @rial_receipt.receiver || @payment_order.to %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :account_number, "Account Number", class: "form-label fw-bold" %>
+        <%= f.text_field :account_number, class: "form-control", placeholder: "Account number", value: @rial_receipt.account_number || @payment_order.receiver_account %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <%= f.label :check_number, "Check Number", class: "form-label fw-bold" %>
+        <%= f.text_field :check_number, class: "form-control", placeholder: "Check number" %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :check_bank, "Check Bank", class: "form-label fw-bold" %>
+        <%= f.text_field :check_bank, class: "form-control", placeholder: "Bank name", value: @rial_receipt.check_bank || @payment_order.bank&.name %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <%= f.label :check_date, "Check Date", class: "form-label fw-bold" %>
+        <%= f.date_field :check_date, class: "form-control" %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :check_account, "Check Account", class: "form-label fw-bold" %>
+        <%= f.text_field :check_account, class: "form-control", placeholder: "Account related to check" %>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.label :from_source, "From Source", class: "form-label fw-bold" %>
+        <%= f.text_field :from_source, class: "form-control", placeholder: "Source of payment" %>
+      </div>
+      <div class="col-md-6">
+        <%= f.label :payment_date, "Payment Date", class: "form-label fw-bold" %>
+        <%= f.date_field :payment_date, class: "form-control" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <%= f.submit 'Save Receipt', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </div>
+</div>
+<% end %>

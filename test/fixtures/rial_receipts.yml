@@ -1,0 +1,27 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  payment_order: one
+  in_words: MyText
+  details: MyText
+  receiver: MyString
+  account_number: MyString
+  check_number: MyString
+  check_bank: MyString
+  check_date: 2024-11-30
+  check_account: MyString
+  from_source: MyString
+  payment_date: 2024-11-30
+
+two:
+  payment_order: two
+  in_words: MyText
+  details: MyText
+  receiver: MyString
+  account_number: MyString
+  check_number: MyString
+  check_bank: MyString
+  check_date: 2024-11-30
+  check_account: MyString
+  from_source: MyString
+  payment_date: 2024-11-30

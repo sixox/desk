@@ -8,6 +8,8 @@ class PaymentOrder < ApplicationRecord
   belongs_to :ballance, optional: true
   belongs_to :booking, optional: true
   belongs_to :bank, optional: true
+  has_one :rial_receipt, dependent: :destroy
+
 
 
   has_one_attached :document
