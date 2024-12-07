@@ -1,5 +1,17 @@
 <%= form_with(model: [@payment_order, @rial_receipt], local: true, class: "needs-validation", novalidate: true) do |f| %>
 <div class="modal-content">
+  <% if @rial_receipt.errors.any? %>
+    <div class="error-area" style="color:red;">
+      <h3><%= pluralize(@rial_receipt.errors.count, 'error') %> prohibited your receipt from being saved.</h3>
+      <ul>
+        <% @rial_receipt.errors.each do |error|%>
+        <li>
+          <%= error.full_message%>
+        </li>
+        <% end %>
+      </ul>
+    </div>
+    <% end %>
   <div class="card mb-5">
     <div class="card-body">
       <ul class="list-group" id="payment_order_items">
