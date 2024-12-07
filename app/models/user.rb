@@ -69,6 +69,9 @@ class User < ApplicationRecord
     'exchange'
   ].freeze
 
+  scope :managers_for_role, ->(role) { where(role: role, is_manager: true) }
+
+
   def name
     "#{first_name} #{last_name}".strip
   end

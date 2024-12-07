@@ -1,13 +1,128 @@
-<h1>Rial Receipt</h1>
-<p><strong>In Words:</strong> <%= @rial_receipt.in_words %></p>
-<p><strong>Details:</strong> <%= @rial_receipt.details %></p>
-<p><strong>Receiver:</strong> <%= @rial_receipt.receiver %></p>
-<p><strong>Account Number:</strong> <%= @rial_receipt.account_number %></p>
-<p><strong>Check Number:</strong> <%= @rial_receipt.check_number %></p>
-<p><strong>Check Bank:</strong> <%= @rial_receipt.check_bank %></p>
-<p><strong>Check Date:</strong> <%= @rial_receipt.check_date %></p>
-<p><strong>Check Account:</strong> <%= @rial_receipt.check_account %></p>
-<p><strong>From Source:</strong> <%= @rial_receipt.from_source %></p>
-<p><strong>Payment Date:</strong> <%= @rial_receipt.payment_date %></p>
+<div class="container">
+  <div class="card cart">
+    <label class="title text-center d-block mt-2 mb-0">رسید پرداخت وجه</label>
+    <div class="steps text-end">
+      <div class="step">
 
 
+        <div class="payments">
+          <div class="details">
+
+            <span>  <%= number_with_delimiter(@payment_order.amount, delimiter: ',') %> <small>ریال</small> </span>
+            <span>:مبلغ</span>
+
+            <span><%= @rial_receipt.in_words %> <small>ریال</small></span>
+            <span>:به حروف</span>
+            <span><%= @rial_receipt.details %></span>
+            <span>:بابت</span>
+            <span><%= @rial_receipt.receiver %></span>
+            <span>:در وجه</span>
+            <span><%= @rial_receipt.account_number %></span>
+            <span>:شماره حساب گیرنده</span>
+            <% if @payment_order.project.present? || @payment_order.ballance.present? %>
+            <span><%= @payment_order.project.present? ? @payment_order.project.number : "" %> <%= @payment_order.ballance.present? ? @payment_order.ballance.number : "" %></span>
+            <span>:پروژه</span>
+            <% end %>
+            <% if @payment_order.user.signature.attached? %>
+            <span>
+              <%= image_tag @payment_order.user.signature, class: "signature-image" %>
+            </span>
+            <% else %>
+            <span><%= @payment_order.user.name %></span>
+            <% end %>
+            <span>:درخواست کننده <br> <%= @payment_order.user.name %> </span>
+
+
+
+          </div>
+        </div>
+        <hr>
+        <div class="payments">
+          <div class="details">
+            <span><%= @rial_receipt.check_number %></span>
+            <span>:این مبلغ طی چک به شماره</span>
+            <span><%= @rial_receipt.check_bank %></span>
+            <span>:از بانک</span>
+            <span><%= @rial_receipt.check_account %></span>
+            <span>:و از شماره حساب</span>
+            <span><%= @rial_receipt.check_date&.strftime('%b %d %y') %></span>
+            <span>:مورخ</span>
+            <span></span>
+            <span>.پرداخت گردید</span>
+
+          </div>
+          
+        </div>
+        <hr>
+        <div>
+          <div class="row payments text-center">
+            <div class="col">
+              <small class="fw-bold">:واحد مالی <br>
+                <span>
+                  <%if  User.find(32).signature.attached? %>
+                  <%= image_tag User.find(32).signature, class: "signature-image" %>
+                </span>
+                <% end %>
+              </small>
+
+            </div>
+            <div class="col">
+              <small class="fw-bold">:مدیر اجرایی <br>
+                <span>
+                  <%if  User.find(9).signature.attached? %>
+                  <%= image_tag User.find(9).signature, class: "signature-image" %>
+                </span>
+                <% end %>
+              </small>
+
+            </div>
+            <div class="col">
+              <small class="fw-bold">:مدیر واحد درخواست کننده <br>
+                <span>
+                  <%if  @manager.signature.attached? %>
+                  <%= image_tag @manager.signature, class: "signature-image" %>
+                </span>
+                <% end %>
+              </small>              
+            </div>
+
+          </div>
+        </div>
+        <hr>
+        <div>
+          <div class="row payments text-center">
+            <div class="col">
+              <small class="fw-bold">:مدیر عامل<br>
+                <span>
+                  <%if  User.find(19).signature.attached? %>
+                  <%= image_tag User.find(19).signature, class: "signature-image" %>
+                </span>
+                <% end %>
+              </small>
+
+            </div>
+            <div class="col">
+              <small class="fw-bold">:رئیس هیئت مدیره<br>
+                <span>
+                  <%if  User.find(20).signature.attached? %>
+                  <%= image_tag User.find(20).signature, class: "signature-image" %>
+                </span>
+                <% end %>
+              </small>
+
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card checkout">
+    <div class="footer">
+      <label class="price">$280.40</label>
+      <button class="checkout-btn">Checkout</button>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 class RialReceiptsController < ApplicationController
-  before_action :set_payment_order, only: [:new, :create]
+  before_action :set_payment_order, only: [:new, :create, :edit, :update, :destroy, :show]
   before_action :set_rial_receipt, only: [:show, :edit, :update, :destroy]
 
   def new
@@ -23,6 +23,8 @@ class RialReceiptsController < ApplicationController
   end
 
   def show
+    @manager = User.managers_for_role(@payment_order.user.role).first
+
   end
 
   def edit
@@ -30,7 +32,7 @@ class RialReceiptsController < ApplicationController
 
   def update
     if @rial_receipt.update(rial_receipt_params)
-      redirect_to rial_receipt_path(@rial_receipt), notice: 'Rial Receipt was successfully updated.'
+      redirect_to payment_order_path(@payment_order), notice: 'Rial Receipt was successfully modified.'
     else
       render :edit
     end
@@ -55,7 +57,7 @@ class RialReceiptsController < ApplicationController
     params.require(:rial_receipt).permit(
       :in_words, :details, :receiver, :account_number,
       :check_number, :check_bank, :check_date, :check_account,
-      :from_source, :payment_date
+      :from_source, :payment_date, :explain
     )
   end
 end

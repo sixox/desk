@@ -14,18 +14,20 @@
 
 </head>
 
-<body>
+<body class="<%= controller_name %>-controller <%= action_name %>-action">
+  <% unless controller_name == 'rial_receipts' && action_name == 'show' %>
+
   <div class="container">
     <div class="row">
       <div class="col-lg-10 mx-auto">
 
-      <% flash.each do |type, message| %>
+        <% flash.each do |type, message| %>
         <div class="alert <%= bootstrap_class_for_flash(type) %> alert-dismissible fade show" role="alert">
           <%= message %>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-      <% end %>
-      <div id="notices"></div>
+        <% end %>
+        <div id="notices"></div>
 
 
 
@@ -38,6 +40,9 @@
       <%= render 'shared/footer' %>
     </div>
   </div>
+  <% else %>
+  <%= yield %>
+  <% end %>
 
 </body>
 </html>
