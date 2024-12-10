@@ -61,6 +61,7 @@ class SwiftsController < ApplicationController
 
 	def index
     	@swifts = Swift.with_bank_and_ci.all
+    	@swifts = @swifts.page(params[:page]).per(30)
 	end
 
 	def confirm

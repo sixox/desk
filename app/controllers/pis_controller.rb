@@ -28,6 +28,8 @@ class PisController < ApplicationController
     @sort_by = params[:sort_by] || 'project_number_desc'
     @pis_with_project = Pi.with_project.custom_order(@sort_by)
     @pis_without_project = Pi.without_project
+    @pis_with_project = @pis_with_project.page(params[:page]).per(25)
+
     
   end
 

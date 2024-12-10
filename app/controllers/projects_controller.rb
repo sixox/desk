@@ -29,6 +29,8 @@ class ProjectsController < ApplicationController
 	def index
 		@q = Project.ransack(params[:q])
 	  @projects = @q.result.includes(:pi, :cis, :bookings, :swifts, ballance_projects: :ballance).order(number: :desc)
+    @projects = @projects.page(params[:page]).per(18)
+
 	end
 
 	def new	

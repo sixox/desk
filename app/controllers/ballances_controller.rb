@@ -31,6 +31,9 @@ class BallancesController < ApplicationController
 	    else
 	      @ballances = @ballances.order(@sort_column => @sort_order.to_sym)
 	    end
+
+        @ballances = @ballances.page(params[:page]).per(15)
+
 	  end
 
 	def new	

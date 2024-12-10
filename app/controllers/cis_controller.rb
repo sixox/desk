@@ -23,6 +23,8 @@ class CisController < ApplicationController
 		  # @cis = Ci.includes(:pi).all
 	  @sort_by = params[:sort_by] || 'project_number_desc'
 	  @cis = sort_cis(Ci.includes(pi: :project), @sort_by)
+    @cis = @cis.page(params[:page]).per(20)
+
 	end
 
 	def create_document

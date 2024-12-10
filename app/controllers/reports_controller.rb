@@ -9,6 +9,9 @@ class ReportsController < ApplicationController
     else
       @reports = Report.by_user_role(current_user.role).order(created_at: :desc)
     end
+
+    @reports = @reports.page(params[:page]).per(10)
+
   end
 
   # GET /reports/1
