@@ -1,4 +1,7 @@
 class Swift < ApplicationRecord
+  before_save :set_project_number
+
+
   belongs_to :bank
   belongs_to :ci, optional: true
   belongs_to :project, optional: true
@@ -20,7 +23,12 @@ class Swift < ApplicationRecord
   def self.ransackable_associations(auth_object = nil)
     []
   end
-  
+
+
+  def set_project_number
+    self.project_number = ci&.project&.number || project&.number
+  end
+
   private
 
   def documents_present
