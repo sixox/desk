@@ -60,8 +60,11 @@ class SwiftsController < ApplicationController
 	end
 
 	def index
-    	@swifts = Swift.with_bank_and_ci.all
-    	@swifts = @swifts.page(params[:page]).per(30)
+	  # Create a Ransack query object
+	  @q = Swift.with_bank_and_ci.ransack(params[:q])
+
+	  # Perform the search using the Ransack query object
+	  @swifts = @q.result.page(params[:page]).per(30)
 	end
 
 	def confirm

@@ -1,4 +1,16 @@
 <div class="col-lg-10 mx-auto mt-5">
+	<div class="row mt-3">
+			<%= search_form_for @q, url: request.path do |f| %>
+
+			  <div class="input-group mb-3">
+			    <%= f.search_field :amount_or_from_or_project_number_cont, 
+			                        class: "form-control", 
+			                        placeholder: "Search by Amount, From or Project Number" %>
+			    <%= f.submit "Search", class: "btn btn-primary" %>
+			  </div>
+			<% end %>
+		</div>
+
 	<row class="m-2">
 		<div class="col-sm">
 			<table class="table">
