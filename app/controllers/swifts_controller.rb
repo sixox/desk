@@ -23,7 +23,7 @@ class SwiftsController < ApplicationController
 		@banks = Bank.all
 
 		if @swift.save
-			redirect_to projects_path, notice: "Swift created successfully."
+			redirect_to swifts_path, notice: "Swift created successfully."
 		else
 			render :new
 		end
