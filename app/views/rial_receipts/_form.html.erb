@@ -69,8 +69,8 @@
 
     <div class="row">
       <div class="col-md-6">
-        <%= f.label :from_source, "محل تنخواه", class: "form-label fw-bold text-end d-block" %>
-        <%= f.text_field :from_source, class: "form-control", placeholder: "Source of payment" %>
+        <%= f.label :founder_id, "محل تنخواه", class: "form-label" %>
+        <%= f.select :founder_id, User::FOUNDERS.map { |f| [f[:name], f[:id]] }, { include_blank: "Choose a founder" }, class: "form-select" %>
       </div>
       <div class="col-md-6">
         <%= f.label :payment_date, "تاریخ پرداخت", class: "form-label fw-bold text-end d-block" %>

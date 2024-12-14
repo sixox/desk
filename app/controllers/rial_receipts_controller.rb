@@ -57,7 +57,7 @@ class RialReceiptsController < ApplicationController
     params.require(:rial_receipt).permit(
       :in_words, :details, :receiver, :account_number,
       :check_number, :check_bank, :check_date, :check_account,
-      :from_source, :payment_date, :explain
+      :from_source, :payment_date, :explain, :founder_id
     )
   end
 end

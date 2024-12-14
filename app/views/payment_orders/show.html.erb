@@ -1,4 +1,4 @@
-<% if current_user.admin? %>
+<% if current_user.accounting? %>
 
 <div class="row mt-5 mb-5">
 <% if @payment_order.currency == 'rial' && @payment_order.rial_receipt.nil? %>

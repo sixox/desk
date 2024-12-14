@@ -38,6 +38,7 @@
         </div>
         <hr>
         <div class="payments">
+          <% if @rial_receipt.check_number.present? %>
           <div class="details">
             <span><%= @rial_receipt.check_number %></span>
             <span>:این مبلغ طی چک به شماره</span>
@@ -45,13 +46,49 @@
             <span>:از بانک</span>
             <span><%= @rial_receipt.check_account %></span>
             <span>:و از شماره حساب</span>
-            <span><%= @rial_receipt.check_date&.strftime('%b %d %y') %></span>
+            <span><%= @rial_receipt.check_date&.strftime('%Y/%m/%d') %></span>
             <span>:مورخ</span>
             <span></span>
             <span>.پرداخت گردید</span>
 
           </div>
+          <% else %>
+          <div class="details">
+            <span></span>
+            <span>:این مبلغ طی چک به شماره</span>
+            <span></span>
+            <span>:از بانک</span>
+            <span></span>
+            <span>:و از شماره حساب</span>
+            <span></span>
+            <span>:مورخ</span>
+            <span></span>
+            <span>.پرداخت گردید</span>
+
+          </div>
+          <% end %>
           
+        </div>
+        <hr>
+        <div>
+          <div class="row">
+             <div class="col">
+              <p class="fw-bold">:تنخواه دار <br>
+                <span>
+                  <%if  User.find(@rial_receipt.founder_id).signature.attached? %>
+                  <%= image_tag User.find(@rial_receipt.founder_id).signature, class: "signature-image" %>
+                  <% end %>
+                </span>
+                
+              </p>
+
+            </div>
+            <div class="col-lg-8">
+              <p>مبلغ از تنخواه اینجانب   <%= User::FOUNDERS.find { |f| f[:id] == @rial_receipt.founder_id }&.dig(:name) || "Unknown" %> در تاریخ <span><%= @rial_receipt.payment_date&.strftime('%Y/%m/%d') %></span> <span>.پرداخت گردید </span>
+              </p>
+            </div>
+           
+          </div>
         </div>
         <hr>
         <div>
@@ -61,8 +98,9 @@
                 <span>
                   <%if  User.find(32).signature.attached? %>
                   <%= image_tag User.find(32).signature, class: "signature-image" %>
+                  <% end %>
                 </span>
-                <% end %>
+                
               </small>
 
             </div>
@@ -71,8 +109,9 @@
                 <span>
                   <%if  User.find(9).signature.attached? %>
                   <%= image_tag User.find(9).signature, class: "signature-image" %>
+                  <% end %>
                 </span>
-                <% end %>
+                
               </small>
 
             </div>
@@ -81,8 +120,9 @@
                 <span>
                   <%if  @manager.signature.attached? %>
                   <%= image_tag @manager.signature, class: "signature-image" %>
+                  <% end %>
                 </span>
-                <% end %>
+
               </small>              
             </div>
 
@@ -96,8 +136,9 @@
                 <span>
                   <%if  User.find(19).signature.attached? %>
                   <%= image_tag User.find(19).signature, class: "signature-image" %>
+                  <% end %>
                 </span>
-                <% end %>
+                
               </small>
 
             </div>
@@ -106,8 +147,9 @@
                 <span>
                   <%if  User.find(20).signature.attached? %>
                   <%= image_tag User.find(20).signature, class: "signature-image" %>
+                  <% end %>
                 </span>
-                <% end %>
+                
               </small>
 
             </div>
@@ -121,8 +163,9 @@
 
   <div class="card checkout">
     <div class="footer">
-      <label class="price">$280.40</label>
-      <button class="checkout-btn">Checkout</button>
+      <label class="price"><%= number_with_delimiter(@payment_order.amount, delimiter: ',') %> <small>ریال</small> </label>
+      <button class="checkout-btn" onclick="window.print(); return false;">Print</button>
+
     </div>
   </div>
 </div>

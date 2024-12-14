@@ -35,6 +35,8 @@ class User < ApplicationRecord
 
 
 
+
+
   enum role: {
     admin: 'admin',
     accounting: 'accounting',
@@ -67,6 +69,11 @@ class User < ApplicationRecord
     'masoud',
     'logestic',
     'exchange'
+  ].freeze
+
+  FOUNDERS = [
+    { id: 7, name: 'سهیل جمشیدی' },
+    { id: 3, name: 'صفار محمدی' }
   ].freeze
 
   scope :managers_for_role, ->(role) { where(role: role, is_manager: true) }
