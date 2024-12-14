@@ -14,22 +14,12 @@ class Swift < ApplicationRecord
   scope :with_bank_and_ci, -> { includes(:bank, :ci) }
 
   def self.ransackable_attributes(auth_object = nil)
-    super + ['amount', 'from'] # Attributes of Swift to search on
+    super + ['amount', 'from', 'project_number']
   end
 
   def self.ransackable_associations(auth_object = nil)
-    super + ['project'] # Associations to allow search on
+    []
   end
-
-  # Optional: Add a virtual attribute for partial search on `amount` (if needed)
-  def amount_as_string
-    amount.to_s
-  end
-
-  def self.ransackable_scopes(auth_object = nil)
-    super + %w[amount_as_string]
-  end
-
   
   private
 
