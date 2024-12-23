@@ -1,12 +1,4 @@
-  <% read = if message.sender == @user
-              true
-            elsif message.observers.exists?(observer: @user, message_observers: { read: true })
-              true
-            elsif message.receiver == @user && message.message_status.status != 'unread'
-              true
-            else
-              false
-            end %>
+  <% read = message.read_by?(@user) %>
 <%= link_to message_path(message), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
 <li class="list-group-item m-2 shadow <%= read ? "bg-white" : "vacation-bg border-warning" %> border">
 	<div class="row">
