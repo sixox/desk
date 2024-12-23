@@ -1,0 +1,89 @@
+<%= form_with model: @message, local: true do |form| %>
+  <div class="modal-body">
+    <div class="row">
+      <!-- Display Errors -->
+      <% if @message.errors.any? %>
+        <div class="error-area text-danger mb-3">
+          <h5><%= pluralize(@message.errors.count, 'error') %> prohibited this message from being saved:</h5>
+          <ul>
+            <% @message.errors.full_messages.each do |error| %>
+              <li><%= error %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Form Header -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <h3>Message</h3>
+        </div>
+        <div class="col-lg-6 d-flex justify-content-end">
+          <h3 class="text-secondary">Compose</h3>
+        </div>
+      </div>
+
+      <!-- Subject -->
+      <div class="col-lg-12 mb-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">
+            Subject
+            <span class="text-danger">*</span>
+          </label>
+          <%= form.text_field :subject, class: 'form-control', placeholder: 'Enter the subject' %>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="col-lg-12 mb-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">
+            Body
+            <span class="text-danger">*</span>
+          </label>
+          <%= form.text_area :body, class: 'form-control', rows: 5, placeholder: 'Write your message here...' %>
+        </div>
+      </div>
+
+      <!-- Receiver -->
+      <div class="col-lg-12 mb-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">
+            Receiver
+            <span class="text-danger">*</span>
+          </label>
+          <%= form.select :receiver_id, @users.map { |u| [u.name, u.id] }, { prompt: 'Select a receiver' }, class: 'form-select' %>
+        </div>
+      </div>
+
+      <!-- Observers -->
+      <div class="col-lg-12 mb-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">
+            Observers
+            <small class="text-muted">(Optional)</small>
+          </label>
+          <%= form.select :observer_ids, @users.map { |u| [u.name, u.id] }, {}, class: 'form-select', multiple: true %>
+          <small class="form-text text-muted">
+            Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple observers.
+          </small>
+        </div>
+      </div>
+      <div class="col-lg-12 mb-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">
+            Attach Files
+          </label>
+    <%= form.file_field :files, multiple: true, class: "form-control" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <!-- Submit Button -->
+    <%= form.submit 'Save Message', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+    <!-- Close Button -->
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </div>
+<% end %>

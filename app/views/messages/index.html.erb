@@ -1,0 +1,30 @@
+<div class="col-lg-10 mx-auto mt-5">
+	<div class="row">
+		<div class="card mb-4 mb-lg-0">
+			<div class="row m-3">
+				<div class="col">
+					<div class="d-flex justify-content-start">
+						<h4 class="text-secondary"><i class="bi bi-envelope-fill ms-2"></i> Messages</h4>
+					</div>
+				</div>
+				<div class="col">
+					<div class="d-flex justify-content-end">
+						<%= link_to new_message_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+						<i class="bi bi-plus"></i> Create message
+						<% end %>
+					</div>
+				</div>
+
+			</div>
+			
+			<div class="card-body p-3">
+				<ul class="list-group list-group-flush rounded-3" id="vacation_items">
+					<% @messages.each do |message| %>
+					<%= render 'messages/message', message: message %>
+					<% end %>
+				</ul>
+			</div>
+			
+		</div>
+	</div>
+</div>

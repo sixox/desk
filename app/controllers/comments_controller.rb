@@ -52,6 +52,8 @@ class CommentsController < ApplicationController
       @commentable = Client.find(params[:client_id])
     elsif params[:report_id]
       @commentable = Report.find(params[:report_id])
+    elsif params[:message_id]
+      @commentable = Message.find(params[:message_id])
     end
   end
 

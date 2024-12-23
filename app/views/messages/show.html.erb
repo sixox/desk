@@ -1,0 +1,144 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="card mb-5">
+    <div class="card-body">
+      <%= link_to messages_path, class: 'btn btn-link text-primary' do %>
+  <i class="bi bi-arrow-left-short me-2"></i> Back to Messages
+<% end %>
+
+      <div class="row h-100">
+        <!-- First column: col-lg-8 -->
+        <div class="col-lg-8 col-12">
+          <div class="card border-0 shadow mt-2">
+            <div class="card-body p-xl-4">
+              <div class="row">
+                <div class="col">
+                  <div class="d-flex justify-content-start">
+                    <h4 class="card-title mb-2 text-success">
+                      <i class="bi bi-person-fill"></i> <%= @message.sender.name.titleize %>
+                    </h4>               
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="d-flex justify-content-end">
+                    <h6 class="card-title mb-2 text-muted">
+                      <%= @message.created_at.strftime('%A %d %B') %>
+                    </h6>               
+                  </div>
+                </div>
+              </div>
+
+              <h6 class="card-subtitle mb-2 mt-1 text-muted"><i class="bi bi-envelope-fill"></i> <%= @message.subject %></h6>
+              <div class="card card-custom mt-1">
+                <div class="card-body">
+                  <p><%= @message.body %></p>
+                  <% if @message.files.attached? %>
+                  <div class="row mt-2">
+                    <div class="mt-2">
+                      <ul>
+                        <% @message.files.each do |file| %>
+                        <li>
+                          <%= link_to file.filename, rails_blob_path(file, disposition: 'attachment') %>
+                        </li>
+                        <% end %>
+                      </ul>
+                    </div>
+                  </div>
+                  <% end %>
+                  <hr>
+                  <% if @acts.present? %>
+                  <%= render 'messages/initials' %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <% if (@message.receiver == current_user || @message.observers.include?(current_user)) && current_user.acts.where(message_id: @message.id).none? %>
+            <%= render 'messages/act_form' %>
+        <% end %>
+
+
+
+
+
+      </div>
+      <!-- Second column: col-lg-4 -->
+      <div class="col-lg-4 col-md-4 col-sm-6">
+        <div class="d-flex flex-column h-100">
+          <div class="card card-massage">
+            <p class="title title-massage">Receiver</p>
+            <div class="user__container">
+              <div class="user-massage">
+                <div class="user__content">
+                  <div class="text">
+                    <span class="name"><%= @receiver.first_name.titleize %></span>
+                    <p class="username"><%= @receiver.last_name.titleize %></p>
+                  </div>
+                  <div class="follow <%= @receiver_status.status == 'unread' ? 'bg-warning text-dark' : 'bg-success' %>">
+                    <%= @receiver_status.status == 'unread' ? 'Unread' : 'Read' %>
+                  </div>
+                </div>
+              </div> 
+
+
+            </div>
+
+          </div>
+          <hr>
+          <div class="card card-massage mt-1">
+            <p class="title title-massage">Observers</p>
+            <div class="user__container">
+             <% @observers.each do |observer_record| %>
+             <div class="user-massage">
+              <div class="user__content">
+                <div class="text">
+                  <span class="name"><%= observer_record.observer.first_name.titleize %></span>
+                  <p class="username"><%= observer_record.observer.last_name.titleize %></p>
+                </div>
+                <div class="follow <%= observer_record.read ? 'bg-success' : 'bg-warning text-dark' %>">
+                  <%= observer_record.read ? 'Read' : 'Unread' %>
+                </div>
+              </div>
+            </div> 
+            <% end %>
+
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="card mb-5">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="d-flex justify-content-start">
+          <h5>Comments</h5>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="d-flex justify-content-end">
+          <%= link_to new_message_comment_path(@message), data: { controller: "bs-modal-form", message_id: @message.id }, class: "btn btn-primary" do %>
+          Add Comment
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <ul class="list-group mt-1" id="comment_items">
+      <% if @message.comments.present? %>
+      <% @message.comments.reverse.each do |comment| %>
+      <%= render 'comments/comment', comment: comment %>
+      <% end %>
+
+      <% else %>
+      <p>no comments</p>
+      <% end %>
+    </ul>
+  </div>
+</div>
+</div>

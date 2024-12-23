@@ -22,6 +22,12 @@ class User < ApplicationRecord
   has_many :historical_prices, dependent: :destroy
   has_many :generated_documents
 
+  has_many :sent_messages, class_name: 'Message', foreign_key: :sender_id
+  has_many :received_messages, class_name: 'Message', foreign_key: :receiver_id
+  has_many :message_observers, foreign_key: :observer_id
+  has_many :observed_messages, through: :message_observers, source: :message
+  has_many :acts
+
     # This association represents the forms that are about the user
   has_many :assessment_forms_as_user, class_name: 'AssessmentForm', foreign_key: 'user_id', dependent: :destroy
 
@@ -77,6 +83,7 @@ class User < ApplicationRecord
   ].freeze
 
   scope :managers_for_role, ->(role) { where(role: role, is_manager: true) }
+
 
 
   def name

@@ -1,0 +1,42 @@
+<%= form_with model: Act.new, url: acts_path, local: true do |f| %>
+<div class="mb-5">
+  <%= f.hidden_field :message_id, value: @message.id %>
+  <%= f.hidden_field :user_id, value: current_user.id %>
+</div>  
+<div class="mb-3">
+  <%= f.label :action_details, "Your Note: ", class: "form-label fw-bold" %>
+  <%= f.text_area :action_details, class: "form-control", rows: 3, placeholder: "Write your review (optional)" %>
+</div>
+
+<div class="mb-3">
+  <% Act::ACTION_TYPES.each do |action_key, action_label| %>
+  <input type="radio" 
+  class="btn-check" 
+  name="act[action_type]" 
+  id="action_type_<%= action_key %>" 
+  value="<%= action_key %>" 
+  autocomplete="off">
+  <label class="btn btn-outline-muted" 
+  for="action_type_<%= action_key %>" 
+  title="<%= action_label %>">
+  <% case action_key %>
+  <% when 'happy' %>
+  <i class="bi bi-emoji-smile-fill text-success" data-bs-toggle="tooltip" title="<%= action_label %>"></i>
+  <% when 'sad' %>
+  <i class="bi bi-emoji-frown-fill text-primary" data-bs-toggle="tooltip" title="<%= action_label %>"></i>
+  <% when 'agree' %>
+  <i class="bi bi-hand-thumbs-up-fill text-info" data-bs-toggle="tooltip" title="<%= action_label %>"></i>
+  <% when 'disagree' %>
+  <i class="bi bi-hand-thumbs-down-fill text-danger" data-bs-toggle="tooltip" title="<%= action_label %>"></i>
+  <% when 'like' %>
+  <i class="bi bi-heart-fill text-warning" data-bs-toggle="tooltip" title="<%= action_label %>"></i>
+  <% end %>
+</label>
+<% end %>
+
+</div>
+
+
+
+<%= f.submit "Submit Review", class: "btn btn-primary" %>
+<% end %>

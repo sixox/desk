@@ -172,6 +172,13 @@ Rails.application.routes.draw do
     resources :actions, only: [:new, :create, :edit, :update, :destroy]
   end
 
+  resources :messages do
+    resources :comments
+  end
+
+  resources :acts, only: [:create]
+
+
 
 
 
