@@ -158,6 +158,13 @@
         </ul>
       </li>
 
+      <li class="nav-item dropdown">
+          <%= link_to "Messages", messages_path, class: "nav-link active" %>
+          <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
+          <%= unread_messages_count %>
+        </span>
+        </li> 
+
 
       <li class="nav-item">
         <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to sign out?'}, class: "nav-link active" %>
