@@ -63,7 +63,7 @@
             Observers
             <small class="text-muted">(Optional)</small>
           </label>
-          <%= form.select :observer_ids, @users.map { |u| [u.name, u.id] }, {}, class: 'form-select', multiple: true %>
+          <%= form.select :observer_ids, @users.map { |u| [u.name.titleize, u.id] }, {}, class: 'form-select', multiple: true %>
           <small class="form-text text-muted">
             Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple observers.
           </small>
