@@ -94,9 +94,7 @@ end
 				@payment_order.department_confirm = true
 				@payment_order.department_confirmed_at = Time.now
 			end
-			accounting_users.each do |accounting_user|
-				accounting_user.notifications.create(payment_id: params[:id], message: 'Payment Order Confirmed and wait for payment',is_read: false, link_to_action: link_to_action)
-			end
+
 
 		elsif current_user.cob?
 			@payment_order.cob_confirm = true
@@ -112,9 +110,7 @@ end
 				@payment_order.department_confirm = true
 				@payment_order.department_confirmed_at = Time.now
 			end
-			if !@payment_order.accounting_confirm
-				farzin.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
-			end
+
 
 
 
@@ -128,19 +124,13 @@ end
 				@payment_order.department_confirm = true
 				@payment_order.department_confirmed_at = Time.now
 			end
-			if !@payment_order.coo_confirm
-				coo.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
-			end
-			if @payment_order.coo_confirm && !@payment_order.ceo_confirm
-				ceo.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
-			end
+
+
 
 		elsif current_user.is_manager && !current_user.procurement?
 			@payment_order.department_confirm = true
 			@payment_order.department_confirmed_at = Time.now
-			if !@payment_order.coo_confirm
-				coo.notifications.create(payment_id: params[:id], message: 'Confirmation required for Payment order',is_read: false, link_to_action: link_to_action)
-			end
+
 
 		end
 		
@@ -450,17 +440,7 @@ end
 		# end
 		respond_to do |format|
 		if @payment_order.save
-		    if !current_user.is_manager
-		      users_to_notify = User.where(role: current_user.role, is_manager: true)
-		      users_to_notify.each do |user|
-		        user.notifications.create(
-		          payment_id: params[:id],
-		          message: 'Confirmation required for Payment order',
-		          is_read: false,
-		          link_to_action: payment_order_path(@payment_order)
-		        )
-		      end
-		    end
+		    
 		    format.turbo_stream do
 		      render turbo_stream: [
 		        turbo_stream.prepend('payment_order_items', partial: 'payment_orders/payment_order', locals: { payment_order: @payment_order }),
