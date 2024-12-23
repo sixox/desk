@@ -52,7 +52,7 @@
             Receiver
             <span class="text-danger">*</span>
           </label>
-          <%= form.select :receiver_id, @users.map { |u| [u.name, u.id] }, { prompt: 'Select a receiver' }, class: 'form-select' %>
+          <%= form.select :receiver_id, @users.map { |u| [u.name.titleize, u.id] }, { prompt: 'Select a receiver' }, class: 'form-select' %>
         </div>
       </div>
 
