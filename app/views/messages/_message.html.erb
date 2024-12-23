@@ -1,6 +1,6 @@
   <% read = if message.sender == @user
               true
-            elsif message.observers.exists?(user: @user, message_observers: { read: true })
+            elsif message.observers.exists?(observer: @user, message_observers: { read: true })
               true
             elsif message.receiver == @user && message.message_status.status != 'unread'
               true
