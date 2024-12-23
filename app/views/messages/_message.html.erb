@@ -38,7 +38,7 @@
 	</div>
 	<% if message.observers.present? %>
 	<hr>
-	<small class="text-muted"><span class="text-primary">observers:</span> <%= message.observers.map { |observer| observer.first_name.titleize }.join(', ').concat(',') unless message.observers.empty? %>
+	<small class="text-muted"><span class="text-primary">observers:</span> <%= message.observers.map { |observer| observer.first_name.titleize }.join(', ') %>
  </small>
 	<% end %>
 </li>
