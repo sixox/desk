@@ -2,6 +2,7 @@ class MessagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_message, only: [:edit, :update, :show]
   before_action :set_user, only: [:index, :unread, :sent, :received, :observed]
+  before_action :set_users, only: [:new, :edit]
 
   def show
     if @message.observers.include?(current_user)
@@ -23,7 +24,6 @@ class MessagesController < ApplicationController
 
   def new
     @message = Message.new
-    @users = User.all # Fetch all users for receiver and observer selection
   end
 
   def index
@@ -121,7 +121,6 @@ class MessagesController < ApplicationController
 
 
   def edit
-    @users = User.all
   end
 
   def update
@@ -144,6 +143,10 @@ class MessagesController < ApplicationController
 
   def set_user
     @user = current_user
+  end
+
+  def set_users
+    @users = User.where.not(id: [2, 4, 25, 28])
   end
 
   def set_message
