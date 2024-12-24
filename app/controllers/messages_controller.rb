@@ -45,24 +45,27 @@ def unread
   @in_page = "unread"
 
   received_messages = @user.received_messages
-                           .includes(:sender, :observers, :message_status)
+                           .joins(:message_status)
+                           .includes(:sender, :observers)
                            .where(message_statuses: { status: 'unread' })
-                           .select("messages.id, messages.sender_id, messages.receiver_id, messages.subject, messages.body, messages.created_at, messages.updated_at, 'received' AS message_type")
+                           .select("messages.id AS id, messages.sender_id AS sender_id, messages.receiver_id AS receiver_id, messages.subject AS subject, messages.body AS body, messages.created_at AS created_at, messages.updated_at AS updated_at, 'received' AS message_type")
 
   observed_messages = @user.observed_messages
-                           .includes(:sender, :observers, :message_status)
                            .joins(:message_observers)
+                           .includes(:sender, :observers)
                            .where(message_observers: { read: [false, nil] })
-                           .select("messages.id, messages.sender_id, messages.receiver_id, messages.subject, messages.body, messages.created_at, messages.updated_at, 'observed' AS message_type")
+                           .select("messages.id AS id, messages.sender_id AS sender_id, messages.receiver_id AS receiver_id, messages.subject AS subject, messages.body AS body, messages.created_at AS created_at, messages.updated_at AS updated_at, 'observed' AS message_type")
 
-  # Use UNION to combine the queries
-  @messages = Message.from("(#{received_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
+  # Combine queries with UNION
+  union_query = "(#{received_messages.to_sql} UNION ALL #{observed_messages.to_sql}) AS messages"
+  @messages = Message.from(union_query)
                      .order(created_at: :desc)
                      .page(params[:page])
                      .per(6)
 
   render 'index'
 end
+
 
 
 
