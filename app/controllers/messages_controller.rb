@@ -41,28 +41,29 @@ class MessagesController < ApplicationController
   end
 
 
-  def unread
-    @in_page = "unread"
+def unread
+  @in_page = "unread"
 
-    received_messages = @user.received_messages
-                             .includes(:sender, :observers, :message_status)
-                             .where(message_statuses: { status: 'unread' })
-                             .select("messages.*, 'received' AS message_type")
+  received_messages = @user.received_messages
+                           .includes(:sender, :observers, :message_status)
+                           .where(message_statuses: { status: 'unread' })
+                           .select("messages.id, messages.sender_id, messages.receiver_id, messages.subject, messages.body, messages.created_at, messages.updated_at, 'received' AS message_type")
 
-    observed_messages = @user.observed_messages
-                             .includes(:sender, :observers, :message_status)
-                             .joins(:message_observers)
-                             .where(message_observers: { read: [false, nil] })
-                             .select("messages.*, 'observed' AS message_type")
+  observed_messages = @user.observed_messages
+                           .includes(:sender, :observers, :message_status)
+                           .joins(:message_observers)
+                           .where(message_observers: { read: [false, nil] })
+                           .select("messages.id, messages.sender_id, messages.receiver_id, messages.subject, messages.body, messages.created_at, messages.updated_at, 'observed' AS message_type")
 
-    # Use UNION to combine queries
-    @messages = Message.from("(#{received_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
-                       .order(created_at: :desc)
-                       .page(params[:page])
-                       .per(6)
+  # Use UNION to combine the queries
+  @messages = Message.from("(#{received_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
+                     .order(created_at: :desc)
+                     .page(params[:page])
+                     .per(6)
 
-    render 'index'
-  end
+  render 'index'
+end
+
 
 
   def sent
