@@ -41,30 +41,24 @@ class MessagesController < ApplicationController
   end
 
 
-def unread
-  @in_page = "unread"
+  def unread
+    @in_page = "unread"
+    received_messages = @user.received_messages
+                     .includes(:sender, :observers, :message_status)
+                     .where(message_statuses: { status: 'unread' })
 
-  received_messages = @user.received_messages
-                           .joins(:message_status)
-                           .includes(:sender, :observers)
-                           .where(message_statuses: { status: 'unread' })
-                           .select("messages.id AS id, messages.sender_id AS sender_id, messages.receiver_id AS receiver_id, messages.subject AS subject, messages.body AS body, messages.created_at AS created_at, messages.updated_at AS updated_at, 'received' AS message_type")
+    observed_messages = @user.observed_messages
+                     .includes(:sender, :observers, :message_status)
+                     .where(message_observers: { read: [false, nil] })
 
-  observed_messages = @user.observed_messages
-                           .joins(:message_observers)
-                           .includes(:sender, :observers)
-                           .where(message_observers: { read: [false, nil] })
-                           .select("messages.id AS id, messages.sender_id AS sender_id, messages.receiver_id AS receiver_id, messages.subject AS subject, messages.body AS body, messages.created_at AS created_at, messages.updated_at AS updated_at, 'observed' AS message_type")
+    @messages = (received_messages + observed_messages)
+                .flatten
+                .uniq
+                .sort_by(&:created_at)
+                .reverse      
 
-  # Combine queries with UNION
-  union_query = "(#{received_messages.to_sql} UNION ALL #{observed_messages.to_sql}) AS messages"
-  @messages = Message.from(union_query)
-                     .order(created_at: :desc)
-                     .page(params[:page])
-                     .per(6)
-
-  render 'index'
-end
+    render 'index'               
+  end
 
 
 
