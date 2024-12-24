@@ -26,63 +26,80 @@ class MessagesController < ApplicationController
     @users = User.all # Fetch all users for receiver and observer selection
   end
 
-  def index 
-    # Define @messages with eager loading to prevent N+1 queries
-    received_messages = @user.received_messages.includes(:sender, :observers, :message_status)
-    sent_messages = @user.sent_messages.includes(:sender, :observers, :message_status)
-    observed_messages = @user.observed_messages.includes(:sender, :observers, :message_status)
+  def index
+    @in_page = "index"
 
-    @messages = (received_messages + sent_messages + observed_messages)
-                .flatten
-                .uniq
-                .sort_by(&:created_at)
-                .reverse
+    received_messages = @user.received_messages.select("messages.*, 'received' as message_type")
+    sent_messages = @user.sent_messages.select("messages.*, 'sent' as message_type")
+    observed_messages = @user.observed_messages.select("messages.*, 'observed' as message_type")
+
+    # Use UNION to combine the queries
+    @messages = Message.from("(#{received_messages.to_sql} UNION #{sent_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
+                       .order(created_at: :desc)
+                       .page(params[:page])
+                       .per(6)
   end
+
 
   def unread
+    @in_page = "unread"
+
     received_messages = @user.received_messages
-                     .includes(:sender, :observers, :message_status)
-                     .where(message_statuses: { status: 'unread' })
+                             .includes(:sender, :observers, :message_status)
+                             .where(message_statuses: { status: 'unread' })
+                             .select("messages.*, 'received' AS message_type")
 
     observed_messages = @user.observed_messages
-                     .includes(:sender, :observers, :message_status)
-                     .where(message_observers: { read: [false, nil] })
+                             .includes(:sender, :observers, :message_status)
+                             .joins(:message_observers)
+                             .where(message_observers: { read: [false, nil] })
+                             .select("messages.*, 'observed' AS message_type")
 
-    @messages = (received_messages + observed_messages)
-                .flatten
-                .uniq
-                .sort_by(&:created_at)
-                .reverse      
+    # Use UNION to combine queries
+    @messages = Message.from("(#{received_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
+                       .order(created_at: :desc)
+                       .page(params[:page])
+                       .per(6)
 
-    render 'index'               
+    render 'index'
   end
+
 
   def sent
-    sent_messages = @user.sent_messages.includes(:sender, :observers, :message_status)
-    @messages = sent_messages
-                .sort_by(&:created_at)
-                .reverse
+    @in_page = "sent"
+    @messages = @user.sent_messages
+                     .includes(:sender, :observers, :message_status)
+                     .order(created_at: :desc)
+                     .page(params[:page])
+                     .per(6)
 
     render 'index'
   end
+
 
   def received
-    received_messages = @user.received_messages.includes(:sender, :observers, :message_status)
-    @messages = received_messages
-                .sort_by(&:created_at)
-                .reverse
+    @in_page = "received"
+    @messages = @user.received_messages
+                     .includes(:sender, :observers, :message_status)
+                     .order(created_at: :desc)
+                     .page(params[:page])
+                     .per(6)
 
     render 'index'
   end
+
 
   def observed
-    observed_messages = @user.observed_messages.includes(:sender, :observers, :message_status)
-    @messages = observed_messages
-                .sort_by(&:created_at)
-                .reverse
+    @in_page = "observed"
+    @messages = @user.observed_messages
+                     .includes(:sender, :observers, :message_status)
+                     .order(created_at: :desc)
+                     .page(params[:page])
+                     .per(6)
 
     render 'index'
   end
+
 
   def create
     @message = Message.new(message_params)

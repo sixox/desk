@@ -1,0 +1,13 @@
+<div class="row mt-2 ps-2">
+	<div class="col-lg-12">
+		<div class="btn-group btn-group-sm">
+			<%= link_to "All", messages_path, class: "btn btn-primary #{@in_page == "index"  ? 'text-dark' : ''}" %>
+			<%= link_to "Received", received_messages_path, class: "btn btn-primary #{@in_page == "received"  ? 'text-dark' : ''}" %>
+			<%= link_to "Observed", observed_messages_path, class: "btn btn-primary #{@in_page == "observed"  ? 'text-dark' : ''}" %>
+			<%= link_to "Unread", unread_messages_path, class: "btn btn-primary #{@in_page == "unread"  ? 'text-dark' : ''}" %>
+			<%= link_to "Sent", sent_messages_path, class: "btn btn-primary #{@in_page == "sent"  ? 'text-dark' : ''}" %>
+			
+
+		</div>
+	</div>
+</div>
