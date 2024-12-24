@@ -1,6 +1,7 @@
 class MessagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_message, only: [:edit, :update, :show]
+  before_action :set_user, only: [:index, :unread, :sent, :received, :observed]
 
   def show
     if @message.observers.include?(current_user)
@@ -25,8 +26,7 @@ class MessagesController < ApplicationController
     @users = User.all # Fetch all users for receiver and observer selection
   end
 
-  def index
-    @user = current_user 
+  def index 
     # Define @messages with eager loading to prevent N+1 queries
     received_messages = @user.received_messages.includes(:sender, :observers, :message_status)
     sent_messages = @user.sent_messages.includes(:sender, :observers, :message_status)
@@ -37,8 +37,51 @@ class MessagesController < ApplicationController
                 .uniq
                 .sort_by(&:created_at)
                 .reverse
+  end
 
+  def unread
+    received_messages = @user.received_messages
+                     .includes(:sender, :observers, :message_status)
+                     .where(message_statuses: { status: 'unread' })
 
+    observed_messages = @user.observed_messages
+                     .includes(:sender, :observers, :message_status)
+                     .where(message_observers: { read: [false, nil] })
+
+    @messages = (received_messages + observed_messages)
+                .flatten
+                .uniq
+                .sort_by(&:created_at)
+                .reverse      
+
+    render 'index'               
+  end
+
+  def sent
+    sent_messages = @user.sent_messages.includes(:sender, :observers, :message_status)
+    @messages = sent_messages
+                .sort_by(&:created_at)
+                .reverse
+
+    render 'index'
+  end
+
+  def received
+    received_messages = @user.received_messages.includes(:sender, :observers, :message_status)
+    @messages = received_messages
+                .sort_by(&:created_at)
+                .reverse
+
+    render 'index'
+  end
+
+  def observed
+    observed_messages = @user.observed_messages.includes(:sender, :observers, :message_status)
+    @messages = observed_messages
+                .sort_by(&:created_at)
+                .reverse
+
+    render 'index'
   end
 
   def create
@@ -83,6 +126,10 @@ class MessagesController < ApplicationController
   end
 
   private
+
+  def set_user
+    @user = current_user
+  end
 
   def set_message
     @message = Message.find(params[:id])
