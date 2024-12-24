@@ -1,37 +1,49 @@
   <% read = message.read_by?(@user) %>
-<%= link_to message_path(message), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
-<li class="list-group-item m-2 shadow <%= read ? "bg-white" : "vacation-bg border-warning" %> border">
-	<div class="row">
-		<div class="col mt-1">
-			<div class="d-flex justify-content-start">
-				
-				<span class="message-title-index"><%= message.sender == @user ? "You" : message.sender.name.titleize %> </span>
+  <%= link_to message_path(message), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
+  <li class="list-group-item m-2 shadow <%= read ? "bg-white" : "vacation-bg border-warning" %> border">
+  	<div class="row">
+  		<div class="col mt-1">
+  			<div class="d-flex justify-content-start">
 
-			</div>
-		</div>
-		<div class="col">
-			<div class="text-center">
-				<small class="card-title mb-2 text-muted">
-                      <%= message.created_at.strftime('%A %d %B') %>
-                    </small>
-			</div>
-		</div>
-		<div class="col mt-1">
-			<div class="d-flex justify-content-end">
-				
-				<span class="message-title-index"><%= message.receiver == @user ? "You" : message.receiver.name.titleize %> </span>
+  				<span class="message-title-index"><%= message.sender == @user ? "You" : message.sender.name.titleize %> </span>
 
-			</div>
-		</div>
-	</div>
-	<div class="row mt-2">
-		<h6 class="col ms-2 fw-bold"><%= message.subject.truncate(30)%></h6>
-		<p class="ms-2"><%= message.body.truncate(130)%></p>
-	</div>
-	<% if message.observers.present? %>
-	<hr>
-	<small class="text-muted"><span class="text-primary">observers:</span> <%= message.observers.map { |observer| observer.first_name.titleize }.join(', ') %>
- </small>
-	<% end %>
-</li>
-<% end %>
+  			</div>
+  		</div>
+  		<div class="col">
+  			<div class="text-center">
+  				<small class="card-title mb-2 text-muted">
+  					<%= message.created_at.strftime('%A %d %B') %>
+  				</small>
+  			</div>
+  		</div>
+  		<div class="col mt-1">
+  			<div class="d-flex justify-content-end">
+
+  				<span class="message-title-index"><%= message.receiver == @user ? "You" : message.receiver.name.titleize %> </span>
+
+  			</div>
+  		</div>
+  	</div>
+  	<div class="row mt-2">
+  		<div class="row">
+  			<div class="col-10">
+  				<h6 class="col ms-2 fw-bold"><%= message.subject.truncate(30)%></h6>
+  			</div>
+  			<div class="col-2">
+  				<div class="d-flex justify-content-end">
+  					<span class="text-success " style="margin-top: -2px;"><%=message.acts.count%></span> <i class="bi bi-hand-thumbs-up-fill me-1 text-success"></i>
+  					<span class="text-info me-1" style="margin-top: -2px;"><%=message.comments.count%></span> <i class="bi bi-chat-square-dots-fill text-info"></i>
+  				</div>
+  			</div>
+  		</div>
+  		<p class="ms-2"><%= message.body.truncate(130)%></p>
+  	<div class="col-1"></div>
+
+  	</div>
+  	<% if message.observers.present? %>
+  	<hr>
+  	<small class="text-muted"><span class="text-primary">observers:</span> <%= message.observers.map { |observer| observer.first_name.titleize }.join(', ') %>
+  	</small>
+  	<% end %>
+  </li>
+  <% end %>
