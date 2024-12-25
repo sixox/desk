@@ -1,3 +1,7 @@
+<% if (@message.receiver == current_user || @message.sender == current_user || current_user.admin? || @message.observers.include?(current_user)) %>
+
+
+
 <div class="col-lg-10 mx-auto mt-5">
   <div class="card mb-5">
     <div class="card-body">
@@ -143,3 +147,19 @@
   </div>
 </div>
 </div>
+<% else %>
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="card mb-5">
+    <div class="card-body">
+      <%= link_to messages_path, class: 'btn btn-link text-primary' do %>
+  <i class="bi bi-arrow-left-short me-2"></i> Back to Messages
+<% end %>
+<div class="row">
+  <h5>You dont have permission to see this page</h5>
+</div>
+</div>
+</div>
+</div>
+
+
+<% end %>
