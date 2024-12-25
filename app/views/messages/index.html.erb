@@ -1,7 +1,7 @@
 <div class="col-lg-10 mx-auto mt-5">
 	<div class="row">
 		<div class="card mb-4 mb-lg-0">
-			<div class="row m-3">
+			<div class="row mt-3 ms-3 me-3">
 				<div class="col">
 					<div class="d-flex justify-content-start">
 						<h4 class="text-secondary"><i class="bi bi-envelope-fill ms-2"></i> Messages</h4>
@@ -15,9 +15,9 @@
 					</div>
 				</div>
 				<% unless @in_page == "unread"%>
-				<div class="row mt-5">
+				<div class="row mt-3">
 					<%= search_form_for @q, url: request.path, method: :get do |f| %>
-					  <div class="input-group mb-3">
+					  <div class="input-group">
 					    <%= f.search_field :subject_or_sender_first_name_or_receiver_first_name_cont, 
 					                       class: "form-control", 
 					                       placeholder: "Search by Subject, Sender, or Receiver" %>
