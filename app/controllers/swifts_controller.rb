@@ -23,7 +23,7 @@ class SwiftsController < ApplicationController
 		@banks = Bank.all
 
 		if @swift.save
-			redirect_to swifts_path, notice: "Swift created successfully."
+			redirect_to project_path(@project), notice: "Swift created successfully."
 		else
 			render :new
 		end
@@ -133,6 +133,7 @@ class SwiftsController < ApplicationController
 		if params[:ci_id].present?
 			@object = 1
 			@ci = Ci.find(params[:ci_id])
+			@project = @ci.project
 		else
 			@object = 2
 			@project = Project.find(params[:project_id])
