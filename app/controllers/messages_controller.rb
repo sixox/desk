@@ -3,7 +3,7 @@ class MessagesController < ApplicationController
   before_action :set_message, only: [:edit, :update, :show]
   before_action :set_user, only: [:index, :unread, :sent, :received, :observed]
   before_action :set_users, only: [:new, :edit]
-
+  before_action :set_search, only: [:index, :unread, :sent, :received, :observed]
   def show
     if @message.observers.include?(current_user)
       # Mark as read for observers
@@ -29,74 +29,104 @@ class MessagesController < ApplicationController
   def index
     @in_page = "index"
 
-    received_messages = @user.received_messages.select("messages.*, 'received' as message_type")
-    sent_messages = @user.sent_messages.select("messages.*, 'sent' as message_type")
-    observed_messages = @user.observed_messages.select("messages.*, 'observed' as message_type")
+    received_messages = @user.received_messages
+                             .select("messages.*, 'received' as message_type")
+    sent_messages = @user.sent_messages
+                         .select("messages.*, 'sent' as message_type")
+    observed_messages = @user.observed_messages
+                             .select("messages.*, 'observed' as message_type")
 
-    # Use UNION to combine the queries
-    @messages = Message.from("(#{received_messages.to_sql} UNION #{sent_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
-                       .order(created_at: :desc)
-                       .page(params[:page])
-                       .per(6)
+    # Combine queries using UNION and apply Ransack filter
+    combined_messages = Message.from("(#{received_messages.to_sql} UNION #{sent_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
+    @messages = @q.result(base: combined_messages) # Apply Ransack search
+
+    # Pagination and sorting
+    @messages = @messages.order(created_at: :desc)
+                         .page(params[:page])
+                         .per(6)
   end
 
 
-  def unread
+
+   def unread
     @in_page = "unread"
+
     received_messages = @user.received_messages
-                     .includes(:sender, :observers, :message_status)
-                     .where(message_statuses: { status: 'unread' })
+                             .includes(:sender, :observers, :message_status)
+                             .where(message_statuses: { status: 'unread' })
+                             .select("messages.*, 'received' AS message_type")
 
     observed_messages = @user.observed_messages
-                     .includes(:sender, :observers, :message_status)
-                     .where(message_observers: { read: [false, nil] })
+                             .includes(:sender, :observers, :message_status)
+                             .joins(:message_observers)
+                             .where(message_observers: { read: [false, nil] })
+                             .select("messages.*, 'observed' AS message_type")
 
-    @messages = (received_messages + observed_messages)
-                .flatten
-                .uniq
-                .sort_by(&:created_at)
-                .reverse      
+    # Combine queries using UNION and apply Ransack filter
+    combined_messages = Message.from("(#{received_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
+    @messages = @q.result(base: combined_messages) # Apply Ransack search
 
-    render 'index'               
+    # Pagination and sorting
+    @messages = @messages.order(created_at: :desc)
+                         .page(params[:page])
+                         .per(6)
+
+    render 'index'
   end
+
 
 
 
 
   def sent
     @in_page = "sent"
-    @messages = @user.sent_messages
-                     .includes(:sender, :observers, :message_status)
-                     .order(created_at: :desc)
-                     .page(params[:page])
-                     .per(6)
+
+    # Filter sent messages and apply Ransack
+    sent_messages = @user.sent_messages.includes(:sender, :observers, :message_status)
+    @messages = @q.result(base: sent_messages) # Apply Ransack search
+
+    # Pagination and sorting
+    @messages = @messages.order(created_at: :desc)
+                         .page(params[:page])
+                         .per(6)
 
     render 'index'
   end
+
 
 
   def received
     @in_page = "received"
-    @messages = @user.received_messages
-                     .includes(:sender, :observers, :message_status)
-                     .order(created_at: :desc)
-                     .page(params[:page])
-                     .per(6)
+
+    # Filter received messages and apply Ransack
+    received_messages = @user.received_messages.includes(:sender, :observers, :message_status)
+    @messages = @q.result(base: received_messages) # Apply Ransack search
+
+    # Pagination and sorting
+    @messages = @messages.order(created_at: :desc)
+                         .page(params[:page])
+                         .per(6)
 
     render 'index'
   end
+
 
 
   def observed
     @in_page = "observed"
-    @messages = @user.observed_messages
-                     .includes(:sender, :observers, :message_status)
-                     .order(created_at: :desc)
-                     .page(params[:page])
-                     .per(6)
+
+    # Filter observed messages and apply Ransack
+    observed_messages = @user.observed_messages.includes(:sender, :observers, :message_status)
+    @messages = @q.result(base: observed_messages) # Apply Ransack search
+
+    # Pagination and sorting
+    @messages = @messages.order(created_at: :desc)
+                         .page(params[:page])
+                         .per(6)
 
     render 'index'
   end
+
 
 
   def create
@@ -141,6 +171,8 @@ class MessagesController < ApplicationController
 
   private
 
+
+
   def set_user
     @user = current_user
   end
@@ -151,6 +183,10 @@ class MessagesController < ApplicationController
 
   def set_message
     @message = Message.find(params[:id])
+  end
+
+  def set_search
+    @q = Message.ransack(params[:q])
   end
 
   def message_params

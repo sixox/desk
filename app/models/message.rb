@@ -28,6 +28,14 @@ class Message < ApplicationRecord
     end
   end
 
+  def self.ransackable_attributes(auth_object = nil)
+    ['id', 'subject'] # Add any other attributes of the Message model you want to search on
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    ['sender', 'receiver'] # Allow search on these associations
+  end
+
   private
 
   def create_receiver_status
