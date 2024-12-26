@@ -6,8 +6,8 @@
   <div class="card mb-5">
     <div class="card-body">
       <%= link_to messages_path, class: 'btn btn-link text-primary' do %>
-  <i class="bi bi-arrow-left-short me-2"></i> Back to Messages
-<% end %>
+      <i class="bi bi-arrow-left-short me-2"></i> Back to Messages
+      <% end %>
 
       <div class="row h-100">
         <!-- First column: col-lg-8 -->
@@ -30,8 +30,12 @@
                   </div>
                 </div>
               </div>
+              
 
               <h6 class="card-subtitle mb-2 mt-1 text-muted"><i class="bi bi-envelope-fill"></i> <%= @message.subject %></h6>
+
+
+
               <div class="card card-custom mt-1">
                 <div class="card-body">
                   <p><%= @message.body %></p>
@@ -60,62 +64,79 @@
 
 
           <% if (@message.receiver == current_user || @message.observers.include?(current_user)) && current_user.acts.where(message_id: @message.id).none? %>
-            <%= render 'messages/act_form' %>
-        <% end %>
+          <%= render 'messages/act_form' %>
+          <% end %>
 
 
 
 
 
-      </div>
-      <!-- Second column: col-lg-4 -->
-      <div class="col-lg-4 col-md-4 col-sm-6">
-        <div class="d-flex flex-column h-100">
-          <div class="card card-massage">
-            <p class="title title-massage">Receiver</p>
-            <div class="user__container">
-              <div class="user-massage">
+        </div>
+        <!-- Second column: col-lg-4 -->
+        <div class="col-lg-4 col-md-4 col-sm-6">
+          <div class="d-flex flex-column h-100">
+            <div class="card card-massage">
+              <p class="title title-massage">Receiver</p>
+              <div class="user__container">
+                <div class="user-massage">
+                  <div class="user__content">
+                    <div class="text">
+                      <span class="name"><%= @receiver.first_name.titleize %></span>
+                      <p class="username"><%= @receiver.last_name.titleize %></p>
+                    </div>
+                    <div class="follow <%= @receiver_status.status == 'unread' ? 'bg-warning text-dark' : 'bg-success' %>">
+                      <%= @receiver_status.status == 'unread' ? 'Unread' : 'Read' %>
+                    </div>
+                  </div>
+                </div> 
+
+
+              </div>
+
+            </div>
+            <hr>
+            <div class="card card-massage mt-1">
+
+              <div class="row">
+                <div class="col">
+                  <div class="d-flex justify-content-start">
+                    <p class="title title-massage">Observers</p>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="d-flex justify-content-end" style="padding: 10px 15px;">
+                    <%= link_to add_observer_message_path(@message), data: { controller: "bs-modal-form" }, class: "btn btn-info btn-sm rounded-pill" do %>
+                    <i class="bi bi-plus"></i> Add
+                    <% end %>
+
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="user__container">
+               <% @observers.each do |observer_record| %>
+               <div class="user-massage">
                 <div class="user__content">
                   <div class="text">
-                    <span class="name"><%= @receiver.first_name.titleize %></span>
-                    <p class="username"><%= @receiver.last_name.titleize %></p>
+                    <span class="name"><%= observer_record.observer.first_name.titleize %></span>
+                    <p class="username"><%= observer_record.observer.last_name.titleize %></p>
                   </div>
-                  <div class="follow <%= @receiver_status.status == 'unread' ? 'bg-warning text-dark' : 'bg-success' %>">
-                    <%= @receiver_status.status == 'unread' ? 'Unread' : 'Read' %>
+                  <div class="follow <%= observer_record.read ? 'bg-success' : 'bg-warning text-dark' %>">
+                    <%= observer_record.read ? 'Read' : 'Unread' %>
                   </div>
                 </div>
               </div> 
+              <% end %>
 
 
             </div>
 
           </div>
-          <hr>
-          <div class="card card-massage mt-1">
-            <p class="title title-massage">Observers</p>
-            <div class="user__container">
-             <% @observers.each do |observer_record| %>
-             <div class="user-massage">
-              <div class="user__content">
-                <div class="text">
-                  <span class="name"><%= observer_record.observer.first_name.titleize %></span>
-                  <p class="username"><%= observer_record.observer.last_name.titleize %></p>
-                </div>
-                <div class="follow <%= observer_record.read ? 'bg-success' : 'bg-warning text-dark' %>">
-                  <%= observer_record.read ? 'Read' : 'Unread' %>
-                </div>
-              </div>
-            </div> 
-            <% end %>
-
-
-          </div>
-
         </div>
       </div>
     </div>
   </div>
-</div>
 </div>
 <div class="card mb-5">
   <div class="card-body">
@@ -152,13 +173,13 @@
   <div class="card mb-5">
     <div class="card-body">
       <%= link_to messages_path, class: 'btn btn-link text-primary' do %>
-  <i class="bi bi-arrow-left-short me-2"></i> Back to Messages
-<% end %>
-<div class="row">
-  <h5>You dont have permission to see this message</h5>
-</div>
-</div>
-</div>
+      <i class="bi bi-arrow-left-short me-2"></i> Back to Messages
+      <% end %>
+      <div class="row">
+        <h5>You dont have permission to see this message</h5>
+      </div>
+    </div>
+  </div>
 </div>
 
 

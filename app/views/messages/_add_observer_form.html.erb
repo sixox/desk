@@ -1,0 +1,48 @@
+<%= form_with url: add_observer_message_path(@message), local: true, method: :post do |form| %>
+  <div class="modal-body">
+    <div class="row">
+      <!-- Display Errors -->
+      <% if @message.errors.any? %>
+        <div class="error-area text-danger mb-3">
+          <h5><%= pluralize(@message.errors.count, 'error') %> prohibited this message from being saved:</h5>
+          <ul>
+            <% @message.errors.full_messages.each do |error| %>
+              <li><%= error %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Form Header -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <h3>Add Observers</h3>
+        </div>
+        <div class="col-lg-6 d-flex justify-content-end">
+          <h3 class="text-secondary"><%= @message.subject %></h3>
+        </div>
+      </div>
+
+      <!-- Observers -->
+      <div class="col-lg-12 mb-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">
+            Observers
+            <small class="text-muted">(Select users to add as observers)</small>
+          </label>
+          <%= form.select :observer_ids, @users.map { |u| [u.name.titleize, u.id] }, {}, class: 'form-select', multiple: true %>
+          <small class="form-text text-muted">
+            Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple observers.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <!-- Submit Button -->
+    <%= form.submit 'Add Observers', class: 'btn btn-primary' %>
+    <!-- Close Button -->
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </div>
+<% end %>

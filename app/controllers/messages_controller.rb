@@ -1,6 +1,6 @@
 class MessagesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_message, only: [:edit, :update, :show]
+  before_action :set_message, only: [:edit, :update, :show, :add_observer]
   before_action :set_user, only: [:index, :unread, :sent, :received, :observed]
   before_action :set_users, only: [:new, :edit]
 
@@ -143,6 +143,24 @@ class MessagesController < ApplicationController
       render :edit, status: :unprocessable_entity
     end
   end
+
+def add_observer
+
+  if request.get?
+    # Filter @users to exclude sender, receiver, and existing observers
+    set_users
+    excluded_user_ids = [@message.sender_id, @message.receiver_id] + @message.observers.pluck(:id)
+    @users = @users.where.not(id: excluded_user_ids)
+  elsif request.post?
+    observer_ids = params[:observer_ids].reject(&:blank?) # Change this line
+    observer_ids.each do |observer_id|
+      @message.message_observers.create(observer_id: observer_id)
+    end
+    redirect_to message_path(@message), notice: 'Observers were successfully added.'
+  end
+end
+
+
 
   private
 

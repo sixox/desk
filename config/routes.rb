@@ -173,13 +173,17 @@ Rails.application.routes.draw do
   end
 
   resources :messages do
-    resources :comments
+    member do
+      get :add_observer
+      post :add_observer
+    end
     collection do
       get :unread
       get :sent
       get :received
       get :observed
     end
+    resources :comments
   end
 
   resources :acts, only: [:create]
