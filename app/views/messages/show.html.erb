@@ -103,6 +103,7 @@
                     <p class="title title-massage">Observers</p>
                   </div>
                 </div>
+                 <% if @message.receiver == current_user || @message.sender == current_user %>
                 <div class="col">
                   <div class="d-flex justify-content-end" style="padding: 10px 15px;">
                     <%= link_to add_observer_message_path(@message), data: { controller: "bs-modal-form" }, class: "btn btn-info btn-sm rounded-pill" do %>
@@ -111,6 +112,7 @@
 
                   </div>
                 </div>
+                <% end %>
               </div>
 
 
