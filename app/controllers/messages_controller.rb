@@ -40,7 +40,7 @@ class MessagesController < ApplicationController
 
     # Apply Ransack to the combined messages
     @q = combined_messages.ransack(params[:q])
-    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(12)
   end
 
   def unread
@@ -70,7 +70,7 @@ class MessagesController < ApplicationController
 
     # Apply Ransack to the sent messages
     @q = sent_messages.ransack(params[:q])
-    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(12)
 
     render 'index'
   end
@@ -82,7 +82,7 @@ class MessagesController < ApplicationController
 
     # Apply Ransack to the received messages
     @q = received_messages.ransack(params[:q])
-    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(12)
 
     render 'index'
   end
@@ -94,7 +94,7 @@ class MessagesController < ApplicationController
 
     # Apply Ransack to the observed messages
     @q = observed_messages.ransack(params[:q])
-    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+    @messages = @q.result.order(created_at: :desc).page(params[:page]).per(12)
 
     render 'index'
   end
