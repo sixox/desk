@@ -12,10 +12,6 @@ module ApplicationHelper
 		end
 	end
 
-	def rtl_text?(text)
-	  # Check if the text contains any Farsi characters (Unicode range for Arabic script)
-	  text.match?(/[\u0600-\u06FF\u0750-\u077F]/)
-	end
 
 	def risk_level_tag(project)
 		if project.risk.present?
