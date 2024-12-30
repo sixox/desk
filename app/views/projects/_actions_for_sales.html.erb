@@ -1,3 +1,39 @@
+<% if current_user.accounting? %>
+<div class="card border-0 shadow mt-2">
+	<div class="card-body p-xl-4" style="background: #ced1e1;">
+		<h2 class="card-title mb-2 text-success"><i class="bi bi-gear-fill"></i> Actions</h2>
+		<div class="card card-custom mt-1">
+			<div class="card-body">
+
+				<div class="row d-flex justify-content-between mt-2">
+					<div class="col-auto">
+						<h6 class="card-subtitle text-secondary">
+							<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Release</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
+						</h6>
+					</div>
+					<div class="col-auto">
+						<small class="text-success">
+							<%= form_with(url: project_path(@project), method: :patch, local: true) do %>
+  <%= hidden_field_tag :release_permission, true %>
+  <%= link_to 'Allow Release', '#',
+        onclick: "this.closest('form').submit(); return false;",
+        class: "text-decoration-none" %>
+<% end %>
+
+
+
+						</small>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<% end %>
+
 <% if  current_user.id == 30 || current_user.admin? || current_user.sales? || (current_user.is_manager && current_user.procurement?) || (current_user.ceo? || current_user.cob?)%>
 <div class="card border-0 shadow mt-2">
 	<div class="card-body p-xl-4" style="background: #ced1e1;">
@@ -21,17 +57,17 @@
 						<small class="text-primary">
 							|
 						</small>
-						
+
 						<small class="text-success">
 							<%= link_to edit_project_pi_path(@project, @pi), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">EDIT PI</span>
 							<% end %>
 
 						</small>
-						 <small class="text-primary">
+						<small class="text-primary">
 							|
 						</small>
-						 <small class="text-success">
+						<small class="text-success">
 							<%= link_to time_line_project_path(@project), class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">TIME LINE</span>
 							<% end %>
@@ -65,155 +101,155 @@
 						<span class="mb-1 timeline-h5 text-info">WITHOUT ADVANCE / <%= link_to new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5">BALANCE SWIFT</span>
 							<% end %></span>
-						<% end %>
+							<% end %>
+						</div>
 					</div>
+
 				</div>
 
 			</div>
+			<div class="card card-custom mt-1">
+				<div class="card-body">
 
-		</div>
-		<div class="card card-custom mt-1">
-			<div class="card-body">
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<h6 class="card-subtitle text-secondary">
+								<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Bookings & Documents</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
+							</h6>
+						</div>
+						<div class="col-auto">
+							<small class="text-success">
+								<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">NEW BOOKING</span>
+								<% end %>
 
-				<div class="row d-flex justify-content-between mt-2">
-					<div class="col-auto">
-						<h6 class="card-subtitle text-secondary">
-							<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Bookings & Documents</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
-						</h6>
+							</small>
+							<small class="text-primary">
+								|
+							</small>
+							<small class="text-success">
+								<%= link_to update_timeline_project_path(@project), class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">UPLOAD IMAGES</span>
+								<% end %>
+
+							</small>
+						</div>
 					</div>
-					<div class="col-auto">
-						<small class="text-success">
-							<%= link_to new_project_booking_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">NEW BOOKING</span>
-							<% end %>
+					<% @project.bookings.each do |booking| %>
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<small class="fw-bold card-subtitle text-secondary">
+								<small class="text-danger">  </small><span class="text-secondary"> </span><small class=""><%= booking.number %></small><small class="text-danger">  </small>
+							</small>
+						</div>
+						<div class="col-auto">
+							<small class="text-success">
+								<%= link_to edit_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">EDIT BOOKING</span>
+								<% end %>
+								<span class="text-primary"> | </span>
+								<%= link_to edit_picked_up_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">PICK-UP&STUFFING</span>
+								<% end %>
+								<span class="text-primary"> | </span>
+								<%= link_to edit_status_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">CUSTOM CLEARANCE</span>
+								<% end %>
 
-						</small>
-						 <small class="text-primary">
-							|
-						</small>
-						 <small class="text-success">
-							<%= link_to update_timeline_project_path(@project), class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">UPLOAD IMAGES</span>
-							<% end %>
 
-						</small>
+
+
+							</small>
+						</div>
 					</div>
+					<% end %>
+
 				</div>
-				<% @project.bookings.each do |booking| %>
-				<div class="row d-flex justify-content-between mt-2">
-					<div class="col-auto">
-						<small class="fw-bold card-subtitle text-secondary">
-							<small class="text-danger">  </small><span class="text-secondary"> </span><small class=""><%= booking.number %></small><small class="text-danger">  </small>
-						</small>
-					</div>
-					<div class="col-auto">
-						<small class="text-success">
-							<%= link_to edit_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">EDIT BOOKING</span>
-							<% end %>
-							<span class="text-primary"> | </span>
-							<%= link_to edit_picked_up_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">PICK-UP&STUFFING</span>
-							<% end %>
-							<span class="text-primary"> | </span>
-							<%= link_to edit_status_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">CUSTOM CLEARANCE</span>
-							<% end %>
-
-
-
-
-						</small>
-					</div>
-				</div>
-				<% end %>
 
 			</div>
+			<div class="card card-custom mt-1">
+				<div class="card-body">
 
-		</div>
-		<div class="card card-custom mt-1">
-			<div class="card-body">
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<h6 class="card-subtitle text-secondary">
+								<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Shipping</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
+							</h6>
+						</div>
 
-				<div class="row d-flex justify-content-between mt-2">
-					<div class="col-auto">
-						<h6 class="card-subtitle text-secondary">
-							<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Shipping</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
-						</h6>
 					</div>
-					
+					<% @project.bookings.each do |booking| %>
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<small class="fw-bold card-subtitle text-secondary">
+								<small class="text-danger">  </small><span class="text-secondary"> </span><small class=""><%= booking.number %></small><small class="text-danger">  </small>
+							</small>
+						</div>
+						<div class="col-auto">
+							<small class="text-success">
+								<%= link_to shipping_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">EDIT SHIPPING</span>
+								<% end %>
+							</small>
+						</div>
+					</div>
+					<% end %>
+
 				</div>
-				<% @project.bookings.each do |booking| %>
-				<div class="row d-flex justify-content-between mt-2">
-					<div class="col-auto">
-						<small class="fw-bold card-subtitle text-secondary">
-							<small class="text-danger">  </small><span class="text-secondary"> </span><small class=""><%= booking.number %></small><small class="text-danger">  </small>
-						</small>
-					</div>
-					<div class="col-auto">
-						<small class="text-success">
-							<%= link_to shipping_project_booking_path(@project, booking), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">EDIT SHIPPING</span>
-							<% end %>
-						</small>
-					</div>
-				</div>
-				<% end %>
 
 			</div>
+			<div class="card card-custom mt-1">
+				<div class="card-body">
 
-		</div>
-		<div class="card card-custom mt-1">
-			<div class="card-body">
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<h6 class="card-subtitle text-secondary">
+								<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Balance Payment</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
+							</h6>
+						</div>
+						<div class="col-auto">
+							<small class="text-success">
+								<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">NEW CI</span>
+								<% end %>
+								<span class="text-primary"> | </span>
+								<%= link_to turnover_project_path(@project), class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">DAYS SALES OUTSTANDING</span>
+								<% end %>
 
-				<div class="row d-flex justify-content-between mt-2">
-					<div class="col-auto">
-						<h6 class="card-subtitle text-secondary">
-							<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Balance Payment</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
-						</h6>
+							</small>
+						</div>
 					</div>
-					<div class="col-auto">
-						<small class="text-success">
-							<%= link_to new_project_ci_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">NEW CI</span>
-							<% end %>
-							<span class="text-primary"> | </span>
-							<%= link_to turnover_project_path(@project), class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">DAYS SALES OUTSTANDING</span>
-							<% end %>
-
-						</small>
-					</div>
-				</div>
-				<% @project.cis.each do |ci| %>
-				<div class="row d-flex justify-content-between mt-2">
-					<div class="col-auto">
-						<small class="fw-bold card-subtitle text-secondary">
-							<small class="text-danger">  </small><span class="text-secondary"> </span><small class="">NO.<%= ci.number %></small><small class="text-danger">  </small>
-						</small>
-					</div>
-					<div class="col-auto">
-						<small class="text-success">
-							<%= link_to edit_project_ci_path(@project, ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">EDIT CI</span>
-							<% end %>
-							<span class="text-primary"> | </span>
-							<% if ci.swift.present? %>
+					<% @project.cis.each do |ci| %>
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<small class="fw-bold card-subtitle text-secondary">
+								<small class="text-danger">  </small><span class="text-secondary"> </span><small class="">NO.<%= ci.number %></small><small class="text-danger">  </small>
+							</small>
+						</div>
+						<div class="col-auto">
+							<small class="text-success">
+								<%= link_to edit_project_ci_path(@project, ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">EDIT CI</span>
+								<% end %>
+								<span class="text-primary"> | </span>
+								<% if ci.swift.present? %>
 								<span class="mb-1 timeline-h5 text-info">Swift attached already</span>
-							<% else %>
-							
-							<%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
-							<span class="mb-1 timeline-h5">BALANCE SWIFT</span>
-							<% end %>
-							<% end %>
-						</small>
+								<% else %>
+
+								<%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5">BALANCE SWIFT</span>
+								<% end %>
+								<% end %>
+							</small>
+						</div>
 					</div>
+					<% end %>
+
 				</div>
-				<% end %>
 
 			</div>
-
 		</div>
-	</div>
 
-</div>
-<% end %>
+	</div>
+	<% end %>

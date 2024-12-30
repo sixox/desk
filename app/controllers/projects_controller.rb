@@ -53,12 +53,24 @@ class ProjectsController < ApplicationController
 	end
 
 	def update
-		if @project.update(project_params)
-			redirect_to project_path(@project), notice: "Project Edited Successfully"
-		else
-			redirect_to project_path(@project), alert: "Project Edited not Done"
-		end
-	end
+    if params[:release_permission].present?
+      @project.password ||= "@min2542026@JDJDJDjdjdhfg^@&" if params[:release_permission] == "true"
+      @project.release_permission_date = Time.now
+      if @project.update(release_permission: params[:release_permission] == "true")
+        redirect_to project_path(@project), notice: "Release Permission #{params[:release_permission] == "true" ? "Granted" : "Revoked"} Successfully"
+      else
+        redirect_to project_path(@project), alert: "Failed to Update Release Permission"
+      end
+    else
+      if @project.update(project_params)
+        redirect_to project_path(@project), notice: "Project Edited Successfully"
+      else
+        redirect_to project_path(@project), alert: "Project Editing Failed"
+      end
+    end
+  end
+
+
 
 	def destroy
 	end
@@ -183,7 +195,7 @@ def turnover
   end
 
 	def project_params
-		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started )
+		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started, :release_permission )
 	end
 
 def calculate_return_days_and_profit
