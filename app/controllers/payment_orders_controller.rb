@@ -24,6 +24,7 @@ def index
     # If the user is not a manager, admin, etc., apply specific filtering
     @payment_orders = @q.result
                         .filtered_by_role(current_user)
+                        .where.not(user_id: 9)
                         .order(created_at: :desc)
                         .page(params[:page])
                         .per(6)
@@ -180,6 +181,7 @@ end
 	                        .joins(:user)
 	                        .where(users: { role: cu.role })
 	                        .where(status: 'wait for payment')
+	                        .where.not(user_id: 9)
 	                        .order(created_at: :desc)
 	                        .page(params[:page])
 	                        .per(6)
@@ -199,7 +201,7 @@ end
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? || cu.cob?
 	    @payment_orders = base_query.page(params[:page]).per(6)
 	  else
-	    @payment_orders = base_query.joins(:user).where(users: { role: cu.role }).page(params[:page]).per(6)
+	    @payment_orders = base_query.joins(:user).where(users: { role: cu.role }).where.not(user_id: 9).page(params[:page]).per(6)
 	  end
 	  render 'index'
 	end
@@ -221,6 +223,7 @@ end
 	    @payment_orders = @q.result
 	                        .joins(:user)
 	                        .where(users: { role: cu.role })
+	                        .where.not(user_id: 9)
 	                        .where(status: 'delivered')
 	                        .order(created_at: :desc)
 	                        .page(params[:page])
@@ -246,6 +249,7 @@ end
 	    @payment_orders = @q.result
 	                        .joins(:user)
 	                        .where(users: { role: cu.role })
+	                        .where.not(user_id: 9)
 	                        .where(status: 'rejected')
 	                        .order(created_at: :desc)
 	                        .page(params[:page])
@@ -271,6 +275,7 @@ end
 	    @payment_orders = @q.result
 	                        .joins(:user)
 	                        .where(users: { role: cu.role })
+	                        .where.not(user_id: 9)
 	                        .where.not(status: 'delivered')
 	                        .order(created_at: :desc)
 	                        .page(params[:page])
@@ -296,6 +301,7 @@ end
 	    @payment_orders = @q.result
 	                        .joins(:user)
 	                        .where(users: { role: cu.role })
+	                        .where.not(user_id: 9)
 	                        .where(status: 'wait for delivery')
 	                        .order(created_at: :desc)
 	                        .page(params[:page])
