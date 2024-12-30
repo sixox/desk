@@ -1,4 +1,34 @@
 <div class="col-lg-10 mx-auto mt-5">
+
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Swifts</h3>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-end">
+					<div class="hide-on-desktop">
+						
+					</div>
+					<div class="hide-on-mobile">
+						<div class="btn-group" role="group" aria-label="Page Toggle">
+							<% if @in_page == "unconfirmed" %>
+							<%= link_to "Pendings", unconfirmed_swifts_path, class: "btn btn-primary active" %>
+							<%= link_to "All", swifts_path, class: "btn btn-primary" %>
+							<% else %>
+							<%= link_to "Pending", unconfirmed_swifts_path, class: "btn btn-primary" %>
+							<%= link_to "All", swifts_path, class: "btn btn-primary active" %>
+							<% end %>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
 	<div class="row mt-3">
 <%= search_form_for @q, url: request.path do |f| %>
   <div class="input-group mb-3">

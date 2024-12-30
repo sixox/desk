@@ -60,12 +60,26 @@ class SwiftsController < ApplicationController
 	end
 
 	def index
+		@in_page = "index"
 	  # Create a Ransack query object
 	  @q = Swift.with_bank_and_ci.ransack(params[:q])
 
 	  # Perform the search using the Ransack query object
 	  @swifts = @q.result.page(params[:page]).per(30)
 	end
+
+
+	def unconfirmed
+		@in_page = "unconfirmed"
+	  # Create a Ransack query object
+	  @q = Swift.with_bank_and_ci.where(confirmed: [false, nil]).ransack(params[:q])
+
+	  # Perform the search using the Ransack query object
+	  @swifts = @q.result.page(params[:page]).per(30)
+
+	  render :index
+	end
+
 
 	def confirm
 		  puts "Submitted params: #{swift_params.inspect}"

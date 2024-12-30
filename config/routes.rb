@@ -121,6 +121,9 @@ Rails.application.routes.draw do
       get "reject", to: "swifts#reject"
       get 'edit_amount_before_confirm'
     end
+    collection do
+      get 'unconfirmed'
+    end
   end
   resources :banks do
     member do
