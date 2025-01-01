@@ -337,6 +337,10 @@ end
 	  @in_page = "confirmable"
 	  cu = current_user
 
+	  if cu.accounting?
+			@release_requests = ReleaseRequest.where(confirmed: [false, nil])
+	  end
+
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 

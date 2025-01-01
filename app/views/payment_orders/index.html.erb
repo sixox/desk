@@ -1,11 +1,12 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<% if @transfers.present? %>
+
+	<% if @release_requests.present? %>
 	<div class="card mb-5">
 		<div class="card-body">
 			<div class="row">
 				<div class="col-lg-6">
 					<div class="d-flex justify-content-start">
-						<h3>Transfers</h3>
+						<h3>Release Requests</h3>
 					</div>
 				</div>
 			</div>
@@ -14,74 +15,149 @@
 					<thead>
 						<tr>
 							<th scope="col">#</th>
-							<th scope="col">From</th>
-							<th scope="col">To</th>
-							<th scope="col"> Withdraw amount</th>
-
-
-
-							<th scope="col">Deposite amount</th>
-							<th scope="col">Wage</th>
-							<th scope="col">Status</th>
-							<th scope="col">Document</th>
-
+							<th scope="col">Project</th>
+							<th scope="col">Booking</th>
+							<th scope="col">Note</th>
+							<th scope="col">Requested at</th>
 							<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
 						</tr>
 					</thead>
 					<tbody>
-						<% @transfers.each do |transfer| %>
-						<tr style="font-size: 12px;" class="<%= 
-						if transfer.confirmed.present?
-							'table-success'
-						elsif transfer.rejected.present?
-							'table-danger'
-						else
-							'table-warning'
-						end
+						<% @release_requests.each do |request| %>
+						<tr style="font-size: 12px;">
+							<th scope="row">
+								<%= request.id %>
+							</th>
+							<td><%= request.booking.project.number %></td>
+							<td><%= request.booking.number %></td>
+							
+							<td>
+								<% if request.note.present? %>
+								<div class="accordion" id="accordionNote<%= request.id %>">
+									<div class="accordion-item">
+										<h2 class="accordion-header" id="headingNote<%= request.id %>">
+											<button class="accordion-button collapsed my-custom-accordion-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNote<%= request.id %>" aria-expanded="false" aria-controls="collapseNote<%= request.id %>">
+												Note
+											</button>
+										</h2>
+										<div id="collapseNote<%= request.id %>" class="accordion-collapse collapse" aria-labelledby="headingNote<%= request.id %>" data-bs-parent="#accordionNote<%= request.id %>">
+											<div class="accordion-body">
+												<%= request.note %>
+											</div>
+										</div>
+									</div>
+								</div>
+								<% else %>
+								-
+								<% end %>
+							</td>
+							<td><%= request.created_at&.strftime('%b %d') %></td>
+							
 
-					%>">
-					<th scope="row">
-						<%= transfer.id %>
-					</th>
-					<td><%= transfer.withdraw_from_bank.name %></td>
-					<td><%= transfer.deposited_to_bank.name %></td>
-					<td class="fw-bold text-danger"><%= number_with_delimiter(transfer.withdraw_amount, delimiter: ',') %> <small>	<%= transfer.withdraw_from_bank.currency %></small></td>
-					<td class="fw-bold text-success"><%= number_with_delimiter(transfer.deposited_amount, delimiter: ',') %> <small>	<%= transfer.deposited_to_bank.currency %></small></td>
-					<td><%= transfer.wage.to_i %></td>
+							
+						
+						<td style="text-align: right;">
+							<%= link_to "Confirm Release Request", confirm_release_request_path(request), method: :patch, class: "btn btn-success", data: { confirm: "Are you sure you want to confirm this release request?" } %>
 
-					<td><%= 
-					if transfer.coo_confirmed.present?
-						"Confirmed by COO at #{transfer.coo_confirmed_at&.strftime('%b %d')}" 
+
+
+						</td>
+					</tr>
+					<% end %>
+				</tbody>
+			</table>
+		</div>
+
+	</div>
+</div>
+<% end %>
+
+
+
+<% if @transfers.present? %>
+<div class="card mb-5">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="d-flex justify-content-start">
+					<h3>Transfers</h3>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm">
+			<table class="table">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">From</th>
+						<th scope="col">To</th>
+						<th scope="col"> Withdraw amount</th>
+
+
+
+						<th scope="col">Deposite amount</th>
+						<th scope="col">Wage</th>
+						<th scope="col">Status</th>
+						<th scope="col">Document</th>
+
+						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<% @transfers.each do |transfer| %>
+					<tr style="font-size: 12px;" class="<%= 
+					if transfer.confirmed.present?
+						'table-success'
+					elsif transfer.rejected.present?
+						'table-danger'
 					else
-						'Wait for COO Confirm'
+						'table-warning'
 					end
-				%></td>
-				<td>
-					<% if transfer.document.attached? %>
-					<%= link_to 'View Document', url_for(transfer.document), target: '_blank' %>
-					<% else %>
-					no document
-					<% end %>
-				</td>
-				<td style="text-align: right;">
-					<% if !transfer.confirmed && !transfer.rejected %>
-					<%= link_to confirm_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this transfer, this action can not be undo!' } do %>
-					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-					<% end %>
-					|
-					<%= link_to reject_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this transfer, this action can not be undo!' } do %>
-					<i class="bi bi-calendar-x-fill" style="color: red;"></i>
-					<% end %>
 
-					<% end %>
+				%>">
+				<th scope="row">
+					<%= transfer.id %>
+				</th>
+				<td><%= transfer.withdraw_from_bank.name %></td>
+				<td><%= transfer.deposited_to_bank.name %></td>
+				<td class="fw-bold text-danger"><%= number_with_delimiter(transfer.withdraw_amount, delimiter: ',') %> <small>	<%= transfer.withdraw_from_bank.currency %></small></td>
+				<td class="fw-bold text-success"><%= number_with_delimiter(transfer.deposited_amount, delimiter: ',') %> <small>	<%= transfer.deposited_to_bank.currency %></small></td>
+				<td><%= transfer.wage.to_i %></td>
+
+				<td><%= 
+				if transfer.coo_confirmed.present?
+					"Confirmed by COO at #{transfer.coo_confirmed_at&.strftime('%b %d')}" 
+				else
+					'Wait for COO Confirm'
+				end
+			%></td>
+			<td>
+				<% if transfer.document.attached? %>
+				<%= link_to 'View Document', url_for(transfer.document), target: '_blank' %>
+				<% else %>
+				no document
+				<% end %>
+			</td>
+			<td style="text-align: right;">
+				<% if !transfer.confirmed && !transfer.rejected %>
+				<%= link_to confirm_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this transfer, this action can not be undo!' } do %>
+				<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+				<% end %>
+				|
+				<%= link_to reject_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this transfer, this action can not be undo!' } do %>
+				<i class="bi bi-calendar-x-fill" style="color: red;"></i>
+				<% end %>
+
+				<% end %>
 
 
-				</td>
-			</tr>
-			<% end %>
-		</tbody>
-	</table>
+			</td>
+		</tr>
+		<% end %>
+	</tbody>
+</table>
 </div>
 
 </div>
@@ -124,40 +200,40 @@
 		<div class="row mt-3">
 			<%= search_form_for @q, url: request.path do |f| %>
 
-			  <div class="input-group mb-3">
-			    <%= f.search_field :id_or_details_or_amount_or_project_number_or_ballance_number_cont, 
-			                        class: "form-control", 
-			                        placeholder: "Search by Details, Project Number or Inventory Number" %>
-			    <%= f.submit "Search", class: "btn btn-primary" %>
-			  </div>
-			<% end %>
-		</div>
-		<div class="hide-on-mobile">
-			<%= render 'filter_not_mobile' %>
-		</div>
-		<div class="hide-on-desktop">
-			<% if current_user.is_manager || current_user.accounting? %>
-			<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
-			<i class="bi bi-bar-chart"></i> Reports
-			<% end %>
-			<% end %>
-		</div>
+			<div class="input-group mb-3">
+				<%= f.search_field :id_or_details_or_amount_or_project_number_or_ballance_number_cont, 
+				class: "form-control", 
+					placeholder: "Search by Details, Project Number or Inventory Number" %>
+					<%= f.submit "Search", class: "btn btn-primary" %>
+				</div>
+				<% end %>
+			</div>
+			<div class="hide-on-mobile">
+				<%= render 'filter_not_mobile' %>
+			</div>
+			<div class="hide-on-desktop">
+				<% if current_user.is_manager || current_user.accounting? %>
+				<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
+				<i class="bi bi-bar-chart"></i> Reports
+				<% end %>
+				<% end %>
+			</div>
 
 
-		<ul class="list-group" id="payment_order_items">
-			<% @payment_orders.each do |payment_order| %>
-			<%= render 'payment_orders/payment_order', payment_order: payment_order %>
-			<% end %>
-		</ul>
-		<div class="row mt-1">
-			<div class="col-sm">
-				<nav aria-label="Page navigation">
-					<ul class="pagination justify-content-center">
-						<%= paginate @payment_orders, remote: true %>
-					</ul>
-				</nav>
+			<ul class="list-group" id="payment_order_items">
+				<% @payment_orders.each do |payment_order| %>
+				<%= render 'payment_orders/payment_order', payment_order: payment_order %>
+				<% end %>
+			</ul>
+			<div class="row mt-1">
+				<div class="col-sm">
+					<nav aria-label="Page navigation">
+						<ul class="pagination justify-content-center">
+							<%= paginate @payment_orders, remote: true %>
+						</ul>
+					</nav>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 </div>

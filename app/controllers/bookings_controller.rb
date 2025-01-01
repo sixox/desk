@@ -97,6 +97,8 @@ def booking_params
 		:bl_draft,
 		:bl_dated,
 		:surrender,
+		:release_permission,
+		:release_permission_date,
 		images: []
 		)
 end

@@ -59,9 +59,21 @@ Rails.application.routes.draw do
         patch :update_images
         delete :delete_all_images
       end
+        resources :release_requests do
+          member do
+            get :confirm
+            patch :confirm
+          end
+        end
     end
     collection do
       get :list
+    end
+  end
+  resources :release_requests do
+    member do
+      get :confirm
+      patch :confirm
     end
   end
   resources :cis do

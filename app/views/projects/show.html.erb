@@ -8,16 +8,7 @@
 						<span class="fw-bold" style="font-size: 25px; color: #0c590c;"><%= @project.number %></span> - <span style="color: #49af98;">
 				            <%= @project.pi.customer.nickname %>
 				          </span>
-				          <div class="text-muted">
-				          	<small>
-				          		<span class="text-secondary">Release permission:</span>
-				          		<% if @project.release_permission %>
-				          			<span class="text-success">Allowed by Accounting - <%= @project.release_permission_date&.strftime('%Y-%m-%d') %></span>
-				          		<% else %>
-				          			<span class="text-warning">NOT PERMITTED</span>
-				          		<% end %>
-				          	</small>
-				          </div>
+				          
 					</div>
 					<div class="col-auto m-2">
 						<%= risk_level_tag(@project) %>

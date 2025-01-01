@@ -7,6 +7,8 @@ class Booking < ApplicationRecord
   has_one_attached :bl_dated
   has_one_attached :surrender
   has_many_attached :images
+  has_one :release_request, dependent: :destroy
+
 
 
   validates :number, :pod, :container_type, :quantity, presence: true

@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  booking: one
+  confirmed: false
+  confirmed_at: 2025-01-01 10:21:16
+  note: MyText
+
+two:
+  booking: two
+  confirmed: false
+  confirmed_at: 2025-01-01 10:21:16
+  note: MyText
