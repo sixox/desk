@@ -8,23 +8,25 @@
 			<div class="notiborderglow"></div>
 			<div class="notititle">
 				<div class="row">
-				<div class="col">
-				<%= act.user.name.titleize %> <small class="text-muted" style="font-size: 10px;"><%= act.created_at.strftime('%A %d %B') %></small>
-			</div>
-				<div class="col">
-				    <div class="d-flex justify-content-end mb-2 mt-1 fs-4">
-      <i class="<%= case act.action_type
-                    when "happy" then 'bi bi-emoji-smile-fill text-success'
-                    when "sad" then 'bi bi-emoji-frown-fill text-primary'
-                    when "agree" then 'bi bi-hand-thumbs-up-fill text-info'
-                    when "disagree" then 'bi bi-hand-thumbs-down-fill text-danger'
-                    when "like" then 'bi bi-heart-fill text-warning'
-                    else 'bi bi-circle'
-                  end %> me-2"></i>
-                  </div>
-      
-    </div>
-</div>
+					<div class="col">
+						<%= act.user.name.titleize %> <small class="text-muted" style="font-size: 10px;"><%= act.created_at.strftime('%A %d %B') %></small>
+					</div>
+					<% if act.action_type.present? %>
+					<div class="col">
+						<div class="d-flex justify-content-end mb-2 mt-1 fs-4">
+							<i class="<%= case act.action_type
+						when "happy" then 'bi bi-emoji-smile-fill text-success'
+						when "sad" then 'bi bi-emoji-frown-fill text-primary'
+						when "agree" then 'bi bi-hand-thumbs-up-fill text-info'
+						when "disagree" then 'bi bi-hand-thumbs-down-fill text-danger'
+						when "like" then 'bi bi-heart-fill text-warning'
+						else 'bi bi-circle'
+							end %> me-2"></i>
+						</div>
+
+					</div>
+					<% end %>
+				</div>
 				
 			</div>
 			<div class="notibody"><%= act.action_details %></div>
