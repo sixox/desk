@@ -10,5 +10,5 @@ class Act < ApplicationRecord
     "disagree" => "Disagree",
     "like" => "Like"
   }.freeze
-  validates :action_type, inclusion: { in: ACTION_TYPES, message: "%{value} is not a valid action type" }
+  validates :action_type, inclusion: { in: ACTION_TYPES, message: "%{value} is not a valid action type" }, allow_blank: true
 end
