@@ -1,28 +1,94 @@
 <div class="col-lg-10 mx-auto mt-5">
   <h3 class="mb-4">Assessment Forms</h3>
 
-  <% @unique_fillers.each do |filler| %>
-  <div class="card mt-4 mb-4 border-info">
-    <div class="card-header bg-info text-white">
-      <div class="col">
-        <div class="d-flex justify-content-start">
-          <h5 class="mb-0"><%= filler.name.titleize %></h5>
+
+
+  <div class="accordion" id="accordionExampleIndex">
+    <div class="accordion-item">
+      <% year = 1403 %>
+      <% period = 2 %>
+      <h2 class="accordion-header" id="headingOne<%= year%><%= period %>">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= year %><%= period %>" aria-expanded="true" aria-controls="collapse<%= year %><%= period %>">
+          <%= year %> - <%= period %>
+        </button>
+      </h2>
+      <div id="collapse<%= year %><%= period %>" class="accordion-collapse collapse " aria-labelledby="headingOne<%= year%><%= period %>" data-bs-parent="#accordionExampleIndex">
+        <div class="accordion-body">
+
+         <% unique_fillers = AssessmentForm.unique_fillers(year, period) %>
+
+         <% unique_fillers.each do |filler| %>
+         <div class="card mt-4 mb-4 border-info">
+          <div class="card-header bg-info text-white">
+            <div class="col">
+              <div class="d-flex justify-content-start">
+                <h5 class="mb-0"><%= filler.name.titleize %></h5>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="card mb-5 mt-2">
-    <div class="card-body">
-      <div class="accordion" id="accordionExample">
+        <div class="card mb-5 mt-2">
+          <div class="card-body">
+            <div class="accordion" id="accordionExample">
 
-        <% AssessmentForm.unique_users_for_filler(filler).each do |user| %>
-        <%= render 'assessments/assessments', user: user, filler: filler %>
+              <% AssessmentForm.unique_users_for_filler(filler, year, period).each do |user| %>
+              <%= render 'assessments/assessments', user: user, filler: filler, year: year, period: period %>
+              <% end %>
+
+
+
+            </div>
+          </div>
+        </div>
         <% end %>
-
-
-
       </div>
     </div>
   </div>
-  <% end %>
+  <div class="accordion-item">
+      <% year = 1403 %>
+      <% period = 3 %>
+      <h2 class="accordion-header" id="headingOne<%= year%><%= period %>">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= year %><%= period %>" aria-expanded="true" aria-controls="collapse<%= year %><%= period %>">
+          <%= year %> - <%= period %>
+        </button>
+      </h2>
+      <div id="collapse<%= year %><%= period %>" class="accordion-collapse collapse " aria-labelledby="headingOne<%= year%><%= period %>" data-bs-parent="#accordionExampleIndex">
+        <div class="accordion-body">
+
+         <% unique_fillers = AssessmentForm.unique_fillers(year, period) %>
+
+         <% unique_fillers.each do |filler| %>
+         <div class="card mt-4 mb-4 border-info">
+          <div class="card-header bg-info text-white">
+            <div class="col">
+              <div class="d-flex justify-content-start">
+                <h5 class="mb-0"><%= filler.name.titleize %></h5>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card mb-5 mt-2">
+          <div class="card-body">
+            <div class="accordion" id="accordionExample">
+
+              <% AssessmentForm.unique_users_for_filler(filler, year, period).each do |user| %>
+              <%= render 'assessments/assessments', user: user, filler: filler, year: year, period: period %>
+              <% end %>
+
+
+
+            </div>
+          </div>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>
+
+
+
+</div>
+
+
+

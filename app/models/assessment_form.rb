@@ -12,16 +12,16 @@ class AssessmentForm < ApplicationRecord
 
 
   # Before save callback to calculate total score
-  before_save :calculate_total_score
+  # before_save :calculate_total_score
 
   # Class method to get unique users associated with a given filler
-  def self.unique_users_for_filler(filler)
-    where(filler_id: filler.id).select(:user_id).distinct.map { |af| af.user }
+  def self.unique_users_for_filler(filler, year, period)
+    where(filler_id: filler.id, year: year, period: period).select(:user_id).distinct.map { |af| af.user }
   end
   
-  def self.unique_fillers
+  def self.unique_fillers(year, period)
     # Select distinct filler_id and map to the User model
-    where.not(filler_id: nil).select(:filler_id).distinct.map { |af| af.filler }
+    where.not(filler_id: nil).where(year: year, period: period).select(:filler_id).distinct.map { |af| af.filler }
   end
 
   private

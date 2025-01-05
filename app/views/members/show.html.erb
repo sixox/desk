@@ -46,28 +46,26 @@
 	</div>
 
 	<%# comment this part for development  %>
-	<% if @fillers.any? %>
-	<h3 class="mb-4 mt-3">Assessment Forms</h3>
+<% if @fillers_grouped.any? %>
+  <h3 class="mb-4 mt-3">Assessment Forms</h3>
 
-	  <% @fillers.each do |filler| %>
-	  <div class="card mb-5 mt-2">
-	  	<div class="card-title mt-2 ms-2 text-warning">
-	  		<h5><%= filler.name %></h5>
-	  	</div>
-	    <div class="card-body">
-	      <div class="accordion" id="accordionExample">
+  <% @fillers_grouped.each do |(year, period), forms| %>
+    <div class="card mb-5 mt-2">
+      <div class="card-title mt-2 ms-2 text-warning">
+        <h5>Year: <%= year %>, Period: <%= period %></h5>
+      </div>
+      <div class="card-body">
+        <% unique_fillers = forms.map(&:filler).uniq %>
+        <% unique_fillers.each do |filler| %>
+          <div class="accordion" id="accordionExample<%= year %><%= period %>">
+            <%= render 'assessments/assessments', user: @user, filler: filler, year: year, period: period %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
 
-	        
-	        <%= render 'assessments/assessments', user: @user, filler: filler %>
-	        
-
-
-
-	      </div>
-	    </div>
-	  </div>
-	  <% end %>
-	  <% end %>
 
 	  <%# end of comment %>
 

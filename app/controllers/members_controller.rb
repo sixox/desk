@@ -7,7 +7,7 @@ class MembersController < ApplicationController
 		.where(users: { role: @user.role })
 		.where.not(users: { id: @user.id })
 		@vacations = Vacation.all
-	    @fillers = unique_fillers_for_user(@user)
+		@fillers_grouped = fillers_grouped_by_year_and_period(@user)
 
 
 	end
@@ -59,9 +59,14 @@ class MembersController < ApplicationController
       params.require(:signatures).permit!
 	end
 
-	def unique_fillers_for_user(user)
-	  # Fetch all assessment forms for the user and get unique fillers
-	  user.assessment_forms_as_user.includes(:filler).map(&:filler).uniq
+	def fillers_grouped_by_year_and_period(user)
+	  # Fetch all unique year, period combinations and their fillers
+	  user.assessment_forms_as_user
+	      .select(:year, :period, :filler_id)
+	      .includes(:filler)
+	      .distinct
+	      .group_by { |form| [form.year, form.period] }
 	end
+
 
 end	

@@ -18,6 +18,8 @@
 
 
   <%= form_with(url: update_form_assessments_path(user_id: @user.id), method: :patch, local: true) do |f| %>
+    <%= hidden_field_tag :year, params[:year] %>
+  <%= hidden_field_tag :period, params[:period] %>
   <div class="card mb-5">
     <div class="card-body">
       <div class="row">

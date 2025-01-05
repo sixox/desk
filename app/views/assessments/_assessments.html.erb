@@ -1,8 +1,8 @@
-        <% if AssessmentForm.where(user_id: user.id, filler_id: filler.id).all? { |af| af.total_score.present? } %>
+        <% if AssessmentForm.where(user_id: user.id, filler_id: filler.id, year: year, period: period).all? { |af| af.total_score.present? } %>
 
-        <% assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" }) %>
-        <% assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: filler.id, assessments: { category: "رفتارها و کردارها (EVC)" }) %>
-        <% assessment_forms_function = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: filler.id, assessments: { category: "نتایج کلیدی عملکرد" }) %>
+        <% assessment_forms_ksa = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: filler.id, assessments: { category: "دانش و مهارت و توانایی (KSA)" }, year: year, period: period) %>
+        <% assessment_forms_evc = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: filler.id, assessments: { category: "رفتارها و کردارها (EVC)" }, year: year, period: period) %>
+        <% assessment_forms_function = AssessmentForm.joins(:assessment).where(user_id: user.id, filler_id: filler.id, assessments: { category: "نتایج کلیدی عملکرد" }, year: year, period: period) %>
         <% point_ksa = assessment_forms_ksa.first.assessment.category_point %>
         <% point_evc =  assessment_forms_evc.first.assessment.category_point %>
         <% point_function =  assessment_forms_function.first.assessment.category_point %>
@@ -19,7 +19,7 @@
 
         
         <div class="accordion-item">
-          <h2 class="accordion-header" id="heading<%= user.id %>aa<%= filler.id %>">
+          <h2 class="accordion-header" id="heading<%= user.id %>aa<%= filler.id %><%= year %><%= period %>">
             
             <button class="accordion-button collapsed d-flex justify-content-between w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= user.id %>aa<%= filler.id %>" aria-expanded="false" aria-controls="collapse<%= user.id %>aa<%= filler.id %>">
               <!-- Left-aligned total score -->
@@ -31,7 +31,7 @@
               
             </button>
           </h2>
-          <div id="collapse<%= user.id %>aa<%= filler.id %>" class="accordion-collapse collapse" aria-labelledby="heading<%= user.id %>aa<%= filler.id %>" data-bs-parent="#accordionExample">
+          <div id="collapse<%= user.id %>aa<%= filler.id %>" class="accordion-collapse collapse" aria-labelledby="heading<%= user.id %>aa<%= filler.id %><%= year %><%= period %>" data-bs-parent="#accordionExample<%= year %><%= period %>">
             <div class="accordion-body">
 
              <div class="card mb-5">
