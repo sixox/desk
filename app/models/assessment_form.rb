@@ -4,7 +4,7 @@ class AssessmentForm < ApplicationRecord
   belongs_to :filler, class_name: 'User' # for the `filler` (who is filling the form)
 
   # Scope to filter assessment forms by user and filler
-  scope :by_user_and_filler, -> (user, filler) { where(user_id: user.id, filler_id: filler.id) }
+  scope :by_user_and_filler, -> (user, filler, year, period) { where(user_id: user.id, filler_id: filler.id, year: year, period: period) }
 
   # Validation for score and weight
   validates :score, presence: true, numericality: { only_integer: true, in: 1..10 }
