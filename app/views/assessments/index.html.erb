@@ -73,7 +73,7 @@
         <% unique_users = AssessmentForm.unique_users_for_filler(@filler, year, period) %>
         <% unique_users.each do |user| %>
         <% assessment_form = AssessmentForm.by_user_and_filler(user, @filler, year, period).last %>
-        <% if assessment_form.present? && assessment_form.score.nil? %>
+        <% if (assessment_form.present? && assessment_form.score.nil?) || true %>
         <div class="col-md-6 mb-4">
           <div class="card">
             <div class="card-body">
