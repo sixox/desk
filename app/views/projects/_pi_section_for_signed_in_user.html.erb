@@ -24,6 +24,7 @@
 			<br> 
 			<small><%= @project.pi.incoterm %> <%= @project.pi.pod %></small> PORT
 			<br>
+
 			<hr>
 			<div class="row">
 				<div class="col">
@@ -46,6 +47,10 @@
 					<small> <%= @project.pi.currency %></small>
 				</div>
 			</div>
+			
 		</p>
+		<% if @project.pi.commission.present? %>
+		<small class="text-muted">commission <%= @project.pi.commission %>$ per MT to <%= @project.pi.agent %></small>
+		<% end %>
 	</div>
 </div>

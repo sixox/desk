@@ -72,9 +72,27 @@
 
 				</div>
 
+				<div class="row mt-2 d-flex justify-content-between">
+					<div class="col-auto fw-bold">
+						<% if booking.inspection.present? %>
+						<small class="timeline-small me-1">Inspection Included</small>
+						<% else %>
+						<small class="text-danger">No Inspection</small>
+						<% end %>
+					</div>
+					<div class="col-auto">
+						<small class="text-secondary">
+							<% if booking.freight_price.present? %>
+								<small class="timeline-small">freight per container: <%= booking.freight_price %>$</small>
+							<% end %>
+						</small>
+					</div>
+					
+					
+				</div>
 
 
-				<div class="row mt-5 d-flex justify-content-between">
+				<div class="row mt-2 d-flex justify-content-between">
 					<div class="col-auto fw-bold">
 						<% if booking.images.attached? %>
 						<small class="timeline-small me-1">Images</small>
