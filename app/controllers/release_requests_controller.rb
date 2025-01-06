@@ -19,6 +19,26 @@ class ReleaseRequestsController < ApplicationController
     end
   end
 
+
+  def index
+    @in_page = "index"
+    
+    @release_requests = ReleaseRequest.includes(booking: { project: :pi }).page(params[:page]).per(30)
+  end
+
+  def unconfirmed
+    @in_page = "unconfirmed"
+
+    # Filter release requests where confirmed is nil or false
+    @release_requests = ReleaseRequest
+                          .where(confirmed: [nil, false])
+                          .includes(booking: { project: :pi })
+                          .page(params[:page])
+                          .per(30)
+
+    render :index
+  end
+
   def create
     @release_request = @booking.build_release_request(release_request_params)
 

@@ -1,0 +1,123 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="d-flex justify-content-start">
+				<h3>Release Reuests</h3>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="d-flex justify-content-end">
+				<div class="hide-on-desktop">
+
+				</div>
+				<div class="hide-on-mobile">
+					<div class="btn-group" role="group" aria-label="Page Toggle">
+						<% if @in_page == "unconfirmed" %>
+						<%= link_to "Pending", unconfirmed_release_requests_path, class: "btn btn-primary active" %>
+						<%= link_to "All", release_requests_path, class: "btn btn-primary" %>
+						<% else %>
+						<%= link_to "Pending", unconfirmed_release_requests_path, class: "btn btn-primary" %>
+						<%= link_to "All", release_requests_path, class: "btn btn-primary active" %>
+						<% end %>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+	<row class="m-2">
+		<div class="col-sm">
+			<table class="table">
+				<thead>
+					<tr>
+						<th scope="col" class="col-sm-1">#</th>
+						<th scope="col" class="col-sm-2">Project</th>
+						<th scope="col" class="col-sm-2">Booking</th>
+						<th scope="col" class="col-sm-2">Customer</th>
+						<th scope="col" class="col-sm-2">Note</th>
+
+						<th scope="col" class="col-sm-2">Confirmed at</th>
+						<th scope="col" class="col-sm-2">Request at</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% @release_requests.each do |release_request| %>
+					<% booking = release_request.booking %>
+					<% project = booking.project if booking %>
+					<% customer = project&.pi&.customer if project %>
+					<tr style="font-size: 12px;" class="<%= 
+					if release_request.confirmed.present?
+						'table-success'
+					else
+						'table-warning'
+					end
+				%>">
+				<th scope="row">
+					<%= release_request.id %>
+				</th>
+				
+				<td>
+				<% if project %>
+				<%= link_to project.number, project_path(project) %>
+				<% end %>
+			</td>
+			<td><%= booking&.number %></td>
+			<td><%= customer&.nickname %></td>
+
+				
+
+				
+			<td>
+				<% if release_request.note.present? %>
+				<div class="accordion" id="accordionNote<%= release_request.id %>">
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="headingNote<%= release_request.id %>">
+							<button class="accordion-button collapsed my-custom-accordion-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNote<%= release_request.id %>" aria-expanded="false" aria-controls="collapseNote<%= release_request.id %>">
+								Note
+							</button>
+						</h2>
+						<div id="collapseNote<%= release_request.id %>" class="accordion-collapse collapse" aria-labelledby="headingNote<%= release_request.id %>" data-bs-parent="#accordionNote<%= release_request.id %>">
+							<div class="accordion-body">
+								<%= release_request.note %>
+							</div>
+						</div>
+					</div>
+				</div>
+				<% else %>
+				-
+				<% end %>
+			</td>
+			<td><%= 
+				if release_request.confirmed.present?
+					"Confirmed at #{release_request.confirmed_at&.strftime('%b %d')}" 
+				else
+					'Wait for confirm'
+				end
+			%></td>
+			<td>
+				<%= release_request.created_at&.strftime('%b %d') %>
+			</td>
+			</tr>
+			<% end %>
+		</tbody>
+	</table>
+
+</div>
+</row>
+<div class="row mt-3">
+	<div class="col-sm">
+		<nav aria-label="Page navigation">
+			<ul class="pagination justify-content-center">
+				<%= paginate @release_requests, remote: true %>
+			</ul>
+		</nav>
+	</div>
+</div>
+</div>

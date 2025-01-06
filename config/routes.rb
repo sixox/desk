@@ -75,6 +75,9 @@ Rails.application.routes.draw do
       get :confirm
       patch :confirm
     end
+    collection do
+      get :unconfirmed
+    end
   end
   resources :cis do
     resources :swifts
