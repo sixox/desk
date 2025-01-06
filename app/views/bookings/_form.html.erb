@@ -133,6 +133,27 @@
 				
 			</div>
 
+			<div class="row bg-semi">
+
+				<div class="col-lg-6">
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Freight rate per container
+							<%= form.number_field :freight_price, class: "form-control mt-2" %>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg">
+					<div class="form-group mb-2 mt-5">
+						<%= form.check_box :inspection, class: 'form-check-input' %>
+						<label class="form-check-label" for="inspection">
+							Have Inspection?
+						</label>
+					</div>
+				</div>
+				
+			</div>
+
 
 
 

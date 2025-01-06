@@ -77,7 +77,7 @@
 					<div class="form-group">
 						<label class="mb-2 mt-3">
 							Bank Account
-   							 <%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select mt-2'} %>
+							<%= form.collection_select :account_id, Account.includes(:bank).all, :id, :display_name_with_bank, {include_blank: true}, {class: 'form-select mt-2'} %>
 
 						</label>
 					</div>
@@ -162,7 +162,7 @@
 						</label>
 					</div>
 				</div>
-					
+
 
 			</div>
 			<div class="row bg-semi">
@@ -247,6 +247,36 @@
 							<div class="input-group mt-2">
 								<%= form.number_field :validity, class: "form-control" %>
 								<span class="input-group-text">Days</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				
+				
+				
+			</div>
+
+
+			<div class="row ">
+				
+				
+				<div class="col-lg mb-2">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Agent
+							<div class="input-group mt-2">
+								<%= form.text_field :agent, class: "form-control" %>
+							</div>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg mb-2">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Commission per MT
+							<div class="input-group mt-2">
+								<%= form.number_field :commission, class: "form-control" %>
+								<span class="input-group-text">$</span>
 							</div>
 						</label>
 					</div>

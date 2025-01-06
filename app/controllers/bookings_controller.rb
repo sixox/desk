@@ -99,6 +99,8 @@ def booking_params
 		:surrender,
 		:release_permission,
 		:release_permission_date,
+		:inspection,
+		:freight_price,
 		images: []
 		)
 end
