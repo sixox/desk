@@ -135,11 +135,15 @@
 
 			<div class="row bg-semi">
 
-				<div class="col-lg-6">
+				
+				<div class="col-lg mb-2">
 					<div class="form-group">
-						<label class="mb-2 mt-1">
+						<label class="mb-2 mt-3">
 							Freight rate per container
-							<%= form.number_field :freight_price, class: "form-control mt-2" %>
+							<div class="input-group mt-2">
+								<%= form.number_field :freight_price, class: "form-control" %>
+								<span class="input-group-text">$</span>
+							</div>
 						</label>
 					</div>
 				</div>
