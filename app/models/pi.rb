@@ -11,7 +11,10 @@
   validates :issue_date, :product, :quantity, :total_price, :packing_type, :unit_price, :payment_term, :currency, :pod, :seller, :document, presence: true
 
 
-
+  AGENT = [
+          'Ms.Sujeetha',
+          'Mr.Seifi'
+  ]
 
   PRODUCT = ['BASE OIL',
    'BASEOIL SN 100',

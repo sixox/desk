@@ -262,11 +262,11 @@
 				
 				<div class="col-lg mb-2">
 					<div class="form-group">
+						
 						<label class="mb-2 mt-3">
 							Agent
-							<div class="input-group mt-2">
-								<%= form.text_field :agent, class: "form-control" %>
-							</div>
+							
+							<%= form.select :agent, options_for_select(Pi::AGENT, selected: form.object.agent), { prompt: 'Select agent' }, { class:"form-select mt-2" } %>
 						</label>
 					</div>
 				</div>
