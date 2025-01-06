@@ -44,7 +44,7 @@
 						<th scope="col" class="col-1">Note</th>
 
 						<th scope="col" class="col-2">Confirmed at</th>
-						<th scope="col" class="col-3">Request at</th>
+						<th scope="col" class="col-3">Requested at</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -96,7 +96,7 @@
 			</td>
 			<td><%= 
 				if release_request.confirmed.present?
-					"Confirmed at #{release_request.confirmed_at&.strftime('%b %d')}" 
+					"#{release_request.confirmed_at&.strftime('%b %d')}" 
 				else
 					'Wait for confirm'
 				end
