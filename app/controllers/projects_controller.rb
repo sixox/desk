@@ -90,7 +90,7 @@ class ProjectsController < ApplicationController
                   )
                   .order(number: :desc)
                   .page(params[:page])
-                  .per(18)
+                  .per(30)
   end
 
 
