@@ -72,7 +72,9 @@
    'RPO30',
    'RPO40',
    'UREA',
-   'UREA  46%']
+   'UREA  46%',
+   'MARINE GAS OIL'
+   ]
 
    CURRENCY = ['dollar', 'dirham', 'rial', 'euro']
    PAYMENT_TERM = ['30% advance', '20% advance']
