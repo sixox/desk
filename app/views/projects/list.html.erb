@@ -18,7 +18,7 @@
           <thead>
             <tr>
               <!-- Column groups with color styling -->
-              <th class="bg-danger text-white"><small>Project</small></th>
+              <th class="bg-danger text-white col-sm-1"><small>Project</small></th>
               <th class="bg-primary text-white"><small>Client</small></th>
               <th class="bg-primary text-white"><small>POD</small></th>
               <th class="bg-primary text-white"><small>Term</small></th>
@@ -51,7 +51,7 @@
             <% @projects.each do |project| %>
             <% project.ballance_projects.each_with_index do |bp, index| %>
             <tr>
-              <td><small><%= index == 0 ? link_to(project.number, project_path(project), class: "fw-bold") : link_to("#{project.number} / #{index + 1}", project_path(project), class: "fw-bold") %></small></td>
+              <td class="col-sm-1"><small><%= index == 0 ? link_to(project.number, project_path(project), class: "fw-bold") : link_to("#{project.number} / #{index + 1}", project_path(project), class: "fw-bold") %></small></td>
               <td><small><%= project.pi&.customer&.nickname %></small></td>
               <td><small><%= project.pi&.pod %></small></td>
               <td><small><%= project.pi&.incoterm %></small></td>
