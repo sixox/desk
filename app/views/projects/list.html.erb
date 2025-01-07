@@ -1,4 +1,4 @@
-<div class="col-lg-10 mx-auto mt-5">
+<div class=" mx-auto mt-5">
   <div class="card mt-4 mb-4">
     <div class="card-body">
       <h3 class="text-center mb-3">Search in projects</h3>
@@ -13,167 +13,82 @@
   </div>
   <row class="m-2">
     <div class="col-sm">
-     <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <!-- Column groups with color styling -->
-            <th class="bg-danger text-white">Project</th>
-            <th class="bg-primary text-white">Client</th>
-            <th class="bg-primary text-white">POD</th>
-            <th class="bg-primary text-white">Term</th>
-            <th class="bg-primary text-white">Payment</th>
-
-            <th class="bg-primary text-white">PI Number</th>
-            <th class="bg-primary text-white">PI Date</th>
-            <th class="bg-primary text-white">Quantity</th>
-            <th class="bg-primary text-white">Unit Price</th>
-            <th class="bg-primary text-white">Agent</th>
-
-            <th class="bg-primary text-white">Commission</th>
-            <th class="bg-primary text-white">Product</th>
-            <th class="bg-primary text-white">Packing</th>
-            <th class="bg-warning text-white">Booking</th>
-            <th class="bg-warning text-white">Line</th>
-            <th class="bg-warning text-white">Forwarder</th>
-            <th class="bg-warning text-white">Freight Price</th>
-            <th class="bg-warning text-white">Inspection</th>
-            <th class="bg-warning text-white">Custom Clearance</th>
-            <th class="bg-warning text-white">BL Number</th>
-            <th class="bg-warning text-white">Vessel & Voyage</th>
-            <th class="bg-warning text-white">BL Date</th>
-
-            <th class="bg-info text-white">Net Weight</th>
-            <th class="bg-success text-white">Supplier</th>
-            <th class="bg-success text-white">PI Number (Supplier)</th>
-            <th class="bg-success text-white">Packing (Supplier)</th>
-            <th class="bg-success text-white">Unit Price (Supplier)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @projects.each do |project| %>
-          <% project.ballance_projects.each_with_index do |bp, index| %>
-          <tr>
-            <!-- Project details -->
-            <td>
-              <% if index == 0 %>
-              <%= link_to project.number, project_path(project), class: "fw-bold" %>
-              <% else %>
-              <%= link_to "#{project.number} / #{index + 1}", project_path(project), class: "fw-bold" %>
-
-              <% end %>
-            </td>
-            <td><%= project.pi&.customer&.nickname %></td>
-            <td><%= project.pi&.pod %></td>
-            <td><%= project.pi&.incoterm %></td>
-            <td>
-             <% if project.swifts.present? %>
-             <%= project.swifts.first.bank.name %>
-             <% elsif project.cis.any? { |ci| ci.swift.present? } %>
-             <%= project.cis.find { |ci| ci.swift.present? }&.swift&.bank&.name %>
-             <% else %>
-             N/A
-             <% end %>
-
-           </td>
-
-           <!-- PI details -->
-           <td><%= project.pi&.number %></td>
-           <td><%= project.pi&.issue_date %></td>
-           <td><%= project.pi&.quantity.to_i %></td>
-           <td><%= project.pi&.unit_price.to_i %></td>
-           <td><%= project.pi&.agent %></td>
-
-           <!-- Booking details -->
-           <td><%= project.pi&.commission %></td>
-           <td><%= project.pi&.product %></td>
-           <td><%= project.pi&.packing_type %></td>
-           <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.number %></div>
-            <hr class="my-1">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-sm"> <!-- Add 'table-sm' for smaller rows -->
+          <thead>
+            <tr>
+              <!-- Column groups with color styling -->
+              <th class="bg-danger text-white"><small>Project</small></th>
+              <th class="bg-primary text-white"><small>Client</small></th>
+              <th class="bg-primary text-white"><small>POD</small></th>
+              <th class="bg-primary text-white"><small>Term</small></th>
+              <th class="bg-primary text-white"><small>Payment</small></th>
+              <th class="bg-primary text-white"><small>PI Number</small></th>
+              <th class="bg-primary text-white"><small>PI Date</small></th>
+              <th class="bg-primary text-white"><small>Quantity</small></th>
+              <th class="bg-primary text-white"><small>Unit Price</small></th>
+              <th class="bg-primary text-white"><small>Agent</small></th>
+              <th class="bg-primary text-white"><small>Commission</small></th>
+              <th class="bg-primary text-white"><small>Product</small></th>
+              <th class="bg-primary text-white"><small>Packing</small></th>
+              <th class="bg-warning text-white"><small>Booking</small></th>
+              <th class="bg-warning text-white"><small>Line</small></th>
+              <th class="bg-warning text-white"><small>Forwarder</small></th>
+              <th class="bg-warning text-white"><small>Freight Price</small></th>
+              <th class="bg-warning text-white"><small>Inspection</small></th>
+              <th class="bg-warning text-white"><small>Custom Clearance</small></th>
+              <th class="bg-warning text-white"><small>BL Number</small></th>
+              <th class="bg-warning text-white"><small>Vessel & Voyage</small></th>
+              <th class="bg-warning text-white"><small>BL Date</small></th>
+              <th class="bg-info text-white"><small>Net Weight</small></th>
+              <th class="bg-success text-white"><small>Supplier</small></th>
+              <th class="bg-success text-white"><small>PI Number (Supplier)</small></th>
+              <th class="bg-success text-white"><small>Packing (Supplier)</small></th>
+              <th class="bg-success text-white"><small>Unit Price (Supplier)</small></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @projects.each do |project| %>
+            <% project.ballance_projects.each_with_index do |bp, index| %>
+            <tr>
+              <td><small><%= index == 0 ? link_to(project.number, project_path(project), class: "fw-bold") : link_to("#{project.number} / #{index + 1}", project_path(project), class: "fw-bold") %></small></td>
+              <td><small><%= project.pi&.customer&.nickname %></small></td>
+              <td><small><%= project.pi&.pod %></small></td>
+              <td><small><%= project.pi&.incoterm %></small></td>
+              <td><small><%= project.swifts.present? ? project.swifts.first.bank.name : (project.cis.any? { |ci| ci.swift.present? } ? project.cis.find { |ci| ci.swift.present? }&.swift&.bank&.name : 'N/A') %></small></td>
+              <td><small><%= project.pi&.number %></small></td>
+              <td><small><%= project.pi&.issue_date %></small></td>
+              <td><small><%= project.pi&.quantity.to_i %></small></td>
+              <td><small><%= project.pi&.unit_price.to_i %></small></td>
+              <td><small><%= project.pi&.agent %></small></td>
+              <td><small><%= project.pi&.commission %></small></td>
+              <td><small><%= project.pi&.product %></small></td>
+              <td><small><%= project.pi&.packing_type %></small></td>
+              <td><small><%= project.bookings.map { |b| b.number }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.line }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.forwarder }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.freight_price }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.inspection ? "✓" : "✗" }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.send_to_line ? "Finished" : b.declaration ? "Declaration" : b.tally ? "Tally" : "N/A" }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.bl_number }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.vessel_name }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.bookings.map { |b| b.date_of_bl }.join('<hr class="my-1">').html_safe %></small></td>
+              <td><small><%= project.cis.present? ? project.cis.sum(&:net_weight) : 0 %></small></td>
+              <td><small><%= bp.ballance.supplier&.name || 'N/A' %></small></td>
+              <td><small><%= bp.ballance.spi&.number || 'N/A' %></small></td>
+              <td><small><%= bp.ballance.spi&.packing_type || 'N/A' %></small></td>
+              <td><small><%= bp.ballance.spi&.unit_price.to_i %></small></td>
+            </tr>
             <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.line %></div>
-            <hr class="my-1">
             <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.forwarder %></div>
-            <hr class="my-1">
-            <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.freight_price %></div>
-            <hr class="my-1">
-            <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div>
-              <%= booking.inspection ? 
-              content_tag(:span, '', class: 'badge bg-success me-1') + "✓" : 
-              content_tag(:span, '', class: 'badge bg-danger me-1') + "✗" %>
-            </div>
-            <hr class="my-1">
-            <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div>
-              <% if booking.send_to_line %>
-              Finished
-              <% elsif booking.declaration %>
-              Declaration
-              <% elsif booking.tally %>
-              tally
-              <% else %>
-              N/A
-              <% end %>
-            </div>
-            <hr class="my-1">
-            <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.bl_number %></div>
-            <hr class="my-1">
-            <% end %>
-          </td>
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.vessel_name %></div>
-            <hr class="my-1">
-            <% end %>
-          </td>
+          </tbody>
+        </table>
+      </div>
 
-          <td>
-            <% project.bookings.each do |booking| %>
-            <div><%= booking.date_of_bl %></div>
-            <hr class="my-1">
-            <% end %>
-          </td>
+    </div>
 
-          <!-- Supplier and balance details -->
-          <td><%= project.cis.present? ? project.cis.sum(&:net_weight) : 0 %></td>
-          <td><%= bp.ballance.supplier&.name || 'N/A' %></td>
-          <td><%= bp.ballance.spi&.number || 'N/A' %></td>
-          <td><%= bp.ballance.spi&.packing_type || 'N/A' %></td>
-          <td><%= bp.ballance.spi&.unit_price.to_i %></td>
 
-        </tr>
-        <% end %>
-        <% end %>
-      </tbody>
-    </table>
   </div>
-
-
-</div>
 </row>
 <div class="row mt-3">
   <div class="col-sm">

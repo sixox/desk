@@ -17,7 +17,8 @@
 <body class="<%= controller_name %>-controller <%= action_name %>-action">
   <% unless controller_name == 'rial_receipts' && action_name == 'show' %>
 
-  <div class="container">
+  <div class="<%= 'container' unless controller_name == 'projects' && action_name == 'list' %>">
+
     <div class="row">
       <div class="col-lg-10 mx-auto">
 
