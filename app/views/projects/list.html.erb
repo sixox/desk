@@ -85,9 +85,9 @@
            <td><%= project.pi&.agent %></td>
 
            <!-- Booking details -->
-           <td><%= project.pi.commission %></td>
-           <td><%= project.pi.product %></td>
-           <td><%= project.pi.packing_type %></td>
+           <td><%= project.pi&.commission %></td>
+           <td><%= project.pi&.product %></td>
+           <td><%= project.pi&.packing_type %></td>
            <td>
             <% project.bookings.each do |booking| %>
             <div><%= booking.number %></div>
