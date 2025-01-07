@@ -78,11 +78,11 @@
            </td>
 
            <!-- PI details -->
-           <td><%= project.pi.number %></td>
-           <td><%= project.pi.issue_date %></td>
-           <td><%= project.pi.quantity.to_i %></td>
-           <td><%= project.pi.unit_price.to_i %></td>
-           <td><%= project.pi.agent %></td>
+           <td><%= project.pi&.number %></td>
+           <td><%= project.pi&.issue_date %></td>
+           <td><%= project.pi&.quantity.to_i %></td>
+           <td><%= project.pi&.unit_price.to_i %></td>
+           <td><%= project.pi&.agent %></td>
 
            <!-- Booking details -->
            <td><%= project.pi.commission %></td>
