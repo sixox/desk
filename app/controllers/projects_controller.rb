@@ -78,10 +78,21 @@ class ProjectsController < ApplicationController
 	def allocate
 	end
 
-	def list
-	  @q = Project.ransack(params[:q])
-	  @projects = @q.result.includes(:cis).joins(:pi).order(created_at: :desc)
-	end
+  def list
+    @q = Project.ransack(params[:q])
+    @projects = @q.result
+                  .includes(
+                    :pi,
+                    :cis,
+                    :bookings,
+                    :swifts,
+                    ballance_projects: { ballance: :supplier }
+                  )
+                  .order(number: :desc)
+                  .page(params[:page])
+                  .per(18)
+  end
+
 
 
 	def card
