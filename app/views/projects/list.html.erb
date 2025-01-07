@@ -63,9 +63,9 @@
 
               <% end %>
             </td>
-            <td><%= project.pi.customer.nickname %></td>
-            <td><%= project.pi.pod %></td>
-            <td><%= project.pi.incoterm %></td>
+            <td><%= project.pi&.customer&.nickname %></td>
+            <td><%= project.pi&.pod %></td>
+            <td><%= project.pi&.incoterm %></td>
             <td>
              <% if project.swifts.present? %>
              <%= project.swifts.first.bank.name %>
