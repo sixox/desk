@@ -11,6 +11,8 @@ class Message < ApplicationRecord
 
 
   after_create :create_receiver_status
+  before_save :sanitize_body
+
 
   validates :sender_id, presence: true, exclusion: { in: ->(msg) { [msg.receiver_id] }, message: "cannot be the same as receiver" }
   validates :receiver_id, :subject, :body, presence: true
@@ -37,6 +39,11 @@ class Message < ApplicationRecord
   end
 
   private
+
+  def sanitize_body
+    # Strip unnecessary spaces while preserving line breaks
+    self.body = body.to_s.strip if body.present?
+  end
 
   def create_receiver_status
     create_message_status(user: receiver, status: 'unread') # Use singular `create_message_status`

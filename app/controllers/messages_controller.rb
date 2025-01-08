@@ -179,6 +179,10 @@ end
   
 
   def message_params
-    params.require(:message).permit(:subject, :body, :receiver_id, :sender_id, files: [])
+    params.require(:message).permit(:subject, :body, :receiver_id, :sender_id, files: []).tap do |message_params|
+      # Ensure the body is sanitized and any unnecessary leading/trailing spaces are trimmed
+      message_params[:body] = message_params[:body].to_s.strip if message_params[:body].present?
+    end
   end
+
 end
