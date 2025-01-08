@@ -42,6 +42,7 @@
               <th class="bg-info text-white"><small>Net Weight</small></th>
               <th class="bg-success text-white"><small>Supplier</small></th>
               <th class="bg-success text-white"><small>PI Number (Supplier)</small></th>
+              <th class="bg-success text-white"><small>Quantity (Supplier)</small></th>
               <th class="bg-success text-white"><small>Packing (Supplier)</small></th>
               <th class="bg-success text-white"><small>Unit Price (Supplier)</small></th>
             </tr>
@@ -75,6 +76,8 @@
               <td><small><%= project.cis.present? ? project.cis.sum(&:net_weight) : 0 %></small></td>
               <td><small><%= bp.ballance.supplier&.name || 'N/A' %></small></td>
               <td><small><%= bp.ballance.spi&.number || 'N/A' %></small></td>
+              <td><small><%= bp.quantity.to_i || 'N/A' %></small></td>
+
               <td><small><%= bp.ballance.spi&.packing_type || 'N/A' %></small></td>
               <td><small><%= bp.ballance.spi&.unit_price.to_i %></small></td>
             </tr>
