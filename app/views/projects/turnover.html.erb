@@ -1,5 +1,5 @@
 <div class="col-lg-10 mx-auto mt-5">
-  <% if @project.bookings.present? && @all_payments_done %>
+  <% if (@project.bookings.present? && @all_payments_done) || @project.pi&.packing_type == "bulk" %>
   <% balance_projects = @project.ballance_projects %>
   <% pay = [] %> <!-- Initialize an array to store all payments -->
 
