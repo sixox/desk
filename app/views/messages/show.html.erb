@@ -37,8 +37,9 @@
 
 
               <div class="card card-custom mt-1">
-                <div class="card-body">
-                  <p dir="rtl"><%= simple_format(@message.body) %></p>
+                <div class="card-body text-end">
+                  <p dir="rtl" class="text-end"><%= simple_format(@message.body) %></p>
+
                   <% if @message.files.attached? %>
                   <div class="row mt-2">
                     <div class="mt-2">
