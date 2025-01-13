@@ -1,7 +1,7 @@
   <% read = message.read_by?(@user) %>
   <%= link_to message_path(message), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
   <li class="list-group-item m-2 shadow <%= read ? "bg-white" : "vacation-bg border-warning" %> border">
-     <div class="row" style="margin-bottom: -7px; margin-top: -9px; margin-left: -26px;">
+     <div class="row" style="margin-bottom: -7px; margin-top: -5px; margin-left: -20px;">
         <div class="col">
         <div class="d-flex justify-content-start text-danger">
             <h5 class="fw-bold"><span class="text-muted"> No.</span><%= message.id %></h5>
