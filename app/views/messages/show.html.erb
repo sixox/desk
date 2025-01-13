@@ -15,9 +15,20 @@
           <div class="card border-0 shadow mt-2">
             <div class="card-body p-xl-4">
               <div class="row mb-0 pb-1" style="margin-top: -23px; margin-left: -30px;">
+                <div class="col">
                 <div class="d-flex justify-content-start text-danger">
                  <h5 class="fw-bold"><span class="text-muted"> No.</span><%= @message.id %></h5>
                 </div>
+                </div>
+                 <div class="col">
+                <div class="d-flex justify-content-end text-danger">
+                  <h6 class="card-title mb-2 text-muted">
+                      <%= @message.created_at.strftime('%A %d %B') %>
+                    </h6>
+                </div>
+                </div>
+
+
               </div>
               <div class="row">
                 <div class="col">
@@ -27,13 +38,7 @@
                     </h4>               
                   </div>
                 </div>
-                <div class="col">
-                  <div class="d-flex justify-content-end">
-                    <h6 class="card-title mb-2 text-muted">
-                      <%= @message.created_at.strftime('%A %d %B') %>
-                    </h6>               
-                  </div>
-                </div>
+                
               </div>
               
 
