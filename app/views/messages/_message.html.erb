@@ -16,15 +16,18 @@
    </div>
    <div class="row">
     <div class="col mt-1">
-       <div class="d-flex justify-content-start">
+       <div class="d-flex justify-content-end">
 
           <span class="message-title-index"><%= message.sender == @user ? "You" : message.sender.name.titleize %> </span>
 
       </div>
   </div>
+  <div class="text-center col mt-1" >
+     <h4 class="text-danger"> <i class="bi bi-arrow-right-circle-fill"></i> </h4>
+  </div>
 
 <div class="col mt-1">
-   <div class="d-flex justify-content-end">
+   <div class="d-flex justify-content-start">
 
       <span class="message-title-index"><%= message.receiver == @user ? "You" : message.receiver.name.titleize %> </span>
 
