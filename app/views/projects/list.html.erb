@@ -49,6 +49,7 @@
           </thead>
           <tbody>
             <% @projects.each do |project| %>
+            <% if project.ballance_projects.any? %>
             <% project.ballance_projects.each_with_index do |bp, index| %>
             <tr>
               <td class="col-sm-1"><small><%= index == 0 ? link_to(project.number, project_path(project), class: "fw-bold") : link_to("#{project.number} / #{index + 1}", project_path(project), class: "fw-bold") %></small></td>
@@ -74,16 +75,46 @@
               <td><small><%= project.bookings.map { |b| b.vessel_name }.join('<hr class="my-1">').html_safe %></small></td>
               <td><small><%= project.bookings.map { |b| b.date_of_bl }.join('<hr class="my-1">').html_safe %></small></td>
               <td><small><%= project.cis.present? ? project.cis.sum(&:net_weight) : 0 %></small></td>
-              <td><small><%= bp.ballance.supplier&.name || 'N/A' %></small></td>
-              <td><small><%= bp.ballance.spi&.number || 'N/A' %></small></td>
-              <td><small><%= bp.quantity.to_i || 'N/A' %></small></td>
-
-              <td><small><%= bp.ballance.spi&.packing_type || 'N/A' %></small></td>
+              <td><small><%= bp.ballance.supplier&.name || '-' %></small></td>
+              <td><small><%= bp.ballance.spi&.number || '-' %></small></td>
+              <td><small><%= bp.quantity.to_i %></small></td>
+              <td><small><%= bp.ballance.spi&.packing_type || '-' %></small></td>
               <td><small><%= bp.ballance.spi&.unit_price.to_i %></small></td>
+            </tr>
+            <% end %>
+            <% else %>
+            <tr>
+              <td class="col-sm-1"><small><%= link_to(project.number, project_path(project), class: "fw-bold") %></small></td>
+              <td><small><%= project.pi&.customer&.nickname %></small></td>
+              <td><small><%= project.pi&.pod %></small></td>
+              <td><small><%= project.pi&.incoterm %></small></td>
+              <td><small><%= project.swifts.present? ? project.swifts.first.bank.name : (project.cis.any? { |ci| ci.swift.present? } ? project.cis.find { |ci| ci.swift.present? }&.swift&.bank&.name : 'N/A') %></small></td>
+              <td><small><%= project.pi&.number %></small></td>
+              <td><small><%= project.pi&.issue_date %></small></td>
+              <td><small><%= project.pi&.quantity.to_i %></small></td>
+              <td><small><%= project.pi&.unit_price.to_i %></small></td>
+              <td><small><%= project.pi&.agent %></small></td>
+              <td><small><%= project.pi&.commission %></small></td>
+              <td><small><%= project.pi&.product %></small></td>
+              <td><small><%= project.pi&.packing_type %></small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
+              <td><small>-</small></td>
             </tr>
             <% end %>
             <% end %>
           </tbody>
+
         </table>
       </div>
     </div>
