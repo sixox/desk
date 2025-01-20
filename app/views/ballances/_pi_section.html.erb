@@ -21,6 +21,16 @@
 			<br>
 			<div class="text-info">
 				<small><%= spi.quantity.to_i %></small> MT <small><%= spi.product %></small> - <small><%= spi.packing_type %></small>
+				<button 
+				data-controller="clipboard" 
+				data-action="click->clipboard#copy" 
+				data-clipboard-text="<%= ballance.number %> - PI: <%= spi.number %> - <%= spi.quantity.to_i %> MT <%= spi.product %> - <%= spi.packing_type %> " 
+				class="me-1 btn btn-outline-secondary btn-sm"
+				style="font-size: 9px;"
+
+				>
+				Copy
+			</button>
 			</div>
 			
 			<small>  <%= spi.seller.present? ? "seller: #{spi.seller}" : "" %></small>

@@ -1,29 +1,29 @@
 <% if payment_order.rejected_at %>
-	<div class="stamp-content">
-	  <div class="content">
-	    <!-- Your main content here -->
-	   
-	  </div>
-	  <%= image_tag("rejected.png", alt: "Rejected Stamp", class: "stamp-image") %>
+<div class="stamp-content">
+	<div class="content">
+		<!-- Your main content here -->
+		
 	</div>
+	<%= image_tag("rejected.png", alt: "Rejected Stamp", class: "stamp-image") %>
+</div>
 <% else %>
-	<% if payment_order.delivered_at  %>
-		<div class="stamp-content">
-		  <div class="content">
-		    <!-- Your main content here -->
-		   
-		  </div>
-			<%= image_tag("finished12.png", alt: "Finished Image", class: "stamp-image") %>
-		</div>
+<% if payment_order.delivered_at  %>
+<div class="stamp-content">
+	<div class="content">
+		<!-- Your main content here -->
+		
+	</div>
+	<%= image_tag("finished12.png", alt: "Finished Image", class: "stamp-image") %>
+</div>
 
-	<% end %>
+<% end %>
 <% end %>
 <li class="shadow-lg mb-2 bg-body rounded list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
 	<div class="row">
 		
 		<div class="col-sm-2">
 			<div class="d-flex justify-content-start">
-			<%= link_to(payment_order_path(payment_order), class: 'link-nodecor-po') do %>
+				<%= link_to(payment_order_path(payment_order), class: 'link-nodecor-po') do %>
 
 				<h4 class="link-nodecor-po">P.O <span class="text-danger"><%= payment_order.id%></span></h4>
 				<% end %>
@@ -40,19 +40,19 @@
 		</div>
 		<% else %>
 		<div class="col-sm-7" style="font-size: 14px;">
-				<div class="text-center">
-					<span class="<%= payment_order.status == 'wait for confirm' ? 'text-danger fw-bold' : 'text-success small fw-bold' %>">
-						<%= payment_order.status == 'wait for confirm' ? 'Wait for Confirm' : 'Confirmed' %>
-					</span>
-					<span class="<%= payment_order.status == 'wait for payment' ? 'text-danger fw-bold' : (payment_order.status == 'wait for confirm' ? 'text-muted small' : 'text-success fw-bold small') %> mx-3">
-						<%= payment_order.status == 'wait for payment' ? 'Wait for Payment' : (payment_order.status == 'wait for confirm' ? 'Not paid' : 'Paid') %>
-					</span>
+			<div class="text-center">
+				<span class="<%= payment_order.status == 'wait for confirm' ? 'text-danger fw-bold' : 'text-success small fw-bold' %>">
+					<%= payment_order.status == 'wait for confirm' ? 'Wait for Confirm' : 'Confirmed' %>
+				</span>
+				<span class="<%= payment_order.status == 'wait for payment' ? 'text-danger fw-bold' : (payment_order.status == 'wait for confirm' ? 'text-muted small' : 'text-success fw-bold small') %> mx-3">
+					<%= payment_order.status == 'wait for payment' ? 'Wait for Payment' : (payment_order.status == 'wait for confirm' ? 'Not paid' : 'Paid') %>
+				</span>
 
-					<span class="<%= payment_order.status == 'wait for delivery' ? 'text-danger fw-bold' : (payment_order.status == 'delivered' ? 'text-success small fw-bold' : 'text-muted small') %>">
-						<%= payment_order.status == 'wait for delivery' ? 'Wait for Delivery' : (payment_order.status == 'delivered' ? "Delivered at #{payment_order.delivered_at&.strftime('%b %d')}" : 'Not delivered') %>
-					</span>
+				<span class="<%= payment_order.status == 'wait for delivery' ? 'text-danger fw-bold' : (payment_order.status == 'delivered' ? 'text-success small fw-bold' : 'text-muted small') %>">
+					<%= payment_order.status == 'wait for delivery' ? 'Wait for Delivery' : (payment_order.status == 'delivered' ? "Delivered at #{payment_order.delivered_at&.strftime('%b %d')}" : 'Not delivered') %>
+				</span>
 
-				</div>
+			</div>
 		</div>
 		<% end %>
 		<div class="col-sm-3">
@@ -107,10 +107,10 @@
 			</div>
 			<% if payment_order.hamed_confirm.present? %>
 			<div class="text-danger fw-bold"><small> Confirmed by Mr.Iranshahy</small></div>
-				<% end %>
-				<% if payment_order.shaghayegh_confirm.present? %>
+			<% end %>
+			<% if payment_order.shaghayegh_confirm.present? %>
 			<div class="text-danger fw-bold"><small> Accounting confirmed by Mrs.Doostdar</small></div>
-				<% end %>
+			<% end %>
 		</div>
 
 		<% if action_name != 'show' %>
@@ -118,101 +118,112 @@
 		<div class="col-lg-2 mb-2">
 			<div class="d-flex justify-content-end">
 
-				<% if user_signed_in? && current_user.id == 29 && !payment_order.rejected_at %>
+				<button 
+				data-controller="clipboard" 
+				data-action="click->clipboard#copy" 
+				data-clipboard-text="PO.<%= payment_order.id %> - <%= number_with_delimiter(payment_order.amount, delimiter: ',') %> <%= payment_order.currency %>" 
+				class="me-1 btn btn-outline-secondary btn-sm"
+				style="font-size: 9px;"
 
-				<% if (payment_order.coo_confirm && !payment_order.accounting_confirm ) || (!payment_order.department_confirm && current_user.role == payment_order.user.role ) %>
+				>
+				Copy
+			</button>
 
-					<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
-					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-					<% end %>
+			<% if user_signed_in? && current_user.id == 29 && !payment_order.rejected_at %>
+
+			<% if (payment_order.coo_confirm && !payment_order.accounting_confirm ) || (!payment_order.department_confirm && current_user.role == payment_order.user.role ) %>
+
+			<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
+			<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+			<% end %>
+
+			<% end %>
+			<% end %>
+
+
+			<% if user_signed_in? && current_user.is_manager && !payment_order.rejected_at  %>
+			<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
+				(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
+				(current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||
+				(!payment_order.department_confirm && current_user.role == payment_order.user.role) || (current_user.cob? && !payment_order.cob_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) %>
+
+				<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
+				<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
+				<% end %>
+
+				<% end %>
+				<% end %>
+				<% if !payment_order.coo_confirm.present? %>
+				<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
+				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-pencil-fill"></i>
+				<% end %>
+
+
+
+
+
+				<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
+				<i class="bi bi-trash text-danger"></i>
+				<% end %>
 
 				<% end %>
 				<% end %>
 
+				<% if current_user.admin? %>
+				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
+				<i class="bi bi-pencil-fill"></i>
+				<% end %>
+				<% end %>
 
-				<% if user_signed_in? && current_user.is_manager && !payment_order.rejected_at  %>
-				<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
-					(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
-					(current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||
-					(!payment_order.department_confirm && current_user.role == payment_order.user.role) || (current_user.cob? && !payment_order.cob_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) %>
-
-					<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
-					<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-					<% end %>
-
-					<% end %>
-					<% end %>
-					<% if !payment_order.coo_confirm.present? %>
-					<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
-					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
-					<i class="bi bi-pencil-fill"></i>
-					<% end %>
+				<%= link_to payment_order_path(payment_order) do %>
+				<i class="bi bi-eye-fill"></i>
+				<% end %>
 
 
 
-
-
-					<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
-					<i class="bi bi-trash text-danger"></i>
-					<% end %>
-
-					<% end %>
-					<% end %>
-
-					<% if current_user.admin? %>
-					<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
-					<i class="bi bi-pencil-fill"></i>
-					<% end %>
-					<% end %>
-
-					<%= link_to payment_order_path(payment_order) do %>
-					<i class="bi bi-eye-fill"></i>
-					<% end %>
-
-
-
-
-				</div>
 
 			</div>
-		</div>
-		<% end %>
-		<hr>
-		<div class="row text-center">
-
-		  <div class="col">
-		    <p class="confirm-job">Manager</p>
-		    <p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
-		    <i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		  </div>
-
-		  <div class="col">
-		    <p class="confirm-job">COO</p>
-		    <p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
-		    <i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		  </div>
-
-		  <div class="col">
-		    <p class="confirm-job">Accounting</p>
-		    <p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
-		    <i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		  </div>
-
-		  <div class="col">
-		    <p class="confirm-job">CEO</p>
-		    <p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
-		    <i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		  </div>
-
-		  <div class="col">
-		    <p class="confirm-job">COB</p>
-		    <p class="confirmation-date"><%= payment_order.cob_confirmed_at&.strftime('%b %d') %></p>
-		    <i class="<%= payment_order.cob_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		  </div>
 
 		</div>
+	</div>
+	<% end %>
+	<hr>
+	<div class="row text-center">
 
-	</li>
+		<div class="col">
+			<p class="confirm-job">Manager</p>
+			<p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
+			<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		</div>
+
+		<div class="col">
+			<p class="confirm-job">COO</p>
+			<p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
+			<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		</div>
+
+		<div class="col">
+			<p class="confirm-job">Accounting</p>
+			<p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
+			<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		</div>
+
+		<div class="col">
+			<p class="confirm-job">CEO</p>
+			<p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
+			<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		</div>
+
+		<div class="col">
+			<p class="confirm-job">COB</p>
+			<p class="confirmation-date"><%= payment_order.cob_confirmed_at&.strftime('%b %d') %></p>
+			<i class="<%= payment_order.cob_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+		</div>
+
+	</div>
+
+</li>
 
 
 
