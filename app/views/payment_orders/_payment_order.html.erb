@@ -186,42 +186,58 @@
 			</div>
 
 		</div>
+		<% else %>
+		<div class="col-lg-2 mb-2">
+			<div class="d-flex justify-content-end">
+				<button 
+				data-controller="clipboard" 
+				data-action="click->clipboard#copy" 
+				data-clipboard-text="PO.<%= payment_order.id %> - <%= number_with_delimiter(payment_order.amount, delimiter: ',') %> <%= payment_order.currency %>" 
+				class="me-1 btn btn-outline-secondary btn-sm"
+				style="font-size: 9px;"
+
+				>
+				Copy
+			</button>
+		</div>
 	</div>
+	
 	<% end %>
-	<hr>
-	<div class="row text-center">
+</div>
+<hr>
+<div class="row text-center">
 
-		<div class="col">
-			<p class="confirm-job">Manager</p>
-			<p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
-			<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		</div>
-
-		<div class="col">
-			<p class="confirm-job">COO</p>
-			<p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
-			<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		</div>
-
-		<div class="col">
-			<p class="confirm-job">Accounting</p>
-			<p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
-			<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		</div>
-
-		<div class="col">
-			<p class="confirm-job">CEO</p>
-			<p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
-			<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		</div>
-
-		<div class="col">
-			<p class="confirm-job">COB</p>
-			<p class="confirmation-date"><%= payment_order.cob_confirmed_at&.strftime('%b %d') %></p>
-			<i class="<%= payment_order.cob_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-		</div>
-
+	<div class="col">
+		<p class="confirm-job">Manager</p>
+		<p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
+		<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
 	</div>
+
+	<div class="col">
+		<p class="confirm-job">COO</p>
+		<p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
+		<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+	</div>
+
+	<div class="col">
+		<p class="confirm-job">Accounting</p>
+		<p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
+		<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+	</div>
+
+	<div class="col">
+		<p class="confirm-job">CEO</p>
+		<p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
+		<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+	</div>
+
+	<div class="col">
+		<p class="confirm-job">COB</p>
+		<p class="confirmation-date"><%= payment_order.cob_confirmed_at&.strftime('%b %d') %></p>
+		<i class="<%= payment_order.cob_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
+	</div>
+
+</div>
 
 </li>
 
