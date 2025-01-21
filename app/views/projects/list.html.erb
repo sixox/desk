@@ -81,9 +81,14 @@
               <td><small><%= bp.quantity.to_i %></small></td>
               <td><small><%= bp.ballance.spi&.packing_type || '-' %></small></td>
               <td><small><%= bp.ballance.spi&.unit_price.to_i %></small></td>
-              <td><small><%= link_to turnover_project_path(project), class: "text-decoration-none" do %>
+              <td>
+
+                <% if (project.bookings.all? { |booking| booking.payment_done } && project.bookings.present?) || project.pi&.packing_type == "bulk" %>
+                <small><%= link_to turnover_project_path(project), class: "text-decoration-none" do %>
                 <span class="mb-1 timeline-h5">Click</span>
-                <% end %></small></td>
+                <% end %></small>
+                <% end %>
+              </td>
             </tr>
             <% end %>
             <% else %>
