@@ -46,7 +46,7 @@
             <span>:از بانک</span>
             <span><%= @rial_receipt.check_account %></span>
             <span>:و از شماره حساب</span>
-            <span><%= @rial_receipt.check_date&.strftime('%Y/%m/%d') %></span>
+            <span><%= @rial_receipt.check_date %></span>
             <span>:مورخ</span>
             <span></span>
             <span>.پرداخت گردید</span>
@@ -84,7 +84,7 @@
 
             </div>
             <div class="col-lg-8">
-              <p>مبلغ از تنخواه اینجانب   <%= User::FOUNDERS.find { |f| f[:id] == @rial_receipt.founder_id }&.dig(:name) || "Unknown" %> در تاریخ <span><%= @rial_receipt.payment_date&.strftime('%Y/%m/%d') %></span> <span>.پرداخت گردید </span>
+              <p>مبلغ از تنخواه اینجانب   <%= User::FOUNDERS.find { |f| f[:id] == @rial_receipt.founder_id }&.dig(:name) || "Unknown" %> در تاریخ <span><%= @rial_receipt.payment_date %></span> <span>.پرداخت گردید </span>
               </p>
             </div>
            
