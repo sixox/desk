@@ -5,14 +5,20 @@ class ReportsController < ApplicationController
   # GET /reports
   def index
     if current_user.ceo? || current_user.admin? || current_user.cob?
+      # Show all reports for privileged roles
       @reports = Report.all.order(created_at: :desc)
+    elsif current_user.accounting?
+      # Include reports from both accounting and procurement roles
+      @reports = Report.by_user_role([current_user.role, 'procurement']).order(created_at: :desc)
     else
+      # Default behavior for other roles
       @reports = Report.by_user_role(current_user.role).order(created_at: :desc)
     end
 
+    # Paginate the results
     @reports = @reports.page(params[:page]).per(10)
-
   end
+
 
   # GET /reports/1
   def show

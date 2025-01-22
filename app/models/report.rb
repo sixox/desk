@@ -4,7 +4,9 @@ class Report < ApplicationRecord
 
   has_many_attached :documents
 
-  scope :by_user_role, -> (role) { joins(:user).where(users: { role: role }) }
+  scope :by_user_role, ->(roles) { 
+    joins(:user).where(users: { role: Array(roles) }) 
+  }
 
   def created_within_24_hours?
     created_at >= 24.hours.ago
