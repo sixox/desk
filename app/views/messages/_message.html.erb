@@ -1,53 +1,61 @@
   <% read = message.read_by?(@user) %>
   <%= link_to message_path(message), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
   <li class="list-group-item m-2 shadow <%= read ? "bg-white" : "vacation-bg border-warning" %> border">
-     <div class="row" style="margin-bottom: -7px; margin-top: -5px; margin-left: -20px;">
-        <div class="col">
-        <div class="d-flex justify-content-start text-danger">
+    <div class="row" style="margin-bottom: -7px; margin-top: -5px; margin-left: -20px;">
+      <div class="col">
+          <div class="d-flex justify-content-start text-danger">
             <h5 class="fw-bold"><span class="text-muted"> No.</span><%= message.id %></h5>
-       </div>
-   </div>
-   <div class="col">
-       <div class="d-flex justify-content-end text-danger">
-<small class="card-title mb-2 text-muted">
-         <%= message.created_at.strftime('%A %d %B') %>
-     </small>       </div>
-       </div>
+         </div>
+      </div>
+      <% if message.star_for_user(current_user) == true %>
+      <div class="col text-center text-danger">
+         <span class="badge bg-danger">UPDATED <i class="bi bi-exclamation-circle-fill"></i></span>
+
+         
+      </div>
+      <% end %>
+
+      <div class="col">
+        <div class="d-flex justify-content-end text-danger">
+         <small class="card-title mb-2 text-muted">
+            <%= message.created_at.strftime('%A %d %B') %>
+         </small>       </div>
+      </div>
    </div>
    <div class="row">
-    <div class="col-sm-5 mt-1">
-       <div class="d-flex justify-content-end">
+     <div class="col-sm-5 mt-1">
+        <div class="d-flex justify-content-end">
 
-          <span class="message-title-index"><%= message.sender == @user ? "You" : message.sender.name.titleize %> </span>
+           <span class="message-title-index"><%= message.sender == @user ? "You" : message.sender.name.titleize %> </span>
+
+        </div>
+     </div>
+     <div class="text-center col-sm-2 mt-1" >
+       <h4 class="text-success"> <i class="bi bi-arrow-right-circle-fill"></i> </h4>
+    </div>
+
+    <div class="col-sm-5 mt-1">
+      <div class="d-flex justify-content-start">
+
+         <span class="message-title-index"><%= message.receiver == @user ? "You" : message.receiver.name.titleize %> </span>
 
       </div>
-  </div>
-  <div class="text-center col-sm-2 mt-1" >
-     <h4 class="text-success"> <i class="bi bi-arrow-right-circle-fill"></i> </h4>
-  </div>
-
-<div class="col-sm-5 mt-1">
-   <div class="d-flex justify-content-start">
-
-      <span class="message-title-index"><%= message.receiver == @user ? "You" : message.receiver.name.titleize %> </span>
-
-  </div>
-</div>
+   </div>
 </div>
 <div class="row mt-2">
-    <div class="row">
-       <div class="col-10">
-          <h6 class="col ms-2 fw-bold"><%= message.subject.truncate(30)%></h6>
-      </div>
-      <div class="col-2">
-          <div class="d-flex justify-content-end">
-             <span class="text-primary " style="margin-top: -2px;"><%=message.acts.count%></span> <i class="bi bi-hand-thumbs-up-fill me-1 text-primary"></i>
-             <span class="text-secondary me-1" style="margin-top: -2px;"><%=message.comments.count%></span> <i class="bi bi-chat-square-dots-fill text-secondary"></i>
-         </div>
+  <div class="row">
+     <div class="col-10">
+        <h6 class="col ms-2 fw-bold"><%= message.subject.truncate(30)%></h6>
      </div>
- </div>
- <p class="ms-2"><%= message.body.truncate(130)%></p>
- <div class="col-1"></div>
+     <div class="col-2">
+        <div class="d-flex justify-content-end">
+           <span class="text-primary " style="margin-top: -2px;"><%=message.acts.count%></span> <i class="bi bi-hand-thumbs-up-fill me-1 text-primary"></i>
+           <span class="text-secondary me-1" style="margin-top: -2px;"><%=message.comments.count%></span> <i class="bi bi-chat-square-dots-fill text-secondary"></i>
+        </div>
+     </div>
+  </div>
+  <p class="ms-2"><%= message.body.truncate(130)%></p>
+  <div class="col-1"></div>
 
 </div>
 <% if message.observers.present? %>

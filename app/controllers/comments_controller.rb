@@ -15,6 +15,7 @@ class CommentsController < ApplicationController
   def create
     @comment = @commentable.comments.new(comment_params)
     @comment.user = current_user
+    @commentable.star_message!(current_user) if @check == true
 
     respond_to do |format|
       if @comment.save
@@ -48,12 +49,16 @@ class CommentsController < ApplicationController
   def set_commentable
     if params[:payment_order_id]
       @commentable = PaymentOrder.find(params[:payment_order_id])
+      @check = false
     elsif params[:client_id]
       @commentable = Client.find(params[:client_id])
+      @check = false
     elsif params[:report_id]
       @commentable = Report.find(params[:report_id])
+      @check = false
     elsif params[:message_id]
       @commentable = Message.find(params[:message_id])
+      @check = true
     end
   end
 

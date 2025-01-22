@@ -5,6 +5,23 @@ class MessagesController < ApplicationController
   before_action :set_users, only: [:new, :edit]
 
   def show
+    # Set the star to false for the sender if current_user is the sender
+    if @message.sender == current_user
+      @message.update(star: false) # Set star for the sender to false
+    end
+
+    # Set the star to false for the receiver if current_user is the receiver
+    if @message.receiver == current_user
+      @message.message_status.update(star: false) if @message.message_status.present? # Set star for the receiver to false
+    end
+
+    # Set the star to false for observers if current_user is an observer
+    if @message.observers.include?(current_user)
+      message_observer = @message.message_observers.find_by(observer: current_user)
+      message_observer.update(star: false) if message_observer.present? # Set star for the observer to false
+    end
+
+    # Mark as read for the current user (sender, receiver, or observer)
     if @message.observers.include?(current_user)
       # Mark as read for observers
       message_observer = @message.message_observers.find_by(observer: current_user)
@@ -13,6 +30,7 @@ class MessagesController < ApplicationController
       # Mark as read for the receiver
       @message.message_status.update(status: "read") if @message.message_status.present?
     end
+
     # Instance variable for receiver and its status
     @receiver = @message.receiver
     @receiver_status = @message.message_status
@@ -21,6 +39,7 @@ class MessagesController < ApplicationController
     @observers = @message.message_observers.includes(:observer)
     @acts = @message.acts
   end
+
 
   def new
     @message = Message.new
@@ -179,7 +198,7 @@ end
   
 
   def message_params
-    params.require(:message).permit(:subject, :body, :receiver_id, :sender_id, files: []).tap do |message_params|
+    params.require(:message).permit(:subject, :body, :receiver_id, :sender_id, :star, files: []).tap do |message_params|
       # Ensure the body is sanitized and any unnecessary leading/trailing spaces are trimmed
       message_params[:body] = message_params[:body].to_s.strip if message_params[:body].present?
     end

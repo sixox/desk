@@ -38,6 +38,36 @@ class Message < ApplicationRecord
     ['sender', 'receiver'] # Allow search on these associations
   end
 
+  def star_message!(current_user)
+    ActiveRecord::Base.transaction do
+      # Update the message's star column if the current user is not the sender
+      update!(star: true) unless sender_id == current_user.id
+
+      # Update the star status in message_status if the current user is not the receiver
+      message_status&.update!(star: true) unless receiver_id == current_user.id
+
+      # Update the star status for all observers except the current user
+      message_observers.where.not(observer_id: current_user.id).update_all(star: true)
+    end
+  rescue => e
+    Rails.logger.error("Failed to star message: #{e.message}")
+    false
+  end
+
+
+  def star_for_user(user)
+    if sender_id == user.id
+      star # Sender's star value is from the message itself
+    elsif receiver_id == user.id
+      message_status&.star # Receiver's star value is from message_status
+    else
+      observer = message_observers.find_by(observer_id: user.id)
+      observer&.star # Observer's star value is from message_observers
+    end
+  end
+
+
+
   private
 
   def sanitize_body
