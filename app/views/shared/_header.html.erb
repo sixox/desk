@@ -111,7 +111,7 @@
             <%= link_to 'Swifts', swifts_path, class: 'dropdown-item' %>
           </li>
           <% end %>
-          <% if current_user.accounting? %>
+          <% if current_user.accounting? && current_user.is_manager %>
           <li>
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
