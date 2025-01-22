@@ -48,6 +48,7 @@ class Message < ApplicationRecord
 
       # Update the star status for all observers except the current user
       message_observers.where.not(observer_id: current_user.id).update_all(star: true)
+      touch
     end
   rescue => e
     Rails.logger.error("Failed to star message: #{e.message}")
