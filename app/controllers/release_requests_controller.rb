@@ -23,7 +23,12 @@ class ReleaseRequestsController < ApplicationController
   def index
     @in_page = "index"
     
-    @release_requests = ReleaseRequest.includes(booking: { project: :pi }).page(params[:page]).per(30)
+  @release_requests = ReleaseRequest
+    .includes(booking: { project: :pi })
+    .order(created_at: :desc) # Sort by created_at in descending order
+    .page(params[:page])
+    .per(30)
+
   end
 
   def unconfirmed
