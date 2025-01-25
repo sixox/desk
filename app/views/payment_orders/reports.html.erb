@@ -1,4 +1,6 @@
+<% if current_user.accounting? || current_user.admin? %>
 <%= render 'payment_orders/export_csv' %>
+<% end %>
 
 
 
