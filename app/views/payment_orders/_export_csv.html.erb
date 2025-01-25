@@ -1,22 +1,16 @@
-<div class="card shadow-sm p-4" style="max-width: 500px; margin: auto;">
-  <div class="card-body">
-    <h5 class="card-title mb-4 text-center">Export Payment Orders</h5>
+
     
     <%= form_with url: export_payment_orders_path, method: :get, local: true, data: { turbo: false } do |f| %>
-      <div class="mb-3 row">
-        <div class="col-md-6">
+      <div class=" row">
+        <div class="col-md-4">
           <%= f.label :start_date, "Start Date", class: "form-label" %>
           <%= f.date_field :start_date, class: "form-control" %>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <%= f.label :end_date, "End Date", class: "form-label" %>
           <%= f.date_field :end_date, class: "form-control" %>
         </div>
+        <div class="col-md-2 mt-4"> <%= f.submit "Export to CSV", class: "btn btn-primary" %></div>
       </div>
 
-      <div class="d-flex justify-content-center">
-        <%= f.submit "Export to CSV", class: "btn btn-primary" %>
-      </div>
     <% end %>
-  </div>
-</div>
