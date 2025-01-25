@@ -7,6 +7,26 @@ class PaymentOrdersController < ApplicationController
 
 
 
+  def export
+    if params[:start_date].present? && params[:end_date].present?
+      start_date = Date.parse(params[:start_date])
+      end_date = Date.parse(params[:end_date]).end_of_day
+      payment_orders = PaymentOrder.where(created_at: start_date..end_date)
+
+      if payment_orders.exists?
+          csv_data = payment_orders.to_csv
+
+				  send_data csv_data,
+            filename: "payment_orders-#{start_date}-to-#{end_date}.csv",
+            type: 'text/csv'
+      else
+        redirect_to payment_orders_path, alert: "No payment orders found for the selected date range."
+      end
+    else
+      redirect_to payment_orders_path, alert: "Please provide both start and end dates."
+    end
+  end
+
 	def show
 	end
 

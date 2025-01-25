@@ -114,6 +114,7 @@ Rails.application.routes.draw do
       get 'confirmable'
       get 'reports'
       get 'rejected'
+      get :export
     end
     resources :comments
     
