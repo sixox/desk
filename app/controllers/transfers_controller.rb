@@ -3,6 +3,11 @@ class TransfersController < ApplicationController
   before_action :set_transfer, only: %i[ confirm reject ] 
 
 
+  def export
+    csv_data = Transaction.to_csv
+    send_data csv_data, filename: "transactions-#{Date.today}.csv", type: "text/csv"
+  end
+  
   def new
     @transfer = Transfer.new
     @banks = Bank.all

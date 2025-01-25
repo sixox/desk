@@ -146,6 +146,7 @@ Rails.application.routes.draw do
     end
     collection do
       get :transaction
+      get :export
     end
   end
 

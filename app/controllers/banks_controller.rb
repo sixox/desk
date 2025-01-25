@@ -48,6 +48,11 @@ class BanksController < ApplicationController
     end
   end
 
+  def export
+    csv_data = Transaction.to_csv
+    send_data csv_data, filename: "transactions-#{Date.today}.csv", type: "text/csv"
+  end
+
   def destroy
     @bank.destroy
     redirect_to banks_url, notice: 'Bank was successfully destroyed.'
