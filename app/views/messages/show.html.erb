@@ -21,6 +21,13 @@
                    <h5 class="fw-bold"><span class="text-muted"> No.</span><%= @message.id %></h5>
                  </div>
                </div>
+               <% if @message.message_tags.exists?(user: current_user) %>
+               <div class="col text-center text-danger">
+                 <span class="badge bg-info"><%= @message.message_tags.find_by(user: current_user)&.tag %> <i class="bi bi-tags-fill"></i></span>
+
+
+               </div>
+               <% end %>
                <div class="col">
                 <div class="d-flex justify-content-end text-danger">
                   <h6 class="card-title mb-2 text-muted">
@@ -39,9 +46,9 @@
                   </h4>               
                 </div>
               </div>
-              
+
             </div>
-            
+
 
             <h6 class="card-subtitle mb-2 mt-1 text-muted"><i class="bi bi-envelope-fill"></i> <%= @message.subject %></h6>
 
@@ -66,7 +73,7 @@
                   </div>
                 </div>
                 <% end %>
-                
+
                 <% if @acts.present? %>
                 <hr>
                 <%= render 'messages/initials' %>
@@ -76,13 +83,6 @@
                 <div class="input-group">
                   <%= f.text_field :tag, placeholder: "Add a tag", class: "form-control", name: :tag %>
                   <button type="submit" class="btn btn-primary">Add Tag</button>
-                </div>
-                <% end %>
-
-                <% if @message.message_tags.exists?(user: current_user) %>
-                <div class="mt-2">
-                  <strong>Your Tag:</strong> 
-                  <%= @message.message_tags.find_by(user: current_user)&.tag %>
                 </div>
                 <% end %>
               </div>
