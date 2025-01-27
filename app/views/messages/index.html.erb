@@ -1,3 +1,6 @@
+
+
+
 <div class="col-lg-10 mx-auto mt-5">
 	<div class="row">
 		<div class="card mb-4 mb-lg-0">
@@ -17,41 +20,57 @@
 				<% unless @in_page == "unread"%>
 				<div class="row mt-3">
 					<%= search_form_for @q, url: request.path, method: :get do |f| %>
-					  <div class="input-group">
-					    <%= f.search_field :subject_or_sender_first_name_or_receiver_first_name_cont, 
-					                       class: "form-control", 
-					                       placeholder: "Search by Subject, Sender first name, or Receiver first name" %>
-					    <%= f.submit "Search", class: "btn btn-primary" %>
-					  </div>
+					<div class="input-group">
+						<%= f.search_field :subject_or_sender_first_name_or_receiver_first_name_cont, 
+						class: "form-control", 
+							placeholder: "Search by Subject, Sender first name, or Receiver first name" %>
+							<%= f.submit "Search", class: "btn btn-primary" %>
+						</div>
+						<% end %>
+
+					</div>
 					<% end %>
 
 				</div>
-				<% end %>
 
-			</div>
-
-			<div class="card-body p-3">
-				<div class="hide-on-mobile" style="margin-bottom: -8px;">
-					<%= render 'messages/filter' %>
-				</div>
-				<ul class="list-group list-group-flush rounded-3" id="vacation_items">
-					<% @messages.each do |message| %>
-					<%= render 'messages/message', message: message %>
-					<% end %>
-				</ul>
-			</div>
-
-		</div>
-		<% unless @in_page == "unread"%>
-		<div class="row mt-3">
-			<div class="col-sm">
-				<nav aria-label="Page navigation">
-					<ul class="pagination justify-content-center">
-						<%= paginate @messages, remote: true %>
+				<div class="card-body p-3">
+					<div class="row"  style="margin-bottom: -7px;">
+						<div class="col">
+							<div class="hide-on-mobile">
+								<%= render 'messages/filter' %>
+							</div>
+						</div>
+						<% if @in_page == 'index' %>
+						<div class="col me-2">
+							<div class=" d-flex justify-content-end align-items-center">
+								<%= form_with url: messages_path, method: :get, local: true, class: "d-inline" do |f| %>
+								<div class="input-group">
+									<%= f.select :tag, options_for_select(@tags, params[:tag]), { include_blank: "Filter by tag" }, class: "form-select" %>
+									<button type="submit" class="btn btn-primary">Filter</button>
+								</div>
+								<% end %>
+							</div>
+						</div>
+						<% end %>
+					</div>
+					<ul class="list-group list-group-flush rounded-3" id="vacation_items">
+						<% @messages.each do |message| %>
+						<%= render 'messages/message', message: message %>
+						<% end %>
 					</ul>
-				</nav>
+				</div>
+
 			</div>
+			<% unless @in_page == "unread"%>
+			<div class="row mt-3">
+				<div class="col-sm">
+					<nav aria-label="Page navigation">
+						<ul class="pagination justify-content-center">
+							<%= paginate @messages, remote: true %>
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<% end %>
 		</div>
-		<% end %>
 	</div>
-</div>

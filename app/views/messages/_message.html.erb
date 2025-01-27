@@ -14,6 +14,13 @@
          
       </div>
       <% end %>
+      <% if message.message_tags.exists?(user: current_user) %>
+      <div class="col text-center text-danger">
+         <span class="badge bg-info"><%= message.message_tags.find_by(user: current_user)&.tag %> <i class="bi bi-tags-fill"></i></span>
+
+         
+      </div>
+      <% end %>
 
       <div class="col">
         <div class="d-flex justify-content-end text-danger">

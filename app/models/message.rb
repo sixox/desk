@@ -6,6 +6,10 @@ class Message < ApplicationRecord
   has_one :message_status, dependent: :destroy # Change from has_many to has_one
   has_many :acts, dependent: :destroy
 
+  has_many :message_tags, dependent: :destroy
+  has_many :tagged_users, through: :message_tags, source: :user
+
+
   has_many_attached :files
   has_many :comments, as: :commentable, dependent: :destroy
 

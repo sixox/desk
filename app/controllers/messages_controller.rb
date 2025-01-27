@@ -1,7 +1,7 @@
 class MessagesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_message, only: [:edit, :update, :show, :add_observer]
-  before_action :set_user, only: [:index, :unread, :sent, :received, :observed]
+  before_action :set_message, only: [:edit, :update, :show, :add_observer, :add_tag]
+  before_action :set_user, only: [:index, :unread, :sent, :received, :observed, :add_tag]
   before_action :set_users, only: [:new, :edit]
 
   def show
@@ -40,16 +40,35 @@ class MessagesController < ApplicationController
     @acts = @message.acts
   end
 
+  def add_tag
+    tag = params[:tag].to_s.strip
+
+    if tag.present?
+      message_tag = @message.message_tags.find_or_initialize_by(user: @user)
+      message_tag.tag = tag
+
+      if message_tag.save
+        flash[:notice] = "Tag '#{tag}' was successfully added to the message."
+      else
+        flash[:alert] = "Failed to add tag: #{message_tag.errors.full_messages.join(', ')}"
+      end
+    else
+      flash[:alert] = "Tag cannot be blank."
+    end
+
+    redirect_to message_path(@message)
+  end
+
 
   def new
     @message = Message.new
   end
 
  before_action :set_user
-
-  def index
+   def index
     @in_page = "index"
 
+    # Base query for received, sent, and observed messages
     received_messages = @user.received_messages.select("messages.*, 'received' as message_type")
     sent_messages = @user.sent_messages.select("messages.*, 'sent' as message_type")
     observed_messages = @user.observed_messages.select("messages.*, 'observed' as message_type")
@@ -57,9 +76,18 @@ class MessagesController < ApplicationController
     # Combine queries using UNION
     combined_messages = Message.from("(#{received_messages.to_sql} UNION #{sent_messages.to_sql} UNION #{observed_messages.to_sql}) AS messages")
 
+    # Filter messages by tag if a tag is selected
+    if params[:tag].present?
+      combined_messages = combined_messages.joins(:message_tags)
+                                           .where(message_tags: { tag: params[:tag], user_id: @user.id })
+    end
+
     # Apply Ransack to the combined messages
     @q = combined_messages.ransack(params[:q])
     @messages = @q.result.order(updated_at: :desc).page(params[:page]).per(12)
+
+    # Fetch all tags for the current user for the dropdown
+    @tags = MessageTag.where(user: @user).distinct.pluck(:tag)
   end
 
   def unread

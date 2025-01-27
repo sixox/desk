@@ -36,6 +36,10 @@ class User < ApplicationRecord
   has_many :satisfaction_forms, dependent: :destroy
   has_many :satisfactions, through: :satisfaction_forms
 
+  has_many :message_tags, dependent: :destroy
+  has_many :tagged_messages, through: :message_tags, source: :message
+
+
   has_one_attached :signature
 
 

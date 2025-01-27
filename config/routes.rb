@@ -196,6 +196,7 @@ Rails.application.routes.draw do
     member do
       get :add_observer
       post :add_observer
+      post :add_tag
     end
     collection do
       get :unread
@@ -207,13 +208,6 @@ Rails.application.routes.draw do
   end
 
   resources :acts, only: [:create]
-
-
-
-
-
-
-
 
   get 'member/:id', to: 'members#show', as: 'member'
   get 'edit_description', to: 'members#edit_description', as: 'edit_member_description'
