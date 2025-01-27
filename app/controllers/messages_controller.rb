@@ -41,7 +41,7 @@ class MessagesController < ApplicationController
   end
 
   def add_tag
-    tag = params[:tag].to_s.strip
+    tag = params[:tag].to_s.strip.titleize
 
     if tag.present?
       message_tag = @message.message_tags.find_or_initialize_by(user: @user)
