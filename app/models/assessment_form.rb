@@ -7,12 +7,12 @@ class AssessmentForm < ApplicationRecord
   scope :by_user_and_filler, -> (user, filler, year, period) { where(user_id: user.id, filler_id: filler.id, year: year, period: period) }
 
   # Validation for score and weight
-  validates :score, presence: true, numericality: { only_integer: true, in: 1..10 }
-  validates :weight, presence: true, numericality: { only_integer: true, in: 1..3 }
+  # validates :score, presence: true, numericality: { only_integer: true, in: 1..10 }
+  # validates :weight, presence: true, numericality: { only_integer: true, in: 1..3 }
 
 
   # Before save callback to calculate total score
-  before_save :calculate_total_score
+  # before_save :calculate_total_score
 
   # Class method to get unique users associated with a given filler
   def self.unique_users_for_filler(filler, year, period)
