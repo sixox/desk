@@ -82,8 +82,10 @@
 							<% end %>
 						</td>
 						<td>
+							<% if user_signed_in? && (current_user.sales? || current_user.admin?) %>
 							<%= link_to toggle_sent_ci_path(ci), data: { turbo_method: :patch, turbo_confirm: 'Are you sure?' }, class: "text-decoration-none" do %>
 							<span class="mb-1 timeline-h5 <%= ci.sent ? "text-success" : "text-danger" %>"><%= ci.sent ? "Withraw Ci" : "Send Ci" %></span>
+							<% end %>
 							<% end %>
 						</td>
 						<td><% if user_signed_in? && current_user.sales? %>
