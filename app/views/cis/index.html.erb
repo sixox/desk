@@ -1,16 +1,32 @@
 <div class="col-lg-10 mx-auto mt-5">
-
-  <%= form_with(url: cis_path, method: :get, local: true, class: "d-flex justify-content-end mb-3") do |form| %>
-    <div class="form-group">
-      <label for="sort_by" class="me-2">Sort by:</label>
-      <%= select_tag :sort_by, options_for_select({
-        'Project' => 'project_number_desc',
-        'CI Number' => 'ci_number',
-        'PI Number' => 'pi_number',
-        'Date' => 'issue_date'
-      }, selected: @sort_by), onchange: 'this.form.submit();', class: 'form-select form-select-sm' %>
-    </div>
-  <% end %>
+	<div class="row">
+		<div class="col mt-3">
+	<div class="hide-on-mobile">
+		<div class="btn-group" role="group" aria-label="Page Toggle">
+			<% if @in_page == "not_sent" %>
+			<%= link_to "Not Sent", not_sent_cis_path, class: "btn btn-primary active" %>
+			<%= link_to "All", cis_path, class: "btn btn-primary" %>
+			<% else %>
+			<%= link_to "Not Sent", not_sent_cis_path, class: "btn btn-primary" %>
+			<%= link_to "All", cis_path, class: "btn btn-primary active" %>
+			<% end %>
+		</div>
+	</div>
+	</div>
+<div class="col">
+	<%= form_with(url: cis_path, method: :get, local: true, class: "d-flex justify-content-end mb-3") do |form| %>
+	<div class="form-group">
+		<label for="sort_by" class="me-2">Sort by:</label>
+		<%= select_tag :sort_by, options_for_select({
+			'Project' => 'project_number_desc',
+			'CI Number' => 'ci_number',
+			'PI Number' => 'pi_number',
+			'Date' => 'issue_date'
+		}, selected: @sort_by), onchange: 'this.form.submit();', class: 'form-select form-select-sm' %>
+	</div>
+	<% end %>
+	</div>
+	</div>
 
 	<div class="card mb-5">
 		<div class="card-body">
@@ -41,6 +57,7 @@
 						<th scope="col" class="col-sm-1">Term</th>
 						<th scope="col" class="col-sm-1">Issue Date</th>
 						<th scope="col" class="col-sm-1">File</th>
+						<th scope="col" class="col-sm-1">Send</th>
 						
 						<th scope="col" style="text-align: center;" class="col-sm-4 text-right">Actions</th>
 
@@ -62,6 +79,11 @@
 						<td><%= ci.issue_date&.strftime('%b %d %a') %></td>
 						<td><% if ci.generated_document.present?%>
 							<%= link_to 'View CI', url_for(ci.generated_document.file), target: '_blank' %>
+							<% end %>
+						</td>
+						<td>
+							<%= link_to toggle_sent_ci_path(ci), data: { turbo_method: :patch, turbo_confirm: 'Are you sure?' }, class: "text-decoration-none" do %>
+							<span class="mb-1 timeline-h5 <%= ci.sent ? "text-success" : "text-danger" %>"><%= ci.sent ? "Withraw Ci" : "Send Ci" %></span>
 							<% end %>
 						</td>
 						<td><% if user_signed_in? && current_user.sales? %>
@@ -89,12 +111,12 @@
 		</div>
 	</row>
 	<div class="row mt-3">
-            <div class="col-sm">
-              <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                  <%= paginate @cis, remote: true %>
-                </ul>
-              </nav>
-            </div>
-          </div>
+		<div class="col-sm">
+			<nav aria-label="Page navigation">
+				<ul class="pagination justify-content-center">
+					<%= paginate @cis, remote: true %>
+				</ul>
+			</nav>
+		</div>
+	</div>
 </div>

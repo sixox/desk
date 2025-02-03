@@ -27,7 +27,10 @@
 					</div>
 					<div class="col-auto">
 						<h6 class="fw-bold text-<%= ci.swift.present? ? "success" : "danger" %>">
-							<%= ci.swift.present? ? "PAID" : "UNPAID" %>
+							<%= ci.swift.present? ? "PAID" : "UNPAID" %> 
+							<% if !ci.swift.present? %>
+							<small class=" text-<%= ci.sent.present? ? "success" : "danger" %>"> / <%= ci.sent.present? ? "sent" : "not sent yet" %></small>
+							<% end %>
 						</h6>
 					</div>
 				</div>

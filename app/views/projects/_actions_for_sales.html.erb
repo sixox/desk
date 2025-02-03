@@ -211,6 +211,7 @@
 						</div>
 						<div class="col-auto">
 							<small class="text-success">
+								
 								<%= link_to edit_project_ci_path(@project, ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 								<span class="mb-1 timeline-h5">EDIT CI</span>
 								<% end %>
@@ -222,6 +223,11 @@
 								<%= link_to new_ci_swift_path(ci), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
 								<span class="mb-1 timeline-h5">BALANCE SWIFT</span>
 								<% end %>
+								<% end %>
+								<span class="text-primary"> | </span>
+								
+								<%= link_to toggle_sent_ci_path(ci), data: { turbo_method: :patch, turbo_confirm: 'Are you sure?' }, class: "text-decoration-none" do %>
+								<span class="mb-1 timeline-h5 <%= ci.sent ? "text-success" : "text-danger" %>"><%= ci.sent ? "Withraw Ci" : "Send Ci" %></span>
 								<% end %>
 							</small>
 						</div>

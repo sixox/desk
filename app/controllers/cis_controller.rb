@@ -3,6 +3,13 @@ class CisController < ApplicationController
   before_action :find_project, only: %i[ new create edit update ]
 
 
+  def toggle_sent
+  	@ci = Ci.find(params[:id])
+  	@ci.update(sent: !@ci.sent)
+    redirect_back fallback_location: project_path(@ci.project), notice: "Sent status was successfully updated."
+
+  end
+
 
 	def new
 	  @ci = @project.cis.build
@@ -20,11 +27,27 @@ class CisController < ApplicationController
 	end
 
 	def index
+		@in_page = "index"
 		  # @cis = Ci.includes(:pi).all
 	  @sort_by = params[:sort_by] || 'project_number_desc'
 	  @cis = sort_cis(Ci.includes(pi: :project), @sort_by)
     @cis = @cis.page(params[:page]).per(20)
 
+	end
+
+	def not_sent
+		@in_page = "not_sent"
+		  @sort_by = params[:sort_by] || 'project_number_desc'
+  
+		  # Filter Ci records where `sent` is false or nil
+		  @cis = Ci.includes(pi: :project).where(sent: [false, nil])
+		  
+		  # Sort the filtered records
+		  @cis = sort_cis(@cis, @sort_by)
+		  
+		  # Paginate the results
+		  @cis = @cis.page(params[:page]).per(20)
+		  render 'index'
 	end
 
 	def create_document

@@ -85,6 +85,11 @@ Rails.application.routes.draw do
       get :create_document_form
       post :create_document
       patch :create_document
+      get :toggle_sent
+      patch :toggle_sent
+    end
+    collection do
+      get :not_sent
     end
   end
   resources :ballances do
