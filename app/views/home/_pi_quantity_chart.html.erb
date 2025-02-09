@@ -1,0 +1,77 @@
+
+
+
+
+
+
+
+<div class="row mt-1">
+  <div class="col-12 col-lg-6">
+    <div class="card-body pt-0">
+      <div class="card-title pb-1">
+        <small class="timeline-small fw-bold">Quantity Base on PI</small> 
+      </div>
+      <canvas id="piQuantityChart" width="800" height="400"> </canvas>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card-body pt-0">
+      <div class="card-title pb-1">
+        <small class="timeline-small fw-bold">Quantity Base on PI</small> 
+      </div>
+      <canvas id="ciNetWeightChart" width="800" height="400"> </canvas>
+    </div>
+  </div>
+  
+</div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var ctx = document.getElementById("piQuantityChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: <%= @total_pi_quantity_by_month.map { |data| data[:month] }.to_json.html_safe %>,
+        datasets: [{
+          label: "Total Quantity",
+          data: <%= @totals_pi_quantity.to_json.html_safe %>,
+          backgroundColor: <%= @colors_pi_quantity.to_json.html_safe %>,
+          hoverBackgroundColor: <%= @colors_pi_quantity.to_json.html_safe %>
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var ctx = document.getElementById("ciNetWeightChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: <%= @total_ci_net_weight_by_month.map { |data| data[:month] }.to_json.html_safe %>,
+        datasets: [{
+          label: "Total Net Weight",
+          data: <%= @totals_ci_net_weight.to_json.html_safe %>,
+          backgroundColor: <%= @colors_ci_net_weight.to_json.html_safe %>,
+          hoverBackgroundColor: <%= @colors_ci_net_weight.to_json.html_safe %>
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  });
+</script>
+

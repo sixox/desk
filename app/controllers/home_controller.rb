@@ -155,6 +155,39 @@ class HomeController < ApplicationController
     @latest_swifts = Swift.order(created_at: :desc).limit(6)
 
     # sales end
+
+
+
+    # PI and CI start
+  @total_pi_quantity_by_month = (0..5).map do |n|
+    month_date = Date.current.advance(months: -n)
+    month_start = month_date.beginning_of_month
+    month_end = month_date.end_of_month
+    total_quantity = Pi.where(created_at: month_start..month_end).sum(:quantity)
+
+    { month: month_date.strftime("%B"), total: total_quantity }
+  end
+
+  @total_pi_quantity_by_month.reverse!
+  @totals_pi_quantity = @total_pi_quantity_by_month.map { |data| data[:total] }
+  @colors_pi_quantity = generate_colors(@total_pi_quantity_by_month.size)
+
+  # New CI Net Weight Data
+  @total_ci_net_weight_by_month = (0..5).map do |n|
+    month_date = Date.current.advance(months: -n)
+    month_start = month_date.beginning_of_month
+    month_end = month_date.end_of_month
+    total_weight = Ci.where(created_at: month_start..month_end).sum(:net_weight)
+
+    { month: month_date.strftime("%B"), total: total_weight }
+  end
+
+  @total_ci_net_weight_by_month.reverse!
+  @totals_ci_net_weight = @total_ci_net_weight_by_month.map { |data| data[:total] }
+  @colors_ci_net_weight = generate_colors(@total_ci_net_weight_by_month.size)
+
+
+    # PI and ci end
   else
     redirect_to action: :index
   end
