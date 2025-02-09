@@ -44,8 +44,32 @@
       },
       options: {
         responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'Quantity Base on PI'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
         plugins: {
-          legend: { display: false }
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
         }
       }
     });
@@ -69,8 +93,32 @@
       },
       options: {
         responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: false,
+              text: 'Net Weight Base on CI'
+            }
+          },
+          x: {
+            title: {
+              display: false,
+              text: 'Month'
+            }
+          }
+        },
         plugins: {
-          legend: { display: false }
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+              }
+            }
+          },
+          legend: {
+            display: false // Hide the legend since it's redundant
+          }
         }
       }
     });
