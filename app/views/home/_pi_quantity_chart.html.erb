@@ -17,7 +17,7 @@
   <div class="col-12 col-lg-6">
     <div class="card-body pt-0">
       <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Quantity Base on PI</small> 
+        <small class="timeline-small fw-bold">Net weight Base on CI</small> 
       </div>
       <canvas id="ciNetWeightChart" width="800" height="400"> </canvas>
     </div>
@@ -37,8 +37,9 @@
         datasets: [{
           label: "Total Quantity",
           data: <%= @totals_pi_quantity.to_json.html_safe %>,
-          backgroundColor: <%= @colors_pi_quantity.to_json.html_safe %>,
-          hoverBackgroundColor: <%= @colors_pi_quantity.to_json.html_safe %>
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
         }]
       },
       options: {
@@ -61,8 +62,9 @@
         datasets: [{
           label: "Total Net Weight",
           data: <%= @totals_ci_net_weight.to_json.html_safe %>,
-          backgroundColor: <%= @colors_ci_net_weight.to_json.html_safe %>,
-          hoverBackgroundColor: <%= @colors_ci_net_weight.to_json.html_safe %>
+          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
+          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
+          borderWidth: 1
         }]
       },
       options: {
