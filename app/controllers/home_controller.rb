@@ -159,30 +159,47 @@ class HomeController < ApplicationController
 
 
     # PI and CI start
-  @total_pi_quantity_by_month = (0..5).map do |n|
-    month_date = Date.current.advance(months: -n)
-    month_start = month_date.beginning_of_month
-    month_end = month_date.end_of_month
-    total_quantity = Pi.where(issue_date: month_start..month_end).sum(:quantity)
+    @total_pi_quantity_by_month = (0..5).map do |n|
+      month_date = Date.current.advance(months: -n)
+      month_start = month_date.beginning_of_month
+      month_end = month_date.end_of_month
 
-    { month: month_date.strftime("%B"), total: total_quantity }
-  end
+      pi_data = Pi.where(issue_date: month_start..month_end)
+                  .group(:product_name)  # Assuming "product_name" exists in Pi table
+                  .sum(:quantity)
 
-  @total_pi_quantity_by_month.reverse!
-  @totals_pi_quantity = @total_pi_quantity_by_month.map { |data| data[:total] }
+      {
+        month: month_date.strftime("%B"),
+        total: pi_data.values.sum,  # Total sum of all products
+        breakdown: pi_data # Hash of { "Product Name" => quantity }
+      }
+    end
 
-  # New CI Net Weight Data
-  @total_ci_net_weight_by_month = (0..5).map do |n|
-    month_date = Date.current.advance(months: -n)
-    month_start = month_date.beginning_of_month
-    month_end = month_date.end_of_month
-    total_weight = Ci.where(issue_date: month_start..month_end).sum(:net_weight)
+    @total_pi_quantity_by_month.reverse!
+    @totals_pi_quantity = @total_pi_quantity_by_month.map { |data| data[:total] }
+    @pi_quantity_breakdown = @total_pi_quantity_by_month.map { |data| data[:breakdown] }
 
-    { month: month_date.strftime("%B"), total: total_weight }
-  end
+    @total_ci_net_weight_by_month = (0..5).map do |n|
+      month_date = Date.current.advance(months: -n)
+      month_start = month_date.beginning_of_month
+      month_end = month_date.end_of_month
 
-  @total_ci_net_weight_by_month.reverse!
-  @totals_ci_net_weight = @total_ci_net_weight_by_month.map { |data| data[:total] }
+      ci_data = Ci.includes(:pi)  # Avoids N+1 query issue
+                 .where(issue_date: month_start..month_end)
+                 .group_by { |ci| ci.pi.product }  # Group by product from associated PI
+                 .transform_values { |cis| cis.sum(&:net_weight) } # Sum net_weight for each product
+
+      {
+        month: month_date.strftime("%B"),
+        total: ci_data.values.sum,  # Total sum of all products' net_weight
+        breakdown: ci_data # Hash of { "Product Name" => total_net_weight }
+      }
+    end
+
+    @total_ci_net_weight_by_month.reverse!
+    @totals_ci_net_weight = @total_ci_net_weight_by_month.map { |data| data[:total] }
+    @ci_net_weight_breakdown = @total_ci_net_weight_by_month.map { |data| data[:breakdown] }
+
 
 
     # PI and ci end

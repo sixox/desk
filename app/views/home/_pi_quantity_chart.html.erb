@@ -62,8 +62,17 @@
         plugins: {
           tooltip: {
             callbacks: {
-              label: function(context) {
-                return 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+              label: function (context) {
+                var index = context.dataIndex;
+                var monthBreakdown = <%= @pi_quantity_breakdown.to_json.html_safe %>[index]; // Fetch breakdown data
+                var tooltipText = 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+
+                // Append product breakdown
+                Object.entries(monthBreakdown).forEach(([product, qty]) => {
+                  tooltipText += `\n${product}: ${qty.toLocaleString()} MT`;
+                });
+
+                return tooltipText;
               }
             }
           },
@@ -111,8 +120,17 @@
         plugins: {
           tooltip: {
             callbacks: {
-              label: function(context) {
-                return 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+              label: function (context) {
+                var index = context.dataIndex;
+                var monthBreakdown = <%= @ci_net_weight_breakdown.to_json.html_safe %>[index];
+                var tooltipText = 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+
+                // Append product breakdown
+                Object.entries(monthBreakdown).forEach(([product, weight]) => {
+                  tooltipText += `\n${product}: ${weight.toLocaleString()} MT`;
+                });
+
+                return tooltipText;
               }
             }
           },
