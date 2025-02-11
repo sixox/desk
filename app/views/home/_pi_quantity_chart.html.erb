@@ -65,14 +65,14 @@
               label: function (context) {
                 var index = context.dataIndex;
                 var monthBreakdown = <%= @pi_quantity_breakdown.to_json.html_safe %>[index]; // Fetch breakdown data
-                var tooltipText = 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+                var tooltipLines = [`Total: ${context.parsed.y.toLocaleString()} MT`];
 
-                // Append product breakdown
+                // Append each product on a new line
                 Object.entries(monthBreakdown).forEach(([product, qty]) => {
-                  tooltipText += `\n• ${product}: ${qty.toLocaleString()} MT`;
+                  tooltipLines.push(`• ${product}: ${qty.toLocaleString()} MT`);
                 });
 
-                return tooltipText;
+                return tooltipLines; // Returning an array ensures each item appears on a new line
               }
             }
           },
@@ -122,15 +122,15 @@
             callbacks: {
               label: function (context) {
                 var index = context.dataIndex;
-                var monthBreakdown = <%= @ci_net_weight_breakdown.to_json.html_safe %>[index];
-                var tooltipText = 'Total: ' + context.parsed.y.toLocaleString() + ' MT';
+                var monthBreakdown = <%= @ci_net_weight_breakdown.to_json.html_safe %>[index]; // Fetch breakdown data
+                var tooltipLines = [`Total: ${context.parsed.y.toLocaleString()} MT`];
 
-                // Append product breakdown
+                // Append each product's net weight on a new line
                 Object.entries(monthBreakdown).forEach(([product, weight]) => {
-                  tooltipText += `\n${product}: ${weight.toLocaleString()} MT`;
+                  tooltipLines.push(`• ${product}: ${weight.toLocaleString()} MT`);
                 });
 
-                return tooltipText;
+                return tooltipLines; // Returning an array ensures new lines
               }
             }
           },
