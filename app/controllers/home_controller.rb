@@ -165,7 +165,7 @@ class HomeController < ApplicationController
       month_end = month_date.end_of_month
 
       pi_data = Pi.where(issue_date: month_start..month_end)
-                  .group(:product_name)  # Assuming "product_name" exists in Pi table
+                  .group(:product)  # Assuming "product_name" exists in Pi table
                   .sum(:quantity)
 
       {
