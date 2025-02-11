@@ -69,7 +69,7 @@
 
                 // Append product breakdown
                 Object.entries(monthBreakdown).forEach(([product, qty]) => {
-                  tooltipText += `\n${product}: ${qty.toLocaleString()} MT`;
+                  tooltipText += `\n• ${product}: ${qty.toLocaleString()} MT`;
                 });
 
                 return tooltipText;
