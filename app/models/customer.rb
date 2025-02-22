@@ -4,76 +4,137 @@ class Customer < ApplicationRecord
   has_many :cis, through: :pis
   has_many :projects, through: :pis
 
-  def total_swift
-    project_ids = projects.pluck(:id)
-    ci_ids = cis.pluck(:id)
-
-    swifts_from_projects = Swift.where(project_id: project_ids)
-    swifts_from_cis = Swift.where(ci_id: ci_ids)
-
-    {
-      dollar: swifts_from_projects.where(currency: 'dollar').sum(:amount) + swifts_from_cis.where(currency: 'dollar').sum(:amount),
-      dirham: swifts_from_projects.where(currency: 'dirham').sum(:amount) + swifts_from_cis.where(currency: 'dirham').sum(:amount)
-    }
+  def ci_count
+    @ci_count ||= cis.count
   end
 
   def total_swift_count
-    project_ids = projects.pluck(:id)
-    ci_ids = cis.pluck(:id)
-    a = Swift.where(project_id: project_ids).count
-    b = Swift.where(ci_id: ci_ids).count
-    a + b
+    @total_swift_count ||= begin
+      project_ids = projects.pluck(:id)
+      ci_ids = cis.pluck(:id)
+      Swift.where(project_id: project_ids).count + Swift.where(ci_id: ci_ids).count
+    end
+  end
+
+  def total_swift
+    @total_swift ||= begin
+      project_ids = projects.pluck(:id)
+      ci_ids = cis.pluck(:id)
+
+      swifts_from_projects = Swift.where(project_id: project_ids)
+      swifts_from_cis = Swift.where(ci_id: ci_ids)
+
+      {
+        dollar: swifts_from_projects.where(currency: 'dollar').sum(:amount) + swifts_from_cis.where(currency: 'dollar').sum(:amount),
+        dirham: swifts_from_projects.where(currency: 'dirham').sum(:amount) + swifts_from_cis.where(currency: 'dirham').sum(:amount)
+      }
+    end
+  end
+
+  def total_invoices_dirham
+    @total_invoices_dirham ||= calculate_total_dirham(sum_of_cis, 3.67)
+  end
+
+  def total_advance_swifts_dirham
+    @total_advance_swifts_dirham ||= calculate_total_dirham(sum_of_swifts_with_advance, 3.67)
+  end
+
+  def total_balance_swifts_dirham
+    @total_balance_swifts_dirham ||= calculate_total_dirham(sum_balance_swifts, 3.67)
+  end
+
+  def total_pending_dirham
+    @total_pending_dirham ||= calculate_total_dirham(customer_remain_payments, 3.67)
+  end
+
+  def total_invoices_dirham_sent
+    @total_invoices_dirham_sent ||= calculate_total_dirham(sum_of_cis(sent: true), 3.67)
+  end
+
+  def total_advance_swifts_dirham_sent
+    @total_advance_swifts_dirham_sent ||= calculate_total_dirham(sum_of_swifts_with_advance, 3.67)
+  end
+
+  def total_balance_swifts_dirham_sent
+    @total_balance_swifts_dirham_sent ||= calculate_total_dirham(sum_balance_swifts, 3.67)
+  end
+
+  def total_pending_dirham_sent
+    @total_pending_dirham_sent ||= calculate_total_dirham(customer_remain_payments(sent: true), 3.67)
+  end
+
+  def total_invoices_dirham_unsent
+    @total_invoices_dirham_unsent ||= calculate_total_dirham(sum_of_cis(sent: false), 3.67)
+  end
+
+  def total_advance_swifts_dirham_unsent
+    @total_advance_swifts_dirham_unsent ||= calculate_total_dirham(sum_of_swifts_with_advance, 3.67)
+  end
+
+  def total_balance_swifts_dirham_unsent
+    @total_balance_swifts_dirham_unsent ||= calculate_total_dirham(sum_balance_swifts, 3.67)
+  end
+
+  def total_pending_dirham_unsent
+    @total_pending_dirham_unsent ||= calculate_total_dirham(customer_remain_payments(sent: false), 3.67)
   end
 
   def balance_swifts
-    project_ids = projects.pluck(:id)
-    ci_ids = cis.pluck(:id)
+    @balance_swifts ||= begin
+      project_ids = projects.pluck(:id)
+      ci_ids = cis.pluck(:id)
 
-    swifts_from_projects = Swift.where(project_id: project_ids, advance: [nil, false])
-    swifts_from_cis = Swift.where(ci_id: ci_ids)
+      swifts_from_projects = Swift.where(project_id: project_ids, advance: [nil, false])
+      swifts_from_cis = Swift.where(ci_id: ci_ids)
 
-    swifts_from_cis + swifts_from_projects
+      swifts_from_cis + swifts_from_projects
+    end
   end
 
   def advance_swifts
-    project_ids = projects.pluck(:id)
-    Swift.where(project_id: project_ids, advance: true)
+    @advance_swifts ||= begin
+      project_ids = projects.pluck(:id)
+      Swift.where(project_id: project_ids, advance: true)
+    end
   end
 
   def sum_balance_swifts
-    swifts = balance_swifts
-    {
-      dollar: swifts.select { |s| s.currency == 'dollar' }.sum(&:amount),
-      dirham: swifts.select { |s| s.currency == 'dirham' }.sum(&:amount)
-    }
+    @sum_balance_swifts ||= begin
+      swifts = balance_swifts
+      {
+        dollar: swifts.select { |s| s.currency == 'dollar' }.sum(&:amount),
+        dirham: swifts.select { |s| s.currency == 'dirham' }.sum(&:amount)
+      }
+    end
   end
 
   def sum_of_swifts_with_advance
-    swifts = advance_swifts
+    @sum_of_swifts_with_advance ||= begin
+      swifts = advance_swifts
+      {
+        dollar: swifts.select { |s| s.currency == 'dollar' }.sum(&:amount),
+        dirham: swifts.select { |s| s.currency == 'dirham' }.sum(&:amount)
+      }
+    end
+  end
+
+  def sum_of_cis(sent: nil)
+    query = pis.includes(:cis).where.not(cis: { id: nil })
+    
+    if sent == false
+      query = query.joins(:cis).where(cis: { sent: [false, nil] })
+    elsif !sent.nil?
+      query = query.joins(:cis).where(cis: { sent: sent })
+    end
+
     {
-      dollar: swifts.select { |s| s.currency == 'dollar' }.sum(&:amount),
-      dirham: swifts.select { |s| s.currency == 'dirham' }.sum(&:amount)
+      dollar: query.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum,
+      dirham: query.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum
     }
   end
 
-  def sum_of_cis
-    pis_with_currency = self.pis.includes(:cis).where.not(cis: { id: nil })
-    {
-      dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum,
-      dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.map(&:balance_payment) }.compact.sum
-    }
-  end
-
-  def sum_of_cis_without_swift
-    pis_with_currency = self.pis.includes(:cis).where.not(cis: { id: nil })
-    {
-      dollar: pis_with_currency.where(currency: 'dollar').flat_map { |pi| pi.cis.select { |ci| ci.swift.nil? }.map(&:balance_payment) }.compact.sum,
-      dirham: pis_with_currency.where(currency: 'dirham').flat_map { |pi| pi.cis.select { |ci| ci.swift.nil? }.map(&:balance_payment) }.compact.sum
-    }
-  end
-
-  def customer_remain_payments
-    ci_balance_payment = sum_of_cis
+  def customer_remain_payments(sent: nil)
+    ci_balance_payment = sum_of_cis(sent: sent)
     swifts_without_advance = sum_balance_swifts
 
     {
@@ -82,11 +143,18 @@ class Customer < ApplicationRecord
     }
   end
 
-def all_swifts
-  project_swifts = self.pis.includes(project: :swifts).flat_map { |pi| pi.project&.swifts.to_a }.compact
-  ci_swifts = self.cis.includes(:swift).flat_map(&:swift).compact
+  def all_swifts
+    @all_swifts ||= begin
+      project_swifts = pis.includes(project: :swifts).flat_map { |pi| pi.project&.swifts.to_a }.compact
+      ci_swifts = cis.includes(:swift).flat_map(&:swift).compact
 
-  (project_swifts + ci_swifts).sort_by(&:created_at)
-end
+      (project_swifts + ci_swifts).sort_by(&:created_at)
+    end
+  end
 
+  private
+
+  def calculate_total_dirham(amounts, rate)
+    amounts[:dirham].to_i + (amounts[:dollar].to_i * rate)
+  end
 end

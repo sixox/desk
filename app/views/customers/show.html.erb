@@ -29,3 +29,169 @@
 		<% end %>
 	</div>
 </div>
+
+
+
+<hr>
+<h1> table 1</h1>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Total</th>
+      <th>Sent</th>
+      <th>Unsent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Total Invoices (Dirham)</td>
+      <td><%= @customer.total_invoices_dirham %></td>
+      <td><%= @customer.total_invoices_dirham_sent %></td>
+      <td><%= @customer.total_invoices_dirham_unsent %></td>
+    </tr>
+    <tr>
+      <td>Total Advance Swifts (Dirham)</td>
+      <td><%= @customer.total_advance_swifts_dirham %></td>
+      <td><%= @customer.total_advance_swifts_dirham_sent %></td>
+      <td><%= @customer.total_advance_swifts_dirham_unsent %></td>
+    </tr>
+    <tr>
+      <td>Total Balance Swifts (Dirham)</td>
+      <td><%= @customer.total_balance_swifts_dirham %></td>
+      <td><%= @customer.total_balance_swifts_dirham_sent %></td>
+      <td><%= @customer.total_balance_swifts_dirham_unsent %></td>
+    </tr>
+    <tr>
+      <td>Total Pending Payments (Dirham)</td>
+      <td><%= @customer.total_pending_dirham %></td>
+      <td><%= @customer.total_pending_dirham_sent %></td>
+      <td><%= @customer.total_pending_dirham_unsent %></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+<h1>table 2</h1>
+
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Calculation Name</th>
+      <th>Details (Breakdown of Components)</th>
+      <th>Final Value</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <%# ----- CI Count ----- %>
+    <tr>
+      <td><strong>CI Count</strong></td>
+      <td>
+        Total number of CIs associated with this Customer:  
+        <br>
+        <% @customer.cis.each do |ci| %>
+          CI ID: <%= ci.id %>, Balance Payment: <%= ci.balance_payment %> <br>
+        <% end %>
+      </td>
+      <td><%= @customer.ci_count %></td>
+    </tr>
+
+    <%# ----- Total Swift Count ----- %>
+    <tr>
+      <td><strong>Total Swift Count</strong></td>
+      <td>
+        Swifts linked to Projects: <%= Swift.where(project_id: @customer.projects.pluck(:id)).count %> <br>
+        Swifts linked to CIs: <%= Swift.where(ci_id: @customer.cis.pluck(:id)).count %>
+      </td>
+      <td><%= @customer.total_swift_count %></td>
+    </tr>
+
+    <%# ----- Total Swift (Dollar & Dirham) ----- %>
+    <tr>
+      <td><strong>Total Swift (Dollar & Dirham)</strong></td>
+      <td>
+        <% @customer.total_swift.each do |currency, amount| %>
+          <strong><%= currency.capitalize %>:</strong> <%= amount %> <br>
+        <% end %>
+      </td>
+      <td>
+        Dollar: <%= @customer.total_swift[:dollar] %>,  
+        Dirham: <%= @customer.total_swift[:dirham] %>
+      </td>
+    </tr>
+
+    <%# ----- Total Pending Dirham Sent ----- %>
+    <tr>
+      <td><strong>Total Pending Dirham (Sent)</strong></td>
+      <td>
+        <strong>CI Balance Payment:</strong>  
+        <% @customer.sum_of_cis(sent: true).each do |currency, amount| %>
+          <%= currency.capitalize %>: <%= amount %> <br>
+        <% end %>
+
+        <strong>Swifts without Advance:</strong>  
+        <% @customer.sum_balance_swifts.each do |currency, amount| %>
+          <%= currency.capitalize %>: <%= amount %> <br>
+        <% end %>
+
+        <hr>
+        <strong>Final Calculation:</strong>  
+        Dollar: (<%= @customer.customer_remain_payments(sent: true)[:dollar] %>) * 3.67  
+        <br>
+        Dirham: <%= @customer.customer_remain_payments(sent: true)[:dirham] %>  
+      </td>
+      <td><%= @customer.total_pending_dirham_sent %></td>
+    </tr>
+
+    <%# ----- Total Invoices Dirham Unsent ----- %>
+    <tr>
+      <td><strong>Total Invoices Dirham (Unsent)</strong></td>
+      <td>
+        <strong>CIs (sent: false OR nil):</strong>  
+        <% @customer.sum_of_cis(sent: false).each do |currency, amount| %>
+          <%= currency.capitalize %>: <%= amount %> <br>
+        <% end %>
+
+        <hr>
+        <strong>Final Calculation:</strong>  
+        Dollar: (<%= @customer.sum_of_cis(sent: false)[:dollar] %>) * 3.67  
+        <br>
+        Dirham: <%= @customer.sum_of_cis(sent: false)[:dirham] %>
+      </td>
+      <td><%= @customer.total_invoices_dirham_unsent %></td>
+    </tr>
+
+    <%# ----- Advance Swifts Breakdown ----- %>
+    <tr>
+      <td><strong>Advance Swifts Breakdown</strong></td>
+      <td>
+        <% @customer.sum_of_swifts_with_advance.each do |currency, amount| %>
+          <%= currency.capitalize %>: <%= amount %> <br>
+        <% end %>
+      </td>
+      <td>
+        Dollar: <%= @customer.sum_of_swifts_with_advance[:dollar] %>,  
+        Dirham: <%= @customer.sum_of_swifts_with_advance[:dirham] %>
+      </td>
+    </tr>
+
+    <%# ----- Balance Swifts Breakdown ----- %>
+    <tr>
+      <td><strong>Balance Swifts Breakdown</strong></td>
+      <td>
+        <% @customer.sum_balance_swifts.each do |currency, amount| %>
+          <%= currency.capitalize %>: <%= amount %> <br>
+        <% end %>
+      </td>
+      <td>
+        Dollar: <%= @customer.sum_balance_swifts[:dollar] %>,  
+        Dirham: <%= @customer.sum_balance_swifts[:dirham] %>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
