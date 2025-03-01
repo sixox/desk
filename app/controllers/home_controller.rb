@@ -203,6 +203,20 @@ class HomeController < ApplicationController
 
 
     # PI and ci end
+
+
+    # Customers
+@customers = Customer.includes(pis: [:cis, :project], cis: :swift, projects: :swifts).to_a
+
+# Force calculations
+
+
+
+
+
+
+
+
   else
     redirect_to action: :index
   end

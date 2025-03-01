@@ -1,0 +1,74 @@
+<div class="row">
+	<div class="col-12 col-lg-6">
+
+		<div class="card-body pt-0">
+			<div class="card-title pb-1">
+				<small class="timeline-small fw-bold">Customers</small> 
+			</div>
+			<table class="table table-primary table-striped table-hover table-sm">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Name</th>
+						<th scope="col">Debt</th>
+						<th scope="col">Pending payment</th>
+						
+					</tr>
+				</thead>
+				<tbody>
+					<% @customers[0...(@customers.size / 2)].each do |customer| %>
+					<% send_debt = customer.total_pending_dirham_sent %>
+					<tr>
+						<th scope="row"><small><%= link_to "#{customer.id}", customer_path(customer), class: 'link-nodecor-po' %></small></th>
+						<td><small><%= link_to "#{customer.nickname}", customer_path(customer), class: 'link-nodecor-po'  %></small></td>
+						<td><small class="fw-bold"><%= number_with_delimiter(customer.total_pending_dirham, delimiter: ',')%></small></td>
+						<td><small class="<%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt, delimiter: ',') %></small></td>
+						
+					</tr>
+					<% end %>
+					
+
+				</tbody>
+
+			</table>
+		</div>
+
+
+	</div>
+		<div class="col-12 col-lg-6">
+
+		<div class="card-body pt-0">
+			<div class="card-title pb-1">
+				<small class="timeline-small fw-bold">Customers</small> 
+			</div>
+			<table class="table table-primary table-striped table-hover table-sm">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Name</th>
+						<th scope="col">Debt</th>
+						<th scope="col">Pending payment</th>
+						
+					</tr>
+				</thead>
+				<tbody>
+					<% @customers[(@customers.size / 2)..-1].each do |customer| %>
+					<% send_debt = customer.total_pending_dirham_sent %>
+					<tr>
+						<th scope="row"><small><%= link_to "#{customer.id}", customer_path(customer), class: 'link-nodecor-po' %></small></th>
+						<td><small><%= link_to "#{customer.nickname}", customer_path(customer), class: 'link-nodecor-po'  %></small></td>
+						<td><small class="fw-bold"><%= number_with_delimiter(customer.total_pending_dirham, delimiter: ',')%></small></td>
+						<td><small class="<%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt, delimiter: ',') %></small></td>
+						
+					</tr>
+					<% end %>
+					
+
+				</tbody>
+
+			</table>
+		</div>
+
+
+	</div>
+</div>
