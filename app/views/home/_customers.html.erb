@@ -22,7 +22,7 @@
 						<th scope="row"><small><%= link_to "#{customer.id}", customer_path(customer), class: 'link-nodecor-po' %></small></th>
 						<td><small><%= link_to "#{customer.nickname}", customer_path(customer), class: 'link-nodecor-po'  %></small></td>
 						<td><small class="fw-bold"><%= number_with_delimiter(customer.total_pending_dirham.to_i, delimiter: ',')%></small></td>
-						<td><small class="<%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt.to_i, delimiter: ',') %></small></td>
+						<td><small class="<%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt.to_i, delimiter: ',') %><span style="font-size: 8px; color: #614747;"> Dirham</span></small></td>
 						
 					</tr>
 					<% end %>
@@ -58,7 +58,7 @@
 						<th scope="row"><small><%= link_to "#{customer.id}", customer_path(customer), class: 'link-nodecor-po' %></small></th>
 						<td><small><%= link_to "#{customer.nickname}", customer_path(customer), class: 'link-nodecor-po'  %></small></td>
 						<td><small class="fw-bold"><%= number_with_delimiter(customer.total_pending_dirham.to_i, delimiter: ',')%></small></td>
-						<td><small class="<%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt.to_i, delimiter: ',') %></small></td>
+						<td><small class="<%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt.to_i, delimiter: ',') %><span style="font-size: 8px; color: #614747;"> Dirham</span></small> </td>
 						
 					</tr>
 					<% end %>
