@@ -141,6 +141,8 @@ Rails.application.routes.draw do
       patch "reject", to: "swifts#reject"
       get "reject", to: "swifts#reject"
       get 'edit_amount_before_confirm'
+      patch :toggle_announce
+      get :toggle_announce
     end
     collection do
       get 'unconfirmed'

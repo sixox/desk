@@ -2,7 +2,7 @@ class SwiftsController < ApplicationController
 	# before_action :set_swift, only: [:show, :edit, :update, :destroy]
 	before_action :authenticate_user!
 	before_action :set_ci_or_project, only: %i[ new create ] 
-	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm edit update destroy ] 
+	before_action :set_swift, only: %i[ confirm reject edit_amount_before_confirm edit update destroy toggle_announce ] 
 
 
 	def new
@@ -125,6 +125,15 @@ class SwiftsController < ApplicationController
 
 			end
 		end
+	end
+
+	def toggle_announce
+	    @swift.update(announce: !@swift.announce)
+	    
+	     respond_to do |format|
+		    format.html { redirect_back fallback_location: swifts_path, notice: "Announce status updated." }
+		    format.turbo_stream # For Turbo updates (if using Turbo)
+		  end
 	end
 
 	def destroy

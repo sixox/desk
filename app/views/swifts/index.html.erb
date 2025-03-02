@@ -81,7 +81,10 @@
 
 					 %>">
 					<th scope="row">
-						<%= swift.id %>
+						<%= swift.id %> 
+						<% if swift.announce %>
+							<i class="bi bi-megaphone-fill text-success"></i>
+						<% end %>
 					</th>
 					<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
 					<td class="fw-bold"><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
@@ -135,7 +138,7 @@
 					<%= swift.created_at&.strftime('%b %d') %>
 				</td>
 				<td style="text-align: right;">
-					<% if !swift.confirmed && !swift.rejected && current_user.accounting? %>
+					<% if !swift.confirmed && !swift.rejected && (current_user.accounting? || current_user.admin?) %>
 					<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>
 							<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
 							<% end %></span>
@@ -143,9 +146,16 @@
 					<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
 					<i class="bi bi-calendar-x-fill" style="color: red;"></i>
 					<% end %>
+					|
+					
+
+            <%= link_to toggle_announce_swift_path(swift), data: { turbo: false, turbo_method: :patch, turbo_confirm: 'Are you sure?' } do %>
+					<i class="bi bi-megaphone-fill" style="color: red;"></i>
+					<% end %>
+
 					
 					<% end %>
-					<% if !swift.confirmed && !swift.rejected && current_user.sales? %>
+					<% if !swift.confirmed && !swift.rejected && (current_user.sales? || current_user.admin?) %>
 						<%= link_to edit_swift_path(swift), data: { controller: "bs-modal-form" } do %>
 							<i class="bi bi-pencil-fill" style="color: red;"></i>
 							<% end %>
