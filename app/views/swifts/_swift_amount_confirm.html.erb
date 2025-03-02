@@ -39,7 +39,14 @@
 								<span class="text-danger">*</span>
 							</label>
 							
-							<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
+							<%= form.collection_select :bank_id, 
+							  @banks.map { |bank| [ "#{bank.name}-#{bank.currency}", bank.id ] }, 
+							  :second,  # This corresponds to `bank.id`
+							  :first,   # This corresponds to `"bank.name-bank.currency"`
+							  { prompt: 'Select Bank' }, 
+							  { class: "form-select" } 
+							%>
+
 				</div>
 			</div>
 
