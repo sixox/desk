@@ -72,12 +72,13 @@
 <div class="text-center mt-2">
 	<%= form.submit 'Save Payment order', class: 'btn btn-primary text-center'%>
 
-
-<%= link_to toggle_announce_payment_order_path(@payment_order),
-            data: { turbo: false, turbo_method: :patch, turbo_confirm: 'Are you sure?' },
-            class: "btn btn-info btn-sm gap-1" do %>
-  <i class="bi bi-megaphone-fill"></i> Announce
-<% end %>
+	<% if @payment_order.status == 'wait for payment' %>
+		<%= link_to toggle_announce_payment_order_path(@payment_order),
+		            data: { turbo: false, turbo_method: :patch, turbo_confirm: 'Are you sure?' },
+		            class: "btn btn-info btn-sm gap-1" do %>
+		  <i class="bi bi-megaphone-fill"></i> Announce
+		<% end %>
+	<% end %>
 
 
 
