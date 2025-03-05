@@ -107,6 +107,8 @@ Rails.application.routes.draw do
       patch "reject", to: "payment_orders#reject"
       get "reject", to: "payment_orders#reject"
       patch "hamed_confirm", to: "payment_orders#hamed_confirm"
+      patch :toggle_announce
+      get :toggle_announce
 
     end
     collection do

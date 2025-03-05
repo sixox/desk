@@ -1,7 +1,7 @@
 class PaymentOrdersController < ApplicationController
 
 	before_action :authenticate_user!
-	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy hamed_confirm ]
+	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy hamed_confirm toggle_announce]
 	before_action :set_form_items, only: %i[ new edit create ] 
 	
 
@@ -537,6 +537,17 @@ end
 				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
 			end
 		end
+	end
+
+
+
+	def toggle_announce
+	    @payment_order.update(announce: !@payment_order.announce)
+	    
+	     respond_to do |format|
+		    format.html { redirect_back fallback_location: @payment_order, notice: "Announce status updated." }
+		    format.turbo_stream # For Turbo updates (if using Turbo)
+		  end
 	end
 
 	def destroy
