@@ -68,6 +68,7 @@ Rails.application.routes.draw do
     end
     collection do
       get :list
+      get :export_csv
     end
   end
   resources :release_requests do

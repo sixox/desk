@@ -167,6 +167,11 @@ def turnover
   end
 
 
+  def export_csv
+    respond_to do |format|
+      format.csv { send_data Project.to_csv, filename: "projects-#{Date.today}.csv" }
+    end
+  end
 
 
 

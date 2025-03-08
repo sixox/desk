@@ -1,3 +1,6 @@
+
+
+
 <div class="mx-auto mt-1">
   <div class="card mt-4 mb-1">
     <div class="card-body">
@@ -12,6 +15,11 @@
   </div>
 
   <row class="m-1">
+    <div class="text-end mb-2">
+  <%= link_to export_csv_projects_path(format: :csv), class: "btn btn-success btn-sm" do %>
+    <i class="bi bi-download"></i> Download CSV
+  <% end %>
+</div>
     <div class="col-sm text-center">
       <div class="table-responsive" style="max-height: 900px; overflow-y: auto;">
         <table class="table table-bordered table-striped table-sm table-layout-auto">

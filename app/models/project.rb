@@ -1,3 +1,6 @@
+require 'csv'
+
+
 class Project < ApplicationRecord
   before_save :calculate_risk_based_on_impact_and_likelihood
 
@@ -94,6 +97,67 @@ class Project < ApplicationRecord
     pi_quantity - allocated_quantity
   end
 
+
+  def self.to_csv
+    CSV.generate(headers: true) do |csv|
+      # Define headers (omit the last column)
+      csv << [
+        "Project", "Client", "POD", "Term", "Payment", "PI Number", "PI Date",
+        "Quantity", "Unit Price", "Agent", "Commission", "Product", "Packing",
+        "Booking", "Line", "Forwarder", "Freight Price", "Inspection",
+        "Custom Clearance", "BL Number", "Vessel & Voyage", "BL Date",
+        "Net Weight", "Supplier", "PI Number (Supplier)", "Quantity (Supplier)",
+        "Packing (Supplier)", "Unit Price (Supplier)"
+      ]
+
+      includes(:pi, :bookings, ballance_projects: { ballance: :supplier }).each do |project|
+        project.ballance_projects.each_with_index do |bp, index|
+          csv << [
+            index == 0 ? project.number : "#{project.number} / #{index + 1}",
+            project.pi&.customer&.nickname,
+            project.pi&.pod,
+            project.pi&.incoterm,
+            project.swifts.present? ? project.swifts.first.bank.name : (project.cis.any? { |ci| ci.swift.present? } ? project.cis.find { |ci| ci.swift.present? }&.swift&.bank&.name : 'N/A'),
+            project.pi&.number,
+            project.pi&.issue_date,
+            project.pi&.quantity.to_i,
+            project.pi&.unit_price.to_i,
+            project.pi&.agent,
+            project.pi&.commission,
+            project.pi&.product,
+            project.pi&.packing_type,
+            project.bookings.map(&:number).join(' | '),
+            project.bookings.map(&:line).join(' | '),
+            project.bookings.map(&:forwarder).join(' | '),
+            project.bookings.map(&:freight_price).join(' | '),
+            project.bookings.map { |b| b.inspection ? "✓" : "✗" }.join(' | '),
+            project.bookings.map { |b| b.send_to_line ? "Finished" : b.declaration ? "Declaration" : b.tally ? "Tally" : "N/A" }.join(' | '),
+            project.bookings.map(&:bl_number).join(' | '),
+            project.bookings.map(&:vessel_name).join(' | '),
+            project.bookings.map(&:date_of_bl).join(' | '),
+            project.cis.sum(&:net_weight),
+            bp.ballance.supplier&.name || '-',
+            bp.ballance.spi&.number || '-',
+            bp.quantity.to_i,
+            bp.ballance.spi&.packing_type || '-',
+            bp.ballance.spi&.unit_price.to_i
+          ]
+        end
+
+        # If there are no ballance_projects, add a single row
+        if project.ballance_projects.empty?
+          csv << [
+            project.number, project.pi&.customer&.nickname, project.pi&.pod, project.pi&.incoterm,
+            project.swifts.present? ? project.swifts.first.bank.name : (project.cis.any? { |ci| ci.swift.present? } ? project.cis.find { |ci| ci.swift.present? }&.swift&.bank&.name : 'N/A'),
+            project.pi&.number, project.pi&.issue_date, project.pi&.quantity.to_i, project.pi&.unit_price.to_i,
+            project.pi&.agent, project.pi&.commission, project.pi&.product, project.pi&.packing_type,
+            "-", "-", "-", "-", "-", "-", "-", "-", "-",
+            project.cis.sum(&:net_weight), "-", "-", "-", "-", "-"
+          ]
+        end
+      end
+    end
+  end
 	    
 
   private
