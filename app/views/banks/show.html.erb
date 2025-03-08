@@ -147,6 +147,7 @@
 
 											<th scope="col" class="col-sm-2">Deposite amount</th>
 											<th scope="col" class="col-sm-2">Wage</th>
+											<th scope="col" class="col-sm-2">Document</th>
 											<th scope="col" class="col-sm-2">Status</th>
 											<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
 
@@ -178,6 +179,13 @@
 									<td class="fw-bold text-danger"><%= number_with_delimiter(transfer.withdraw_amount, delimiter: ',') %> <small>	<%= transfer.withdraw_from_bank.currency %></small></td>
 									<td class="fw-bold text-success"><%= number_with_delimiter(transfer.deposited_amount, delimiter: ',') %> <small>	<%= transfer.deposited_to_bank.currency %></small></td>
 									<td><%= transfer.wage.to_i %></td>
+									<td>
+										<% if transfer.document.attached? %>
+				<%= link_to 'View Document', url_for(transfer.document), target: '_blank' %>
+				<% else %>
+				no document
+				<% end %>
+									</td>
 									
 									<td><%= 
 									if transfer.confirmed.present?
