@@ -13,7 +13,8 @@
 
   AGENT = [
           'Ms.Sujeetha',
-          'Mr.Seifi'
+          'Mr.Seifi',
+          'Huate'
   ]
 
   PRODUCT = [
