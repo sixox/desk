@@ -18,7 +18,7 @@
 
 <% end %>
 <% end %>
-<li class="shadow-lg mb-2 bg-body rounded list-group-item <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" id="payment_order_item_<%= payment_order.id %>">
+<li class="shadow-lg mb-2 bg-body <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %> rounded <%= payment_order.mahramane ? 'secret_payment_order' : '' %> list-group-item" id="payment_order_item_<%= payment_order.id %>">
 	<div class="row">
 		
 		<div class="col-sm-2">
@@ -210,7 +210,7 @@
 </div>
 <hr>
 <div class="row text-center">
-
+	<% if !payment_order.mahramane %>
 	<div class="col">
 		<p class="confirm-job">Manager</p>
 		<p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
@@ -228,6 +228,7 @@
 		<p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
 		<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
 	</div>
+	<% end %>
 
 	<div class="col">
 		<p class="confirm-job">CEO</p>

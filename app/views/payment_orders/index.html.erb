@@ -222,8 +222,11 @@
 
 			<ul class="list-group" id="payment_order_items">
 				<% @payment_orders.each do |payment_order| %>
-				<%= render 'payment_orders/payment_order', payment_order: payment_order %>
+				  <% if !payment_order.mahramane || payment_order.user == current_user || @access_to_secret %>
+				    <%= render 'payment_orders/payment_order', payment_order: payment_order %>
+				  <% end %>
 				<% end %>
+
 			</ul>
 			<div class="row mt-1">
 				<div class="col-sm">

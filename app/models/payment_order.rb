@@ -1,6 +1,7 @@
 require 'csv'
 
 class PaymentOrder < ApplicationRecord
+  before_save :handle_secret_confirmations
   before_save :set_status
 
   belongs_to :user
@@ -203,7 +204,19 @@ class PaymentOrder < ApplicationRecord
   #   end
   # end
 
+  def handle_secret_confirmations
+    return unless mahramane?
 
+    # Ensure all required confirmations are set to true
+    self.coo_confirm = true
+    self.department_confirm = true
+    self.accounting_confirm = true
+
+    # Ensure timestamps are set only if not already set
+    self.coo_confirmed_at ||= Time.now
+    self.department_confirmed_at ||= Time.now
+    self.accounting_confirmed_at ||= Time.now
+  end
 
 
 

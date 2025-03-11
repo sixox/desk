@@ -1,8 +1,8 @@
 class PaymentOrdersController < ApplicationController
-
 	before_action :authenticate_user!
 	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy hamed_confirm toggle_announce]
 	before_action :set_form_items, only: %i[ new edit create ] 
+	before_action :set_access_to_secret, only: %i[ index not_paid not_confirmed finished rejected pending not_delivered mine confirmable reports]
 	
 
 
@@ -11,7 +11,8 @@ class PaymentOrdersController < ApplicationController
     if params[:start_date].present? && params[:end_date].present?
       start_date = Date.parse(params[:start_date])
       end_date = Date.parse(params[:end_date]).end_of_day
-      payment_orders = PaymentOrder.where(created_at: start_date..end_date)
+			payment_orders = PaymentOrder.where(created_at: start_date..end_date)
+			payment_orders = payment_orders.where.not(mahramane: true) unless current_user.is_manager
 
       if payment_orders.exists?
           csv_data = payment_orders.to_csv
@@ -590,6 +591,12 @@ end
 
 	end
 
+	def set_access_to_secret
+		if current_user.ceo? || current_user.cob? || current_user.admin? || (current_user.accounting? && current_user.is_manager )
+			@access_to_secret = true
+		end
+	end
+
 
 	def payment_order_params
 		params.require(:payment_order).permit(
@@ -628,7 +635,8 @@ end
 			:delivered_at,
 			:reject_by,
 			:rejected_at,
-			:bank_id
+			:bank_id,
+			:mahramane
 			)
 	end
 

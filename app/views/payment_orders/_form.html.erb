@@ -21,11 +21,18 @@
 			</div>
 			<div class="col-lg-6">
 				<div class="d-flex justify-content-end">
-					<%= form.check_box :is_rahkarsazan, class: 'form-check-input' %>
-					<label class="form-check-label" for="hourly">
-						Rahkar sazan
+					<%= form.check_box :mahramane, class: 'form-check-input' %>
+					<label class="fw-bold form-check-label text-success" style="margin-right: 46px;" for="secret">
+						Secret
 					</label>
 				</div>
+				<div class="d-flex justify-content-end">
+					<%= form.check_box :is_rahkarsazan, class: 'form-check-input' %>
+					<label class="form-check-label" for="hourly">
+						 Rahkar sazan
+					</label>
+				</div>
+				
 			</div>
 		</div>
 

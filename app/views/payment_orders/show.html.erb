@@ -24,7 +24,7 @@
 
 				<%= render 'payment_orders/payment_order', payment_order: @payment_order %>
 
-				<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
+				<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %> <%= @payment_order.mahramane.present? ? 'secret_payment_order' : '' %>" >
 					<div class="row">
 						<div class="col-lg">
 							<p>to: <span class="fw-bold"><%= @payment_order.to %></span></p>
@@ -115,7 +115,7 @@
 					</li>
 					<% if (current_user.accounting? || current_user.admin?) && @payment_order.cob_confirm.present? && @payment_order.ceo_confirm.present? %>
 
-					<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %>" >
+					<li class=" <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %> list-group-item mt-1 <%= @payment_order.mahramane.present? ? 'secret_payment_order' : '' %>" >
 						<%= render 'payment_orders/accounting_form', payment_order: @payment_order %>
 					</li>
 					<% end %>
