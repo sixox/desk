@@ -2,7 +2,7 @@ class PaymentOrdersController < ApplicationController
 	before_action :authenticate_user!
 	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy hamed_confirm toggle_announce]
 	before_action :set_form_items, only: %i[ new edit create ] 
-	before_action :set_access_to_secret, only: %i[ index not_paid not_confirmed finished rejected pending not_delivered mine confirmable reports]
+	before_action :set_access_to_secret, only: %i[ show index not_paid not_confirmed finished rejected pending not_delivered mine confirmable reports]
 	
 
 

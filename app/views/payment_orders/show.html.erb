@@ -1,5 +1,6 @@
-<div class="col-lg-10 mx-auto mt-5">
 
+<div class="col-lg-10 mx-auto mt-5">
+ <% if !@payment_order.mahramane || @payment_order.user == current_user || @access_to_secret %>
 
 
 	<div class="card mb-5">
@@ -152,6 +153,9 @@
 				</ul>
 			</div>
 		</div>
+	<% else %>
+	<h5>You don't have permission to see this Payment Order</h5>
+	<% end %>
 
 	</div>
 
