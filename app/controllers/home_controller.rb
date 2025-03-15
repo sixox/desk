@@ -67,6 +67,7 @@ class HomeController < ApplicationController
 
     #accounting tables start
     @latest_payment_orders = PaymentOrder
+    .where.not(mahramane: true)
     .order(created_at: :desc)
     .limit(14)
     @transactions = Transaction.all.includes(:transactionable).order(created_at: :desc).limit(14)
