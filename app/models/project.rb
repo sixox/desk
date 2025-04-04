@@ -15,7 +15,7 @@ class Project < ApplicationRecord
   has_secure_password
 
 
-  validates :number, presence: true, format: { with: /\A14\d{2}-\d{4}\z/, message: "must be in the format '14xx-xxxx'" }, uniqueness: true
+  validates :number, presence: true, format: { with: /\A14\d{2}-(?:\d{4}|10\d{3})\z/, message: "must be in the format 14xx-xxxx or 14xx-10xxx" }, uniqueness: true
   validates :password, presence: true, on: :create
 
 
