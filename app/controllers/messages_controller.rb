@@ -216,7 +216,7 @@ end
   end
 
   def set_users
-    @users = User.where.not(id: [2, 4, 25, 28])
+    @users = User.where.not(id: [2, 4, 25, 28, 30, 34])
   end
 
   def set_message
