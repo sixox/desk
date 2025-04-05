@@ -28,7 +28,7 @@ class ProjectsController < ApplicationController
 
 	def index
 		@q = Project.ransack(params[:q])
-	  @projects = @q.result.includes(:pi, :cis, :bookings, :swifts, ballance_projects: :ballance).order(number: :desc)
+	  @projects = @q.result.includes(:pi, :cis, :bookings, :swifts, ballance_projects: :ballance)
     @projects = @projects.page(params[:page]).per(18)
 
 	end
@@ -88,7 +88,6 @@ class ProjectsController < ApplicationController
                     :swifts,
                     ballance_projects: { ballance: :supplier }
                   )
-                  .order(number: :desc)
                   .page(params[:page])
                   .per(300)
   end
