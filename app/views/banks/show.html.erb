@@ -409,9 +409,17 @@
 									<th scope="row">
 										<%= link_to payment_order.id, payment_order_path(payment_order), class: "notifLink" %>
 									</th>
+									 <% if payment_order.mahramane && payment_order.user != current_user && !@access_to_secret %>
+									 <td class="fw-bold">hided</td>
+									<td>hided</td>
+									
+									<td style="text-align: right;">hided</td>
+									 <% else %>
 									<td class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></td>
 									<td><%= payment_order.details %></td>
+									
 									<td style="text-align: right;"><%= payment_order.created_at.strftime('%d %b') %></td>
+									<% end %>
 								</tr>
 								<% end %>
 							</tbody>

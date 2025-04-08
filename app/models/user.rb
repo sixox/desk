@@ -38,6 +38,8 @@ class User < ApplicationRecord
 
   has_many :message_tags, dependent: :destroy
   has_many :tagged_messages, through: :message_tags, source: :message
+  has_many :kpi_lists, dependent: :destroy
+
 
 
   has_one_attached :signature

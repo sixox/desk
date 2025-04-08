@@ -1,6 +1,7 @@
 class BanksController < ApplicationController
   before_action :authenticate_user!
   before_action :set_bank, only: %i[show edit update destroy transactions]
+  before_action :set_access_to_secret, only: %i[show]
 
   def index
     @banks = Bank.all
@@ -84,6 +85,12 @@ class BanksController < ApplicationController
 
 
   private
+
+  def set_access_to_secret
+    if current_user.ceo? || current_user.cob? || current_user.admin? || (current_user.accounting? && current_user.is_manager )
+      @access_to_secret = true
+    end
+  end
 
   def set_bank
     @bank = Bank.find(params[:id])

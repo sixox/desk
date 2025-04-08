@@ -217,7 +217,13 @@ Rails.application.routes.draw do
     resources :comments
   end
 
+
   resources :acts, only: [:create]
+
+  resources :kpi_lists, only: [:new, :create, :show] do
+    resources :results, only: [:new, :create]
+  end
+
 
   get 'member/:id', to: 'members#show', as: 'member'
   get 'edit_description', to: 'members#edit_description', as: 'edit_member_description'

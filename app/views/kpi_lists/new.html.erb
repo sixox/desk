@@ -1,0 +1,35 @@
+<h2>Fill KPI Targets for <%= params[:year] %> - Period <%= params[:period] %></h2>
+
+<%= form_for @kpi_list do |f| %>
+  <% if @kpi_list.errors.any? %>
+    <div class="alert alert-danger">
+      <ul>
+        <% @kpi_list.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+    <%= f.hidden_field :year, value: @year %>
+  <%= f.hidden_field :period, value: @period %>
+
+  <%= f.fields_for :targets do |target_fields| %>
+    <div class="target-fields">
+      <%= target_fields.text_field :name %>
+      <%= target_fields.text_area :description %>
+
+      <% if target_fields.object.errors.any? %>
+        <div class="alert alert-danger">
+          <ul>
+            <% target_fields.object.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= f.submit "Save & Continue to Results" %>
+<% end %>
+

@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  kpi_list: one
+  name: MyString
+  description: MyText
+
+two:
+  kpi_list: two
+  name: MyString
+  description: MyText

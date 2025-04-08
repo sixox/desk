@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  year: 1
+  period: 1
+
+two:
+  user: two
+  year: 1
+  period: 1
