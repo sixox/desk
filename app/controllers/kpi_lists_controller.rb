@@ -13,7 +13,7 @@ class KpiListsController < ApplicationController
 
     @kpi_list = current_user.kpi_lists.find_or_initialize_by(year: @year, period: @period)
 
-    (10 - @kpi_list.targets.size).times { @kpi_list.targets.build }
+    (12 - @kpi_list.targets.size).times { @kpi_list.targets.build }
   end
 
   def create
@@ -43,7 +43,7 @@ class KpiListsController < ApplicationController
     if @kpi_list.save
       redirect_to bulk_new_kpi_list_results_path(@kpi_list), notice: "KPI List saved. Now enter results and KPIs."
     else
-      (10 - @kpi_list.targets.size).times { @kpi_list.targets.build }
+      (12 - @kpi_list.targets.size).times { @kpi_list.targets.build }
       render :new, status: :unprocessable_entity
     end
   end
