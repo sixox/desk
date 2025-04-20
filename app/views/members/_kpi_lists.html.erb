@@ -56,6 +56,7 @@
                               <small class="text-muted " dir="rtl"><%= target.description %></small>
                             </th>
                           </tr>
+                          <% if target.result.any? %>
                           <tr class="table-light ">
                             <th style="width: 60%">Result</th>
                             <th style="width: 40%">Measurable KPI</th>
@@ -78,6 +79,9 @@
                             </tr>
                           <% end %>
                         </tbody>
+                        <% else %>
+                         </thead>
+                        <% end %>
                       </table>
                     </div>
                   <% end %>
