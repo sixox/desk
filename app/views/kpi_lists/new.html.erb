@@ -1,35 +1,84 @@
-<h2>Fill KPI Targets for <%= params[:year] %> - Period <%= params[:period] %></h2>
+<div class="col-lg-10 mx-auto mt-5">
 
-<%= form_for @kpi_list do |f| %>
-  <% if @kpi_list.errors.any? %>
-    <div class="alert alert-danger">
-      <ul>
-        <% @kpi_list.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+<%# Period display logic %>
+<% period_label = {
+  0 => "Annual",
+  1 => "First Quarter",
+  2 => "Second Quarter",
+  3 => "Third Quarter",
+  4 => "Fourth Quarter"
+}[params[:period].to_i] %>
+
+<div class="container my-5">
+  <h2 class="mb-4 fw-bold text-dark border-bottom border-3 border-primary pb-2">
+    Fill KPI Targets for <%= params[:year] %>
+    <% if period_label.present? %> – <span class="text-primary"><%= period_label %></span><% end %>
+  </h2>
+  <p class="text-muted mb-4 fs-6 fst-italic" style="margin-top: -18px;">
+  You can fill up to 10 targets
+</p>
+
+  <%= form_for @kpi_list do |f| %>
+    <% if @kpi_list.errors.any? %>
+      <div class="alert alert-danger shadow-sm">
+        <strong>Please fix the following:</strong>
+        <ul class="mb-0 ps-3">
+          <% @kpi_list.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
     <%= f.hidden_field :year, value: @year %>
-  <%= f.hidden_field :period, value: @period %>
+    <%= f.hidden_field :period, value: @period %>
 
-  <%= f.fields_for :targets do |target_fields| %>
-    <div class="target-fields">
-      <%= target_fields.text_field :name %>
-      <%= target_fields.text_area :description %>
+    <div class="row gy-4">
+      <%= f.fields_for :targets do |target_fields| %>
+        <% index = f.object.targets.index(target_fields.object) + 1 %>
+        <div class="col-12">
+          <div class="card border-0 shadow-lg position-relative overflow-hidden transition-hover">
+            <div class="card-body bg-light rounded-3 p-4">
+              <h5 class="card-title text-muted mb-3">🎯 Target <%= index %></h5>
 
-      <% if target_fields.object.errors.any? %>
-        <div class="alert alert-danger">
-          <ul>
-            <% target_fields.object.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+              <div class="form-floating">
+                <%= target_fields.text_area :description,
+                      class: "form-control border-0 shadow-sm bg-white",
+                      rows: 1,
+                      placeholder: "Target #{index}",
+                      style: "resize: none;" %>
+                <label>Enter description for Target <%= index %></label>
+              </div>
+
+              <% if target_fields.object.errors.any? %>
+                <div class="text-danger small mt-2">
+                  <% target_fields.object.errors.full_messages.each do |message| %>
+                    <div>⚠ <%= message %></div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
         </div>
       <% end %>
     </div>
+
+    <div class="text-end mt-5">
+      <%= f.submit "💾 Save & Continue to Results",
+          class: "btn btn-lg btn-gradient-primary text-white fw-semibold px-5 py-2 shadow" %>
+    </div>
   <% end %>
-
-  <%= f.submit "Save & Continue to Results" %>
-<% end %>
-
+</div>
+</div>
+<%# Optional custom CSS for extra effects %>
+<style>
+  .transition-hover:hover {
+    transform: scale(1.01);
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 0 20px rgba(0,0,0,0.08);
+  }
+  .btn-gradient-primary {
+    background: linear-gradient(135deg, #3a8dde, #6f42c1);
+    border: none;
+  }
+</style>

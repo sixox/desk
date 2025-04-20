@@ -1,0 +1,39 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <h2 class="fw-bold text-dark mb-1">
+    Enter Results and KPIs for All Targets
+  </h2>
+  <p class="text-muted mb-4 fs-6 fst-italic">Provide up to 4 results and measurable KPIs per target.</p>
+
+  <%= form_with url: bulk_create_kpi_list_results_path(@kpi_list), local: true do %>
+    <% @targets.each_with_index do |target, index| %>
+      <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Target <%= index + 1 %>:</strong>
+            <span class="text-muted"><%= target.name %></span>
+          </div>
+          <small class="text-muted text-end"><%= target.description %></small>
+        </div>
+
+        <div class="card-body">
+          <% 4.times do |i| %>
+            <div class="row align-items-end mb-3">
+              <div class="col-md-6">
+                <%= label_tag "targets[#{target.id}][#{i}][description]", "Result Expectation", class: "form-label fw-semibold" %>
+                <%= text_field_tag "targets[#{target.id}][#{i}][description]", "", class: "form-control", placeholder: "Describe the result..." %>
+              </div>
+              <div class="col-md-6">
+                <%= label_tag "targets[#{target.id}][#{i}][kpi][comment]", "Measurable KPI", class: "form-label fw-semibold" %>
+                <%= text_area_tag "targets[#{target.id}][#{i}][kpi][comment]", "", class: "form-control", rows: 1, style: "resize: vertical; min-height: 2.5rem;", placeholder: "e.g. Increase customer satisfaction by 15%" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="text-end">
+      <%= submit_tag "Save All Results", class: "btn btn-primary btn-lg px-4 shadow-sm" %>
+    </div>
+  <% end %>
+</div>

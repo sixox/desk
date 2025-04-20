@@ -9,6 +9,23 @@ class MembersController < ApplicationController
 		@vacations = Vacation.all
 		@fillers_grouped = fillers_grouped_by_year_and_period(@user)
 
+		  @kpi_lists = if @user.procurement? && @user.manager?
+					    KpiList.where(department: "COO")
+					  elsif @user.admin?
+					    KpiList.where(department: "IT")
+					  elsif [20, 25, 71].include?(@user.id)
+					    KpiList.where(department: "logestic")
+					  elsif @user.ceo?
+					    KpiList.where(department: "Board of Directors") 
+					  elsif @user.id == 17
+					  	KpiList.where(department: "Strategy & Dev")
+					  elsif @user.id == 27
+					  	KpiList.where(department: "AI & Investment")
+					  else
+					    KpiList.where(department: @user.role)
+					  end
+
+
 
 	end
 

@@ -220,9 +220,15 @@ Rails.application.routes.draw do
 
   resources :acts, only: [:create]
 
-  resources :kpi_lists, only: [:new, :create, :show] do
-    resources :results, only: [:new, :create]
+  resources :kpi_lists do
+    resources :results do
+      collection do
+        get :bulk_new
+        post :bulk_create
+      end
+    end
   end
+
 
 
   get 'member/:id', to: 'members#show', as: 'member'

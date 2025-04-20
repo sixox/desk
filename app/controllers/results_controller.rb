@@ -2,35 +2,61 @@ class ResultsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_kpi_list
 
-  def new
-    @target = @kpi_list.targets.find(params[:target_id])
-    @result = @target.results.build
+  def bulk_new
+    @targets = @kpi_list.targets.includes(results: :kpi)
+
+    @targets.each do |target|
+      4.times do
+        result = target.results.build
+        result.build_kpi
+      end
+    end
   end
 
-	def create
-	  @target = @kpi_list.targets.find(params[:target_id])
-	  @result = @target.results.build(result_params)
+def bulk_create
+  success = true
+  flash[:alert] = []
 
-	  if @result.save
-	    next_target = @kpi_list.targets.where("id > ?", @target.id).first
-	    if next_target
-	      redirect_to new_kpi_list_result_path(@kpi_list, target_id: next_target.id), notice: "Result saved. Continue entering results."
-	    else
-	      redirect_to kpi_list_path(@kpi_list), notice: "All results saved. KPI process complete."
-	    end
-	  else
-	    render :new, status: :unprocessable_entity
-	  end
-	end
+  params[:targets]&.each do |target_id, result_data_array|
+    target = @kpi_list.targets.find(target_id)
+
+    result_data_array.each do |_, result_data|
+      description = result_data[:description].to_s.strip
+      kpi_value   = result_data.dig(:kpi, :comment).to_s.strip
+
+      # Skip completely empty rows
+      next if description.blank? && kpi_value.blank?
+
+      # Prevent KPI-only row (missing description)
+      if description.blank? && kpi_value.present?
+        success = false
+        flash[:alert] << "Target ##{target_id}: KPI comment requires a result description."
+        next
+      end
+
+      result = target.results.build(description: description)
+      result.build_kpi(comment: kpi_value) if kpi_value.present?
+
+      unless result.save
+        success = false
+        flash[:alert] << "Failed to save result for target ##{target_id}."
+      end
+    end
+  end
+
+  if success
+    redirect_to root_path, notice: "All valid results and KPIs saved."
+  else
+    flash.now[:alert] = flash[:alert].join("<br>").html_safe
+    bulk_new
+    render :bulk_new, status: :unprocessable_entity
+  end
+end
 
 
   private
 
   def set_kpi_list
     @kpi_list = current_user.kpi_lists.find(params[:kpi_list_id])
-  end
-
-  def result_params
-    params.require(:result).permit(:description, :kpi_value, :unit)
   end
 end

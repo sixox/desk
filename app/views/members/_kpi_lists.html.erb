@@ -1,0 +1,93 @@
+<div class="container my-5">
+  <div class="row">
+    <div class="col">
+              <div class="d-flex justify-content-start">
+
+  <h2 class="mb-4">Your KPI Lists</h2>
+</div>
+  </div>
+  <div class="col">
+            <div class="d-flex justify-content-end">
+             <% unless kpi_lists.any? { |k| k.year == 1404 && k.period == 0 } %>
+  <%= link_to "➕ Create Annual KPI List for 1404", new_kpi_list_path(year: 1404, period: 0), class: "btn btn-outline-primary mb-4" %>
+<% end %>
+
+
+</div>
+  </div>
+</div>
+  <div class="accordion" id="kpiAccordion">
+    <% kpi_lists.group_by { |k| [k.year, k.period] }.each_with_index do |((year, period), lists), index| %>
+      <% period_label = {
+        0 => "Annual",
+        1 => "First Quarter",
+        2 => "Second Quarter",
+        3 => "Third Quarter",
+        4 => "Fourth Quarter"
+      }[period.to_i] %>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-<%= index %>">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index %>" aria-expanded="false" aria-controls="collapse-<%= index %>">
+            <strong>KPI Period:</strong>
+            <% if period_label.present? %>
+              <span class="text-primary ms-1"><%= period_label %></span>
+            <% end %>
+            - <strong class="ms-2">Year:</strong> <%= year %>
+          </button>
+        </h2>
+
+        <div id="collapse-<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= index %>" data-bs-parent="#kpiAccordion">
+          <div class="accordion-body">
+            <% lists.each do |kpi_list| %>
+              <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0"><i class="bi bi-flag"></i> Department: <%= kpi_list.department.titleize %></h5>
+                </div>
+
+                <div class="card-body">
+                  <% kpi_list.targets.each_with_index do |target, t_index| %>
+                    <div class="table-responsive mb-5">
+                      <table class="table table-bordered align-middle">
+                        <thead class="table-primary">
+                          <tr>
+                            <th colspan="2">
+                              <i class="bi bi-bullseye me-2"></i>
+                              <small class="text-muted "><%= target.description %></small>
+                            </th>
+                          </tr>
+                          <tr class="table-light ">
+                            <th style="width: 60%">Result</th>
+                            <th style="width: 40%">Measurable KPI</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% target.results.each_with_index do |result, r_index| %>
+                            <tr>
+                              <td>
+                                
+                                <div class="text-muted mt-1"><%= result.description %></div>
+                              </td>
+                              <td>
+                                <% if result.kpi.present? %>
+                                  <i class="bi bi-graph-up"></i>
+                                  <span class="text-muted"><%= result.kpi.comment %></span>
+                                <% else %>
+                                  <span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>No KPI provided</span>
+                                <% end %>
+                              </td>
+                            </tr>
+                          <% end %>
+                        </tbody>
+                      </table>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

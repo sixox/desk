@@ -24,9 +24,9 @@
     </th>
 
     <% if payment_order.mahramane && payment_order.user != current_user && !@access_to_secret %>
-      <td class="fw-bold">Hided</td>
-      <td>Hided</td>
-      <td style="text-align: right;">Hided</td>
+      <td class="fw-bold">hidden</td>
+      <td>hidden</td>
+      <td style="text-align: right;">hidden</td>
     <% else %>
       <td class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></td>
       <td><%= payment_order.details %></td>
