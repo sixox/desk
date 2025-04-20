@@ -64,11 +64,11 @@
                         <tbody>
                           <% target.results.each_with_index do |result, r_index| %>
                             <tr>
-                              <td>
+                              <td class="text-end">
                                 
                                 <div class="text-muted mt-1" dir="rtl"><%= result.description %></div>
                               </td>
-                              <td>
+                              <td class="text-end">
                                 <% if result.kpi.present? %>
                                   <span class="text-muted" dir="rtl"><%= result.kpi.comment %></span>
                                 <% else %>
