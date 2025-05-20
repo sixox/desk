@@ -402,7 +402,7 @@ end
 	    @transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [nil, false])
 	  end
 
-	  if cu.id == 1
+	  if cu.id == 19
 	  	@pis = Pi.where(confirmed: [nil, false], rejected: [nil, false])
 	  end
 
