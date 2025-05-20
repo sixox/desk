@@ -1,7 +1,7 @@
 class PisController < ApplicationController
   before_action :authenticate_user!
   before_action :find_project, only: %i[ new create edit update ]
-  before_action :set_pi, only: [:update_temp, :destroy, :update_temp_form]
+  before_action :set_pi, only: [:update_temp, :destroy, :update_temp_form, :show]
 
 
 
@@ -17,6 +17,9 @@ class PisController < ApplicationController
     else
       render :new
     end
+  end
+
+  def show 
   end
 
   def edit
@@ -84,6 +87,10 @@ class PisController < ApplicationController
 
   def update
     @pi = Pi.find(params[:id])
+    if @pi.rejected
+      @pi.rejected = nil
+      @pi.confirm_or_reject_time = nil
+    end 
     respond_to do |format|
       if @pi.update(pi_params)
         format.turbo_stream do
@@ -102,6 +109,32 @@ class PisController < ApplicationController
       end
     end
   end
+
+  def confirm_or_reject
+    @pi = Pi.find(params[:id])
+
+    case params[:decision]
+    when 'confirm'
+      @pi.confirmed = true
+      @pi.confirm_or_reject_time = Time.current
+    when 'reject'
+      @pi.rejected = true
+      @pi.confirm_or_reject_time = Time.current
+    end
+
+    if @pi.save
+      redirect_to confirmable_payment_orders_path, notice: "PI was successfully #{params[:decision]}ed."
+    else
+      # ❌ On failure, re-render the `show` action with modal content
+      respond_to do |format|
+        format.html {
+          # fallback in case JS/Turbo is not used
+          redirect_to pi_path(@pi), alert: "Could not save PI."
+        }
+      end
+    end
+  end
+
 
 
 def create_document
@@ -175,7 +208,8 @@ def pi_params
     :number, :product, :validity, :quantity, :unit_price, :payment_term,
     :bank_account, :packing_type, :packing_count, :shipment_rate, :seller,
     :delivery_time, :issue_date, :pol, :pod, :customer_id, :user_id, :project_id, :currency, 
-    :total_price, :tolerance, :incoterm, :account_id, :commission, :agent, :document
+    :total_price, :tolerance, :incoterm, :account_id, :commission, :agent, :purchase, :freight,
+     :transport, :packing_cost, :custom_cost, :insurance, :inspection, :internal_commission, :foreign_commission, :other_cost, :cttd, :document
     )
 end
 

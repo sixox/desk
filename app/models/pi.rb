@@ -9,6 +9,11 @@
   
   validates :number, presence: true, uniqueness: true
   validates :issue_date, :product, :quantity, :total_price, :packing_type, :unit_price, :payment_term, :currency, :pod, :seller, :document, presence: true
+  # validates :cttd, presence: true
+  # validates :purchase, :packing_cost, :transport, :custom_cost, :freight,
+  #         :insurance, :inspection, :other_cost, :internal_commission, :foreign_commission,
+  #         presence: true
+
 
 
   AGENT = [

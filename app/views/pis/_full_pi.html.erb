@@ -1,0 +1,155 @@
+<%= form_with url: confirm_or_reject_pi_path(@pi), method: :patch do |form| %>
+<div class="modal-body">
+	<div class="card border-0 shadow mt-2">
+		<div class="card-body p-xl-4">
+
+			<div class="row d-flex justify-content-between">
+				<div class="col-auto">
+					<h6 class="card-subtitle text-secondary mb-3">
+						<% if @pi && @pi.document&.attached? %>
+						<i class="bi bi-file-earmark-pdf-fill"></i>
+						<%= link_to "#{@pi.number}.PDF", rails_blob_path(@pi.document, disposition: "attachment"), class: "text-secondary", target: "_blank" %>
+						<% end %>
+					</h6>
+				</div>
+				<div class="col-auto" style="margin-top: -6px;">
+					<small class="text-success">
+						<% if @pi %>
+						<%= @pi.issue_date&.strftime('%B %d') %>
+						<% end %>
+					</small>
+				</div>
+			</div>
+			<p class="card-text m-0">
+				<br>
+				<small><%= @pi.quantity.to_i %></small> MT <small><%= @pi.product %></small> - <small><%= @pi.packing_type %></small>
+				<br> 
+				<small><%= @pi.incoterm %> <%= @pi.pod %></small> PORT
+				<br>
+
+				<hr>
+				<div class="row">
+					<div class="col">
+						price
+						<br>
+						<small class="text-warning"><%= @pi.unit_price %></small>
+					</div>
+					<div class="col">
+						advance
+						<br>
+						<small class="text-warning"><%= @pi.payment_term %>% </small>
+					</div>
+					<div class="col">total 
+						<br>
+						<small class="text-warning"><%= number_with_delimiter(@pi.total_price.to_i, delimiter: ',') %></small>
+						<br>
+					</div>
+					<div class="col">
+						<br>
+						<small> <%= @pi.currency %></small>
+					</div>
+				</div>
+
+			</p>
+			<% if @pi.commission.present? %>
+			<small class="text-muted">commission <%= @pi.commission %>$ per MT to <%= @pi.agent %></small>
+			<% end %>
+			<hr class="timeline-small me-3 ms-3">
+			<% if @pi.cttd.present? %>
+
+			<div class="row" style="background-color: #c7efdd;">
+				<div class="col-12">
+					<h5 class="mt-3 mb-3 text-muted">Forecast</h5>
+				</div>
+
+				<!-- Settlement Time -->
+				<div class="col mb-2 d-flex justify-content-between">
+					<strong>Customer Settlement Time:</strong>
+					<span><%= @pi.cttd %> Days</span>
+				</div>
+
+				<!-- Costs Header -->
+				<div class="col-12 mt-3">
+					<h6 class="text-muted">Costs</h6>
+				</div>
+
+				<!-- Costs Grid (only if value > 0) -->
+				<% sum_of_costs = 0 %>
+				<% [
+					[:purchase, 'Purchase'],
+					[:packing_cost, 'Packing'],
+					[:transport, 'Transport'],
+					[:custom_cost, 'Custom & Port'],
+					[:freight, 'Freight'],
+					[:insurance, 'Insurance'],
+					[:inspection, 'Inspection'],
+					[:other_cost, 'Other Cost'],
+					[:internal_commission, 'Internal Commission'],
+					[:foreign_commission, 'Foreign Commission']
+					].each do |field, label| %>
+					<% value = @pi.send(field) %>
+					<% if value.present? && value != 0 %>
+					<% sum_of_costs += value %>
+					<div class="col-md-6 mb-2 d-flex justify-content-between">
+						<strong><%= label %>:</strong>
+						<span>$<%= number_with_precision(value, precision: 2) %></span>
+					</div>
+					<% end %>
+					<% end %>
+					<hr class="timeline-small me-3 ms-3">
+					<% @pi.currency == "dollar" ? unit = @pi.unit_price : unit = @pi.unit_price * 3.67 %>
+
+					<% profit = unit - sum_of_costs.to_i %>
+					<div class="row mb-3">
+						<div class="col">
+							<div class="card card-custom mt-1">
+								<div class="card-body text-center">
+									<h6 class="card-subtitle timeline-small">
+										Profit Margin % 
+										<hr>
+									</h6>
+									<small class="text-center text-secondary"><%= number_with_precision((profit / unit) * 100, precision: 2) %>
+									%</small>
+
+								</div>
+							</div>
+						</div>
+						<div class="col">
+							<div class="card card-custom mt-1">
+								<div class="card-body text-center">
+									<h6 class="card-subtitle timeline-small">
+										Interest %
+										<hr>
+									</h6>
+									<small class="text-center text-secondary"><%= number_with_precision(((profit / sum_of_costs) * 365) / @pi.cttd, precision: 2) %>
+									%</small>
+
+
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<% end %>
+
+
+
+
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer d-flex justify-content-center gap-2">
+		
+		<% if current_user.ceo? || current_user.admin?%>
+		<%= form.submit 'Confirm', name: 'decision', value: 'confirm', class: 'btn btn-success', data: { action: 'click->bs-modal#submitEnd' } %>
+
+		<%= form.submit 'Reject', name: 'decision', value: 'reject', class: 'btn btn-danger', data: { action: 'click->bs-modal#submitEnd' } %>
+		<% end %>
+		
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+		
+	</div>
+	<% end %>
+
