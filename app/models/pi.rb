@@ -19,7 +19,8 @@
   AGENT = [
           'Ms.Sujeetha',
           'Mr.Seifi',
-          'Huate'
+          'Huate',
+          'Mr.Season'
   ]
 
   PRODUCT = [
