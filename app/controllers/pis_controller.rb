@@ -209,7 +209,7 @@ def pi_params
     :bank_account, :packing_type, :packing_count, :shipment_rate, :seller,
     :delivery_time, :issue_date, :pol, :pod, :customer_id, :user_id, :project_id, :currency, 
     :total_price, :tolerance, :incoterm, :account_id, :commission, :agent, :purchase, :freight,
-     :transport, :packing_cost, :custom_cost, :insurance, :inspection, :internal_commission, :foreign_commission, :other_cost, :cttd, :document
+     :transport, :packing_cost, :custom_cost, :insurance, :inspection, :internal_commission, :foreign_commission, :other_cost, :cttd, :sales_by, :document
     )
 end
 

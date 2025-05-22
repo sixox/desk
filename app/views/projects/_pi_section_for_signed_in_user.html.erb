@@ -52,5 +52,6 @@
 		<% if @project.pi.commission.present? %>
 		<small class="text-muted">commission <%= @project.pi.commission %>$ per MT to <%= @project.pi.agent %></small>
 		<% end %>
+		<%= render 'pis/forecast', pi: @project.pi %>
 	</div>
 </div>
