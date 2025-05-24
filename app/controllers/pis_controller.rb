@@ -120,7 +120,7 @@ def confirm_or_reject
 
     # Create message for confirmation
     Message.create(
-      sender: current_user,
+      sender_id: 1,
       receiver_id: 5,
       subject: "PI Confirmed",
       body: "PI ##{@pi.number} has been confirmed."
@@ -132,7 +132,7 @@ def confirm_or_reject
 
     # Create message for rejection
     Message.create(
-      sender: current_user,
+      sender_id: 1,
       receiver_id: 5,
       subject: "PI Rejected",
       body: "PI ##{@pi.number} has been rejected."
