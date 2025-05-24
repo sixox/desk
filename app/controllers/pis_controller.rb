@@ -110,30 +110,46 @@ class PisController < ApplicationController
     end
   end
 
-  def confirm_or_reject
-    @pi = Pi.find(params[:id])
+def confirm_or_reject
+  @pi = Pi.find(params[:id])
 
-    case params[:decision]
-    when 'confirm'
-      @pi.confirmed = true
-      @pi.confirm_or_reject_time = Time.current
-    when 'reject'
-      @pi.rejected = true
-      @pi.confirm_or_reject_time = Time.current
-    end
+  case params[:decision]
+  when 'confirm'
+    @pi.confirmed = true
+    @pi.confirm_or_reject_time = Time.current
 
-    if @pi.save
-      redirect_to confirmable_payment_orders_path, notice: "PI was successfully #{params[:decision]}ed."
-    else
-      # ❌ On failure, re-render the `show` action with modal content
-      respond_to do |format|
-        format.html {
-          # fallback in case JS/Turbo is not used
-          redirect_to pi_path(@pi), alert: "Could not save PI."
-        }
-      end
+    # Create message for confirmation
+    Message.create(
+      sender: current_user,
+      receiver_id: 5,
+      subject: "PI Confirmed",
+      body: "PI ##{@pi.number} has been confirmed."
+    )
+
+  when 'reject'
+    @pi.rejected = true
+    @pi.confirm_or_reject_time = Time.current
+
+    # Create message for rejection
+    Message.create(
+      sender: current_user,
+      receiver_id: 5,
+      subject: "PI Rejected",
+      body: "PI ##{@pi.number} has been rejected."
+    )
+  end
+
+  if @pi.save
+    redirect_to confirmable_payment_orders_path, notice: "PI was successfully #{params[:decision]}ed."
+  else
+    respond_to do |format|
+      format.html {
+        redirect_to pi_path(@pi), alert: "Could not save PI."
+      }
     end
   end
+end
+
 
 
 
