@@ -1,0 +1,89 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div dir="rtl" class="text-end">
+
+
+    <h2 class="mb-4">KPI Lists</h2>
+
+    <div class="accordion" id="kpiAccordion">
+      <% @kpi_lists.group_by { |k| [k.year, k.period] }.each_with_index do |((year, period), lists), index| %>
+      <% period_label = {
+        0 => "Annual", 1 => "First Quarter", 2 => "Second Quarter",
+        3 => "Third Quarter", 4 => "Fourth Quarter"
+      }[period.to_i] %>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-<%= index %>">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index %>" aria-expanded="false" aria-controls="collapse-<%= index %>">
+            <strong>KPI Period:</strong> <span class="text-primary ms-1"><%= period_label %></span>
+            - <strong class="ms-2">Year:</strong> <%= year %>
+          </button>
+        </h2>
+
+        <div id="collapse-<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= index %>" data-bs-parent="#kpiAccordion">
+          <div class="accordion-body p-2">
+            <% lists.each do |kpi_list| %>
+            <div class="card shadow-sm mb-3 border-0">
+              <div class="card-header bg-light py-1">
+                <h5 class="mb-0 fs-6"><i class="bi bi-flag me-1"></i> Department: <%= kpi_list.department.titleize %></h5>
+              </div>
+
+              <div class="card-body p-2">
+                <% kpi_list.targets.each do |target| %>
+                <div class="table-responsive mb-3">
+                  <table class="table table-bordered table-sm align-middle">
+                    <thead class="table-primary">
+                      <tr>
+                        <th colspan="2">
+                          <i class="bi bi-bullseye me-2"></i>
+                          <small class="text-muted" dir="rtl"><%= target.description %></small>
+                        </th>
+                      </tr>
+                      <% if target.results.any? %>
+                      <tr class="table-light">
+                        <th style="width: 60%">Result</th>
+                        <th style="width: 40%">Measurable KPI</th>
+                      </tr>
+                      <% end %>
+                    </thead>
+                    <% if target.results.any? %>
+                    <tbody>
+                      <% target.results.each do |result| %>
+                      <tr>
+                        <td class="text-end">
+                          <div class="text-muted" dir="rtl"><%= result.description %></div>
+                        </td>
+                        <td class="text-end">
+                          <% if result.kpi.present? %>
+                          <span class="text-muted" dir="rtl"><%= result.kpi.comment %></span>
+                          <% else %>
+                          <span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>No KPI provided</span>
+                          <% end %>
+                        </td>
+                      </tr>
+                      <% end %>
+                    </tbody>
+                    <% end %>
+                  </table>
+                </div>
+                <% end %>
+              </div>
+            </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<style>
+  .table td, .table th {
+    padding: 0.25rem !important;
+    font-size: 0.75rem;
+  }
+  .card-header, .accordion-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+</style>

@@ -1,6 +1,11 @@
 class KpiListsController < ApplicationController
   before_action :authenticate_user!
 
+
+  def index
+    @kpi_lists = KpiList.includes(targets: { results: :kpi }).all
+  end
+
   def new
     @year = params[:year].to_i
     @period = params[:period].to_i
