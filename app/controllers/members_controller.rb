@@ -13,7 +13,7 @@ class MembersController < ApplicationController
 					    KpiList.where(department: "COO")
 					  elsif @user.admin?
 					    KpiList.where(department: "IT")
-					  elsif [20, 25, 71].include?(@user.id)
+					  elsif [10, 16, 31].include?(@user.id)
 					    KpiList.where(department: "logestic")
 					  elsif @user.ceo?
 					    KpiList.where(department: "Board of Directors") 
