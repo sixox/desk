@@ -2,7 +2,7 @@
   <div dir="rtl" class="text-end">
 
 
-    <h2 class="mb-4">KPI Lists</h2>
+    <h2 class="mb-4 text-start">KPI Lists</h2>
 
     <div class="accordion" id="kpiAccordion">
       <% @kpi_lists.group_by { |k| [k.year, k.period] }.each_with_index do |((year, period), lists), index| %>
