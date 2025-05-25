@@ -8,7 +8,7 @@
     </div>
     <div class="col">
       <div class="d-flex justify-content-end">
-        <% if current_user.is_manager || current_user.id == 15 %>
+        <% if current_user.is_manager || current_user.id == 15 || current_user.id == 10 %>
           <% unless kpi_lists.any? { |k| k.year == 1404 && k.period == 0 } %>
           <%= link_to "➕ Create Annual KPI List for 1404", new_kpi_list_path(year: 1404, period: 0), class: "btn btn-outline-primary mb-4" %>
           <% end %>
