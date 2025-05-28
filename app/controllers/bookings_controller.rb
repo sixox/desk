@@ -101,6 +101,7 @@ def booking_params
 		:release_permission_date,
 		:inspection,
 		:freight_price,
+		:weight,
 		images: []
 		)
 end

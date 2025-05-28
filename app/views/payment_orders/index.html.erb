@@ -72,6 +72,7 @@
 							<th scope="col">#</th>
 							<th scope="col">Project</th>
 							<th scope="col">Booking</th>
+							<th scope="col">Weight</th>
 							<th scope="col">Note</th>
 							<th scope="col">Requested at</th>
 							<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
@@ -86,6 +87,7 @@
 							</th>
 							<td><%= request.booking.project.number %></td>
 							<td><%= request.booking.number %></td>
+							<td><%= request.booking.weight %> <%= request.booking.weight.present? ? "MT" : "" %></td>
 							
 							<td>
 								<% if request.note.present? %>

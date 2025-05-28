@@ -51,7 +51,10 @@
 				</div>
 				<div class="row text-center">
 					<div class="col border-end border-1 border-dark">
-						<small class="text-secondary"><i class="bi bi-clipboard"></i> <%= booking.quantity %> <span style="font-size: 10px;">Containers</span></small>
+						<div><small class="text-secondary"><i class="bi bi-clipboard"></i> <%= booking.quantity %> <span style="font-size: 10px;">Containers</span></small></div>
+						<% if booking.weight.present? %>
+						<div><small class="text-secondary"><i class="bi bi-compass"></i> <%= booking.weight %> <span style="font-size: 10px;">MT</span></small></div>
+						<% end %>
 					</div>
 					<div class="col border-end border-1 border-dark">
 						<small class="text-secondary"><i class="bi bi-clipboard-check"></i> <%= booking.picked_up.to_i %> <span style="font-size: 10px;">Containers</span></small>

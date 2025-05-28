@@ -65,7 +65,7 @@
 
 
 			<div class="row">
-				<div class="col-lg-4">
+				<div class="col-lg">
 					<div class="form-group  ">
 
 						<label class="mb-2 mt-1">
@@ -89,15 +89,16 @@
 
 					</div>
 				</div>
-
 				<div class="col-lg">
-					<div class="form-group mb-2 mt-5">
-						<%= form.check_box :have_flexi, class: 'form-check-input' %>
-						<label class="form-check-label" for="haveFlexi">
-							Have flexi?
+					<div class="form-group">
+						<label class="mb-2 mt-1">
+							Number of fcl
+							<%= form.number_field :quantity, class: "form-control mt-2" %>
 						</label>
 					</div>
 				</div>
+
+				
 			</div>
 
 
@@ -114,14 +115,7 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Quantity
-							<%= form.number_field :quantity, class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
+				
 				<div class="col-lg">
 					<div class="form-group">
 						<label class="mb-2 mt-1">
@@ -147,14 +141,32 @@
 						</label>
 					</div>
 				</div>
-				<div class="col-lg">
-					<div class="form-group mb-2 mt-5">
+				<div class="col-lg mb-2">
+					<div class="form-group">
+						<label class="mb-2 mt-3">
+							Weight
+							<div class="input-group mt-2">
+								<%= form.number_field :weight, class: "form-control" %>
+								<span class="input-group-text">MT</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				<div class="col-lg-5">
+					<div class="form-group mt-5">
+						<%= form.check_box :have_flexi, class: 'form-check-input' %>
+						<label class="form-check-label" for="haveFlexi">
+							Have flexi?
+						</label>
+					</div>
+					<div class="form-group">
 						<%= form.check_box :inspection, class: 'form-check-input' %>
 						<label class="form-check-label" for="inspection">
 							Have Inspection?
 						</label>
 					</div>
 				</div>
+				
 				
 			</div>
 

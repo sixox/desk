@@ -40,6 +40,7 @@
 						<th scope="col" class="col-1">#</th>
 						<th scope="col" class="col-2">Project</th>
 						<th scope="col" class="col-2">Booking</th>
+						<th scope="col" class="col">Weight</th>
 						<th scope="col" class="col-2">Customer</th>
 						<th scope="col" class="col-1">Note</th>
 
@@ -69,7 +70,10 @@
 				<% end %>
 			</td>
 			<td><%= booking&.number %></td>
+			<td><%= booking&.weight %> <%= booking.weight.present? ? "MT" : "" %></td>
 			<td><%= customer&.nickname %></td>
+
+
 
 				
 
