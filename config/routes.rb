@@ -231,6 +231,9 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :candidates
+
+
 
 
   get 'member/:id', to: 'members#show', as: 'member'

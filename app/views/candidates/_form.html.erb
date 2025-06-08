@@ -1,0 +1,58 @@
+<%= form_with model: @candidate, local: true do |form| %>
+<div class="modal-body">
+  <div class="row">
+    <% if @candidate.errors.any? %>
+    <div class="error-area text-danger">
+      <h5><%= pluralize(@candidate.errors.count, 'error') %> prohibited this candidate from being saved:</h5>
+      <ul>
+        <% @candidate.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+    <% end %>
+
+    <div class="col-lg-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Name <span class="text-danger">*</span></label>
+        <%= form.text_field :name, class: "form-control", required: true %>
+      </div>
+    </div>
+
+    <div class="col-lg-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
+        <%= form.telephone_field :phone, class: "form-control", required: true %>
+      </div>
+    </div>
+
+    <div class="col-lg-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Role <span class="text-danger">*</span></label>
+        <%= form.select :role, User.roles.keys.map { |r| [r.humanize.capitalize, r] },
+        { prompt: 'Select Role' },
+        class: "form-select", required: true %>
+      </div>
+    </div>
+
+    <div class="col-lg-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Password <span class="text-danger">*</span></label>
+        <%= form.password_field :password, class: "form-control", required: true %>
+      </div>
+    </div>
+    <div class="col-lg-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Password Confirmation <span class="text-danger">*</span></label>
+        <%= form.password_field :password_confirmation, class: "form-control", required: true %>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-footer">
+  <%= form.submit 'Save Candidate', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+<% end %>

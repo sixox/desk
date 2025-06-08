@@ -1,0 +1,32 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <h1 class="mb-4">Candidates</h1>
+  <%= link_to new_candidate_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary mb-3" do %>
+  <i class="bi bi-plus"></i> Add Condidate
+  <% end %>
+
+  <table class="table table-bordered table-striped table-sm>
+    <thead class="table-light">
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @candidates.each do |candidate| %>
+      <tr>
+        <td><%= candidate.name %></td>
+        <td><%= candidate.phone %></td>
+        <td><%= candidate.role.capitalize %></td>
+        <td>
+          <%= link_to 'edit', edit_candidate_path(candidate), data: { controller: "bs-modal-form" }, class: "btn btn-sm btn-warning" %>
+
+          <%= link_to 'delete', candidate_path(candidate), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } , class: "btn btn-sm btn-danger" %>
+
+        </td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
