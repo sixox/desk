@@ -1,94 +1,72 @@
 <div class="col-lg-10 mx-auto mt-5">
 
-  <% if current_user.is_manager %>
-  <% if current_user.hr? || current_user.ceo? || current_user.cob? || current_user.admin? || current_user.procurement? %>
-  <%= link_to 'Result', result_satisfaction_forms_path, class: 'btn btn-secondary mt-3 mb-5'%>
+  <% if current_user.is_manager && (current_user.hr? || current_user.ceo? || current_user.cob? || current_user.admin? || current_user.procurement?) %>
+    <%= link_to 'Result', result_satisfaction_forms_path, class: 'btn btn-secondary mt-3 mb-5' %>
   <% end %>
-  <% end %>
-  <% if @satisfaction_forms.first.answer.present? && @satisfaction_forms.last.answer.present? %>
 
-    <div class="table-responsive">
-  <table class="table table-bordered align-middle table-sm table-striped table-hover">
-    <thead class="table-dark">
-      <tr>
-        
-        
-        
-        
-        
-        <th class="text-center">کاملا مخالفم</th>
-        <th class="text-center">مخالفم</th>
-        <th class="text-center">تا حدودی مخالفم</th>
-        <th class="text-center">تا حدودی موافقم</th>
-        <th class="text-center">موافقم</th>
-        <th class="text-center">کاملا موافقم</th>
-        <th class="text-end">Question</th>
-        <th class="text-center">Category</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% current_category = nil %>  <!-- Variable to track the current category -->
-      <% color_toggle = true %>
-      <% @satisfaction_forms.each do |satisfaction_form| %>
-      
-      <tr>
-        <!-- Check if the category has changed -->
+  <% if @grouped_forms.present? %>
+    <div class="accordion mb-5" id="satisfactionAccordion">
+      <% @grouped_forms.sort.reverse.each_with_index do |((year, period), forms), index| %>
+        <% next if forms.all? { |f| f.answer.nil? } %>
 
-        <td class="text-center">
-          <% if satisfaction_form.answer == 6 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
-        </td>
-        <td class="text-center">
-          <% if satisfaction_form.answer == 5 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
-        </td>
-        <td class="text-center">
-          <% if satisfaction_form.answer == 4 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
-        </td>
-        <td class="text-center">
-          <% if satisfaction_form.answer == 3 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
-        </td>
-        <td class="text-center">
-          <% if satisfaction_form.answer == 2 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
-        </td>
-        <td class="text-center">
-          <% if satisfaction_form.answer == 1 %>
-            <i class="bi bi-check-circle-fill text-success"></i>
-          <% end %>
-        </td>
-        
-        <td class="text-end"><%= satisfaction_form.satisfaction.question %></td>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading<%= index %>">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= index %>">
+              <%= year %> | <%= period == 1 ? "First Half" : "Second Half" %>
+            </button>
+          </h2>
+          <div id="collapse<%= index %>" class="accordion-collapse collapse" data-bs-parent="#satisfactionAccordion">
+            <div class="accordion-body">
+              <div class="table-responsive">
+                <table class="table table-bordered align-middle table-sm table-striped table-hover">
+                  <thead class="table-dark">
+                    <tr>
+                      <th class="text-center">کاملا مخالفم</th>
+                      <th class="text-center">مخالفم</th>
+                      <th class="text-center">تا حدودی مخالفم</th>
+                      <th class="text-center">تا حدودی موافقم</th>
+                      <th class="text-center">موافقم</th>
+                      <th class="text-center">کاملا موافقم</th>
+                      <th class="text-end">Question</th>
+                      <th class="text-center">Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% current_category = nil %>
+                    <% color_toggle = true %>
+                    <% forms.each do |sf| %>
+                      <tr>
+                        <% (6).downto(1) do |val| %>
+                          <td class="text-center">
+                            <% if sf.answer == val %>
+                              <i class="bi bi-check-circle-fill text-success"></i>
+                            <% end %>
+                          </td>
+                        <% end %>
+                        <td class="text-end"><%= sf.satisfaction.question %></td>
 
-
-
-
-        <% if current_category != satisfaction_form.satisfaction.category %>
-        <td class="text-center align-right <%= color_toggle ? 'table-warning' : 'table-secondary' %>" rowspan="<%= @satisfaction_forms.count { |sf| sf.satisfaction.category == satisfaction_form.satisfaction.category } %>">
-          <%= satisfaction_form.satisfaction.category %>
-        </td>
-        <% current_category = satisfaction_form.satisfaction.category %>
-        <% color_toggle = !color_toggle %>
-        <% end %>
-        
-      </tr>
+                        <% if current_category != sf.satisfaction.category %>
+                          <td class="text-center align-right <%= color_toggle ? 'table-warning' : 'table-secondary' %>" rowspan="<%= forms.count { |f| f.satisfaction.category == sf.satisfaction.category } %>">
+                            <%= sf.satisfaction.category %>
+                          </td>
+                          <% current_category = sf.satisfaction.category %>
+                          <% color_toggle = !color_toggle %>
+                        <% end %>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       <% end %>
-    </tbody>
-  </table>
-</div>
-
-
-  <% else %>
-  <%= render 'satisfaction_forms/form' %>
+    </div>
   <% end %>
 
-  <%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-3 mb-5', data: { turbo: false } %>
+  <% if @new_forms.present? %>
+    <%= render 'satisfaction_forms/form', new_forms: @new_forms %>
+  <% end %>
 
+  <%= link_to 'Back to Dashboard', root_path, class: 'btn btn-secondary mt-5 mb-5', data: { turbo: false } %>
 </div>

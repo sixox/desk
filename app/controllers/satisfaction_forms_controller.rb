@@ -3,25 +3,44 @@ class SatisfactionFormsController < ApplicationController
 
   # Display all SatisfactionForms for the current user
   def index
-    @satisfaction_forms = current_user.satisfaction_forms.includes(:satisfaction)
+    @grouped_forms = current_user.satisfaction_forms.includes(:satisfaction)
+    .group_by { |sf| [sf.year, sf.period] }
+
+    current_year = 1403
+    current_period = 2
+
+    @new_forms = current_user.satisfaction_forms
+    .where(year: current_year, period: current_period, answer: nil)
+    .includes(:satisfaction)
   end
 
 
-  def result
-        @satisfactions = Satisfaction.includes(satisfaction_forms: :user).all
-        @a = []
-        User.all.each do |u|
-          first_form = u.satisfaction_forms.first
-          last_form = u.satisfaction_forms.last
+def result
+  @grouped_satisfactions = {}
 
-          if first_form&.answer.present? && last_form&.answer.present?
-            @a << u.name
-          end
-        end
-
+  Satisfaction.includes(satisfaction_forms: :user).find_each do |satisfaction|
+    satisfaction.satisfaction_forms.group_by { |f| [f.year, f.period] }.each do |(year, period), forms|
+      @grouped_satisfactions[[year, period]] ||= []
+      # Clone the satisfaction and attach only forms from that year+period
+      new_satisfaction = satisfaction.dup
+      new_satisfaction.define_singleton_method(:satisfaction_forms) { forms }
+      @grouped_satisfactions[[year, period]] << new_satisfaction
+    end
   end
 
-  # Update all SatisfactionForm records with submitted answers
+  @users_per_group = {}
+
+  User.includes(:satisfaction_forms).find_each do |u|
+    u.satisfaction_forms.group_by { |f| [f.year, f.period] }.each do |(year, period), forms|
+      if forms.all? { |f| f.answer.present? }
+        @users_per_group[[year, period]] ||= []
+        @users_per_group[[year, period]] << u
+      end
+    end
+  end
+end
+
+
   def update_all
     all_updated = true
 
@@ -35,11 +54,18 @@ class SatisfactionFormsController < ApplicationController
     if all_updated
       redirect_to satisfaction_forms_path, notice: 'Your form was successfully sent.'
     else
-      @satisfaction_forms = current_user.satisfaction_forms.includes(:satisfaction)
+      current_year = 1403
+      current_period = 2
+
+      @new_forms = current_user.satisfaction_forms
+      .where(year: current_year, period: current_period)
+      .includes(:satisfaction)
       flash.now[:alert] = 'Some forms could not be updated. Please check for errors.'
       render :index
     end
   end
+
+
 
   private
 
