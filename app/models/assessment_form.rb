@@ -12,7 +12,7 @@ class AssessmentForm < ApplicationRecord
 
 
   # Before save callback to calculate total score
-  before_save :calculate_total_score
+  # before_save :calculate_total_score
 
   # Class method to get unique users associated with a given filler
   def self.unique_users_for_filler(filler, year, period)
