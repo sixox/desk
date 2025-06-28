@@ -233,6 +233,13 @@ Rails.application.routes.draw do
 
   resources :candidates
 
+  resources :stakeholder_survey_forms do
+    collection do
+      patch :update_all   # for submitting multiple answers at once
+    end
+  end
+
+
 
 
 

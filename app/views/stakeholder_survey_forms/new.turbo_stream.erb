@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "remote_modal" do %>
+	<%= render 'shared/turbo_modal', modal_title: "Stakeholder Survay #{@current_year} - #{@current_period}", form_partial: "stakeholder_survey_forms/form" %>
+<% end %>

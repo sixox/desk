@@ -1,0 +1,57 @@
+<%= form_with url: update_all_stakeholder_survey_forms_path, method: :patch, local: true do %>
+  <div class="modal-body">
+
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered table-hover table-striped text-center align-middle shadow-sm">
+        <thead class="table-dark align-middle">
+          <tr>
+            <th class="text-end" style="width: 40%;">سؤال</th>
+            <th class="text-nowrap">۵<br><small>بسیار راضی</small></th>
+            <th class="text-nowrap">۴<br><small>راضی</small></th>
+            <th class="text-nowrap">۳<br><small>عدم رضایت</small></th>
+            <th class="text-nowrap">۲<br><small>ناراضی</small></th>
+            <th class="text-nowrap">۱<br><small>بسیار ناراضی</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% regular_forms = @new_forms[0...-1] %>
+          <% feedback_form = @new_forms.last %>
+
+          <% regular_forms.each do |form| %>
+            <tr>
+              <td class="text-end fw-semibold" dir="rtl">
+                <%= form.stakeholder_survey.question_text %>
+              </td>
+              <% (5).downto(1) do |val| %>
+                <td>
+                  <div class="form-check form-check-inline d-flex justify-content-center">
+                    <%= radio_button_tag "stakeholder_survey_forms[#{form.id}][answer]", val, form.answer.to_i == val,
+                      id: "form_#{form.id}_#{val}",
+                      class: "form-check-input" %>
+                  </div>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 mb-3">
+      <label for="feedback_<%= feedback_form.id %>" class="form-label fw-bold d-block text-end" dir="rtl">
+        <%= feedback_form.stakeholder_survey.question_text %>
+      </label>
+      <%= text_area_tag "stakeholder_survey_forms[#{feedback_form.id}][feedback]",
+                        feedback_form.feedback,
+                        class: "form-control border border-info shadow-sm",
+                        id: "feedback_#{feedback_form.id}",
+                        rows: 4,
+                        placeholder: "نظرات خود را وارد کنید..." %>
+    </div>
+  </div>
+
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+    <%= submit_tag "ثبت پاسخ‌ها", class: 'btn btn-primary px-4 fw-bold', data: { action: 'click->bs-modal#submitEnd' } %>
+  </div>
+<% end %>

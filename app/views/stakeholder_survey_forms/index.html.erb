@@ -1,0 +1,116 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+  <%
+    sorted_forms = @current_user_forms.sort_by { |f| f.stakeholder_survey.position }
+    rating_forms = sorted_forms[0...-1]
+    feedback_form = sorted_forms.last
+
+    filled_ratings = rating_forms.all? { |f| f.answer.present? }
+    filled_feedback = feedback_form&.feedback.present?
+
+    should_show_button = @current_user_forms.empty? || !(filled_ratings && filled_feedback)
+
+    answer_texts = {
+      1 => "بسیار ناراضی",
+      2 => "ناراضی",
+      3 => "عدم رضایت",
+      4 => "راضی",
+      5 => "بسیار راضی"
+    }
+
+    answer_colors = {
+      1 => "danger",
+      2 => "warning",
+      3 => "secondary",
+      4 => "info",
+      5 => "success"
+    }
+  %>
+ 
+ 
+
+  <% if should_show_button %>
+    <div class="mb-4 text-end">
+      <%= link_to new_stakeholder_survey_form_path, data: { controller: "bs-modal-form" }, class: "btn btn-success shadow-sm px-4" do %>
+        <i class="bi bi-plus-circle-fill me-1"></i> تکمیل فرم
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="accordion" id="stakeholderSurveyAccordion">
+    <% @grouped_forms.sort.reverse.each_with_index do |((year, period), forms), index| %>
+
+   
+    <hr>
+
+      <div class="accordion-item border shadow-sm mb-3">
+        <h2 class="accordion-header" id="heading-<%= index %>">
+          <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index %>" aria-expanded="false" aria-controls="collapse-<%= index %>">
+            سال <%= year %> | دوره <%= period %>
+          </button>
+        </h2>
+        <div id="collapse-<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= index %>" data-bs-parent="#stakeholderSurveyAccordion">
+          <div class="accordion-body">
+
+            <% users = forms.map(&:user).uniq %>
+            <% questions = forms.map(&:stakeholder_survey).uniq.sort_by(&:position) %>
+            <% rating_questions = questions[0...-1] %>
+            <% last_question = questions.last %>
+
+            <div class="table-responsive mb-4">
+              <table class="table table-bordered table-hover table-striped align-middle text-center">
+                <thead class="table-dark sticky-top">
+                  <tr>
+                    <th class="text-end" style="min-width: 250px;">سوال</th>
+                    <% users.each do |user| %>
+                      <th><%= user.first_name %></th>
+                    <% end %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% rating_questions.each do |q| %>
+                    <tr>
+                      <td class="text-end"><%= q.question_text %></td>
+                      <% users.each do |user| %>
+                        <% form = forms.find { |f| f.user == user && f.stakeholder_survey == q } %>
+                        <td>
+                          <% if form&.answer.present? %>
+                            <span class="badge bg-<%= answer_colors[form.answer.to_i] %> fs-6">
+                              <%= answer_texts[form.answer.to_i] %>
+                            </span>
+                          <% else %>
+                            <span class="text-muted">-</span>
+                          <% end %>
+                        </td>
+                      <% end %>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Feedback block -->
+            <div class="card bg-light border-start border-info border-4 shadow-sm mb-3">
+              <div class="card-body">
+                <h6 class="card-title text-end"><%= last_question.question_text %></h6>
+                <% users.each do |user| %>
+                  <% form = forms.find { |f| f.user == user && f.stakeholder_survey == last_question } %>
+                  <% if form&.feedback.present? %>
+                    <div class="alert alert-info mt-2">
+                      <strong><%= user.first_name %>:</strong>
+                      <%= simple_format(h(form.feedback)) %>
+                    </div>
+                  <% else %>
+                    <p class="text-muted"><strong><%= user.first_name %>:</strong> نظری ثبت نشده</p>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+            <!-- End Feedback -->
+
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
