@@ -6,11 +6,11 @@
         <thead class="table-dark align-middle">
           <tr>
             <th class="text-end" style="width: 40%;">سؤال</th>
-            <th class="text-nowrap">۵<br><small>بسیار راضی</small></th>
-            <th class="text-nowrap">۴<br><small>راضی</small></th>
-            <th class="text-nowrap">۳<br><small>عدم رضایت</small></th>
-            <th class="text-nowrap">۲<br><small>ناراضی</small></th>
-            <th class="text-nowrap">۱<br><small>بسیار ناراضی</small></th>
+            <th class="text-nowrap"><small>بسیار راضی</small></th>
+            <th class="text-nowrap"><small>راضی</small></th>
+            <th class="text-nowrap"><small>عدم رضایت</small></th>
+            <th class="text-nowrap"><small>ناراضی</small></th>
+            <th class="text-nowrap"><small>بسیار ناراضی</small></th>
           </tr>
         </thead>
         <tbody>
@@ -20,7 +20,9 @@
           <% regular_forms.each do |form| %>
             <tr>
               <td class="text-end fw-semibold" dir="rtl">
+                <small>
                 <%= form.stakeholder_survey.question_text %>
+                </small>
               </td>
               <% (5).downto(1) do |val| %>
                 <td>
