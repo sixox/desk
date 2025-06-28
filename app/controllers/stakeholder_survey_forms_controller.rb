@@ -3,7 +3,7 @@ class StakeholderSurveyFormsController < ApplicationController
 
 	def index
 	  @current_year = 1403
-	  @current_period = 3
+	  @current_period = 4
 
 	  # Forms grouped by [year, period], only those that have answers
 	  @grouped_forms = StakeholderSurveyForm
@@ -19,7 +19,7 @@ class StakeholderSurveyFormsController < ApplicationController
 
 	def new
 	  @current_year = 1403
-	  @current_period = 3
+	  @current_period = 4
 
 	  @new_forms = current_user.stakeholder_survey_forms
 	    .includes(:stakeholder_survey)
@@ -42,7 +42,7 @@ class StakeholderSurveyFormsController < ApplicationController
       redirect_to stakeholder_survey_forms_path, notice: 'Your responses were submitted.'
     else
       current_year = 1403
-      current_period = 3
+      current_period = 4
 
       @grouped_forms = current_user.stakeholder_survey_forms
                                    .includes(:stakeholder_survey)
