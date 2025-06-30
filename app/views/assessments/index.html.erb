@@ -141,6 +141,47 @@
       </div>
     </div>
   </div>
+      <div class="accordion-item">
+      <% year = 1404 %>
+      <% period = 1 %>
+      <h2 class="accordion-header" id="headingOne<%= year%><%= period %>">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= year %><%= period %>" aria-expanded="true" aria-controls="collapse<%= year %><%= period %>">
+          <%= year %> - <%= period %>
+        </button>
+      </h2>
+      <div id="collapse<%= year %><%= period %>" class="accordion-collapse collapse " aria-labelledby="headingOne<%= year%><%= period %>" data-bs-parent="#accordionExampleIndex">
+        <div class="accordion-body">
+         <div class="row">
+          <% unique_users = AssessmentForm.unique_users_for_filler(@filler, year, period) %>
+          <% unique_users.each do |user| %>
+          <% assessment_form = AssessmentForm.by_user_and_filler(user, @filler, year, period).last %>
+          <% if assessment_form.present? && assessment_form.score.nil? %>
+          <div class="col-md-6 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <!-- If the score is not filled yet -->
+                <p class="card-text">
+                  The assessment form for <%= user.name.titleize %> is not filled yet.
+                </p>
+              <%= link_to "Fill Assessment Form", form_assessments_path(user_id: user.id, year: year, period: period), class: "btn btn-primary" %>
+              </div>
+            </div>
+          </div>
+          <% end %>
+          <% end %>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="accordion" id="accordionExample<%= year %><%= period %>">
+              <% unique_users.each do |user| %>
+              <%= render 'assessments/assessments', user: user, filler: @filler, year: year, period: period %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
 </div>
