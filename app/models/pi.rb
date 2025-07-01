@@ -20,7 +20,8 @@
           'Ms.Sujeetha',
           'Mr.Seifi',
           'Huate',
-          'Mr.Season'
+          'Mr.Season',
+          'Kailjee'
   ]
 
   SALESMEN = ["Amir", "Milad", "Yasamin", "Farnaz", "Jessica", "Mohsen"]
