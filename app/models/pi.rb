@@ -24,7 +24,7 @@
           'Kailjee'
   ]
 
-  SALESMEN = ["Amir", "Milad", "Yasamin", "Farnaz", "Jessica", "Mohsen"]
+  SALESMEN = ["Amir", "Milad", "Masoud", "Yasamin", "Farnaz", "Jessica", "Mohsen"]
 
   PRODUCT = [
   'BASE OIL',
