@@ -1,5 +1,5 @@
 <div class="col-lg-10 mx-auto mt-5">
-	<% if @is_managment_page && (current_user.hr? || current_user.procurement? || current_user.ceo? || current_user.cob? || current_user.id == 10) %>
+	<% if @is_managment_page && (current_user.hr? || current_user.procurement? || current_user.ceo? || current_user.cob?) %>
 	<div class="row">
 		<%= form_tag(by_user_vacations_path, method: :get) do %>
 		<div class="col-lg-5">

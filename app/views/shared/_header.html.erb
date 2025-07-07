@@ -15,7 +15,7 @@
             Sales & Marketing
           </a>
           <ul class="dropdown-menu text-white">
-           <% if current_user.sales? %>
+           <% if current_user.sales? || current_user.logistics? %>
            <li><%= link_to "Create New Project", new_project_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
            <li><%= link_to "Upload LetterHead", new_letter_head_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
            <li><%= link_to "Create Account", new_account_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
@@ -40,7 +40,7 @@
           <li class="">
             <%= link_to "Customers", customers_path, class: "dropdown-item" %>
           </li>
-          <% if current_user.sales? %>
+          <% if current_user.sales? || current_user.logistics? %>
           <% if current_user.is_manager %>
           <li>
             <%= link_to 'Banks', banks_path, class: 'dropdown-item' %>
@@ -75,7 +75,7 @@
           Procurement
         </a>
         <ul class="dropdown-menu text-white">
-          <% if current_user.procurement? %>
+          <% if current_user.procurement? || current_user.logistics? %>
           <li><%= link_to "New Inventory", new_ballance_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
           <% end %>
           <li>
@@ -84,7 +84,7 @@
           <li>
             <%= link_to 'Pricing', prices_path, class: 'dropdown-item' %>
           </li>
-          <% if current_user.procurement? %>
+          <% if current_user.procurement? || current_user.logistics? %>
           <li class="">
             <%= link_to "Suppliers", suppliers_path, class: "dropdown-item" %>
           </li>

@@ -32,7 +32,7 @@
 				<td><%= sci.total_price %> MT</td>
 				<td><%= 'yes' if sci.have_loading_report %></td>
 				<td><%= sci.spi.payment_term %></td>
-				<td><% if user_signed_in? && current_user.procurement? %>
+				<td><% if user_signed_in? && (current_user.procurement? || current_user.logistics?) %>
 
 					<span><%= link_to edit_ballance_sci_path(ballance, sci), data: { controller: "bs-modal-form" } do %>
 						<i class="bi bi-pencil-fill"></i>

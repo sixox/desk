@@ -34,7 +34,7 @@
 				<td><%= booking.status %></td>
 
 
-				<td><% if user_signed_in? && current_user.sales? %>
+				<td><% if user_signed_in? && (current_user.sales? || current_user.logistics?) %>
 
 					<span><%= link_to edit_project_booking_path(project, booking), data: { controller: "bs-modal-form" } do %>
 						<i class="bi bi-pencil-fill"></i>

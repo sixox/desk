@@ -31,26 +31,35 @@ class PaymentOrdersController < ApplicationController
 	def show
 	end
 
-def index
-  @in_page = "index"
-  cu = current_user
-  
-  # Initialize Ransack search object with parameters from the view
-  @q = PaymentOrder.ransack(params[:q])
-  
-  # Check user roles and filter the results accordingly
-  if (current_user.is_manager && current_user.procurement?) || (current_user.admin? || current_user.accounting? || current_user.ceo? || current_user.cob?)
-    @payment_orders = @q.result.order(created_at: :desc).page(params[:page]).per(6)
-  else
-    # If the user is not a manager, admin, etc., apply specific filtering
-    @payment_orders = @q.result
-                        .filtered_by_role(current_user)
-                        .where.not(user_id: 9)
-                        .order(created_at: :desc)
-                        .page(params[:page])
-                        .per(6)
-  end
-end
+	def index
+	  @in_page = "index"
+	  cu = current_user
+
+	  # Initialize Ransack search object with parameters from the view
+	  @q = PaymentOrder.ransack(params[:q])
+
+	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? || cu.cob?
+	    @payment_orders = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+	  
+	  elsif cu.logistics?
+	    @payment_orders = @q.result
+	                        .joins(:user)
+	                        .where(users: { role: ['sales', 'procurement', 'logistics'] })
+	                        .where.not(user_id: 9)
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+
+	  else
+	    @payment_orders = @q.result
+	                        .filtered_by_role(cu)
+	                        .where.not(user_id: 9)
+	                        .order(created_at: :desc)
+	                        .page(params[:page])
+	                        .per(6)
+	  end
+	end
+
 
 
 	def new	
