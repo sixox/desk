@@ -2,6 +2,8 @@ class KpiList < ApplicationRecord
   belongs_to :user
   has_many :targets, dependent: :destroy
   accepts_nested_attributes_for :targets, allow_destroy: true
+  has_many :quarterly_evaluations, dependent: :destroy
+
 
 
   validates :year, :period, presence: true

@@ -41,6 +41,8 @@ class User < ApplicationRecord
   has_many :kpi_lists, dependent: :destroy
 
   has_many :stakeholder_survey_forms, dependent: :destroy
+  has_many :quarterly_evaluations, dependent: :destroy
+
 
 
 

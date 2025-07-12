@@ -1,0 +1,80 @@
+<%= form_with model: @evaluation, url: quarterly_evaluations_path, local: true do |f| %>
+  <%= f.hidden_field :kpi_list_id %>
+  <%= f.hidden_field :year %>
+
+  <% if @evaluation.errors.any? %>
+    <div class="alert alert-danger">
+      <h5 class="mb-2">Please fix the following errors:</h5>
+      <ul class="mb-0">
+        <% @evaluation.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Period Selection -->
+  <div class="mb-4">
+    <label for="period" class="form-label">Select Period</label>
+    <%= f.select :period,
+        options_for_select({
+          "First Quarter" => 1,
+          "Second Quarter" => 2,
+          "Third Quarter" => 3,
+          "Fourth Quarter" => 4
+        }.reject { |_, v| @existing_periods.include?(v) }),
+        {},
+        class: "form-select", required: true %>
+  </div>
+
+  <!-- ✅ DONE ACTIONS CARD -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-success text-white">
+      ✅ Done Actions
+    </div>
+    <div class="card-body">
+      <%= f.fields_for :done_actions do |da| %>
+        <% unless da.object.nil? %>
+          <div class="mb-3">
+            <label class="form-label">Action <%= da.index.to_i + 1 %></label>
+            <%= da.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe completed action" %>
+            <% if da.object.errors[:description].present? %>
+              <div class="text-danger mt-1 small"><%= da.object.errors[:description].first %></div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- ❌ UNDONE ACTIONS CARD -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-danger text-white">
+      ❌ Undone Actions
+    </div>
+    <div class="card-body">
+      <%= f.fields_for :undone_actions do |uda| %>
+        <% unless uda.object.nil? %>
+          <div class="mb-3">
+            <label class="form-label">Undone Action <%= uda.index.to_i + 1 %></label>
+            <%= uda.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe undone action" %>
+            <% if uda.object.errors[:description].present? %>
+              <div class="text-danger mt-1 small"><%= uda.object.errors[:description].first %></div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- 💬 COMMENT -->
+  <div class="mb-4">
+    <label class="form-label">💬 Final Comment</label>
+    <%= f.text_area :comment, rows: 4, class: "form-control", placeholder: "Write a final summary or notes..." %>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <%= f.submit "Submit Evaluation", class: "btn btn-primary" %>
+    <%= link_to "⬅️ Back", member_path(current_user), class: "btn btn-secondary" %>
+  </div>
+<% end %>
