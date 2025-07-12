@@ -149,7 +149,7 @@
 
                 <% if evaluation.undone_actions.any? %>
                 <h6 class="text-danger mb-3">
-                  ❌ Undone Actions
+                  ❌ Not-taken Actions
                 </h6>
                 <table class="table table-sm table-striped table-hover small mb-4">
                   <thead class="bg-light text-muted align-middle">
@@ -174,7 +174,7 @@
                 <% end %>
 
                 <% if evaluation.comment.present? %>
-                <h6 class="text-muted">💬 Final Comment</h6>
+                <h6 class="text-muted">💬 Improvment Plan</h6>
                 <div class="border rounded p-3 small bg-light"><%= evaluation.comment %></div>
                 <% end %>
 
