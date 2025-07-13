@@ -147,6 +147,31 @@
                         <div class="border rounded p-3 small bg-light"><%= evaluation.comment %></div>
                         <% end %>
 
+
+                        <% if evaluation.comment.present? %>
+                          <h6 class="text-muted">💬 Improvment Plan</h6>
+                          <div class="border rounded p-3 small bg-light"><%= evaluation.comment %></div>
+                        <% end %>
+
+                        <% if evaluation.files.attached? %>
+                          <h6 class="text-muted mt-4">📎 Attached Files</h6>
+                          <ul class="list-group list-group-flush small">
+                            <% evaluation.files.each_with_index do |file, index| %>
+                              <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                  <i class="bi bi-paperclip me-1 text-secondary"></i>
+                                  <%= link_to file.filename.to_s, url_for(file), target: "_blank", rel: "noopener", class: "text-decoration-none" %>
+                                </div>
+                                <span class="text-muted"><%= number_to_human_size(file.byte_size) %></span>
+                              </li>
+                            <% end %>
+                          </ul>
+                        <% end %>
+
+
+
+                        
+
                       </div>
                     </div>
                   </div>

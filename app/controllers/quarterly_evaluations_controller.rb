@@ -49,7 +49,8 @@ class QuarterlyEvaluationsController < ApplicationController
       :period,
       :comment,
       done_actions_attributes: [:description],
-      undone_actions_attributes: [:description]
+      undone_actions_attributes: [:description],
+      files: []
     )
 
     # Filter out blank done actions

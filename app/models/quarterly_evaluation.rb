@@ -10,4 +10,6 @@ class QuarterlyEvaluation < ApplicationRecord
 
   validates :year, presence: true
   validates :period, presence: true, inclusion: { in: 1..4 }
+
+  has_many_attached :files
 end
