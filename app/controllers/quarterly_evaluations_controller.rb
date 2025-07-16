@@ -40,7 +40,34 @@ class QuarterlyEvaluationsController < ApplicationController
     end
   end
 
+
+  def review
+    @evaluation = QuarterlyEvaluation.find(params[:id])
+    @evaluation.review_mode = true  # ✅ Enable validation
+    @kpi_list = @evaluation.kpi_list
+  end
+
+  def submit_review
+    @evaluation = QuarterlyEvaluation.find(params[:id])
+    @evaluation.review_mode = true  # ✅ Enable validation
+    if @evaluation.update(review_params)
+      redirect_to kpi_lists_path, notice: "Review submitted successfully."
+    else
+      @kpi_list = @evaluation.kpi_list
+      flash.now[:alert] = "Please correct the errors below."
+      render :review
+    end
+  end
+
+
   private
+
+  def review_params
+    params.require(:quarterly_evaluation).permit(
+      done_actions_attributes: [:id, :weight, :point],
+      undone_actions_attributes: [:id, :weight, :point]
+    )
+  end
 
   def filtered_evaluation_params
     raw = params.require(:quarterly_evaluation).permit(

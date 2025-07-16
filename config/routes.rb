@@ -239,8 +239,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :quarterly_evaluations, only: [:index, :new, :create]
-
+  resources :quarterly_evaluations do
+    member do
+      get :review
+      patch :submit_review
+    end
+  end
 
 
 

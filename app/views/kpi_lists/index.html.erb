@@ -80,15 +80,25 @@
                   }[evaluation.period] %>
 
                   <div class="accordion-item">
-                    <h2 class="accordion-header" id="eval-heading-<%= kpi_list.id %>-<%= e_index %>">
-                      <button class="accordion-button collapsed" type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#eval-collapse-<%= kpi_list.id %>-<%= e_index %>"
-                      aria-expanded="false"
-                      aria-controls="eval-collapse-<%= kpi_list.id %>-<%= e_index %>">
-                      🗓️ <strong><%= period_name %></strong> — by <%= evaluation.user.first_name %>
-                    </button>
+                    <h2 class="accordion-header d-flex justify-content-between align-items-center" id="eval-heading-<%= kpi_list.id %>-<%= e_index %>">
+                      <div class="flex-grow-1">
+                        <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#eval-collapse-<%= kpi_list.id %>-<%= e_index %>"
+                        aria-expanded="false"
+                        aria-controls="eval-collapse-<%= kpi_list.id %>-<%= e_index %>">
+                        🗓️ <strong><%= period_name %></strong> — by <%= evaluation.user.first_name %>
+                      </button>
+                    </div>
+
+                    <% if (evaluation.user.id == 9 && current_user.ceo?) || (evaluation.user.id != 9 && current_user.id == 9) %>
+
+                    <div class="pe-2 text-end">
+                      <%= link_to "✏️ Review", review_quarterly_evaluation_path(evaluation), class: "btn btn-outline-secondary btn-sm" %>
+                    </div>
+                    <% end %>
                   </h2>
+
                   <div id="eval-collapse-<%= kpi_list.id %>-<%= e_index %>" class="accordion-collapse collapse"
                     aria-labelledby="eval-heading-<%= kpi_list.id %>-<%= e_index %>"
                     data-bs-parent="#evaluationAccordion-<%= kpi_list.id %>">
@@ -141,6 +151,7 @@
                         </tbody>
                       </table>
                       <% end %>
+
                       <% if evaluation.comment.present? %>
                       <h6 class="text-muted">💬 Improvment Plan</h6>
                       <div class="border rounded p-3 small bg-light"><%= evaluation.comment %></div>
@@ -161,10 +172,6 @@
                       </ul>
                       <% end %>
 
-
-
-                      
-
                     </div>
                   </div>
                 </div>
@@ -173,6 +180,7 @@
               <% else %>
               <p class="text-muted small ps-2">No quarterly evaluations submitted yet.</p>
               <% end %>
+
 
             </div> <!-- end card-body -->
           </div> <!-- end card -->
@@ -193,5 +201,8 @@
   .card-header, .accordion-button {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+  .accordion-header .btn {
+    white-space: nowrap;
   }
 </style>
