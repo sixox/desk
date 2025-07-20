@@ -91,7 +91,7 @@
                       </button>
                     </div>
 
-                    <% if true || (evaluation.user.id == 9 && current_user.ceo?) || (evaluation.user.id != 9 && current_user.id == 9) %>
+                    <% if (evaluation.user.id == 9 && current_user.ceo?) || (evaluation.user.id != 9 && current_user.id == 9) %>
 
                     <div class="pe-2 text-end">
                       <%= link_to "✏️ Review", review_quarterly_evaluation_path(evaluation), class: "btn btn-outline-secondary btn-sm" %>
