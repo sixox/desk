@@ -73,7 +73,7 @@
                   <div class="col-md-1">
                     <%= f.fields_for :done_actions, done_action do |da| %>
                       <%= da.label :weight, "Weight", class: "form-label" %>
-                      <%= da.number_field :weight, class: "form-control form-control-sm", min: 1, max: 3 %>
+                      <%= da.number_field :weight, class: "form-control form-control-sm", min: 0, max: 3 %>
                       <% if da.object.errors[:weight].any? %>
                         <div class="text-danger small mt-1"><%= da.object.errors[:weight].first %></div>
                       <% end %>

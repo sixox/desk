@@ -1,4 +1,4 @@
-<%= form_with model: @evaluation, url: quarterly_evaluations_path, local: true, multipart: true do |f| %>
+<%= form_with model: @evaluation, url: quarterly_evaluations_path, method: :post, data: { turbo: false }, multipart: true do |f| %>
   <%= f.hidden_field :kpi_list_id %>
   <%= f.hidden_field :year %>
 
