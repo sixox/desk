@@ -1,115 +1,114 @@
 <div class="col-lg-10 mx-auto mt-5">
   <div dir="rtl" class="text-end">
-<h4 class="mb-3">📋 Review Quarterly Evaluation for <%= @kpi_list.year %> — 
-  <span class="text-primary">
-    <%= { 1 => "First", 2 => "Second", 3 => "Third", 4 => "Fourth" }[@evaluation.period] %> Quarter
-  </span>
-</h4>
 
-<h5 class="text-muted mb-4">🏢 Department: <%= @kpi_list.department.titleize %></h5>
+    <h4 class="mb-3">📋 Review Quarterly Evaluation for <%= @kpi_list.year %> — 
+      <span class="text-primary">
+        <%= { 1 => "First", 2 => "Second", 3 => "Third", 4 => "Fourth" }[@evaluation.period] %> Quarter
+      </span>
+    </h4>
 
-<!-- 🔍 Mini KPI List Preview -->
-<div class="mb-4 small border rounded bg-light p-3">
-  <h6 class="text-muted mb-2">🎯 KPI Targets & Results (Preview)</h6>
-  <% @kpi_list.targets.each do |target| %>
-    <div class="mb-2">
-      <strong class="text-dark d-block">🎯 <%= target.description %></strong>
-      <% target.results.each do |result| %>
-        <div class="ms-3">
-          <span class="text-muted">➤ <%= result.description %></span>
-          <% if result.kpi.present? %>
-            <div class="ms-3 text-muted small">💬 KPI: <%= result.kpi.comment %></div>
-          <% end %>
+    <h5 class="text-muted mb-4">🏢 Department: <%= @kpi_list.department.titleize %></h5>
+
+    <%= form_with model: @evaluation, url: submit_review_quarterly_evaluation_path(@evaluation), method: :patch, local: true do |f| %>
+
+      <% if @evaluation.errors.any? %>
+        <div class="alert alert-danger">
+          <h5 class="mb-2">⚠️ Please fix the following errors:</h5>
+          <ul class="mb-0">
+            <% @evaluation.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
         </div>
       <% end %>
-    </div>
-  <% end %>
-</div>
 
-<%= form_with model: @evaluation, url: submit_review_quarterly_evaluation_path(@evaluation), method: :patch, local: true do |f| %>
-
-  <% if @evaluation.errors.any? %>
-    <div class="alert alert-danger">
-      <h5 class="mb-2">⚠️ Please fix the following errors:</h5>
-      <ul class="mb-0">
-        <% @evaluation.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <!-- ✅ Done Actions -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-success text-white">
-      ✅ Done Actions
-    </div>
-    <div class="card-body">
-      <%= f.fields_for :done_actions do |da| %>
-        <% if da.object.description.present? %>
-          <div class="row mb-3">
-            <div class="col-md-10">
-              <strong class="text-dark"><%= da.object.description %></strong>
+      <% @kpi_list.targets.each do |target| %>
+        <% target.results.each do |result| %>
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between">
+              <div>
+                🎯 <strong><%= result.description %></strong>
+                <% if result.kpi.present? %>
+                  <div class="small text-muted">📌 KPI: <%= result.kpi.comment %></div>
+                <% end %>
+              </div>
             </div>
-            <div class="col-md-1">
-              <%= da.label :weight, "Weight", class: "form-label" %>
-              <%= da.number_field :weight, class: "form-control form-control-sm", min: 1, max: 3 %>
-              <% if da.object.errors[:weight].any? %>
-                <div class="text-danger small mt-1"><%= da.object.errors[:weight].first %></div>
+
+            <div class="card-body">
+
+              <% previous_evaluations = @kpi_list.quarterly_evaluations.where.not(id: @evaluation.id) %>
+              <% previous_done = previous_evaluations.flat_map(&:done_actions).select { |a| a.result_id == result.id } %>
+              <% previous_undone = previous_evaluations.flat_map(&:undone_actions).select { |a| a.result_id == result.id } %>
+
+              <% if previous_done.any? %>
+                <h6 class="text-muted small">✅ Done Actions from earlier evaluations</h6>
+                <ul class="list-group list-group-sm mb-3">
+                  <% previous_done.each do |action| %>
+                    <li class="list-group-item d-flex justify-content-between small">
+                      <span><%= action.description %></span>
+                      <span class="text-muted">Weight: <%= action.weight || "-" %>, Point: <%= action.point || "-" %></span>
+                    </li>
+                  <% end %>
+                </ul>
               <% end %>
-            </div>
-            <div class="col-md-1">
-              <%= da.label :point, "Point", class: "form-label" %>
-              <%= da.number_field :point, class: "form-control form-control-sm", min: 1, max: 10 %>
-              <% if da.object.errors[:point].any? %>
-                <div class="text-danger small mt-1"><%= da.object.errors[:point].first %></div>
+
+              <% if previous_undone.any? %>
+                <h6 class="text-muted small">❌ Undone Actions from earlier evaluations</h6>
+                <ul class="list-group list-group-sm mb-3">
+                  <% previous_undone.each do |action| %>
+                    <li class="list-group-item small">
+                      <%= action.description %>
+                    </li>
+                  <% end %>
+                </ul>
               <% end %>
+
+              <% done_action = @evaluation.done_actions.find { |a| a.result_id == result.id } %>
+              <% if done_action %>
+                <h6 class="text-success small mb-2">✅ Current Done Action</h6>
+                <div class="row mb-3">
+                  <div class="col-md-9">
+                    <strong class="text-dark"><%= done_action.description %></strong>
+                  </div>
+                  <div class="col-md-1">
+                    <%= f.fields_for :done_actions, done_action do |da| %>
+                      <%= da.label :weight, "Weight", class: "form-label" %>
+                      <%= da.number_field :weight, class: "form-control form-control-sm", min: 1, max: 3 %>
+                      <% if da.object.errors[:weight].any? %>
+                        <div class="text-danger small mt-1"><%= da.object.errors[:weight].first %></div>
+                      <% end %>
+                    <% end %>
+                  </div>
+                  <div class="col-md-1">
+                    <%= f.fields_for :done_actions, done_action do |da| %>
+                      <%= da.label :point, "Point", class: "form-label" %>
+                      <%= da.number_field :point, class: "form-control form-control-sm", min: 1, max: 10 %>
+                      <% if da.object.errors[:point].any? %>
+                        <div class="text-danger small mt-1"><%= da.object.errors[:point].first %></div>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+
+              <% undone_action = @evaluation.undone_actions.find { |a| a.result_id == result.id } %>
+              <% if undone_action %>
+                <h6 class="text-danger small mb-2">❌ Current Undone Action</h6>
+                <div class="border rounded bg-light p-2 mb-3">
+                  <span class="text-muted"><%= undone_action.description %></span>
+                </div>
+              <% end %>
+
             </div>
           </div>
         <% end %>
       <% end %>
-    </div>
-  </div>
 
-  <!-- ❌ Undone Actions -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-danger text-white">
-      ❌ Not-taken Actions
-    </div>
-    <div class="card-body">
-      <%= f.fields_for :undone_actions do |uda| %>
-        <% if uda.object.description.present? %>
-          <div class="row mb-3">
-            <div class="col-md-10">
-              <strong class="text-dark"><%= uda.object.description %></strong>
-            </div>
-            <div class="col-md-1">
-              <%= uda.label :weight, "Weight", class: "form-label" %>
-              <%= uda.number_field :weight, class: "form-control form-control-sm", min: 1, max: 3 %>
-              <% if uda.object.errors[:weight].any? %>
-                <div class="text-danger small mt-1"><%= uda.object.errors[:weight].first %></div>
-              <% end %>
-            </div>
-            <div class="col-md-1">
-              <%= uda.label :point, "Point", class: "form-label" %>
-              <%= uda.number_field :point, class: "form-control form-control-sm", min: 1, max: 10 %>
-              <% if uda.object.errors[:point].any? %>
-                <div class="text-danger small mt-1"><%= uda.object.errors[:point].first %></div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-  </div>
+      <div class="d-flex justify-content-between">
+        <%= f.submit "✅ Submit Review", class: "btn btn-primary" %>
+        <%= link_to "⬅️ Back", member_path(current_user), class: "btn btn-secondary" %>
+      </div>
 
-  <!-- 🔘 Submit -->
-  <div class="d-flex justify-content-between">
-    <%= f.submit "✅ Submit Review", class: "btn btn-primary" %>
-    <%= link_to "⬅️ Back", member_path(current_user), class: "btn btn-secondary" %>
+    <% end %>
   </div>
-
-<% end %>
 </div>
-</div>
-

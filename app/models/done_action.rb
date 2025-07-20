@@ -1,4 +1,5 @@
 class DoneAction < ApplicationRecord
+  belongs_to :result
   belongs_to :quarterly_evaluation
 
   attr_accessor :review_mode

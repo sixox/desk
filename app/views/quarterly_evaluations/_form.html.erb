@@ -27,61 +27,106 @@
         class: "form-select", required: true %>
   </div>
 
-  <!-- ✅ DONE ACTIONS CARD -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-success text-white">
-      ✅ Done Actions
+  <% @kpi_list.targets.each do |target| %>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered table-sm align-middle">
+        <thead class="table-primary">
+          <tr>
+            <th colspan="2">
+              🎯 <small class="text-muted" dir="rtl"><%= target.description %></small>
+            </th>
+          </tr>
+          <tr class="table-light">
+            <th style="width: 60%">Result</th>
+            <th style="width: 40%">Measurable KPI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% target.results.each do |result| %>
+            <tr>
+              <td class="text-end" dir="rtl"><%= result.description %></td>
+              <td class="text-end" dir="rtl">
+                <% if result.kpi.present? %>
+                  <%= result.kpi.comment %>
+                <% else %>
+                  <span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>No KPI provided</span>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="bg-light p-3">
+
+                <%# ✅ PAST DONE ACTIONS %>
+                <% past_dones = @past_done_actions.select { |a| a.result_id == result.id } %>
+                <% if past_dones.any? %>
+                  <h6 class="text-success small">✅ Past Done Actions</h6>
+                  <ul class="list-unstyled small mb-2">
+                    <% past_dones.each do |a| %>
+                      <li class="ms-3">• <%= a.description %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+
+                <%# ❌ PAST UNDONE ACTIONS %>
+                <% past_undones = @past_undone_actions.select { |a| a.result_id == result.id } %>
+                <% if past_undones.any? %>
+                  <h6 class="text-danger small">❌ Past Undone Actions</h6>
+                  <ul class="list-unstyled small mb-2">
+                    <% past_undones.each do |a| %>
+                      <li class="ms-3">• <%= a.description %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+
+                <%# ✅ NEW DONE INPUT %>
+                <%= f.fields_for :done_actions do |da| %>
+                  <% if da.object.result_id == result.id %>
+                    <div class="mb-2">
+                      <label class="form-label text-success small">✅ New Done Action</label>
+                      <%= da.hidden_field :result_id %>
+                      <%= da.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe done action (optional)" %>
+                      <% if da.object.errors[:description].present? %>
+                        <div class="text-danger small mt-1"><%= da.object.errors[:description].first %></div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+
+                <%# ❌ NEW UNDONE INPUT %>
+                <%= f.fields_for :undone_actions do |uda| %>
+                  <% if uda.object.result_id == result.id %>
+                    <div class="mb-2">
+                      <label class="form-label text-danger small">❌ New Undone Action</label>
+                      <%= uda.hidden_field :result_id %>
+                      <%= uda.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe undone action (optional)" %>
+                      <% if uda.object.errors[:description].present? %>
+                        <div class="text-danger small mt-1"><%= uda.object.errors[:description].first %></div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
     </div>
-    <div class="card-body">
-      <%= f.fields_for :done_actions do |da| %>
-        <% unless da.object.nil? %>
-          <div class="mb-3">
-            <label class="form-label">Action <%= da.index.to_i + 1 %></label>
-            <%= da.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe completed action" %>
-            <% if da.object.errors[:description].present? %>
-              <div class="text-danger mt-1 small"><%= da.object.errors[:description].first %></div>
-            <% end %>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
+  <% end %>
+
+  <!-- 💬 Final Comment -->
+  <div class="mb-4">
+    <label class="form-label">💬 Final Comment</label>
+    <%= f.text_area :comment, rows: 4, class: "form-control", placeholder: "Write your summary or suggestions..." %>
   </div>
 
-  <!-- ❌ UNDONE ACTIONS CARD -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-danger text-white">
-      ❌ Not-taken Actions
-    </div>
-    <div class="card-body">
-      <%= f.fields_for :undone_actions do |uda| %>
-        <% unless uda.object.nil? %>
-          <div class="mb-3">
-            <label class="form-label">Undone Action <%= uda.index.to_i + 1 %></label>
-            <%= uda.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe undone action" %>
-            <% if uda.object.errors[:description].present? %>
-              <div class="text-danger mt-1 small"><%= uda.object.errors[:description].first %></div>
-            <% end %>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
+  <!-- 📎 Attachments -->
+  <div class="mb-4">
+    <label class="form-label">📎 Attach Files</label>
+    <%= f.file_field :files, multiple: true, direct_upload: true, class: "form-control" %>
+    <small class="text-muted">You may upload multiple files as needed.</small>
   </div>
 
-  <!-- 💬 COMMENT & 📎 FILES -->
-  <div class="row mb-4">
-    <div class="col-md-8">
-      <label class="form-label">💬 Improvement Plan</label>
-      <%= f.text_area :comment, rows: 4, class: "form-control", placeholder: "Write a final summary or notes..." %>
-    </div>
-
-    <div class="col-md-4">
-      <label class="form-label">📎 Attach Files</label>
-      <%= f.file_field :files, multiple: true, direct_upload: true, class: "form-control" %>
-      <small class="text-muted d-block mt-1">You can upload multiple files.</small>
-    </div>
-  </div>
-
-  <!-- Submit & Back -->
   <div class="d-flex justify-content-between">
     <%= f.submit "Submit Evaluation", class: "btn btn-primary" %>
     <%= link_to "⬅️ Back", member_path(current_user), class: "btn btn-secondary" %>

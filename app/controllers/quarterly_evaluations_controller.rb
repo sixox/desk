@@ -5,7 +5,6 @@ class QuarterlyEvaluationsController < ApplicationController
     @kpi_list = KpiList.find(params[:kpi_list_id])
     @year = params[:year].to_i
 
-    # Prevent duplicates for this user/KPI/year/period
     @existing_periods = current_user.quarterly_evaluations
                           .where(kpi_list: @kpi_list, year: @year)
                           .pluck(:period)
@@ -15,14 +14,30 @@ class QuarterlyEvaluationsController < ApplicationController
       year: @year
     )
 
-    15.times { @evaluation.done_actions.build }
-    9.times { @evaluation.undone_actions.build }
+    @results = @kpi_list.targets.includes(:results).flat_map(&:results)
+
+    # For each result, build a placeholder done/undone for the form
+    @results.each do |result|
+      @evaluation.done_actions.build(result: result)
+      @evaluation.undone_actions.build(result: result)
+    end
+
+    # Past actions to show under each result
+    @past_done_actions = DoneAction
+      .includes(:quarterly_evaluation)
+      .where(quarterly_evaluations: { user_id: current_user.id, kpi_list_id: @kpi_list.id })
+      .where.not(description: [nil, ""])
+
+    @past_undone_actions = UndoneAction
+      .includes(:quarterly_evaluation)
+      .where(quarterly_evaluations: { user_id: current_user.id, kpi_list_id: @kpi_list.id })
+      .where.not(description: [nil, ""])
   end
+
 
   def create
     @evaluation = current_user.quarterly_evaluations.build(filtered_evaluation_params)
 
-    # Prevent duplicate
     if QuarterlyEvaluation.exists?(user: current_user, kpi_list_id: @evaluation.kpi_list_id, year: @evaluation.year, period: @evaluation.period)
       redirect_to quarterly_evaluations_path, alert: "You already submitted this evaluation." and return
     end
@@ -40,25 +55,21 @@ class QuarterlyEvaluationsController < ApplicationController
     end
   end
 
-
   def review
     @evaluation = QuarterlyEvaluation.find(params[:id])
-    @evaluation.review_mode = true  # ✅ Enable validation
     @kpi_list = @evaluation.kpi_list
   end
 
   def submit_review
     @evaluation = QuarterlyEvaluation.find(params[:id])
-    @evaluation.review_mode = true  # ✅ Enable validation
-    if @evaluation.update(review_params)
-      redirect_to kpi_lists_path, notice: "Review submitted successfully."
+    if @evaluation.update(review_params.merge(review_mode: true))
+      redirect_to member_path(current_user), notice: "Review submitted successfully."
     else
       @kpi_list = @evaluation.kpi_list
       flash.now[:alert] = "Please correct the errors below."
       render :review
     end
   end
-
 
   private
 
@@ -75,19 +86,23 @@ class QuarterlyEvaluationsController < ApplicationController
       :year,
       :period,
       :comment,
-      done_actions_attributes: [:description],
-      undone_actions_attributes: [:description],
+      done_actions_attributes: [:description, :result_id],
+      undone_actions_attributes: [:description, :result_id],
       files: []
     )
 
-    # Filter out blank done actions
+    # Only keep filled-in done actions
     if raw[:done_actions_attributes].is_a?(ActionController::Parameters)
-      raw[:done_actions_attributes] = raw[:done_actions_attributes].values.reject { |attrs| attrs[:description].blank? }
+      raw[:done_actions_attributes] = raw[:done_actions_attributes].values.select do |attrs|
+        attrs[:description].present?
+      end
     end
 
-    # Filter out blank undone actions
+    # Only keep filled-in undone actions
     if raw[:undone_actions_attributes].is_a?(ActionController::Parameters)
-      raw[:undone_actions_attributes] = raw[:undone_actions_attributes].values.reject { |attrs| attrs[:description].blank? }
+      raw[:undone_actions_attributes] = raw[:undone_actions_attributes].values.select do |attrs|
+        attrs[:description].present?
+      end
     end
 
     raw
