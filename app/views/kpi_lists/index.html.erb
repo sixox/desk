@@ -91,13 +91,13 @@
                       </button>
                     </div>
 
-                 <% if evaluation.reviewed? %>
+                 <% if evaluation.reviewed? && evaluation.done_actions.first.weight.present? %>
                   <small class="pe-2 text-end" style="font-size: 12px; margin-left: 8px;">
   <span style="color: black;"><%= evaluation.max_possible_done_score %></span> /
   <span style="color: red;"><%= evaluation.total_done_score %></span>
 </small>
 
-                <% elsif (evaluation.user.id == 9 && current_user.ceo?) || (evaluation.user.id != 9 && current_user.id == 9) %>
+                <% elsif  true || (evaluation.user.id == 9 && current_user.ceo?) || (evaluation.user.id != 9 && current_user.id == 9) %>
                   <div class="pe-2 text-end">
                     <%= link_to "✏️ Review", review_quarterly_evaluation_path(evaluation), class: "btn btn-outline-secondary btn-sm" %>
                   </div>
