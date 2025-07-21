@@ -8,9 +8,9 @@
     <div class="col">
       <div class="d-flex justify-content-end">
         <% if current_user.is_manager || current_user.id == 15 || current_user.id == 10 %>
-        <% unless kpi_lists.any? { |k| k.year == 1404 && k.period == 0 } %>
-        <%= link_to "➕ Create Annual KPI List for 1404", new_kpi_list_path(year: 1404, period: 0), class: "btn btn-outline-primary mb-4" %>
-        <% end %>
+          <% unless kpi_lists.any? { |k| k.year == 1404 && k.period == 0 } %>
+            <%= link_to "➕ Create Annual KPI List for 1404", new_kpi_list_path(year: 1404, period: 0), class: "btn btn-outline-primary mb-4" %>
+          <% end %>
         <% end %>
       </div>
     </div>
@@ -18,198 +18,205 @@
 
   <div class="accordion" id="kpiAccordion">
     <% kpi_lists.group_by { |k| [k.year, k.period] }.each_with_index do |((year, period), lists), index| %>
-    <% period_label = {
-      0 => "Annual",
-      1 => "First Quarter",
-      2 => "Second Quarter",
-      3 => "Third Quarter",
-      4 => "Fourth Quarter"
-    }[period.to_i] %>
+      <% period_label = {
+        0 => "Annual", 1 => "First Quarter", 2 => "Second Quarter",
+        3 => "Third Quarter", 4 => "Fourth Quarter"
+      }[period.to_i] %>
 
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading-<%= index %>">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index %>" aria-expanded="false" aria-controls="collapse-<%= index %>">
-          <strong>KPI Period:</strong>
-          <% if period_label.present? %>
-          <span class="text-primary ms-1"><%= period_label %></span>
-          <% end %>
-          - <strong class="ms-2">Year:</strong> <%= year %>
-        </button>
-      </h2>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-<%= index %>">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index %>" aria-expanded="false" aria-controls="collapse-<%= index %>">
+            <strong><%= year %> -</strong>
+            <span class="text-primary ms-1"><%= period_label %></span>
+          </button>
+        </h2>
 
-      <div id="collapse-<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= index %>" data-bs-parent="#kpiAccordion">
-        <div class="accordion-body">
-          <% lists.each do |kpi_list| %>
-          <div class="card shadow-sm mb-4 border-0">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0"><i class="bi bi-flag"></i> Department: <%= kpi_list.department.titleize %></h5>
+        <div id="collapse-<%= index %>" class="accordion-collapse collapse" aria-labelledby="heading-<%= index %>" data-bs-parent="#kpiAccordion">
+          <div class="accordion-body p-2">
+            <% lists.each do |kpi_list| %>
+              <div class="card shadow-sm mb-3 border-0">
+                <div class="card-header bg-warning py-1 text-start">
+                  <h5 class="mb-0 fs-6"><i class="bi bi-building-fill me-1"></i> <%= kpi_list.department.upcase %></h5>
+                </div>
 
-              <% if kpi_list.user == current_user %>
-              <div>
-                <%= link_to "📄 Fill Quarterly Evaluation",
-                new_quarterly_evaluation_path(kpi_list_id: kpi_list.id, year: kpi_list.year),
-                class: "btn btn-outline-success btn-sm" %>
-              </div>
-              <% end %>
-            </div>
-
-            <div class="card-body">
-              <% kpi_list.targets.each_with_index do |target, t_index| %>
-              <div class="table-responsive mb-5">
-                <table class="table table-bordered align-middle">
-                  <thead class="table-primary">
-                    <tr>
-                      <th colspan="2">
-                        <i class="bi bi-bullseye me-2"></i>
-                        <small class="text-muted" dir="rtl"><%= target.description %></small>
-                      </th>
-                    </tr>
-                    <% if target.results.any? %>
-                    <tr class="table-light">
-                      <th style="width: 60%">Result</th>
-                      <th style="width: 40%">Measurable KPI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% target.results.each_with_index do |result, r_index| %>
-                    <tr>
-                      <td class="text-end">
-                        <div class="text-muted mt-1" dir="rtl"><%= result.description %></div>
-                      </td>
-                      <td class="text-end">
-                        <% if result.kpi.present? %>
-                        <span class="text-muted" dir="rtl"><%= result.kpi.comment %></span>
-                        <% else %>
-                        <span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>No KPI provided</span>
+                <div class="card-body p-2">
+                  <% kpi_list.targets.each do |target| %>
+                    <div class="table-responsive mb-3">
+                      <table class="table table-bordered table-sm align-middle">
+                        <thead class="table-primary">
+                          <tr>
+                            <th colspan="2">
+                              <i class="bi bi-bullseye me-2"></i>
+                              <small class="text-muted" dir="rtl"><%= target.description %></small>
+                            </th>
+                          </tr>
+                          <% if target.results.any? %>
+                            <tr class="table-light">
+                              <th style="width: 60%">Result</th>
+                              <th style="width: 40%">Measurable KPI</th>
+                            </tr>
+                          <% end %>
+                        </thead>
+                        <% if target.results.any? %>
+                          <tbody>
+                            <% target.results.each do |result| %>
+                              <tr>
+                                <td class="text-end">
+                                  <div class="text-muted" dir="rtl"><%= result.description %></div>
+                                </td>
+                                <td class="text-end">
+                                  <% if result.kpi.present? %>
+                                    <span class="text-muted" dir="rtl"><%= result.kpi.comment %></span>
+                                  <% else %>
+                                    <span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>No KPI provided</span>
+                                  <% end %>
+                                </td>
+                              </tr>
+                            <% end %>
+                          </tbody>
                         <% end %>
-                      </td>
-                    </tr>
-                    <% end %>
-                  </tbody>
+                      </table>
+                    </div>
+                  <% end %>
+
+                  <% evaluations = kpi_list.quarterly_evaluations.order(:period) %>
+                  <% if evaluations.any? %>
+                    <div class="accordion mt-3" id="evaluationAccordion-<%= kpi_list.id %>">
+                      <h6 class="text-secondary ps-2">📊 Quarterly Evaluations</h6>
+
+                      <% evaluations.each_with_index do |evaluation, e_index| %>
+                        <% period_name = {
+                          1 => "First Quarter",
+                          2 => "Second Quarter",
+                          3 => "Third Quarter",
+                          4 => "Fourth Quarter"
+                        }[evaluation.period] %>
+
+                        <div class="accordion-item">
+                          <h2 class="accordion-header d-flex justify-content-between align-items-center" id="eval-heading-<%= kpi_list.id %>-<%= e_index %>">
+                            <div class="flex-grow-1">
+                              <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#eval-collapse-<%= kpi_list.id %>-<%= e_index %>"
+                                aria-expanded="false"
+                                aria-controls="eval-collapse-<%= kpi_list.id %>-<%= e_index %>">
+                                🗓️ <strong><%= period_name %></strong> — by <%= evaluation.user.first_name %>
+                              </button>
+                            </div>
+
+                            <% if evaluation.reviewed? && evaluation.done_actions.first&.weight.present? %>
+                              <small class="pe-2 text-end" style="font-size: 12px; margin-left: 8px;">
+                                <span style="color: black;"><%= evaluation.max_possible_done_score %></span> /
+                                <span style="color: red;"><%= evaluation.total_done_score %></span>
+                              </small>
+                            <% else %>
+                            <% if current_user == evaluation.user || current_user.admin? %>
+                              <%= link_to "✏️ Edit", edit_quarterly_evaluation_path(evaluation), class: "btn btn-outline-primary btn-sm" %>
+                            <% end %>
+                            <% end %>
+                          </h2>
+
+                          <div id="eval-collapse-<%= kpi_list.id %>-<%= e_index %>" class="accordion-collapse collapse"
+                            aria-labelledby="eval-heading-<%= kpi_list.id %>-<%= e_index %>"
+                            data-bs-parent="#evaluationAccordion-<%= kpi_list.id %>">
+                            <div class="accordion-body">
+
+                              <% if evaluation.done_actions.any? %>
+                                <h6 class="text-success mb-3">✅ Done Actions</h6>
+                                <table class="table table-sm table-striped table-hover small mb-4">
+                                  <thead class="bg-light text-muted align-middle">
+                                    <tr>
+                                      <th style="width: 5%;">#</th>
+                                      <th>Description</th>
+                                      <th class="text-center" style="width: 10%;">Weight</th>
+                                      <th class="text-center" style="width: 10%;">Point</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <% evaluation.done_actions.each_with_index do |a, i| %>
+                                      <tr>
+                                        <td><%= i + 1 %></td>
+                                        <td><%= a.description.presence || "—" %></td>
+                                        <td class="text-center"><%= a.weight || "—" %></td>
+                                        <td class="text-center"><%= a.point || "—" %></td>
+                                      </tr>
+                                    <% end %>
+                                  </tbody>
+                                </table>
+                              <% end %>
+
+                              <% if evaluation.undone_actions.any? %>
+                                <h6 class="text-danger mb-3">❌ Not-taken Actions</h6>
+                                <table class="table table-sm table-striped table-hover small mb-4">
+                                  <thead class="bg-light text-muted align-middle">
+                                    <tr>
+                                      <th style="width: 5%;">#</th>
+                                      <th>Description</th>
+                                      <th class="text-center" style="width: 10%;">Weight</th>
+                                      <th class="text-center" style="width: 10%;">Point</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <% evaluation.undone_actions.each_with_index do |a, i| %>
+                                      <tr>
+                                        <td><%= i + 1 %></td>
+                                        <td><%= a.description.presence || "—" %></td>
+                                        <td class="text-center"><%= a.weight || "—" %></td>
+                                        <td class="text-center"><%= a.point || "—" %></td>
+                                      </tr>
+                                    <% end %>
+                                  </tbody>
+                                </table>
+                              <% end %>
+
+                              <% if evaluation.comment.present? %>
+                                <h6 class="text-muted">💬 Improvment Plan</h6>
+                                <div class="border rounded p-3 small bg-light"><%= evaluation.comment %></div>
+                              <% end %>
+
+                              <% if evaluation.files.attached? %>
+                                <h6 class="text-muted mt-4">📎 Attached Files</h6>
+                                <ul class="list-group list-group-flush small">
+                                  <% evaluation.files.each do |file| %>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                      <div>
+                                        <i class="bi bi-paperclip me-1 text-secondary"></i>
+                                        <%= link_to file.filename.to_s, url_for(file), target: "_blank", rel: "noopener", class: "text-decoration-none" %>
+                                      </div>
+                                      <span class="text-muted"><%= number_to_human_size(file.byte_size) %></span>
+                                    </li>
+                                  <% end %>
+                                </ul>
+                              <% end %>
+
+                            </div>
+                          </div>
+                        </div>
+                      <% end %>
+                    </div>
                   <% else %>
-                </thead>
-                <% end %>
-              </table>
-            </div>
-            <% end %>
-
-            <% evaluations = kpi_list.quarterly_evaluations.order(:period) %>
-            <% if evaluations.any? %>
-            <div class="accordion mt-4" id="evaluationAccordion-<%= kpi_list.id %>">
-              <h6 class="text-secondary ps-2">📊 Quarterly Evaluations</h6>
-
-              <% evaluations.each_with_index do |evaluation, e_index| %>
-              <% period_name = {
-                1 => "First Quarter",
-                2 => "Second Quarter",
-                3 => "Third Quarter",
-                4 => "Fourth Quarter"
-              }[evaluation.period] %>
-
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="eval-heading-<%= kpi_list.id %>-<%= e_index %>">
-                  <button class="accordion-button collapsed" type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#eval-collapse-<%= kpi_list.id %>-<%= e_index %>"
-                  aria-expanded="false"
-                  aria-controls="eval-collapse-<%= kpi_list.id %>-<%= e_index %>">
-                  🗓️ <strong><%= period_name %></strong> — by <%= evaluation.user.first_name %>
-                </button>
-              </h2>
-              <div id="eval-collapse-<%= kpi_list.id %>-<%= e_index %>" class="accordion-collapse collapse"
-               aria-labelledby="eval-heading-<%= kpi_list.id %>-<%= e_index %>"
-               data-bs-parent="#evaluationAccordion-<%= kpi_list.id %>">
-               <div class="accordion-body">
-
-                <% if evaluation.done_actions.any? %>
-                <h6 class="text-success mb-3">
-                  ✅ Done Actions
-                </h6>
-                <table class="table table-sm table-striped table-hover small mb-4">
-                  <thead class="bg-light text-muted align-middle">
-                    <tr>
-                      <th style="width: 5%;" class="border-bottom">#</th>
-                      <th class="border-bottom">Description</th>
-                      <th style="width: 10%;" class="border-bottom text-center">Weight</th>
-                      <th style="width: 10%;" class="border-bottom text-center">Point</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% evaluation.done_actions.each_with_index do |a, i| %>
-                    <tr>
-                      <td class="align-middle"><%= i + 1 %></td>
-                      <td class="align-middle"><%= a.description.presence || "—" %></td>
-                      <td class="align-middle text-center"><%= a.weight.present? ? a.weight : "—" %></td>
-                      <td class="align-middle text-center"><%= a.point.present? ? a.point : "—" %></td>
-                    </tr>
-                    <% end %>
-                  </tbody>
-                </table>
-                <% end %>
-
-                <% if evaluation.undone_actions.any? %>
-                <h6 class="text-danger mb-3">
-                  ❌ Not-taken Actions
-                </h6>
-                <table class="table table-sm table-striped table-hover small mb-4">
-                  <thead class="bg-light text-muted align-middle">
-                    <tr>
-                      <th style="width: 5%;" class="border-bottom">#</th>
-                      <th class="border-bottom">Description</th>
-                      <th style="width: 10%;" class="border-bottom text-center">Weight</th>
-                      <th style="width: 10%;" class="border-bottom text-center">Point</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <% evaluation.undone_actions.each_with_index do |a, i| %>
-                    <tr>
-                      <td class="align-middle"><%= i + 1 %></td>
-                      <td class="align-middle"><%= a.description.presence || "—" %></td>
-                      <td class="align-middle text-center"><%= a.weight.present? ? a.weight : "—" %></td>
-                      <td class="align-middle text-center"><%= a.point.present? ? a.point : "—" %></td>
-                    </tr>
-                    <% end %>
-                  </tbody>
-                </table>
-                <% end %>
-
-               <% if evaluation.comment.present? %>
-  <h6 class="text-muted">💬 Improvment Plan</h6>
-  <div class="border rounded p-3 small bg-light"><%= evaluation.comment %></div>
-<% end %>
-
-<% if evaluation.files.attached? %>
-  <h6 class="text-muted mt-4">📎 Attached Files</h6>
-  <ul class="list-group list-group-flush small">
-    <% evaluation.files.each_with_index do |file, index| %>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <i class="bi bi-paperclip me-1 text-secondary"></i>
-          <%= link_to file.filename.to_s, url_for(file), target: "_blank", rel: "noopener", class: "text-decoration-none" %>
-        </div>
-        <span class="text-muted"><%= number_to_human_size(file.byte_size) %></span>
-      </li>
-    <% end %>
-  </ul>
-<% end %>
-
-
+                    <p class="text-muted small ps-2">No quarterly evaluations submitted yet.</p>
+                  <% end %>
+                </div>
               </div>
-            </div>
+            <% end %>
           </div>
-          <% end %>
         </div>
-
-        <% else %>
-        <p class="text-muted small ps-2">No quarterly evaluations submitted yet.</p>
-        <% end %>
-
       </div>
-    </div>
     <% end %>
   </div>
 </div>
-</div>
-<% end %>
-</div>
-</div>
+
+<style>
+  .table td, .table th {
+    padding: 0.25rem !important;
+    font-size: 0.75rem;
+  }
+  .card-header, .accordion-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+  .accordion-header .btn {
+    white-space: nowrap;
+  }
+</style>

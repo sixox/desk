@@ -1,0 +1,128 @@
+<%= form_with model: @evaluation, url: quarterly_evaluation_path(@evaluation), method: :patch, data: { turbo: false }, multipart: true do |f| %>
+  <%= f.hidden_field :kpi_list_id %>
+  <%= f.hidden_field :year %>
+  <%= f.hidden_field :period %>
+
+  <% if @evaluation.errors.any? %>
+    <div class="alert alert-danger">
+      <h5 class="mb-2">Please fix the following errors:</h5>
+      <ul class="mb-0">
+        <% @evaluation.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Period Display -->
+  <div class="mb-4">
+    <label class="form-label">🗓️ Period</label>
+    <input type="text" class="form-control" value="<%= {
+      1 => "First Quarter",
+      2 => "Second Quarter",
+      3 => "Third Quarter",
+      4 => "Fourth Quarter"
+    }[@evaluation.period] %>" readonly>
+  </div>
+
+  <% @kpi_list.targets.each do |target| %>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered table-sm align-middle">
+        <thead class="table-primary">
+          <tr>
+            <th colspan="2">
+              🎯 <small class="text-muted" dir="rtl"><%= target.description %></small>
+            </th>
+          </tr>
+          <tr class="table-light">
+            <th style="width: 60%">Result</th>
+            <th style="width: 40%">Measurable KPI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% target.results.each do |result| %>
+            <tr>
+              <td class="text-end" dir="rtl"><%= result.description %></td>
+              <td class="text-end" dir="rtl">
+                <% if result.kpi.present? %>
+                  <%= result.kpi.comment %>
+                <% else %>
+                  <span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i>No KPI provided</span>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="bg-light p-3">
+
+                <% past_dones = @past_done_actions.select { |a| a.result_id == result.id } %>
+                <% if past_dones.any? %>
+                  <h6 class="text-success small">✅ Past Done Actions</h6>
+                  <ul class="list-unstyled small mb-2">
+                    <% past_dones.each do |a| %>
+                      <li class="ms-3">• <%= a.description %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+
+                <% past_undones = @past_undone_actions.select { |a| a.result_id == result.id } %>
+                <% if past_undones.any? %>
+                  <h6 class="text-danger small">❌ Past Undone Actions</h6>
+                  <ul class="list-unstyled small mb-2">
+                    <% past_undones.each do |a| %>
+                      <li class="ms-3">• <%= a.description %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+
+                <%= f.fields_for :done_actions do |da| %>
+                  <% if da.object.result_id == result.id %>
+                    <div class="mb-2">
+                      <label class="form-label text-success small">✅ New Done Action</label>
+                      <%= da.hidden_field :result_id %>
+                      <%= da.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe done action (optional)" %>
+                      <% if da.object.errors[:description].present? %>
+                        <div class="text-danger small mt-1"><%= da.object.errors[:description].first %></div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+
+                <%= f.fields_for :undone_actions do |uda| %>
+                  <% if uda.object.result_id == result.id %>
+                    <div class="mb-2">
+                      <label class="form-label text-danger small">❌ New Undone Action</label>
+                      <%= uda.hidden_field :result_id %>
+                      <%= uda.text_area :description, rows: 2, class: "form-control form-control-sm", placeholder: "Describe undone action (optional)" %>
+                      <% if uda.object.errors[:description].present? %>
+                        <div class="text-danger small mt-1"><%= uda.object.errors[:description].first %></div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <!-- 💬 Final Comment -->
+  <div class="mb-4">
+    <label class="form-label">💬 Final Comment</label>
+    <%= f.text_area :comment, rows: 4, class: "form-control", placeholder: "Write your summary or suggestions..." %>
+  </div>
+
+  <!-- 📎 Attachments -->
+  <div class="mb-4">
+    <label class="form-label">📎 Attach Files</label>
+    <%= f.file_field :files, multiple: true, direct_upload: true, class: "form-control" %>
+    <small class="text-muted">You may upload additional files if needed.</small>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <%= f.submit "Update Evaluation", class: "btn btn-primary" %>
+    <%= link_to "⬅️ Back", member_path(current_user), class: "btn btn-secondary" %>
+  </div>
+<% end %>
