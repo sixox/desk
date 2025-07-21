@@ -38,6 +38,13 @@
                 <div class="card-header bg-warning py-1 text-start">
                   <h5 class="mb-0 fs-6"><i class="bi bi-building-fill me-1"></i> <%= kpi_list.department.upcase %></h5>
                 </div>
+                <% if kpi_list.user == current_user %>
+              <div>
+                <%= link_to "📄 Fill Quarterly Evaluation",
+                new_quarterly_evaluation_path(kpi_list_id: kpi_list.id, year: kpi_list.year),
+                class: "btn btn-outline-success btn-sm" %>
+              </div>
+              <% end %>
 
                 <div class="card-body p-2">
                   <% kpi_list.targets.each do |target| %>
