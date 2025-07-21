@@ -2,8 +2,8 @@ class StakeholderSurveyFormsController < ApplicationController
   before_action :authenticate_user!
 
 	def index
-	  @current_year = 1403
-	  @current_period = 4
+	  @current_year = 1404
+	  @current_period = 1
 
 	  # Forms grouped by [year, period], only those that have answers
 	  @grouped_forms = StakeholderSurveyForm
@@ -18,8 +18,8 @@ class StakeholderSurveyFormsController < ApplicationController
 	end
 
 	def new
-	  @current_year = 1403
-	  @current_period = 4
+	  @current_year = 1404
+	  @current_period = 1
 
 	  @new_forms = current_user.stakeholder_survey_forms
 	    .includes(:stakeholder_survey)
@@ -41,8 +41,8 @@ class StakeholderSurveyFormsController < ApplicationController
     if all_updated
       redirect_to stakeholder_survey_forms_path, notice: 'Your responses were submitted.'
     else
-      current_year = 1403
-      current_period = 4
+      current_year = 1404
+      current_period = 1
 
       @grouped_forms = current_user.stakeholder_survey_forms
                                    .includes(:stakeholder_survey)
