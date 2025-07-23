@@ -4,7 +4,7 @@ class ReportsController < ApplicationController
 
   # GET /reports
   def index
-    if current_user.ceo? || current_user.admin? || current_user.cob?
+    if current_user.ceo? || current_user.admin? || current_user.cob? || current_user.id == 18
       # Show all reports for privileged roles
       @reports = Report.all.order(created_at: :desc)
     elsif current_user.accounting?
