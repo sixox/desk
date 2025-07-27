@@ -52,6 +52,10 @@ class PisController < ApplicationController
   end
 
   def update_temp
+    if @pi.rejected
+      @pi.rejected = nil
+      @pi.confirm_or_reject_time = nil
+    end 
     if @pi.update(pi_params)
       redirect_to @pi, notice: 'Pi was successfully updated.'
     else
