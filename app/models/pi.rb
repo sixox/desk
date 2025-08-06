@@ -17,12 +17,14 @@
 
 
   AGENT = [
-          'Ms.Sujeetha',
-          'Mr.Seifi',
-          'Huate',
-          'Mr.Season',
-          'Kailjee',
-          'Kundali'
+    'CHINA RAILWAYS',
+    'HUATE',
+    'KAILJEE',
+    'KUNDALI',
+    'MAY',
+    'MR.SEASON',
+    'MR.SEIFI',
+    'MS.SUJEETHA'
   ]
 
   SALESMEN = ["Amir", "Milad", "Masoud", "Yasamin", "Farnaz", "Jessica", "Mohsen"]
