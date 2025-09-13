@@ -67,6 +67,9 @@
             <%= link_to 'Clients', clients_path, class: 'dropdown-item' %>
           </li>
           <% end %>
+          <% if current_user.sales? && current_user.is_manager %>
+          <li><%= link_to "Dashboard", "http://37.221.21.214:8585/Reports/powerbi/sales?rs:Embed=true", class: "dropdown-item", target: "_blank" %></li>
+          <% end %>
 
         </ul>
       </li> 
