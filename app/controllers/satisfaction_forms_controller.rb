@@ -7,7 +7,7 @@ class SatisfactionFormsController < ApplicationController
     .group_by { |sf| [sf.year, sf.period] }
 
     current_year = 1404
-    current_period = 1
+    current_period = 2
 
     @new_forms = current_user.satisfaction_forms
     .where(year: current_year, period: current_period, answer: nil)
@@ -55,7 +55,7 @@ end
       redirect_to satisfaction_forms_path, notice: 'Your form was successfully sent.'
     else
       current_year = 1404
-      current_period = 1
+      current_period = 2
 
       @new_forms = current_user.satisfaction_forms
       .where(year: current_year, period: current_period)
