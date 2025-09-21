@@ -43,6 +43,10 @@ class User < ApplicationRecord
   has_many :stakeholder_survey_forms, dependent: :destroy
   has_many :quarterly_evaluations, dependent: :destroy
 
+  has_many :experiences
+  has_many :experience_visits, dependent: :destroy
+  has_many :visited_experiences, through: :experience_visits, source: :experience
+
 
 
 

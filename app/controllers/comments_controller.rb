@@ -53,6 +53,9 @@ class CommentsController < ApplicationController
     elsif params[:client_id]
       @commentable = Client.find(params[:client_id])
       @check = false
+    elsif params[:experience_id]
+      @commentable = Experience.find(params[:experience_id])
+      @check = false
     elsif params[:report_id]
       @commentable = Report.find(params[:report_id])
       @check = false

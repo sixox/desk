@@ -20,3 +20,5 @@ document.addEventListener("turbo:frame-load", function() {
     });
   }
 });
+import "trix"
+import "@rails/actiontext"

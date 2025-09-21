@@ -1,0 +1,86 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0"><%= @experience.subject %></h3>
+        <small class="text-muted">
+          By <%= @experience.user&.first_name.to_s.titleize %> 
+          (<%= @experience.user&.role.to_s.titleize %>) ·
+          <%= @experience.created_at.strftime('%d %b %Y %H:%M') %> ·
+          <i class="bi bi-eye"></i> <%= @experience.visits_count %>
+        </small>
+      </div>
+      <hr class="mt-2 mb-5">
+      <div dir="rtl" class="trix-content mb-4 text-end">
+        <%= @experience.body.to_s.html_safe %>
+      </div>
+
+      <% if @experience.images.attached? %>
+        <h5>Images</h5>
+        <div class="row mt-3">
+          <% @experience.images.each do |img| %>
+            <div class="col-6 col-md-4 col-lg-3 mb-3">
+              <%= link_to url_for(img), target: "_blank", rel: "noopener" do %>
+                <%= image_tag url_for(img), class: "img-fluid rounded shadow-sm", style: "max-height: 200px; object-fit: cover;" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @experience.files.attached? %>
+        <h5 class="mt-4">Files</h5>
+        <ul class="list-group">
+          <% @experience.files.each do |file| %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <%= link_to file.filename.to_s, url_for(file), target: "_blank", rel: "noopener" %>
+              <span class="badge bg-secondary"><%= number_to_human_size(file.byte_size) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <div class="d-flex justify-content-end mt-4">
+        <% if current_user == @experience.user %>
+          <%= link_to edit_experience_path(@experience), data: { controller: "bs-modal-form" }, class: "btn btn-sm btn-outline-primary me-2" do %>
+            <i class="bi bi-pencil-square"></i> Edit
+          <% end %>
+          <%= link_to experience_path(@experience), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn-sm btn-outline-danger" do %>
+            <i class="bi bi-trash3"></i> Delete
+          <% end %>
+        <% else %>
+          <span class="text-muted">You cannot edit this item</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="d-flex justify-content-start">
+            <h5>Comments</h5>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="d-flex justify-content-end">
+            <%= link_to new_experience_comment_path(@experience), data: { controller: "bs-modal-form", experience_id: @experience.id }, class: "btn btn-primary" do %>
+              Add Comment
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <ul class="list-group mt-1" id="comment_items">
+        <% if @experience.comments.present? %>
+          <% @experience.comments.reverse.each do |comment| %>
+            <%= render 'comments/comment', comment: comment %>
+          <% end %>
+        <% else %>
+          <p>no comments</p>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>

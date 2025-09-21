@@ -246,6 +246,11 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :experiences do
+    resources :comments
+  end
+
+
 
 
 
