@@ -1,0 +1,208 @@
+<%= form_with model: [@candidate, @candidate_evaluation],
+              url: (@candidate_evaluation.persisted? ?
+                    candidate_candidate_evaluation_path(@candidate, department: @department) :
+                    candidate_candidate_evaluation_path(@candidate, department: @department)),
+              method: (@candidate_evaluation.persisted? ? :patch : :post),
+              local: true do |f| %>
+
+  <div class="modal-body">
+
+    <% if @candidate_evaluation.errors.any? %>
+      <div class="error-area text-danger">
+        <h5><%= pluralize(@candidate_evaluation.errors.count, 'خطا') %> مانع ثبت فرم شد:</h5>
+        <ul>
+          <% @candidate_evaluation.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="alert alert-info border-start border-4 border-primary shadow-sm mb-3" dir="rtl">
+      امتیاز هر سؤال بین <strong>۱ تا ۵</strong> و وزن بین <strong>۱ تا ۳</strong> است.
+      &nbsp;|&nbsp; مجموع امتیاز:
+      <strong id="live-total"><%= @candidate_evaluation.taken_score %></strong>
+      /
+      <strong id="live-max"><%= @candidate_evaluation.max_score %></strong>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm align-middle mb-3">
+        <thead class="table-light small">
+          <tr>
+            <th class="text-end" style="min-width:230px;">سؤال</th>
+            <th class="text-center" style="width:45px;">وزن</th>
+            <% CandidateEvaluation::ANSWER_LABELS.each_with_index do |label, i| %>
+              <th class="text-center" style="width:68px;">
+                <div class="d-flex flex-column align-items-center">
+                  <span class="text-nowrap"><%= label %></span>
+                  <span class="text-muted" style="font-size:10px;">(<%= i+1 %>)</span>
+                </div>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+
+        <tbody>
+          <%= f.fields_for :questions do |qf| %>
+            <% q = qf.object %>
+            <tr data-fixed="<%= q.fixed? %>">
+              <td class="text-end" dir="rtl">
+                <%= qf.hidden_field :id %>
+                <%= qf.hidden_field :position %>
+
+                <% if q.fixed? %>
+                  <%= qf.hidden_field :text %>
+                  <strong><%= q.text %></strong>
+                  
+                <% else %>
+                  <%= qf.text_field :text,
+                                    class: "form-control form-control-sm q-text",
+                                    placeholder: "متن سؤال دلخواه..." %>
+                <% end %>
+              </td>
+
+              <td class="text-center">
+                <%= qf.number_field :weight,
+                                    in: 1..3,
+                                    step: 1,
+                                    class: "form-control form-control-sm text-center weight-input mx-auto",
+                                    style: "width:45px;",
+                                    value: (q.weight || 2),
+                                    data: { position: q.position } %>
+              </td>
+
+              <% 1.upto(5) do |val| %>
+                <td class="text-center">
+                  <div class="form-check d-flex justify-content-center">
+                    <%= qf.radio_button :score, val,
+                                        class: "form-check-input score-input",
+                                        data: { position: q.position },
+                                        checked: (q.score == val) %>
+                  </div>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+
+        <tfoot>
+          <tr class="table-primary">
+            <th class="text-end">جمع امتیاز</th>
+            <th class="text-center" colspan="6">
+              <strong id="live-total-strong"><%= @candidate_evaluation.taken_score %></strong>
+              /
+              <strong id="live-max-strong"><%= @candidate_evaluation.max_score %></strong>
+            </th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">سایر نظرات مصاحبه کننده</label>
+      <%= f.text_area :comment, rows: 4, class: "form-control", placeholder: "نظر خود را وارد کنید..." %>
+    </div>
+
+<!-- tiny bottom row: overall grade selector (compact, RTL, with selected state) -->
+<div class="border rounded p-2 mt-3 d-flex align-items-center justify-content-between flex-wrap"
+     dir="rtl" style="gap:8px;">
+  <span class="small text-muted mb-0">ارزیابی کلی:</span>
+
+  <div class="grade-group d-flex flex-wrap gap-2">
+    <% grade_colors = { 'A+' => 'success', 'A' => 'success', 'B' => 'primary', 'C' => 'warning', 'D' => 'danger' } %>
+    <% CandidateEvaluation::GRADES.each_with_index do |g, idx| %>
+      <% id = "grade_#{g.parameterize}_#{idx}" %>
+      <input type="radio"
+             class="d-none"
+             name="candidate_evaluation[overall_grade]"
+             id="<%= id %>"
+             value="<%= g %>"
+             <%= 'checked' if @candidate_evaluation.overall_grade == g %>>
+      <label for="<%= id %>"
+             class="badge rounded-pill bg-<%= grade_colors[g] %> p-2"
+             style="cursor:pointer; font-size:0.85rem; min-width:48px; text-align:center;">
+        <%= g %>
+      </label>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  /* Scoped just to this form block */
+  .grade-group label {
+    opacity: .85;
+    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease, outline-color .12s ease;
+  }
+  .grade-group input[type="radio"]:checked + label {
+    opacity: 1;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 .18rem rgba(13,110,253,.15), 0 0 0 .06rem rgba(0,0,0,.15);
+    outline: 2px solid rgba(13,110,253,.25);
+    outline-offset: 0; /* looks crisp on badges */
+  }
+  .grade-group input[type="radio"]:focus + label {
+    box-shadow: 0 0 0 .22rem rgba(13,110,253,.25);
+  }
+</style>
+
+
+
+  </div>
+
+  <div class="modal-footer">
+    <%= f.submit (@candidate_evaluation.persisted? ? 'ذخیره تغییرات' : 'ثبت ارزیابی'),
+                 class: 'btn btn-primary',
+                 data: { action: 'click->bs-modal#submitEnd' } %>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+  </div>
+<% end %>
+
+<script>
+(function(){
+  const form = document.currentScript.closest('form') || document;
+  const totalEls = [
+    form.querySelector('#live-total'),
+    form.querySelector('#live-total-strong')
+  ];
+  const maxEls = [
+    form.querySelector('#live-max'),
+    form.querySelector('#live-max-strong')
+  ];
+
+  function recalc(){
+    let taken = 0, max = 0;
+
+    form.querySelectorAll('tbody tr').forEach(tr => {
+      const weightInput = tr.querySelector('.weight-input');
+      if (!weightInput) return;
+
+      const w = parseInt(weightInput.value || "0", 10);
+      if (isNaN(w) || w < 1 || w > 3) return;
+
+      const fixed   = (tr.getAttribute('data-fixed') === 'true');
+      const checked = tr.querySelector('.score-input:checked');
+      const textEl  = tr.querySelector('.q-text');
+      const hasText = textEl && textEl.value.trim().length > 0;
+
+      // MAX only for fixed OR (has score OR has text)
+      if (fixed || checked || hasText) {
+        max += w * 5;
+      }
+      if (checked) {
+        const s = parseInt(checked.value || "0", 10);
+        if (!isNaN(s)) taken += s * w;
+      }
+    });
+
+    totalEls.forEach(el => { if (el) el.textContent = taken; });
+    maxEls.forEach(el => { if (el) el.textContent = max; });
+  }
+
+  form.querySelectorAll('.score-input').forEach(i => i.addEventListener('change', recalc));
+  form.querySelectorAll('.weight-input').forEach(i => i.addEventListener('input', recalc));
+  form.querySelectorAll('.q-text').forEach(i => i.addEventListener('input', recalc));
+
+  recalc();
+})();
+</script>

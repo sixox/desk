@@ -166,6 +166,7 @@
           <% if [1, 18, 19, 20].include?(current_user.id) %>
             <li><%= link_to "Stakeholder Survey", stakeholder_survey_forms_path, class: "dropdown-item" %></li>
           <% end %>
+          <li><%= link_to "Candidates", candidates_path, class: "dropdown-item" %></li>
           <% if current_user.is_manager || current_user.id == 10 %>
           <li><%= link_to "Vacations", managment_vacations_path, class: "dropdown-item" %></li>
           <% end %>

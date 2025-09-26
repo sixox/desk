@@ -1,0 +1,580 @@
+<!-- app/views/candidate_portal/profile/edit.html.erb -->
+<div class="col-lg-10 mx-auto mt-4" dir="rtl">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">فرم تکمیل اطلاعات متقاضی</h4>
+    <%= link_to "خروج", candidate_portal_logout_path, data: { turbo_method: :delete, turbo_confirm: "خارج شوید؟" }, class: "btn btn-outline-danger btn-sm" %>
+  </div>
+
+  <%= form_with url: candidate_portal_profile_path, method: :patch, local: true do |f| %>
+    <% data = (@profile.data || {}) %>
+
+    <!-- SECTION 1: مشخصات فردی -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">مشخصات فردی</div>
+      <div class="card-body">
+
+        <!-- row 1 -->
+        <div class="row g-3 mb-2">
+          <div class="col-md-6">
+            <label class="form-label">نام و نام خانوادگی</label>
+            <input class="form-control text-end" name="profile[data][s1][full_name]" value="<%= data.dig("s1","full_name") %>">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نام پدر</label>
+            <input class="form-control text-end" name="profile[data][s1][father_name]" value="<%= data.dig("s1","father_name") %>">
+          </div>
+        </div>
+
+        <!-- row 2 -->
+        <div class="row g-3 mb-2">
+          <div class="col-md-3">
+            <label class="form-label">محل تولد</label>
+            <input class="form-control text-end" name="profile[data][s1][birth_place]" value="<%= data.dig("s1","birth_place") %>">
+          </div>
+
+          <div class="col-md-5">
+            <label class="form-label d-block text-end">تاریخ تولد</label>
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control text-center" placeholder="روز"
+                     min="1" max="31"
+                     name="profile[data][s1][birth_day]"
+                     value="<%= data.dig("s1","birth_day") %>">
+              <input type="number" class="form-control text-center" placeholder="ماه"
+                     min="1" max="12"
+                     name="profile[data][s1][birth_month]"
+                     value="<%= data.dig("s1","birth_month") %>">
+              <input type="number" class="form-control text-center" placeholder="سال"
+                     min="1330" max="1404"
+                     name="profile[data][s1][birth_year]"
+                     value="<%= data.dig("s1","birth_year") %>">
+            </div>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">شماره شناسنامه</label>
+            <input type="number" class="form-control text-end" name="profile[data][s1][id_no]" value="<%= data.dig("s1","id_no") %>">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">محل صدور</label>
+            <input class="form-control text-end" name="profile[data][s1][id_place]" value="<%= data.dig("s1","id_place") %>">
+          </div>
+        </div>
+
+        <!-- row 3 -->
+        <div class="row g-3 mb-2">
+          <div class="col-md-3">
+            <label class="form-label d-block">وضعیت تأهل</label>
+            <div class="d-flex gap-2 justify-content-end flex-wrap">
+              <% [["مجرد","single"],["متاهل","married"]].each do |label,val| %>
+                <% id = "s1_mstatus_#{val}" %>
+                <input type="radio" class="d-none" id="<%= id %>" name="profile[data][s1][marital]" value="<%= val %>"
+                       <%= 'checked' if data.dig("s1","marital")==val %>>
+                <label for="<%= id %>" class="badge rounded-pill bg-light border px-3 py-2" style="cursor:pointer;"><%= label %></label>
+              <% end %>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">تعداد فرزندان</label>
+            <input type="number" class="form-control text-end" name="profile[data][s1][children_count]" value="<%= data.dig("s1","children_count") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">تعداد افراد تحت تکفل</label>
+            <input type="number" class="form-control text-end" name="profile[data][s1][dependents]" value="<%= data.dig("s1","dependents") %>">
+          </div>
+        </div>
+
+        <!-- row 4 -->
+        <div class="mb-2 text-end">
+          <label class="form-label d-block">نوع گواهینامه وسیله نقلیه</label>
+          <div class="d-flex gap-2 flex-wrap justify-content-end">
+            <% licenses = [["موتور","motor"],["پایه۱","p1"],["پایه۲","p2"],["سایر","other"]] %>
+            <% (data.dig("s1","licenses") || []).tap{|v| v.is_a?(Array) or v = [] } %>
+            <% licenses.each do |label,val| %>
+              <% id = "s1_license_#{val}" %>
+              <input type="checkbox" class="btn-check" id="<%= id %>"
+                     name="profile[data][s1][licenses][]" value="<%= val %>"
+                     <%= 'checked' if Array(data.dig("s1","licenses")).include?(val) %>>
+              <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= label %></label>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- row 5 -->
+        <div class="mb-2 text-end">
+          <label class="form-label d-block">مکان سکونت</label>
+          <div class="d-flex gap-2 flex-wrap justify-content-end">
+            <% homes = [["شخصی","own"],["رهنی","mortgage"],["اجاره‌ای","rent"],["سایر","other"]] %>
+            <% homes.each do |label,val| %>
+              <% id = "s1_home_#{val}" %>
+              <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s1][home_type]" value="<%= val %>"
+                     <%= 'checked' if data.dig("s1","home_type")==val %>>
+              <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= label %></label>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- row 6 -->
+        <div class="row g-3 mb-2">
+          <div class="col-12">
+            <label class="form-label">آدرس</label>
+            <textarea class="form-control text-end" rows="2" name="profile[data][s1][address]"><%= data.dig("s1","address") %></textarea>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">کد پستی</label>
+            <input class="form-control text-end" name="profile[data][s1][postal]" value="<%= data.dig("s1","postal") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">ایمیل</label>
+            <input type="email" class="form-control text-end" name="profile[data][s1][email]" value="<%= data.dig("s1","email") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">تلفن</label>
+            <input class="form-control text-end" name="profile[data][s1][phone]" value="<%= data.dig("s1","phone") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">موبایل</label>
+            <input class="form-control text-end" name="profile[data][s1][mobile]" value="<%= data.dig("s1","mobile") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">بهترین زمان تماس</label>
+            <input type="time" class="form-control text-center" name="profile[data][s1][best_call_time]" value="<%= data.dig("s1","best_call_time") %>">
+          </div>
+        </div>
+
+        <!-- row 7 -->
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">میزان حقوق دریافتی</label>
+            <input type="number" class="form-control text-end" name="profile[data][s1][current_salary]" value="<%= data.dig("s1","current_salary") %>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: تحصیلات (4 rows) -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">تحصیلات</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">مقطع</th>
+                <th class="text-end">نام مؤسسه آموزشی</th>
+                <th class="text-end">نوع مدرک</th>
+                <th class="text-end">گرایش/رشته</th>
+                <th class="text-center">سال فارغ‌التحصیلی</th>
+                <th class="text-center">معدل</th>
+                <th class="text-end">محل اخذ مدرک</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% degrees = [["متوسطه","hs"],["کارشناسی","bsc"],["کارشناسی ارشد","msc"],["دکتری","phd"]] %>
+              <% degrees.each do |label,key| %>
+                <tr>
+                  <td class="text-end"><%= label %></td>
+                  <td><input class="form-control text-end" name="profile[data][s2][<%= key %>][inst]" value="<%= data.dig("s2",key,"inst") %>"></td>
+                  <td><input class="form-control text-end" name="profile[data][s2][<%= key %>][degree]" value="<%= data.dig("s2",key,"degree") %>"></td>
+                  <td><input class="form-control text-end" name="profile[data][s2][<%= key %>][major]" value="<%= data.dig("s2",key,"major") %>"></td>
+                  <td><input type="number" class="form-control text-center" name="profile[data][s2][<%= key %>][grad_year]" value="<%= data.dig("s2",key,"grad_year") %>"></td>
+                  <td><input type="number" step="0.01" class="form-control text-center" name="profile[data][s2][<%= key %>][gpa]" value="<%= data.dig("s2",key,"gpa") %>"></td>
+                  <td><input class="form-control text-end" name="profile[data][s2][<%= key %>][place]" value="<%= data.dig("s2",key,"place") %>"></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: وضعیت نظام وظیفه -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">وضعیت نظام وظیفه</div>
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-3 text-end">
+            <label class="form-label d-block">وضعیت</label>
+            <div class="d-flex gap-2 justify-content-end flex-wrap">
+              <% [["مشمول","draft"],["معاف","exempt"],["پایان خدمت","done"]].each do |label,val| %>
+                <% id = "s3_stat_#{val}" %>
+                <input type="radio" class="d-none" id="<%= id %>" name="profile[data][s3][status]" value="<%= val %>"
+                       <%= 'checked' if data.dig("s3","status")==val %>>
+                <label for="<%= id %>" class="badge rounded-pill bg-light border px-3 py-2" style="cursor:pointer;"><%= label %></label>
+              <% end %>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">محل خدمت بعد از آموزش</label>
+            <input class="form-control text-end" name="profile[data][s3][service_place]" value="<%= data.dig("s3","service_place") %>">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">سال اتمام خدمت</label>
+            <input type="number" class="form-control text-center" name="profile[data][s3][end_year]" value="<%= data.dig("s3","end_year") %>">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">مدرک هنگام خدمت</label>
+            <input class="form-control text-end" name="profile[data][s3][service_degree]" value="<%= data.dig("s3","service_degree") %>">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">نوع معافیت</label>
+            <input class="form-control text-end" name="profile[data][s3][exempt_type]" value="<%= data.dig("s3","exempt_type") %>">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">علت معافیت</label>
+            <input class="form-control text-end" name="profile[data][s3][exempt_reason]" value="<%= data.dig("s3","exempt_reason") %>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: سوابق آموزشی (4 rows) -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">سوابق آموزشی</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">عنوان دوره آموزشی</th>
+                <th class="text-end">نام مؤسسه آموزشی</th>
+                <th class="text-center">مدت (ساعت)</th>
+                <th class="text-center">سال اتمام</th>
+                <th class="text-center">نمره آزمون</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% (1..4).each do |i| %>
+                <tr>
+                  <td><textarea class="form-control text-end" rows="1" name="profile[data][s4][r<%= i %>][title]"><%= data.dig("s4","r#{i}","title") %></textarea></td>
+                  <td><input class="form-control text-end" name="profile[data][s4][r<%= i %>][inst]" value="<%= data.dig("s4","r#{i}","inst") %>"></td>
+                  <td><input type="number" class="form-control text-center" name="profile[data][s4][r<%= i %>][hours]" value="<%= data.dig("s4","r#{i}","hours") %>"></td>
+                  <td><input type="number" class="form-control text-center" name="profile[data][s4][r<%= i %>][year]" value="<%= data.dig("s4","r#{i}","year") %>"></td>
+                  <td><input type="number" step="0.01" class="form-control text-center" name="profile[data][s4][r<%= i %>][score]" value="<%= data.dig("s4","r#{i}","score") %>"></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: سوابق شغلی اخیر (4 rows + beneath fields) -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">سوابق شغلی اخیر</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">نام سازمان</th>
+                <th class="text-end">عنوان شغل</th>
+                <th class="text-center">مدت همکاری</th>
+                <th class="text-center">سال اتمام همکاری</th>
+                <th class="text-center">آخرین دریافتی</th>
+                <th class="text-end">نام مافوق</th>
+                <th class="text-end">تلفن تماس</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% (1..4).each do |i| %>
+                <tr>
+                  <td><input class="form-control text-end" name="profile[data][s5][r<%= i %>][org]" value="<%= data.dig("s5","r#{i}","org") %>"></td>
+                  <td><input class="form-control text-end" name="profile[data][s5][r<%= i %>][title]" value="<%= data.dig("s5","r#{i}","title") %>"></td>
+                  <td><input type="number" class="form-control text-center" name="profile[data][s5][r<%= i %>][months]" value="<%= data.dig("s5","r#{i}","months") %>"></td>
+                  <td><input type="number" class="form-control text-center" name="profile[data][s5][r<%= i %>][year_end]" value="<%= data.dig("s5","r#{i}","year_end") %>"></td>
+                  <td><input type="number" step="0.01" class="form-control text-center" name="profile[data][s5][r<%= i %>][last_salary]" value="<%= data.dig("s5","r#{i}","last_salary") %>"></td>
+                  <td><input class="form-control text-end" name="profile[data][s5][r<%= i %>][manager]" value="<%= data.dig("s5","r#{i}","manager") %>"></td>
+                  <td><input class="form-control text-end" name="profile[data][s5][r<%= i %>][phone]" value="<%= data.dig("s5","r#{i}","phone") %>"></td>
+                </tr>
+                <tr>
+                  <td colspan="7">
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <label class="form-label">علت قطع همکاری</label>
+                        <textarea class="form-control text-end" rows="1" name="profile[data][s5][r<%= i %>][leave_reason]"><%= data.dig("s5","r#{i}","leave_reason") %></textarea>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">توضیحات و شرح وظایف</label>
+                        <textarea class="form-control text-end" rows="1" name="profile[data][s5][r<%= i %>][desc]"><%= data.dig("s5","r#{i}","desc") %></textarea>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-3">
+            <label class="form-label d-block">وضعیت کنونی اشتغال</label>
+            <div class="d-flex gap-2 justify-content-end">
+              <% [["شاغل","employed"],["بیکار","unemployed"]].each do |label,val| %>
+                <% id = "s5_now_#{val}" %>
+                <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s5][employment_status]" value="<%= val %>"
+                       <%= 'checked' if data.dig("s5","employment_status")==val %>>
+                <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= label %></label>
+              <% end %>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نشانی محل کار فعلی</label>
+            <textarea class="form-control text-end" rows="1" name="profile[data][s5][current_work_address]"><%= data.dig("s5","current_work_address") %></textarea>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">شماره تماس محل کار فعلی</label>
+            <input class="form-control text-end" name="profile[data][s5][current_work_phone]" value="<%= data.dig("s5","current_work_phone") %>">
+          </div>
+          <div class="col-12">
+            <label class="form-label">آیا تماس با کارفرمایان قبلی مانعی دارد؟</label>
+            <input class="form-control text-end" name="profile[data][s5][contact_previous_employers]" value="<%= data.dig("s5","contact_previous_employers") %>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6: مشاغل دیگر (1 row) -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">چنانچه در حال حاضر مشاغل دیگری دارید</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">نام سازمان</th>
+                <th class="text-end">عنوان شغل</th>
+                <th class="text-center">مدت همکاری</th>
+                <th class="text-center">سال اتمام همکاری</th>
+                <th class="text-center">آخرین دریافتی</th>
+                <th class="text-end">نام مافوق</th>
+                <th class="text-end">تلفن تماس</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input class="form-control text-end" name="profile[data][s6][org]" value="<%= data.dig("s6","org") %>"></td>
+                <td><input class="form-control text-end" name="profile[data][s6][title]" value="<%= data.dig("s6","title") %>"></td>
+                <td><input type="number" class="form-control text-center" name="profile[data][s6][months]" value="<%= data.dig("s6","months") %>"></td>
+                <td><input type="number" class="form-control text-center" name="profile[data][s6][year_end]" value="<%= data.dig("s6","year_end") %>"></td>
+                <td><input type="number" step="0.01" class="form-control text-center" name="profile[data][s6][last_salary]" value="<%= data.dig("s6","last_salary") %>"></td>
+                <td><input class="form-control text-end" name="profile[data][s6][manager]" value="<%= data.dig("s6","manager") %>"></td>
+                <td><input class="form-control text-end" name="profile[data][s6][phone]" value="<%= data.dig("s6","phone") %>"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: زبان‌های خارجی -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">آشنایی به زبان‌های خارجی</div>
+      <div class="card-body">
+        <% langs = [["انگلیسی","en"],["آلمانی","de"],["فرانسوی","fr"],["چینی","zh"]] %>
+        <% levels = [["ضعیف","weak"],["متوسط","mid"],["خوب","good"],["عالی","excel"]] %>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">زبان</th>
+                <th class="text-center">مکالمه</th>
+                <th class="text-center">نگارش و ترجمه</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% langs.each do |label, key| %>
+                <tr>
+                  <td class="text-end"><%= label %></td>
+                  <td class="text-center">
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                      <% levels.each do |l_label, l_val| %>
+                        <% id = "s7_#{key}_speaking_#{l_val}" %>
+                        <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s7][<%= key %>][speaking]" value="<%= l_val %>"
+                               <%= 'checked' if data.dig("s7",key,"speaking")==l_val %>>
+                        <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= l_label %></label>
+                      <% end %>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                      <% levels.each do |l_label, l_val| %>
+                        <% id = "s7_#{key}_writing_#{l_val}" %>
+                        <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s7][<%= key %>][writing]" value="<%= l_val %>"
+                               <%= 'checked' if data.dig("s7",key,"writing")==l_val %>>
+                        <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= l_label %></label>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 8: آشنایی با کامپیوتر (4 rows) -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">آشنایی با کامپیوتر</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">نام نرم‌افزار</th>
+                <th class="text-center">میزان آشنایی</th>
+                <th class="text-end">توضیحات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% comp_levels = [["ضعیف","weak"],["متوسط","mid"],["خوب","good"],["عالی","excel"]] %>
+              <% (1..4).each do |i| %>
+                <tr>
+                  <td><input class="form-control text-end" name="profile[data][s8][r<%= i %>][title]" value="<%= data.dig("s8","r#{i}","title") %>"></td>
+                  <td class="text-center">
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                      <% comp_levels.each do |l_label, l_val| %>
+                        <% id = "s8_r#{i}_lvl_#{l_val}" %>
+                        <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s8][r<%= i %>][level]" value="<%= l_val %>"
+                               <%= 'checked' if data.dig("s8","r#{i}","level")==l_val %>>
+                        <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= l_label %></label>
+                      <% end %>
+                    </div>
+                  </td>
+                  <td><textarea class="form-control text-end" rows="1" name="profile[data][s8][r<%= i %>][desc]"><%= data.dig("s8","r#{i}","desc") %></textarea></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 9: معرف -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">معرف</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">نام و نام خانوادگی</label>
+            <input class="form-control text-end" name="profile[data][s9][name]" value="<%= data.dig("s9","name") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">شغل</label>
+            <input class="form-control text-end" name="profile[data][s9][job]" value="<%= data.dig("s9","job") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">نسبت</label>
+            <input class="form-control text-end" name="profile[data][s9][relation]" value="<%= data.dig("s9","relation") %>">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">مدت آشنایی</label>
+            <input type="number" step="0.1" class="form-control text-center" name="profile[data][s9][years]" value="<%= data.dig("s9","years") %>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 10: سایر موارد -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">سایر موارد</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">در صورتیکه سوابق کیفری دارید با ذکر علت عنوان نمایید</label>
+            <textarea class="form-control text-end" rows="2" name="profile[data][s10][criminal]"><%= data.dig("s10","criminal") %></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label">اگر تعهدات خاصی دارید شرح دهید</label>
+            <textarea class="form-control text-end" rows="2" name="profile[data][s10][commitments]"><%= data.dig("s10","commitments") %></textarea>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label d-block">آیا مقروض هستید؟</label>
+            <div class="d-flex gap-2 justify-content-end">
+              <% [["بله","yes"],["خیر","no"]].each do |label,val| %>
+                <% id = "s10_debt_#{val}" %>
+                <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s10][in_debt]" value="<%= val %>"
+                       <%= 'checked' if data.dig("s10","in_debt")==val %>>
+                <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= label %></label>
+              <% end %>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">میزان بدهی</label>
+            <input type="number" class="form-control text-end" name="profile[data][s10][debt_amount]" value="<%= data.dig("s10","debt_amount") %>">
+          </div>
+
+          <!-- تاریخ آمادگی: day/month/year with your constraints -->
+          <div class="col-md-6">
+            <label class="form-label d-block text-end">تاریخ آمادگی جهت شروع کار</label>
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control text-center" placeholder="روز"  min="1" max="30"  name="profile[data][s10][start_day]"   value="<%= data.dig("s10","start_day") %>">
+              <input type="number" class="form-control text-center" placeholder="ماه"  min="1" max="12"  name="profile[data][s10][start_month]" value="<%= data.dig("s10","start_month") %>">
+              <input type="number" class="form-control text-center" placeholder="سال"  min="1330" max="1404" name="profile[data][s10][start_year]"  value="<%= data.dig("s10","start_year") %>">
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">چرا شرکت زیگورات اویل باید شما را استخدام کند؟</label>
+            <textarea class="form-control text-end" rows="2" name="profile[data][s10][why_us]"><%= data.dig("s10","why_us") %></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 11: رده تخصصی -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header fw-bold text-end">خود را در کدام رده تخصصی می‌بینید؟</div>
+      <div class="card-body">
+        <% levels = [["بسیار متخصص","pro"],["متخصص","mid"],["نیمه متخصص","junior"]] %>
+        <% (1..3).each do |i| %>
+          <div class="row g-2 align-items-center mb-2">
+            <div class="col-md-6">
+              <input class="form-control text-end" placeholder="نام تخصص"
+                     name="profile[data][s11][r<%= i %>][skill]" value="<%= data.dig("s11","r#{i}","skill") %>">
+            </div>
+            <div class="col-md-6 text-end">
+              <div class="d-flex gap-2 justify-content-end flex-wrap">
+                <% levels.each do |label,val| %>
+                  <% id = "s11_r#{i}_lvl_#{val}" %>
+                  <input type="radio" class="btn-check" id="<%= id %>" name="profile[data][s11][r<%= i %>][level]" value="<%= val %>"
+                         <%= 'checked' if data.dig("s11","r#{i}","level")==val %>>
+                  <label class="btn btn-outline-secondary btn-sm" for="<%= id %>"><%= label %></label>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- SECTION 12: انتظارات (1–6) -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header fw-bold text-end">انتظار شما از محیط کار</div>
+      <div class="card-body">
+        <% items = [
+          ["پرستیژ کار","prestige"],
+          ["درآمد","income"],
+          ["هماهنگی با رشته تحصیلی","match_major"],
+          ["نزدیکی محل","nearby"],
+          ["همکاران مناسب","coworkers"],
+          ["محیط کار آرام","calm"]
+        ] %>
+        <div class="row g-3">
+          <% items.each do |label,key| %>
+            <div class="col-md-4">
+              <label class="form-label"><%= label %> (۱ تا ۶)</label>
+              <input type="number" min="1" max="6" class="form-control text-center"
+                     name="profile[data][s12][<%= key %>]" value="<%= data.dig("s12",key) %>">
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-5">
+      <%= link_to "انصراف", candidate_portal_profile_path, class: "btn btn-outline-secondary" %>
+      <button class="btn btn-primary">ذخیره</button>
+    </div>
+  <% end %>
+</div>

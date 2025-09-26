@@ -1,29 +1,136 @@
 <div class="col-lg-10 mx-auto mt-5">
   <h1 class="mb-4">Candidates</h1>
+
   <%= link_to new_candidate_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary mb-3" do %>
   <i class="bi bi-plus"></i> Add Condidate
   <% end %>
 
-  <table class="table table-bordered table-striped table-sm>
+  <table class="table table-bordered table-striped table-sm">
     <thead class="table-light">
       <tr>
         <th>Name</th>
         <th>Phone</th>
         <th>Role</th>
+        <th class="text-center">HR Form</th>
+        <th class="text-center">CEO Form</th>
+        <th class="text-center">Dept Form</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <% @candidates.each do |candidate| %>
-      <tr>
+      <% evals = candidate.candidate_evaluations.to_a %>
+
+      <% hr_eval  = evals.find { |e| e.department == "HR" } %>
+      <% ceo_eval = evals.find { |e| e.department == "CEO" } %>
+
+      <% dept_key, dept_label =
+      if candidate.role.to_s == "accounting"
+       ["Accounting", "Accounting"]
+     else
+       ["Other", (candidate.role.to_s.present? ? candidate.role.to_s.capitalize : "Other")]
+       end %>
+       <% dept_eval = evals.find { |e| e.department == dept_key } %>
+
+       <% hr_or_admin         = (current_user&.role == "hr") || (current_user&.role == "admin") %>
+       <% ceo_allowed         = (current_user&.role == "ceo") || (current_user&.is_manager && current_user&.role == "procurement") || hr_or_admin %>
+       <% accounting_allowed  = ((current_user&.role == "accounting") && candidate.role.to_s == "accounting") || hr_or_admin %>
+       <% other_allowed       = ((current_user&.role.to_s == candidate.role.to_s) && current_user&.is_manager) || hr_or_admin %>
+
+       <tr>
         <td><%= candidate.name %></td>
         <td><%= candidate.phone %></td>
-        <td><%= candidate.role.capitalize %></td>
+        <td><%= candidate.role.to_s.capitalize %></td>
+
+        <!-- HR -->
+        <td class="text-center">
+          <% if hr_or_admin %>
+          <% if hr_eval.present? %>
+          <div class="mb-1">
+            <span class="badge bg-secondary"><%= hr_eval.taken_score %>/<%= hr_eval.max_score %></span>
+          </div>
+          <%= link_to edit_candidate_candidate_evaluation_path(candidate, department: "HR"),
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-outline-primary" do %>
+          <i class="bi bi-pencil-square"></i> Edit
+          <% end %>
+          <% else %>
+          <%= link_to new_candidate_candidate_evaluation_path(candidate, department: "HR"),
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-success" do %>
+          <i class="bi bi-plus-circle"></i> Create
+          <% end %>
+          <% end %>
+          <% else %>
+          <span class="text-muted">—</span>
+          <% end %>
+        </td>
+
+        <!-- CEO -->
+        <td class="text-center">
+          <% if ceo_allowed %>
+          <% if ceo_eval.present? %>
+          <div class="mb-1">
+            <span class="badge bg-secondary"><%= ceo_eval.taken_score %>/<%= ceo_eval.max_score %></span>
+          </div>
+          <%= link_to edit_candidate_candidate_evaluation_path(candidate, department: "CEO"),
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-outline-primary" do %>
+          <i class="bi bi-pencil-square"></i> Edit
+          <% end %>
+          <% else %>
+          <%= link_to new_candidate_candidate_evaluation_path(candidate, department: "CEO"),
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-success" do %>
+          <i class="bi bi-plus-circle"></i> Create
+          <% end %>
+          <% end %>
+          <% else %>
+          <span class="text-muted">—</span>
+          <% end %>
+        </td>
+
+        <!-- Dept-specific (Accounting or Other labeled with candidate.role) -->
+        <td class="text-center">
+          <span class="d-block small text-muted mb-1"><%= dept_label %></span>
+          <% allowed_for_dept = (dept_key == "Accounting") ? accounting_allowed : other_allowed %>
+
+          <% if allowed_for_dept %>
+          <% if dept_eval.present? %>
+          <div class="mb-1">
+            <span class="badge bg-secondary"><%= dept_eval.taken_score %>/<%= dept_eval.max_score %></span>
+          </div>
+          <%= link_to edit_candidate_candidate_evaluation_path(candidate, department: dept_key),
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-outline-primary" do %>
+          <i class="bi bi-pencil-square"></i> Edit
+          <% end %>
+          <% else %>
+          <%= link_to new_candidate_candidate_evaluation_path(candidate, department: dept_key),
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-success" do %>
+          <i class="bi bi-plus-circle"></i> Create
+          <% end %>
+          <% end %>
+          <% else %>
+          <span class="text-muted">—</span>
+          <% end %>
+        </td>
+
         <td>
           <%= link_to 'edit', edit_candidate_path(candidate), data: { controller: "bs-modal-form" }, class: "btn btn-sm btn-warning" %>
+          <%= link_to 'delete', candidate_path(candidate), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' }, class: "btn btn-sm btn-danger" %>
+          <% has_profile =
+          (defined?(CandidatePortal::Profile) && CandidatePortal::Profile.exists?(candidate_id: candidate.id)) ||
+          (candidate.respond_to?(:candidate_profile) && candidate.candidate_profile.present?) %>
 
-          <%= link_to 'delete', candidate_path(candidate), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } , class: "btn btn-sm btn-danger" %>
-
+          <% if has_profile %>
+          <%= link_to "View form",
+          profile_candidate_path(candidate),
+          class: "btn btn-sm btn-outline-secondary" %>
+          <% else %>
+          <span class="text-muted">No form yet</span>
+          <% end %>
         </td>
       </tr>
       <% end %>

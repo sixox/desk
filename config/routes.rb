@@ -231,8 +231,14 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :candidates
-
+  resources :candidates do
+    # one-evaluation-per-department, REST as a singular resource, param: :department
+    resource :candidate_evaluation, only: [:new, :create, :edit, :update, :show]
+    member do
+      get :profile  # read-only view of the candidate’s submitted portal form
+    end
+  end
+  
   resources :stakeholder_survey_forms do
     collection do
       patch :update_all   # for submitting multiple answers at once
@@ -248,6 +254,14 @@ Rails.application.routes.draw do
 
   resources :experiences do
     resources :comments
+  end
+
+  namespace :candidate_portal do
+    get  "login",  to: "sessions#new"
+    post "login",  to: "sessions#create"
+    delete "logout", to: "sessions#destroy"
+
+    resource :profile, controller: "profile", only: [:edit, :update, :show]
   end
 
 

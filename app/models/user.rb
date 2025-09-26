@@ -47,6 +47,9 @@ class User < ApplicationRecord
   has_many :experience_visits, dependent: :destroy
   has_many :visited_experiences, through: :experience_visits, source: :experience
 
+  has_many :candidate_evaluations, foreign_key: :user_id, inverse_of: :user, dependent: :nullify
+
+
 
 
 

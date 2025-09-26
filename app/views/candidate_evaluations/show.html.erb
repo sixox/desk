@@ -1,0 +1,79 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4 class="mb-0">
+          ارزیابی — <%= @candidate.name %>
+          <small class="text-muted">(دپارتمان: <%= @candidate_evaluation.department %>)</small>
+        </h4>
+        <small class="text-muted"><%= @candidate_evaluation.created_at.strftime('%Y/%m/%d %H:%M') %></small>
+      </div>
+      <hr class="mt-2 mb-4">
+
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle table-sm table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th class="text-end">سؤال</th>
+              <th class="text-center" style="width:100px;">وزن</th>
+              <th class="text-center" style="width:120px;">امتیاز</th>
+              <th class="text-center" style="width:120px;">وزنی</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @candidate_evaluation.questions.order(:position).each do |q| %>
+              <%# Skip empty custom rows %>
+              <% next if !q.fixed? && q.text.blank? && q.score.blank? %>
+
+              <tr>
+                <td class="text-end">
+                  <%= q.text.presence || "—" %>
+                  <% if q.fixed? %><span class="badge bg-secondary ms-1">ثابت</span><% end %>
+                </td>
+                <td class="text-center"><%= q.weight %></td>
+                <td class="text-center"><%= q.score || "—" %></td>
+                <td class="text-center"><%= q.score.present? ? (q.score * q.weight) : "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot>
+            <tr class="table-primary">
+              <th class="text-end">جمع امتیاز</th>
+              <th class="text-center" colspan="3">
+                <strong><%= @candidate_evaluation.taken_score %> / <%= @candidate_evaluation.max_score %></strong>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="mt-3">
+        <h6 class="mb-1">سایر نظرات مصاحبه کننده</h6>
+        <div class="border rounded p-3 bg-light">
+          <%= @candidate_evaluation.comment.presence || "—" %>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <h6 class="mb-1">ارزیابی کلی</h6>
+        <span class="badge bg-info fs-6"><%= @candidate_evaluation.overall_grade.presence || "—" %></span>
+      </div>
+
+      <div class="d-flex justify-content-end mt-4">
+        <% can_edit =
+            (@candidate_evaluation.department == "HR"        && current_user.role == "hr") ||
+            (@candidate_evaluation.department == "CEO"       && current_user.role == "ceo") ||
+            (@candidate_evaluation.department == "Accounting"&& current_user.role == "accounting") ||
+            (@candidate_evaluation.department == "Other"     && %w[hr ceo].include?(current_user.role)) %>
+
+        <% if can_edit %>
+          <%= link_to edit_candidate_candidate_evaluation_path(@candidate, department: @candidate_evaluation.department),
+              data: { controller: "bs-modal-form" },
+              class: "btn btn-sm btn-outline-primary" do %>
+            <i class="bi bi-pencil-square"></i> ویرایش
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

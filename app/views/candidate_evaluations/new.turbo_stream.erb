@@ -1,0 +1,5 @@
+<%= turbo_stream.replace "remote_modal" do %>
+  <%= render 'shared/turbo_modal',
+      modal_title: "فرم ارزیابی (#{@department}) — #{@candidate.name}",
+      form_partial: "candidate_evaluations/form" %>
+<% end %>
