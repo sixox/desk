@@ -8,13 +8,11 @@ class CandidatePortal::ProfileController < ApplicationController
   def edit; end
 
   def update
-    # accept deeply-nested freeform JSON
     incoming = params.fetch(:profile, {}).fetch(:data, {}).to_unsafe_h
     @profile.data = (@profile.data || {}).deep_merge(incoming)
 
     if @profile.save
-      # 303 makes Turbo (and normal browsers) do a GET and show flashes
-      redirect_to candidate_portal_profile_path, notice: "اطلاعات با موفقیت ذخیره شد.", status: :see_other
+      redirect_to edit_candidate_portal_profile_path, notice: "اطلاعات با موفقیت ذخیره شد.", status: :see_other
     else
       flash.now[:alert] = "ذخیره با خطا مواجه شد."
       render :edit, status: :unprocessable_entity
