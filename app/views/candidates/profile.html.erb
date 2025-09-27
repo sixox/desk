@@ -1,0 +1,386 @@
+<!-- app/views/candidates/profile.html.erb -->
+<div class="col-lg-10 mx-auto mt-4" dir="rtl">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">فرم تکمیل شده متقاضی — <%= @candidate.name %></h4>
+    <%= link_to "بازگشت", candidates_path, class: "btn btn-outline-secondary btn-sm" %>
+  </div>
+
+  <% d = @profile.data || {} %>
+
+  <!-- SECTION 1: مشخصات فردی -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">مشخصات فردی</div>
+    <div class="card-body text-end">
+      <div class="row g-3">
+        <div class="col-md-6"><strong>نام و نام خانوادگی:</strong> <%= d.dig("s1","full_name") %></div>
+        <div class="col-md-6"><strong>نام پدر:</strong> <%= d.dig("s1","father_name") %></div>
+
+        <div class="col-md-3"><strong>محل تولد:</strong> <%= d.dig("s1","birth_place") %></div>
+        <div class="col-md-5">
+          <strong>تاریخ تولد:</strong>
+          <%= [d.dig("s1","birth_day"), d.dig("s1","birth_month"), d.dig("s1","birth_year")].compact.join("/") %>
+        </div>
+        <div class="col-md-2"><strong>شماره شناسنامه:</strong> <%= d.dig("s1","id_no") %></div>
+        <div class="col-md-2"><strong>محل صدور:</strong> <%= d.dig("s1","id_place") %></div>
+
+        <div class="col-md-3">
+          <strong>وضعیت تأهل:</strong>
+          <%= {"single"=>"مجرد","married"=>"متاهل"}[d.dig("s1","marital")] || "—" %>
+        </div>
+        <div class="col-md-3"><strong>تعداد فرزندان:</strong> <%= d.dig("s1","children_count").presence || "—" %></div>
+        <div class="col-md-3"><strong>افراد تحت تکفل:</strong> <%= d.dig("s1","dependents").presence || "—" %></div>
+
+        <div class="col-12">
+          <strong>نوع گواهینامه:</strong>
+          <% license_map = {"motor"=>"موتور","p1"=>"پایه۱","p2"=>"پایه۲","other"=>"سایر"} %>
+          <% ls = Array(d.dig("s1","licenses")).map{ |k| license_map[k] }.compact %>
+          <%= (ls.present? ? ls.join("، ") : "—") %>
+        </div>
+
+        <div class="col-12"><strong>آدرس:</strong> <%= d.dig("s1","address").presence || "—" %></div>
+        <div class="col-md-3"><strong>کد پستی:</strong> <%= d.dig("s1","postal").presence || "—" %></div>
+        <div class="col-md-3"><strong>ایمیل:</strong> <%= d.dig("s1","email").presence || "—" %></div>
+        <div class="col-md-3"><strong>تلفن:</strong> <%= d.dig("s1","phone").presence || "—" %></div>
+        <div class="col-md-3"><strong>موبایل:</strong> <%= d.dig("s1","mobile").presence || "—" %></div>
+        <div class="col-md-3"><strong>بهترین زمان تماس:</strong> <%= d.dig("s1","best_call_time").presence || "—" %></div>
+
+        <div class="col-md-3">
+          <strong>مکان سکونت:</strong>
+          <%= {"own"=>"شخصی","mortgage"=>"رهنی","rent"=>"اجاره‌ای","other"=>"سایر"}[d.dig("s1","home_type")] || "—" %>
+        </div>
+        <div class="col-md-3">
+          <strong>حقوق درخواستی:</strong>
+          <% sal = d.dig("s1","current_salary") %>
+          <%= sal.present? ? "#{sal} میلیون" : "—" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: تحصیلات -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">تحصیلات</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">مقطع</th>
+              <th class="text-end">نام مؤسسه آموزشی</th>
+              <th class="text-end">نوع مدرک</th>
+              <th class="text-end">گرایش/رشته</th>
+              <th class="text-center">سال فارغ‌التحصیلی</th>
+              <th class="text-center">معدل</th>
+              <th class="text-end">محل اخذ مدرک</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% degrees = [["متوسطه","hs"],["کارشناسی","bsc"],["کارشناسی ارشد","msc"],["دکتری","phd"]] %>
+            <% degrees.each do |label,key| %>
+              <% row = d.dig("s2",key) || {} %>
+              <% next if row.values.compact.blank? %>
+              <tr>
+                <td class="text-end"><%= label %></td>
+                <td class="text-end"><%= row["inst"] %></td>
+                <td class="text-end"><%= row["degree"] %></td>
+                <td class="text-end"><%= row["major"] %></td>
+                <td class="text-center"><%= row["grad_year"] %></td>
+                <td class="text-center"><%= row["gpa"] %></td>
+                <td class="text-end"><%= row["place"] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: وضعیت نظام وظیفه -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">وضعیت نظام وظیفه</div>
+    <div class="card-body text-end">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <strong>وضعیت:</strong>
+          <%= {"draft"=>"مشمول","exempt"=>"معاف","done"=>"پایان خدمت"}[d.dig("s3","status")] || "—" %>
+        </div>
+        <div class="col-md-3"><strong>محل خدمت پس از آموزش:</strong> <%= d.dig("s3","service_place").presence || "—" %></div>
+        <div class="col-md-2"><strong>سال اتمام خدمت:</strong> <%= d.dig("s3","end_year").presence || "—" %></div>
+        <div class="col-md-2"><strong>مدرک هنگام خدمت:</strong> <%= d.dig("s3","service_degree").presence || "—" %></div>
+        <div class="col-md-2"><strong>نوع معافیت:</strong> <%= d.dig("s3","exempt_type").presence || "—" %></div>
+        <div class="col-12"><strong>علت معافیت:</strong> <%= d.dig("s3","exempt_reason").presence || "—" %></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: سوابق آموزشی -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">سوابق آموزشی</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">عنوان دوره آموزشی</th>
+              <th class="text-end">نام مؤسسه آموزشی</th>
+              <th class="text-center">مدت (ساعت)</th>
+              <th class="text-center">سال اتمام</th>
+              <th class="text-center">نمره آزمون</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (1..4).each do |i| %>
+              <% row = d.dig("s4","r#{i}") || {} %>
+              <% next if row.values.compact.blank? %>
+              <tr>
+                <td class="text-end"><%= row["title"] %></td>
+                <td class="text-end"><%= row["inst"] %></td>
+                <td class="text-center"><%= row["hours"] %></td>
+                <td class="text-center"><%= row["year"] %></td>
+                <td class="text-center"><%= row["score"] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: سوابق شغلی اخیر -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">سوابق شغلی اخیر</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">نام سازمان</th>
+              <th class="text-end">عنوان شغل</th>
+              <th class="text-center">مدت همکاری (ماه)</th>
+              <th class="text-center">سال اتمام</th>
+              <th class="text-center">آخرین دریافتی</th>
+              <th class="text-end">نام مافوق</th>
+              <th class="text-end">تلفن تماس</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (1..4).each do |i| %>
+              <% row = d.dig("s5","r#{i}") || {} %>
+              <% next if row.values.compact.blank? %>
+              <tr>
+                <td class="text-end"><%= row["org"] %></td>
+                <td class="text-end"><%= row["title"] %></td>
+                <td class="text-center"><%= row["months"] %></td>
+                <td class="text-center"><%= row["year_end"] %></td>
+                <td class="text-center"><%= row["last_salary"].present? ? "#{row["last_salary"]} میلیون" : "—" %></td>
+                <td class="text-end"><%= row["manager"] %></td>
+                <td class="text-end"><%= row["phone"] %></td>
+              </tr>
+              <% if row["leave_reason"].present? || row["desc"].present? %>
+                <tr>
+                  <td colspan="7">
+                    <div class="row g-2 text-end">
+                      <div class="col-md-6"><strong>علت قطع همکاری:</strong> <%= row["leave_reason"] %></div>
+                      <div class="col-md-6"><strong>توضیحات و شرح وظایف:</strong> <%= row["desc"] %></div>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="row g-3 mt-1 text-end">
+        <div class="col-md-3">
+          <strong>وضعیت کنونی اشتغال:</strong>
+          <%= {"employed"=>"شاغل","unemployed"=>"بیکار"}[d.dig("s5","employment_status")] || "—" %>
+        </div>
+        <div class="col-md-6"><strong>نشانی محل کار فعلی:</strong> <%= d.dig("s5","current_work_address").presence || "—" %></div>
+        <div class="col-md-3"><strong>شماره تماس محل کار فعلی:</strong> <%= d.dig("s5","current_work_phone").presence || "—" %></div>
+        <div class="col-12"><strong>آیا تماس با کارفرمایان قبلی مانعی دارد؟</strong> <%= d.dig("s5","contact_previous_employers").presence || "—" %></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: مشاغل دیگر -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">مشاغل دیگر</div>
+    <div class="card-body">
+      <% r = d.dig("s6") || {} %>
+      <% if r.values.compact.blank? %>
+        <div class="text-muted text-end">—</div>
+      <% else %>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-end">نام سازمان</th>
+                <th class="text-end">عنوان شغل</th>
+                <th class="text-center">مدت همکاری</th>
+                <th class="text-center">سال اتمام</th>
+                <th class="text-center">آخرین دریافتی</th>
+                <th class="text-end">نام مافوق</th>
+                <th class="text-end">تلفن تماس</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-end"><%= r["org"] %></td>
+                <td class="text-end"><%= r["title"] %></td>
+                <td class="text-center"><%= r["months"] %></td>
+                <td class="text-center"><%= r["year_end"] %></td>
+                <td class="text-center"><%= r["last_salary"].present? ? "#{r["last_salary"]} میلیون" : "—" %></td>
+                <td class="text-end"><%= r["manager"] %></td>
+                <td class="text-end"><%= r["phone"] %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- SECTION 7: زبان‌های خارجی -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">آشنایی به زبان‌های خارجی</div>
+    <div class="card-body">
+      <% langs = [["انگلیسی","en"],["آلمانی","de"],["فرانسوی","fr"],["چینی","zh"]] %>
+      <% label_level = {"weak"=>"ضعیف","mid"=>"متوسط","good"=>"خوب","excel"=>"عالی"} %>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">زبان</th>
+              <th class="text-center">مکالمه</th>
+              <th class="text-center">نگارش و ترجمه</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% langs.each do |label,key| %>
+              <% row = d.dig("s7",key) || {} %>
+              <% next if row.values.compact.blank? %>
+              <tr>
+                <td class="text-end"><%= label %></td>
+                <td class="text-center"><%= label_level[row["speaking"]] || "—" %></td>
+                <td class="text-center"><%= label_level[row["writing"]]  || "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8: آشنایی با کامپیوتر -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">آشنایی با کامپیوتر</div>
+    <div class="card-body">
+      <% level_map = {"weak"=>"ضعیف","mid"=>"متوسط","good"=>"خوب","excel"=>"عالی"} %>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">نام نرم‌افزار</th>
+              <th class="text-center">میزان آشنایی</th>
+              <th class="text-end">توضیحات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (1..4).each do |i| %>
+              <% row = d.dig("s8","r#{i}") || {} %>
+              <% next if row.values.compact.blank? %>
+              <tr>
+                <td class="text-end"><%= row["title"] %></td>
+                <td class="text-center"><%= level_map[row["level"]] || "—" %></td>
+                <td class="text-end"><%= row["desc"] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 9: معرف -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">معرف</div>
+    <div class="card-body text-end">
+      <div class="row g-3">
+        <div class="col-md-3"><strong>نام و نام خانوادگی:</strong> <%= d.dig("s9","name").presence || "—" %></div>
+        <div class="col-md-3"><strong>شغل:</strong> <%= d.dig("s9","job").presence || "—" %></div>
+        <div class="col-md-3"><strong>نسبت:</strong> <%= d.dig("s9","relation").presence || "—" %></div>
+        <div class="col-md-3"><strong>مدت آشنایی:</strong> <%= d.dig("s9","years").presence || "—" %></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 10: سایر موارد -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">سایر موارد</div>
+    <div class="card-body text-end">
+      <div class="row g-3">
+        <div class="col-12"><strong>سوابق کیفری:</strong> <%= d.dig("s10","criminal").presence || "—" %></div>
+        <div class="col-12"><strong>تعهدات خاص:</strong> <%= d.dig("s10","commitments").presence || "—" %></div>
+        <div class="col-md-3">
+          <strong>آیا مقروض هستید؟</strong>
+          <%= {"yes"=>"بله","no"=>"خیر"}[d.dig("s10","in_debt")] || "—" %>
+        </div>
+        <div class="col-md-3"><strong>میزان بدهی:</strong> <%= d.dig("s10","debt_amount").presence || "—" %></div>
+        <div class="col-md-6">
+          <strong>تاریخ آمادگی شروع:</strong>
+          <%= [d.dig("s10","start_day"), d.dig("s10","start_month"), d.dig("s10","start_year")].compact.join("/") %>
+        </div>
+        <div class="col-12"><strong>چرا زیگورات اویل شما را استخدام کند؟</strong> <div><%= d.dig("s10","why_us").presence || "—" %></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 11: رده تخصصی -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header fw-bold text-end">رده‌های تخصصی</div>
+    <div class="card-body">
+      <% level_map11 = {"pro"=>"بسیار متخصص","mid"=>"متخصص","junior"=>"نیمه متخصص"} %>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">نام تخصص</th>
+              <th class="text-center">سطح</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (1..3).each do |i| %>
+              <% row = d.dig("s11","r#{i}") || {} %>
+              <% next if row.values.compact.blank? %>
+              <tr>
+                <td class="text-end"><%= row["skill"] %></td>
+                <td class="text-center"><%= level_map11[row["level"]] || "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 12: انتظارات -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header fw-bold text-end">انتظارات از محیط کار (۱ تا ۶)</div>
+    <div class="card-body">
+      <% items = [
+        ["پرستیژ کار","prestige"],
+        ["درآمد","income"],
+        ["هماهنگی با رشته تحصیلی","match_major"],
+        ["نزدیکی محل","nearby"],
+        ["همکاران مناسب","coworkers"],
+        ["محیط کار آرام","calm"]
+      ] %>
+      <div class="row g-3 text-end">
+        <% items.each do |label,key| %>
+          <div class="col-md-4"><strong><%= label %>:</strong> <%= d.dig("s12",key).presence || "—" %></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

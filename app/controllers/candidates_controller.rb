@@ -3,7 +3,9 @@ class CandidatesController < ApplicationController
   before_action :set_candidate, only: [:edit, :update, :destroy]
 
   def index
-    @candidates = Candidate.includes(:candidate_evaluations).order(created_at: :desc)
+    @candidates = Candidate
+                    .includes(:candidate_profile, :candidate_evaluations)
+                    .order(created_at: :desc)
   end
 
   def new
@@ -38,15 +40,13 @@ class CandidatesController < ApplicationController
 
   def profile
     @candidate = Candidate.find(params[:id])
-    # If your form is stored in, e.g., CandidatePortal::Profile or CandidateProfile:
-    @profile =
-      if defined?(CandidatePortal::Profile)
-        CandidatePortal::Profile.find_by(candidate_id: @candidate.id)
-      elsif @candidate.respond_to?(:candidate_profile)
-        @candidate.candidate_profile
-      end
-    # render app/views/candidates/profile.html.erb
+    @profile   = @candidate.candidate_profile
+
+    unless @profile
+      redirect_to candidates_path, alert: "فرمی برای این متقاضی ثبت نشده است." and return
+    end
   end
+
 
   private
 
