@@ -1,0 +1,327 @@
+<!-- app/views/candidate_portal/profile/_read_only.html.erb -->
+<% data = local_assigns[:data] || {} %>
+
+<!-- SECTION 1 -->
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">مشخصات فردی</h6>
+  <div class="row gy-1 small">
+    <div class="col-md-6">
+      <div class="border rounded p-2 h-100">
+        <div>نام و نام خانوادگی: <span class="text-muted"><%= data.dig("s1","full_name") %></span></div>
+        <div>محل تولد: <span class="text-muted"><%= data.dig("s1","birth_place") %></span></div>
+        <div>تاریخ تولد: <span class="text-muted"><%= [data.dig("s1","birth_day"),data.dig("s1","birth_month"),data.dig("s1","birth_year")].compact.join("/") %></span></div>
+        <div>وضعیت تأهل: <span class="text-muted"><%= {"single"=>"مجرد","married"=>"متاهل"}[data.dig("s1","marital")] %></span></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="border rounded p-2 h-100">
+        <div>نام پدر: <span class="text-muted"><%= data.dig("s1","father_name") %></span></div>
+        <div>شماره شناسنامه: <span class="text-muted"><%= data.dig("s1","id_no") %></span></div>
+        <div>محل صدور: <span class="text-muted"><%= data.dig("s1","id_place") %></span></div>
+        <div>تحت تکفل / فرزندان: <span class="text-muted"><%= [data.dig("s1","dependents"), data.dig("s1","children_count")].compact.join(" / ") %></span></div>
+      </div>
+    </div>
+    <div class="col-12 mt-2">
+      <div class="border rounded p-2">
+        <div>نوع گواهینامه: <span class="text-muted">
+          <% map = {"motor"=>"موتور","p1"=>"پایه۱","p2"=>"پایه۲","other"=>"سایر"} %>
+          <%= Array(data.dig("s1","licenses")).map{|k| map[k]}.compact.join("، ") %>
+        </span></div>
+        <div>مکان سکونت: <span class="text-muted"><%= {"own"=>"شخصی","mortgage"=>"رهنی","rent"=>"اجاره‌ای","other"=>"سایر"}[data.dig("s1","home_type")] %></span></div>
+        <div>آدرس: <span class="text-muted"><%= data.dig("s1","address") %></span></div>
+        <div>کد پستی / ایمیل: <span class="text-muted"><%= [data.dig("s1","postal"), data.dig("s1","email")].compact.join(" / ") %></span></div>
+        <div>تلفن / موبایل: <span class="text-muted"><%= [data.dig("s1","phone"), data.dig("s1","mobile")].compact.join(" / ") %></span></div>
+        <div>بهترین زمان تماس: <span class="text-muted"><%= data.dig("s1","best_call_time") %></span></div>
+        <div>حقوق درخواستی: <span class="text-muted"><%= data.dig("s1","current_salary") %> میلیون</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: تحصیلات -->
+<% degs = [["متوسطه","hs"],["کارشناسی","bsc"],["کارشناسی ارشد","msc"],["دکتری","phd"]] %>
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">سوابق تحصیلی</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">مقطع</th>
+          <th class="text-end">مؤسسه</th>
+          <th class="text-end">مدرک</th>
+          <th class="text-end">رشته/گرایش</th>
+          <th class="text-center">سال فراغت</th>
+          <th class="text-center">معدل</th>
+          <th class="text-end">محل اخذ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% degs.each do |label,key| %>
+          <tr>
+            <td class="text-end"><%= label %></td>
+            <td class="text-end"><%= data.dig("s2",key,"inst") %></td>
+            <td class="text-end"><%= data.dig("s2",key,"degree") %></td>
+            <td class="text-end"><%= data.dig("s2",key,"major") %></td>
+            <td class="text-center"><%= data.dig("s2",key,"grad_year") %></td>
+            <td class="text-center"><%= data.dig("s2",key,"gpa") %></td>
+            <td class="text-end"><%= data.dig("s2",key,"place") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 3: نظام وظیفه -->
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">وضعیت نظام وظیفه</h6>
+  <div class="row gy-1 small">
+    <div class="col-md-6">
+      <div class="border rounded p-2 h-100">
+        <div>وضعیت: <span class="text-muted"><%= {"draft"=>"مشمول","exempt"=>"معاف","done"=>"پایان خدمت"}[data.dig("s3","status")] %></span></div>
+        <div>سال اتمام خدمت: <span class="text-muted"><%= data.dig("s3","end_year") %></span></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="border rounded p-2 h-100">
+        <div>محل خدمت بعد از آموزش: <span class="text-muted"><%= data.dig("s3","service_place") %></span></div>
+        <div>مدرک هنگام خدمت: <span class="text-muted"><%= data.dig("s3","service_degree") %></span></div>
+      </div>
+    </div>
+    <div class="col-12 mt-2">
+      <div class="border rounded p-2">
+        <div>نوع معافیت: <span class="text-muted"><%= data.dig("s3","exempt_type") %></span></div>
+        <div>علت معافیت: <span class="text-muted"><%= data.dig("s3","exempt_reason") %></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: سوابق آموزشی -->
+<% rows4 = (1..4).map{|i| "r#{i}"} %>
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">سوابق آموزشی</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">عنوان دوره</th>
+          <th class="text-end">مؤسسه</th>
+          <th class="text-center">ساعت</th>
+          <th class="text-center">سال اتمام</th>
+          <th class="text-center">نمره</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows4.each do |rk| %>
+          <tr>
+            <td class="text-end"><%= data.dig("s4",rk,"title") %></td>
+            <td class="text-end"><%= data.dig("s4",rk,"inst") %></td>
+            <td class="text-center"><%= data.dig("s4",rk,"hours") %></td>
+            <td class="text-center"><%= data.dig("s4",rk,"year") %></td>
+            <td class="text-center"><%= data.dig("s4",rk,"score") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 5: سوابق شغلی اخیر -->
+<% rows5 = (1..4).map{|i| "r#{i}"} %>
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">سوابق شغلی اخیر</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">نام سازمان</th>
+          <th class="text-end">عنوان شغل</th>
+          <th class="text-center">مدت همکاری</th>
+          <th class="text-center">سال اتمام</th>
+          <th class="text-center">آخرین دریافتی (میلیون)</th>
+          <th class="text-end">نام مافوق</th>
+          <th class="text-end">تلفن</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows5.each do |rk| %>
+          <tr>
+            <td class="text-end"><%= data.dig("s5",rk,"org") %></td>
+            <td class="text-end"><%= data.dig("s5",rk,"title") %></td>
+            <td class="text-center"><%= data.dig("s5",rk,"months") %></td>
+            <td class="text-center"><%= data.dig("s5",rk,"year_end") %></td>
+            <td class="text-center"><%= data.dig("s5",rk,"last_salary") %></td>
+            <td class="text-end"><%= data.dig("s5",rk,"manager") %></td>
+            <td class="text-end"><%= data.dig("s5",rk,"phone") %></td>
+          </tr>
+          <tr class="table-light">
+            <td colspan="7">
+              <div class="row g-2 small">
+                <div class="col-md-6">علت قطع همکاری: <span class="text-muted"><%= data.dig("s5",rk,"leave_reason") %></span></div>
+                <div class="col-md-6">توضیحات و شرح وظایف: <span class="text-muted"><%= data.dig("s5",rk,"desc") %></span></div>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="row g-2 small">
+    <div class="col-md-3">وضعیت کنونی اشتغال: <span class="text-muted"><%= {"employed"=>"شاغل","unemployed"=>"بیکار"}[data.dig("s5","employment_status")] %></span></div>
+    <div class="col-md-6">نشانی محل کار فعلی: <span class="text-muted"><%= data.dig("s5","current_work_address") %></span></div>
+    <div class="col-md-3">تلفن محل کار فعلی: <span class="text-muted"><%= data.dig("s5","current_work_phone") %></span></div>
+    <div class="col-12">تماس با کارفرمایان قبلی: <span class="text-muted"><%= data.dig("s5","contact_previous_employers") %></span></div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">مشاغل دیگر</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">نام سازمان</th>
+          <th class="text-end">عنوان شغل</th>
+          <th class="text-center">مدت</th>
+          <th class="text-center">سال اتمام</th>
+          <th class="text-center">آخرین دریافتی</th>
+          <th class="text-end">نام مافوق</th>
+          <th class="text-end">تلفن</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-end"><%= data.dig("s6","org") %></td>
+          <td class="text-end"><%= data.dig("s6","title") %></td>
+          <td class="text-center"><%= data.dig("s6","months") %></td>
+          <td class="text-center"><%= data.dig("s6","year_end") %></td>
+          <td class="text-center"><%= data.dig("s6","last_salary") %></td>
+          <td class="text-end"><%= data.dig("s6","manager") %></td>
+          <td class="text-end"><%= data.dig("s6","phone") %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 7: زبان -->
+<% langs = [["انگلیسی","en"],["آلمانی","de"],["فرانسوی","fr"],["چینی","zh"]] %>
+<% lvl_map = {"weak"=>"ضعیف","mid"=>"متوسط","good"=>"خوب","excel"=>"عالی"} %>
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">آشنایی به زبان‌های خارجی</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">زبان</th>
+          <th class="text-center">مکالمه</th>
+          <th class="text-center">نگارش و ترجمه</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% langs.each do |label,key| %>
+          <tr>
+            <td class="text-end"><%= label %></td>
+            <td class="text-center"><%= lvl_map[data.dig("s7",key,"speaking")] %></td>
+            <td class="text-center"><%= lvl_map[data.dig("s7",key,"writing")] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 8: کامپیوتر -->
+<% rows8 = (1..4).map{|i| "r#{i}"} %>
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">آشنایی با کامپیوتر</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">نام نرم‌افزار</th>
+          <th class="text-center">میزان آشنایی</th>
+          <th class="text-end">توضیحات</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% rows8.each do |rk| %>
+          <tr>
+            <td class="text-end"><%= data.dig("s8",rk,"title") %></td>
+            <td class="text-center"><%= lvl_map[data.dig("s8",rk,"level")] %></td>
+            <td class="text-end"><%= data.dig("s8",rk,"desc") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 9: معرف -->
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">معرف</h6>
+  <div class="row gy-1 small">
+    <div class="col-md-3">نام و نام خانوادگی: <span class="text-muted"><%= data.dig("s9","name") %></span></div>
+    <div class="col-md-3">شغل: <span class="text-muted"><%= data.dig("s9","job") %></span></div>
+    <div class="col-md-3">نسبت: <span class="text-muted"><%= data.dig("s9","relation") %></span></div>
+    <div class="col-md-3">مدت آشنایی: <span class="text-muted"><%= data.dig("s9","years") %></span></div>
+  </div>
+</div>
+
+<!-- SECTION 10: سایر -->
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">سایر موارد</h6>
+  <div class="row gy-2 small">
+    <div class="col-12">سوابق کیفری: <span class="text-muted"><%= data.dig("s10","criminal") %></span></div>
+    <div class="col-12">تعهدات خاص: <span class="text-muted"><%= data.dig("s10","commitments") %></span></div>
+    <div class="col-md-3">مقروض: <span class="text-muted"><%= {"yes"=>"بله","no"=>"خیر"}[data.dig("s10","in_debt")] %></span></div>
+    <div class="col-md-3">میزان بدهی: <span class="text-muted"><%= data.dig("s10","debt_amount") %></span></div>
+    <div class="col-md-6">تاریخ آمادگی: <span class="text-muted"><%= [data.dig("s10","start_day"),data.dig("s10","start_month"),data.dig("s10","start_year")].compact.join("/") %></span></div>
+    <div class="col-12">چرا ما؟ <span class="text-muted"><%= data.dig("s10","why_us") %></span></div>
+  </div>
+</div>
+
+<!-- SECTION 11: رده تخصصی -->
+<% rows11 = (1..3).map{|i| "r#{i}"} %>
+<div class="mb-3">
+  <h6 class="fw-bold mb-2">رده تخصصی</h6>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle small">
+      <thead class="table-light">
+        <tr>
+          <th class="text-end">تخصص</th>
+          <th class="text-center">سطح</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% map11 = {"pro"=>"بسیار متخصص","mid"=>"متخصص","junior"=>"نیمه متخصص"} %>
+        <% rows11.each do |rk| %>
+          <tr>
+            <td class="text-end"><%= data.dig("s11",rk,"skill") %></td>
+            <td class="text-center"><%= map11[data.dig("s11",rk,"level")] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 12: انتظارات -->
+<div class="mb-2">
+  <h6 class="fw-bold mb-2">انتظار از محیط کار (۱ تا ۶)</h6>
+  <div class="row gy-1 small">
+    <% items = [
+      ["پرستیژ کار","prestige"],
+      ["درآمد","income"],
+      ["هماهنگی با رشته تحصیلی","match_major"],
+      ["نزدیکی محل","nearby"],
+      ["همکاران مناسب","coworkers"],
+      ["محیط کار آرام","calm"]
+    ] %>
+    <% items.each do |label,key| %>
+      <div class="col-md-4"> <%= label %>: <span class="text-muted"><%= data.dig("s12",key) %></span></div>
+    <% end %>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 class CandidatesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_candidate, only: [:edit, :update, :destroy]
+  before_action :set_candidate, only: [:show, :edit, :update, :destroy]
 
   def index
     @candidates = Candidate
@@ -10,6 +10,22 @@ class CandidatesController < ApplicationController
 
   def new
     @candidate = Candidate.new
+  end
+
+  def show
+    # eager-load to avoid N+1
+    @profile = @candidate.try(:candidate_profile)
+    @evaluations = @candidate.respond_to?(:candidate_evaluations) ? @candidate.candidate_evaluations.to_a : []
+
+    @hr_eval        = @evaluations.find { |e| e.department == "HR" }
+    @ceo_eval       = @evaluations.find { |e| e.department == "CEO" }
+    @dept_key, @dept_label =
+      if @candidate.role.to_s.downcase == "accounting"
+        ["Accounting", "Accounting"]
+      else
+        ["Other", (@candidate.role.presence || "Other").to_s.capitalize]
+      end
+    @dept_eval      = @evaluations.find { |e| e.department == @dept_key }
   end
 
   def create

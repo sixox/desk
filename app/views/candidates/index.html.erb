@@ -38,7 +38,11 @@
        <% other_allowed       = ((current_user&.role.to_s == candidate.role.to_s) && current_user&.is_manager) || hr_or_admin %>
 
        <tr>
-        <td><%= candidate.name %></td>
+        <td>
+          <%= link_to (candidate.name.presence || "—"),
+          candidate_path(candidate),
+          class: "link-nodecor-po fw-semibold" %>
+        </td>
         <td><%= candidate.phone %></td>
         <td><%= candidate.role.to_s.capitalize %></td>
 
@@ -129,9 +133,15 @@
           <% else %>
           <span class="text-muted">No form yet</span>
           <% end %>
-        </td>
-      </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+          <%= link_to candidate_path(candidate),
+          class: "btn btn-sm btn-outline-primary",
+            title: "مشاهده پروفایل",
+            data: { turbo: false } do %>
+            <i class="bi bi-eye"></i>
+            <% end %>
+          </td>
+        </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
