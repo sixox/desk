@@ -1,0 +1,59 @@
+<%= form_with model: lead, local: true do |f| %>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Name*</label>
+      <%= f.text_field :name, class: "form-control", required: true %>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Company</label>
+      <%= f.text_field :company, class: "form-control" %>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Status</label>
+      <%= f.select :status, Lead.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "form-select" %>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Phone</label>
+      <%= f.telephone_field :phone, class: "form-control" %>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Email</label>
+      <%= f.email_field :email, class: "form-control" %>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Source</label>
+      <%= f.text_field :source, class: "form-control" %>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Offered Amount</label>
+      <div class="input-group">
+        <%= f.number_field :offered_amount, step: "0.01", class: "form-control text-end" %>
+        <span class="input-group-text">تومان</span>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Offered On</label>
+      <%= f.date_field :offered_on, class: "form-control" %>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Last Contact</label>
+      <%= f.date_field :last_contact_on, class: "form-control" %>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Owner</label>
+      <%= f.collection_select :owner_id, User.order(:name), :id, :name, { include_blank: "—" }, class: "form-select" %>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Notes</label>
+      <%= f.text_area :notes, rows: 3, class: "form-control" %>
+    </div>
+
+    <div class="col-12 d-flex justify-content-end gap-2">
+      <%= link_to "Cancel", leads_path, class: "btn btn-outline-secondary" %>
+      <%= f.submit class: "btn btn-primary", value: (lead.persisted? ? "Save changes" : "Create Lead") %>
+    </div>
+  </div>
+<% end %>

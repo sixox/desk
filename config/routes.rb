@@ -61,12 +61,12 @@ Rails.application.routes.draw do
         patch :update_images
         delete :delete_all_images
       end
-        resources :release_requests do
-          member do
-            get :confirm
-            patch :confirm
-          end
+      resources :release_requests do
+        member do
+          get :confirm
+          patch :confirm
         end
+      end
     end
     collection do
       get :list
@@ -264,16 +264,29 @@ Rails.application.routes.draw do
     resource :profile, controller: "profile", only: [:edit, :update, :show]
   end
 
+  resources :leads do
+    member { patch :update_status }
+    resources :lead_tasks, only: [:create, :update, :destroy] do
+      member { patch :toggle_done }
+    end
+    collection { get :pipeline }
+  end
+
+# New tasks hub
+resources :tasks, only: [:index]
 
 
 
 
 
-  get 'member/:id', to: 'members#show', as: 'member'
-  get 'edit_description', to: 'members#edit_description', as: 'edit_member_description'
-  patch 'update_description', to: 'members#update_description', as: 'update_member_description'
-  get 'edit_personal_details', to: 'members#edit_personal_details', as: 'edit_member_personal_details'
-  patch 'update_personal_details', to: 'members#update_personal_details', as: 'update_member_personal_details'
+
+
+
+get 'member/:id', to: 'members#show', as: 'member'
+get 'edit_description', to: 'members#edit_description', as: 'edit_member_description'
+patch 'update_description', to: 'members#update_description', as: 'update_member_description'
+get 'edit_personal_details', to: 'members#edit_personal_details', as: 'edit_member_personal_details'
+patch 'update_personal_details', to: 'members#update_personal_details', as: 'update_member_personal_details'
   # get 'members/signatures', to: 'members#signatures', as: 'members_signatures'
   # patch 'members/update_signatures', to: 'members#update_signatures', as: 'update_members_signatures'
 

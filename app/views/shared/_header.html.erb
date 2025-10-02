@@ -64,7 +64,7 @@
           <% if current_user.is_manager || current_user.is_marketing || current_user.sales? || current_user.admin? %>
 
           <li>
-            <%= link_to 'Clients', clients_path, class: 'dropdown-item' %>
+            <%= link_to 'CRM', leads_path, class: 'dropdown-item' %>
           </li>
           <% end %>
           <% if current_user.sales? && current_user.is_manager %>

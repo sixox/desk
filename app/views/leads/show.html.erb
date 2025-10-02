@@ -1,0 +1,294 @@
+<!-- app/views/leads/show.html.erb -->
+<div class="col-lg-10 mx-auto mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><%= @lead.name %></h4>
+    <div class="d-flex gap-2">
+      <%= link_to leads_path, class: "btn btn-sm btn-outline-secondary" do %>
+      ← Back
+      <% end %>
+      <%= link_to edit_lead_path(@lead), class: "btn btn-sm btn-outline-primary" do %>
+      Edit
+      <% end %>
+      <%= link_to lead_path(@lead),
+      data: { turbo_method: :delete, turbo_confirm: "Delete this lead?" },
+      class: "btn btn-sm btn-outline-danger" do %>
+      Delete
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Top summary -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-3">
+          <div class="small text-muted">Status</div>
+          <div><%= status_badge(@lead) %></div>
+        </div>
+        <div class="col-md-3">
+          <div class="small text-muted">Owner</div>
+          <div><%= @lead.owner&.name || "—" %></div>
+        </div>
+        <div class="col-md-3">
+          <div class="small text-muted">Company</div>
+          <div><%= @lead.company.presence || "—" %></div>
+        </div>
+        <div class="col-md-3">
+          <div class="small text-muted">Created</div>
+          <div><%= l(@lead.created_at, format: :short) %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI tiles -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="small text-muted">Time to first contact</div>
+          <div class="fs-5"><%= human_duration(@lead.time_to_first_contact) %></div>
+          <% if @lead.contacted_at %>
+          <div class="text-muted small">on <%= l(@lead.contacted_at, format: :short) %></div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="small text-muted">Time to response</div>
+          <div class="fs-5"><%= human_duration(@lead.time_to_response) %></div>
+          <% if @lead.responded_at %>
+          <div class="text-muted small">on <%= l(@lead.responded_at, format: :short) %></div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="small text-muted">Time to offer</div>
+          <div class="fs-5"><%= human_duration(@lead.time_to_offer) %></div>
+          <% if @lead.offer_sent_at %>
+          <div class="text-muted small">on <%= l(@lead.offer_sent_at, format: :short) %></div>
+          <% end %>
+          <% if @lead.offered_amount.present? || @lead.offered_on.present? %>
+          <div class="small mt-1">
+            <span class="text-muted">Offer:</span>
+            <%= number_with_precision(@lead.offered_amount, precision: 2) if @lead.offered_amount.present? %>
+            <% if @lead.offered_on.present? %> (PI date: <%= @lead.offered_on %>) <% end %>
+          </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="small text-muted">Status age (current)</div>
+          <div class="fs-5"><%= human_duration(@lead.current_status_age) %></div>
+          <% if @lead.status_changed_at %>
+          <div class="text-muted small">since <%= l(@lead.status_changed_at, format: :short) %></div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card mb-4">
+    <div class="card-header fw-bold">Status Timeline</div>
+    <div class="card-body">
+      <% if @lead.status_changes.exists? %>
+      <ul class="list-group list-group-flush">
+        <% @lead.status_changes.order(occurred_at: :asc, created_at: :asc).each_with_index do |sc, idx| %>
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="badge bg-light text-dark border me-2"><%= idx + 1 %></span>
+
+              <% to_label   = sc.to_status.present?   ? sc.to_status.humanize   : "Unknown" %>
+              <% from_label = sc.from_status.present? ? sc.from_status.humanize : nil %>
+
+              <strong><%= to_label %></strong>
+
+              <% if sc.offered_amount.present? %>
+              <span class="text-muted">(Offer: <%= number_with_precision(sc.offered_amount, precision: 2) %>)</span>
+              <% end %>
+
+              <% if from_label %>
+              <span class="text-muted small ms-2">from <%= from_label %></span>
+              <% end %>
+
+              <% if sc.to_status.blank? %>
+              <span class="badge bg-warning-subtle text-warning-emphasis ms-2">legacy</span>
+              <% end %>
+            </div>
+
+            <div class="text-muted small">
+              <%= l(sc.occurred_at || sc.created_at, format: :short) %>
+              <% if sc.changed_by %> · by <%= sc.changed_by.name %><% end %>
+            </div>
+          </div>
+        </li>
+
+        <% end %>
+      </ul>
+      <% else %>
+      <div class="text-muted">No status changes recorded yet.</div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Basic details card (optional, keep lean) -->
+  <div class="card">
+    <div class="card-header fw-bold">Details</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="small text-muted">Phone</div>
+          <div><%= @lead.phone.presence || "—" %></div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Email</div>
+          <div><%= @lead.email.present? ? mail_to(@lead.email) : "—" %></div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Source</div>
+          <div><%= @lead.source.presence || "—" %></div>
+        </div>
+        <div class="col-12">
+          <div class="small text-muted">Notes</div>
+          <div><%= simple_format(@lead.notes.presence || "—") %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Tasks (Next Steps) -->
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <strong>Next Steps</strong>
+    <span class="text-muted small">
+      Open: <%= @lead.lead_tasks.open.count %> · Overdue: <%= @lead.lead_tasks.overdue.count %>
+    </span>
+  </div>
+
+  <div class="card-body">
+    <% if @lead.lead_tasks.any? %>
+      <ul class="list-group mb-3">
+        <% @lead.lead_tasks.order(:status, :due_on, :created_at).each do |t| %>
+          <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="me-2">
+              <div class="fw-semibold <%= 'text-decoration-line-through text-muted' if t.done? %>">
+                <%= t.title %>
+              </div>
+              <div class="small text-muted">
+                <% if t.due_on.present? %>
+                  <span class="badge <%= t.due_badge_class %>"><%= l(t.due_on) %></span>
+                <% else %>
+                  <span class="badge bg-secondary">No due date</span>
+                <% end %>
+                <% if t.assigned_to %>
+                  · Assigned: <%= t.assigned_to.name %>
+                <% end %>
+              </div>
+              <% if t.notes.present? %>
+                <div class="small mt-1"><%= simple_format(t.notes) %></div>
+              <% end %>
+            </div>
+
+            <div class="ms-2 d-flex gap-1">
+              <%= button_to (t.done? ? "Reopen" : "Done"),
+                            toggle_done_lead_lead_task_path(@lead, t),
+                            method: :patch,
+                            class: "btn btn-sm #{t.done? ? 'btn-outline-secondary' : 'btn-success'}" %>
+
+              <%= link_to "Edit",
+                          "#",
+                          class: "btn btn-sm btn-outline-secondary",
+                          data: { bs_toggle: "collapse", bs_target: "#task_edit_#{t.id}" } %>
+
+              <%= button_to "Delete",
+                            lead_lead_task_path(@lead, t),
+                            method: :delete,
+                            data: { turbo_confirm: "Delete this task?" },
+                            class: "btn btn-sm btn-outline-danger" %>
+            </div>
+          </li>
+
+          <li class="list-group-item p-2 collapse" id="task_edit_<%= t.id %>">
+            <%= form_with model: [@lead, t], local: true do |f| %>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                  <label class="form-label mb-1">Title</label>
+                  <%= f.text_field :title, class: "form-control form-control-sm" %>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label mb-1">Due on</label>
+                  <%= f.date_field :due_on, class: "form-control form-control-sm text-center" %>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label mb-1">Assigned to</label>
+                  <%= f.collection_select :assigned_to_id,
+                                          User.order(:name),
+                                          :id, :name,
+                                          { include_blank: "—" },
+                                          class: "form-select form-select-sm" %>
+                </div>
+                <div class="col-12">
+                  <label class="form-label mb-1">Notes</label>
+                  <%= f.text_area :notes, rows: 2, class: "form-control form-control-sm" %>
+                </div>
+                <div class="col-12 text-end">
+                  <button class="btn btn-sm btn-primary">Save</button>
+                </div>
+              </div>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="text-muted">No tasks yet.</div>
+    <% end %>
+
+    <hr>
+
+    <div class="fw-semibold mb-2">Add new task</div>
+    <%= form_with model: [@lead, LeadTask.new], local: true do |f| %>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label mb-1">Title</label>
+          <%= f.text_field :title,
+                           class: "form-control form-control-sm",
+                           placeholder: "e.g., follow-up call" %>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label mb-1">Due on</label>
+          <%= f.date_field :due_on, class: "form-control form-control-sm text-center" %>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label mb-1">Assign to</label>
+          <%= f.collection_select :assigned_to_id,
+                                  User.order(:name),
+                                  :id, :name,
+                                  { include_blank: "Me" },
+                                  class: "form-select form-select-sm" %>
+        </div>
+        <div class="col-12">
+          <label class="form-label mb-1">Notes</label>
+          <%= f.text_area :notes, rows: 2, class: "form-control form-control-sm" %>
+        </div>
+        <div class="col-12 text-end">
+          <button class="btn btn-primary btn-sm">Add</button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+
+  </div>

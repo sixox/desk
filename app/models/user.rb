@@ -48,6 +48,12 @@ class User < ApplicationRecord
   has_many :visited_experiences, through: :experience_visits, source: :experience
 
   has_many :candidate_evaluations, foreign_key: :user_id, inverse_of: :user, dependent: :nullify
+  has_many :leads, foreign_key: :owner_id, inverse_of: :owner, dependent: :nullify
+  has_many :assigned_tasks,
+           class_name: "LeadTask",
+           foreign_key: :assigned_to_id,
+           dependent: :nullify
+
 
 
 

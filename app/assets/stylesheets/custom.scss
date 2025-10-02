@@ -503,3 +503,9 @@ hr {
   line-height: 1.4;
   font-size: 0.95rem;
 }
+
+/* app/assets/stylesheets/pipeline.css (ensure it's included) */
+.card .card-header .badge.bg-warning-subtle {
+  background-color: #fff3cd !important;
+  color: #664d03 !important;
+}
