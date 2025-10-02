@@ -57,10 +57,6 @@
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
           <% end %>
-
-          <%if current_user.is_marketing.present? %>
-          <li><%= link_to "New Client", new_client_path, data: { controller: "bs-modal-form" }, class: "dropdown-item" %></li>
-          <% end %>
           <% if current_user.is_manager || current_user.is_marketing || current_user.sales? || current_user.admin? %>
 
           <li>
