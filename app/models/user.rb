@@ -114,6 +114,11 @@ class User < ApplicationRecord
   def name
     "#{first_name} #{last_name}".strip
   end
+
+  scope :by_name, -> {
+    order(Arel.sql("COALESCE(first_name,'') ASC, COALESCE(last_name,'') ASC"))
+  }
+  
   def self.ransackable_attributes(auth_object = nil)
     ['first_name', 'last_name']
   end

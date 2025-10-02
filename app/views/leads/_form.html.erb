@@ -43,7 +43,12 @@
     </div>
     <div class="col-md-3">
       <label class="form-label">Owner</label>
-      <%= f.collection_select :owner_id, User.order(:name), :id, :name, { include_blank: "—" }, class: "form-select" %>
+      <%= f.collection_select :owner_id,
+                        User.by_name,
+                        :id,
+                        :name,         
+                        { include_blank: "—" },
+                        class: "form-select" %>
     </div>
 
     <div class="col-12">

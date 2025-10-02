@@ -37,7 +37,7 @@ class LeadsController < ApplicationController
     @status_order = %w[new_lead contacted responded offer_sent negotiation won lost]
 
     # Filter options
-    @owners   = User.order(:name)                  # for the owner select
+    @owners       = User.by_name
     @sources  = Lead.where.not(source: [nil, ""])
                      .distinct
                      .order(:source)

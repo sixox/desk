@@ -18,7 +18,7 @@ class TasksController < ApplicationController
     @nodate   = scope.where(due_on: nil).order(:created_at)
 
     # For filter dropdown
-    @users = User.order(:name)
+    @users = User.by_name
 
     # Top counters
     @counts = {

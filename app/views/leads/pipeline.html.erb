@@ -9,18 +9,18 @@
   </div>
 
   <!-- Filter bar -->
-<div class="card mb-3">
-  <div class="card-body">
-    <%= form_with url: pipeline_leads_path, method: :get, local: true do %>
+  <div class="card mb-3">
+    <div class="card-body">
+      <%= form_with url: pipeline_leads_path, method: :get, local: true do %>
       <div class="row g-2 align-items-end">
         <div class="col-md-4">
           <label class="form-label mb-1">Owner</label>
           <select name="owner_id" class="form-select form-select-sm">
             <option value="">All</option>
             <% @owners.each do |u| %>
-              <option value="<%= u.id %>" <%= 'selected' if params[:owner_id].to_s == u.id.to_s %>>
-                <%= u.name %>
-              </option>
+            <option value="<%= u.id %>" <%= 'selected' if params[:owner_id].to_s == u.id.to_s %>>
+              <%= u.name %>
+            </option>
             <% end %>
           </select>
         </div>
@@ -30,9 +30,9 @@
           <select name="source" class="form-select form-select-sm">
             <option value="">All</option>
             <% @sources.each do |src| %>
-              <option value="<%= src %>" <%= 'selected' if params[:source].to_s == src.to_s %>>
-                <%= src %>
-              </option>
+            <option value="<%= src %>" <%= 'selected' if params[:source].to_s == src.to_s %>>
+              <%= src %>
+            </option>
             <% end %>
           </select>
         </div>
@@ -40,67 +40,67 @@
         <div class="col-md-4 text-end">
           <button class="btn btn-sm btn-primary">Apply</button>
           <%= link_to "Reset",
-                      pipeline_leads_path,
-                      class: "btn btn-sm btn-outline-secondary" %>
+          pipeline_leads_path,
+          class: "btn btn-sm btn-outline-secondary" %>
         </div>
       </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
-</div>
 
 
   <div class="row g-3">
     <% @status_order.each do |st| %>
-      <% col_items = (@leads_by_status[st] || []) %>
-      <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card h-100 shadow-sm">
-          <div class="card-header d-flex justify-content-between align-items-center py-2">
-            <span class="fw-semibold">
-              <span class="badge bg-<%= status_header_badge_class(st) %> me-2">&nbsp;</span>
-              <%= lead_status_label(st) %>
-            </span>
-            <span class="badge bg-light text-dark border"><%= col_items.size %></span>
-          </div>
+    <% col_items = (@leads_by_status[st] || []) %>
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+          <span class="fw-semibold">
+            <span class="badge bg-<%= status_header_badge_class(st) %> me-2">&nbsp;</span>
+            <%= lead_status_label(st) %>
+          </span>
+          <span class="badge bg-light text-dark border"><%= col_items.size %></span>
+        </div>
 
-          <div class="card-body p-2" style="max-height: 70vh; overflow:auto;">
-            <% if col_items.any? %>
-              <div class="d-flex flex-column gap-2">
-                <% col_items.each do |lead| %>
-                  <div class="border rounded p-2 bg-white">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div class="me-2">
-                        <div class="fw-semibold">
-                          <%= link_to lead.name, lead_path(lead), class: "text-decoration-none" %>
-                        </div>
-                        <div class="small text-muted">
-                          <%= lead.company.presence || "—" %>
-                          <% if lead.owner %> · <%= lead.owner.name %><% end %>
-                        </div>
-                      </div>
-                      <div class="text-end small text-muted">
-                        <%= time_ago_in_words(lead.created_at) %> ago
-                      </div>
-                    </div>
-
-                    <%# optional footer line with quick facts %>
-                    <div class="small mt-1 d-flex flex-wrap gap-2">
-                      <% if lead.offered_amount.present? %>
-                        <span class="badge bg-warning-subtle text-warning-emphasis border">Offer: <%= number_with_precision(lead.offered_amount, precision: 2) %></span>
-                      <% end %>
-                      <% if lead.offered_on.present? %>
-                        <span class="badge bg-light text-dark border">PI: <%= lead.offered_on %></span>
-                      <% end %>
-                      <span class="badge bg-light text-dark border">Age: <%= distance_of_time_in_words(lead.current_status_age || 0) %></span>
-                    </div>
+        <div class="card-body p-2" style="max-height: 70vh; overflow:auto;">
+          <% if col_items.any? %>
+          <div class="d-flex flex-column gap-2">
+            <% col_items.each do |lead| %>
+            <div class="border rounded p-2 bg-white">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="me-2">
+                  <div class="fw-semibold">
+                    <%= link_to lead.name, lead_path(lead), class: "text-decoration-none" %>
                   </div>
-                <% end %>
+                  <div class="small text-muted">
+                    <%= lead.company.presence || "—" %>
+                    <% if lead.owner %> · <%= lead.owner.name %><% end %>
+                  </div>
+                </div>
+                <div class="text-end small text-muted">
+                  <%= time_ago_in_words(lead.created_at) %> ago
+                </div>
               </div>
-            <% else %>
-              <div class="text-muted small py-2 text-center">No leads</div>
+
+              <%# optional footer line with quick facts %>
+              <div class="small mt-1 d-flex flex-wrap gap-2">
+                <% if lead.offered_amount.present? %>
+                <span class="badge bg-warning-subtle text-warning-emphasis border">Offer: <%= number_with_precision(lead.offered_amount, precision: 2) %></span>
+                <% end %>
+                <% if lead.offered_on.present? %>
+                <span class="badge bg-light text-dark border">PI: <%= lead.offered_on %></span>
+                <% end %>
+                <span class="badge bg-light text-dark border">Age: <%= distance_of_time_in_words(lead.current_status_age || 0) %></span>
+              </div>
+            </div>
             <% end %>
           </div>
+          <% else %>
+          <div class="text-muted small py-2 text-center">No leads</div>
+          <% end %>
         </div>
       </div>
+    </div>
     <% end %>
   </div>
 </div>
