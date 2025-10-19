@@ -159,7 +159,7 @@
           <li><%= link_to "KPIs", kpi_lists_path, class: "dropdown-item" %></li>
           <li><%= link_to "Assessment Survay", assessments_path, class: "dropdown-item" %></li>
           <li><%= link_to "Satisfaction Survay", satisfaction_forms_path, class: "dropdown-item" %></li>
-          <% if [1, 18, 19, 20].include?(current_user.id) %>
+          <% if [1, 8, 17, 18, 19, 20].include?(current_user.id) %>
             <li><%= link_to "Stakeholder Survey", stakeholder_survey_forms_path, class: "dropdown-item" %></li>
           <% end %>
           <li><%= link_to "Candidates", candidates_path, class: "dropdown-item" %></li>
