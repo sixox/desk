@@ -9,59 +9,51 @@
     <div class="alert alert-warning">No eligible projects yet (some payments are still pending or no booking).</div>
   <% end %>
 
-<div class="row g-3">
-  <% @rows.each do |row| %>
-    <% pid    = row.project.id %>
-    <% collapse_id = "turnover_row_#{pid}" %>
+  <div class="accordion" id="accordionTurnovers">
+    <% @rows.each do |row| %>
+      <% pid = row.project.id %>
+      <% heading_id  = "heading_#{pid}" %>
+      <% collapse_id = "collapse_#{pid}" %>
 
-    <div class="col-12">
-      <div class="card border-0 shadow">
-        <div class="card-body p-xl-4" style="background:#ced1e1;">
-          <div class="card card-custom mt-2 mb-0">
-            <div class="card-body py-3">
-              <div class="row d-flex justify-content-between align-items-center">
-                <div class="col-auto">
-                  <h6 class="fw-bold mb-0">
-                    Project:
-                    <%= link_to row.project.number, project_path(row.project), class: "fw-bold text-info text-decoration-none" %>
-                  </h6>
-                </div>
-                <div class="col-auto d-none d-sm-block">
-                  <h6 class="card-subtitle text-secondary mb-0">
-                    <span class="text-danger"><i class="bi bi-activity"></i></span>
-                    <span class="timeline-small">Days Sales Outstanding</span>
-                    <span class="text-danger"><i class="bi bi-activity"></i></span>
-                  </h6>
-                </div>
-                <div class="col-auto">
-                  <h6 class="text-success mb-0">
-                    <%= number_with_precision(row.dso_days, precision: 1) %>
-                    <small class="text-secondary">Days</small>
-                  </h6>
-                </div>
+      <div class="accordion-item border-0 shadow mb-3">
+        <h2 class="accordion-header" id="<%= heading_id %>">
+          <button class="accordion-button collapsed d-flex justify-content-between w-100"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#<%= collapse_id %>"
+                  aria-expanded="false"
+                  aria-controls="<%= collapse_id %>">
+            <!-- Left: Project link -->
+            <span class="fw-bold">
+              Project:
+              <%= link_to row.project.number, project_path(row.project),
+                          class: "fw-bold text-info text-decoration-none" %>
+            </span>
 
-                <!-- Toggle details -->
-                <div class="col-auto">
-                  <button class="btn btn-sm btn-outline-secondary"
-                          type="button"
-                          data-bs-toggle="collapse"
-                          data-bs-target="##{collapse_id}"
-                          aria-expanded="false"
-                          aria-controls="<%= collapse_id %>">
-                    <i class="bi bi-chevron-down"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+            <!-- Middle: DSO label (hidden on xs like your example) -->
+            <span class="card-subtitle text-secondary d-none d-sm-inline">
+              <span class="text-danger"><i class="bi bi-activity"></i></span>
+              <span class="timeline-small">Days Sales Outstanding</span>
+              <span class="text-danger"><i class="bi bi-activity"></i></span>
+            </span>
 
-          <!-- Collapsible details -->
-          <div id="<%= collapse_id %>" class="collapse">
-            <div class="container pt-3">
+            <!-- Right: DSO value -->
+            <span class="text-success">
+              <%= number_with_precision(row.dso_days, precision: 1) %>
+              <small class="text-secondary">Days</small>
+            </span>
+          </button>
+        </h2>
+
+        <div id="<%= collapse_id %>" class="accordion-collapse collapse"
+             aria-labelledby="<%= heading_id %>"
+             data-bs-parent="#accordionTurnovers">
+          <div class="accordion-body" style="background:#ced1e1;">
+            <div class="container pt-2">
               <div class="row">
                 <!-- Payments -->
                 <div class="col-lg-6 col-12 mb-4">
-                  <div class="card card-custom mt-1 h-100">
+                  <div class="card card-custom h-100">
                     <div class="card-body d-flex flex-column">
                       <h3>Payments</h3>
                       <table class="table table-striped flex-grow-1 mb-0">
@@ -96,7 +88,7 @@
 
                 <!-- Swifts -->
                 <div class="col-lg-6 col-12 mb-4">
-                  <div class="card card-custom mt-1 h-100">
+                  <div class="card card-custom h-100">
                     <div class="card-body d-flex flex-column">
                       <h3>Swifts</h3>
                       <table class="table table-striped flex-grow-1 mb-0">
@@ -131,22 +123,19 @@
 
               </div> <!-- /row -->
             </div> <!-- /container -->
-          </div> <!-- /collapse -->
-
-        </div> <!-- /card-body (outer) -->
-      </div> <!-- /card -->
-    </div> <!-- /col -->
-  <% end %>
-</div>
+          </div> <!-- /accordion-body -->
+        </div> <!-- /accordion-collapse -->
+      </div> <!-- /accordion-item -->
+    <% end %>
+  </div>
 
   <div class="row mt-3">
     <div class="col-sm">
       <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">
-          <%= paginate @projects_page %>
+          <%= paginate @projects_page, remote: true %>
         </ul>
       </nav>
     </div>
   </div>
-
 </div>
