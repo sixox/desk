@@ -183,7 +183,7 @@ def turnover
 
     eligible = base.select { |p| (p.bookings.present? && p.bookings.all?(&:payment_done)) || p.pi&.packing_type == "bulk" }
 
-    @projects_page = Kaminari.paginate_array(eligible).page(params[:page]).per(8)
+    @projects_page = Kaminari.paginate_array(eligible).page(params[:page]).per(30)
 
 
     # Build rows: for each project compute exactly like #turnover
