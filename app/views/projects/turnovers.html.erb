@@ -1,8 +1,32 @@
-<!-- app/views/projects/turnovers.html.erb -->
 <div class="col-lg-11 mx-auto mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Projects — DSO (Turnovers)</h4>
     <%= link_to "Back to Projects", projects_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
+  <!-- Customer filter -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <%= form_with url: turnovers_projects_path, method: :get, local: true do %>
+        <div class="row g-2 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label mb-1">Customer</label>
+            <select name="customer_id" class="form-select form-select-sm">
+              <option value="">All</option>
+              <% @customers.each do |c| %>
+                <option value="<%= c.id %>" <%= 'selected' if params[:customer_id].to_s == c.id.to_s %>>
+                  <%= c.try(:nickname).presence || c.try(:name).presence || "Customer ##{c.id}" %>
+                </option>
+              <% end %>
+            </select>
+          </div>
+          <div class="col-md-6 text-end">
+            <button class="btn btn-sm btn-primary">Apply</button>
+            <%= link_to "Reset", turnovers_projects_path, class: "btn btn-sm btn-outline-secondary" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </div>
 
   <% if @rows.blank? %>
@@ -30,7 +54,7 @@
                           class: "fw-bold text-info text-decoration-none" %>
             </span>
 
-            <!-- Middle: DSO label (hidden on xs like your example) -->
+            <!-- Middle: DSO label (hidden on xs) -->
             <span class="card-subtitle text-secondary d-none d-sm-inline">
               <span class="text-danger"><i class="bi bi-activity"></i></span>
               <span class="timeline-small">Days Sales Outstanding</span>
@@ -133,7 +157,7 @@
     <div class="col-sm">
       <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">
-          <%= paginate @projects_page, remote: true %>
+          <%= paginate @projects_page %>
         </ul>
       </nav>
     </div>

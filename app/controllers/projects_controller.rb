@@ -175,23 +175,36 @@ def turnover
 
 
   def turnovers
-   base = Project
+    # Base scope with eager-loading (same as you had)
+    base = Project
              .includes(:pi, :bookings, :swifts)
              .includes(cis: :swift)
              .includes(ballance_projects: :ballance)
              .order(created_at: :desc)
 
-    eligible = base.select { |p| (p.bookings.present? && p.bookings.all?(&:payment_done)) || p.pi&.packing_type == "bulk" }
+    # --- NEW: optional Customer filter ----------------------------------------
+    # Customer is linked via PI: projects -> pi -> customer_id
+    if params[:customer_id].present?
+      base = base.joins(:pi).where(pis: { customer_id: params[:customer_id] })
+    end
 
+    # For the dropdown (use what you have; change :nickname to :name or :id if needed)
+    @customers = Customer.order(:nickname) rescue Customer.order(:id)
+    # ---------------------------------------------------------------------------
+
+    # Eligible projects: same rule as your single-project turnover view
+    eligible = base.select do |p|
+      (p.bookings.present? && p.bookings.all?(&:payment_done)) || p.pi&.packing_type == "bulk"
+    end
+
+    # Paginate eligible list
     @projects_page = Kaminari.paginate_array(eligible).page(params[:page]).per(30)
 
-
-    # Build rows: for each project compute exactly like #turnover
+    # Build rows exactly like your turnover calculation
     @rows = @projects_page.map do |project|
       balance_projects = project.ballance_projects
 
-      # --- payments shown (the table on the left) ---
-      # same list as your turnover view: advance (project: nil, same ballance), plus balance (project: project)
+      # Visible payments table (advance + balance)
       display_payments = []
       balance_projects.each do |bp|
         display_payments.concat(PaymentOrder.where(project: nil,  ballance: bp.ballance))
@@ -199,7 +212,7 @@ def turnover
       end
       display_payments.sort_by!(&:created_at)
 
-      # --- DSO calculation inputs (converted amounts + dates), same as your turnover action ---
+      # DSO inputs (same conversion logic you use in #turnover)
       advance_payments = {}
       balance_payments = {}
 
@@ -218,7 +231,6 @@ def turnover
         end
       end
 
-      # swifts (received), same rule as your turnover
       received_swifts = {}
       project.total_swifts.each do |swift|
         next unless swift.confirmed
@@ -227,18 +239,17 @@ def turnover
       end
       received_swifts = received_swifts.sort_by { |_id, h| h[:date] }.to_h
 
-      # merge payments & compute using your exact algorithm
       payments_hash = advance_payments.merge(balance_payments).sort_by { |_id, h| h[:date] }.to_h
 
       metrics = compute_return_days_and_profit_for_list(payments_hash, received_swifts)
 
       OpenStruct.new(
-        project: project,
-        dso_days: metrics[:return_days],
-        profit:   metrics[:profit],
+        project:        project,
+        dso_days:       metrics[:return_days],
+        profit:         metrics[:profit],
         total_payments: metrics[:total_payments],
-        payments_table: display_payments,        # for the visible table
-        swifts_table:   project.total_swifts     # for the visible table (like your view)
+        payments_table: display_payments,
+        swifts_table:   project.total_swifts
       )
     end
   end
