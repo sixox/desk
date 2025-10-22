@@ -71,6 +71,7 @@ Rails.application.routes.draw do
     collection do
       get :list
       get :export_csv
+      get :turnovers
     end
   end
   resources :release_requests do

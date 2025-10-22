@@ -174,6 +174,77 @@ def turnover
   end
 
 
+  def turnovers
+   base = Project
+             .includes(:pi, :bookings, :swifts)
+             .includes(cis: :swift)
+             .includes(ballance_projects: :ballance)
+             .order(created_at: :desc)
+
+    eligible = base.select { |p| (p.bookings.present? && p.bookings.all?(&:payment_done)) || p.pi&.packing_type == "bulk" }
+
+    @projects_page = Kaminari.paginate_array(eligible).page(params[:page]).per(8)
+
+
+    # Build rows: for each project compute exactly like #turnover
+    @rows = @projects_page.map do |project|
+      balance_projects = project.ballance_projects
+
+      # --- payments shown (the table on the left) ---
+      # same list as your turnover view: advance (project: nil, same ballance), plus balance (project: project)
+      display_payments = []
+      balance_projects.each do |bp|
+        display_payments.concat(PaymentOrder.where(project: nil,  ballance: bp.ballance))
+        display_payments.concat(PaymentOrder.where(project: project, ballance: bp.ballance))
+      end
+      display_payments.sort_by!(&:created_at)
+
+      # --- DSO calculation inputs (converted amounts + dates), same as your turnover action ---
+      advance_payments = {}
+      balance_payments = {}
+
+      balance_projects.each do |bp|
+        PaymentOrder.where(project: nil, ballance: bp.ballance).find_each do |po|
+          amount = (po.currency == "dirham" ? po.amount.to_i : po.amount.to_i * 3.67)
+          amount *= (project.cis.sum(:net_weight) / bp.ballance.spi.quantity)
+          advance_payments[po.id] = { amount: amount.to_i, date: po.cob_confirmed_at }
+        end
+      end
+
+      balance_projects.each do |bp|
+        PaymentOrder.where(project: project, ballance: bp.ballance).find_each do |po|
+          amount = (po.currency == "dirham" ? po.amount.to_i : po.amount.to_i * 3.67)
+          balance_payments[po.id] = { amount: amount.to_i, date: po.cob_confirmed_at }
+        end
+      end
+
+      # swifts (received), same rule as your turnover
+      received_swifts = {}
+      project.total_swifts.each do |swift|
+        next unless swift.confirmed
+        amt = (swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67)
+        received_swifts[swift.id] = { amount: amt.to_f, date: swift.created_at }
+      end
+      received_swifts = received_swifts.sort_by { |_id, h| h[:date] }.to_h
+
+      # merge payments & compute using your exact algorithm
+      payments_hash = advance_payments.merge(balance_payments).sort_by { |_id, h| h[:date] }.to_h
+
+      metrics = compute_return_days_and_profit_for_list(payments_hash, received_swifts)
+
+      OpenStruct.new(
+        project: project,
+        dso_days: metrics[:return_days],
+        profit:   metrics[:profit],
+        total_payments: metrics[:total_payments],
+        payments_table: display_payments,        # for the visible table
+        swifts_table:   project.total_swifts     # for the visible table (like your view)
+      )
+    end
+  end
+
+
+
 
 
 
@@ -213,6 +284,44 @@ def turnover
 	def project_params
 		params.require(:project).permit(:number, :status, :name, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :custom_clearance, :logistic, :quality, :risk, :new_customer, :impact, :likelihood, :selected_risk, :password, :password_confirmation, :started, :release_permission )
 	end
+
+  def compute_return_days_and_profit_for_list(payments_hash, received_swifts_hash)
+    final = 0.0
+    total_payments = payments_hash.sum { |_id, p| p[:amount].to_f }
+
+    sorted_payments = payments_hash.sort_by { |_id, p| p[:date] }
+    sorted_swifts   = received_swifts_hash.sort_by { |_id, s| s[:date] }
+
+    p_i = 0
+    s_i = 0
+    # We duplicate the hash so we can mutate amounts safely
+    p_copy = sorted_payments.map { |id, h| [id, { amount: h[:amount].to_f, date: h[:date] }] }
+    s_copy = sorted_swifts.map   { |id, h| [id, { amount: h[:amount].to_f, date: h[:date] }] }
+
+    while p_i < p_copy.size && s_i < s_copy.size
+      p_amt = p_copy[p_i][1][:amount]
+      s_amt = s_copy[s_i][1][:amount]
+      p_date = p_copy[p_i][1][:date].to_datetime
+      s_date = s_copy[s_i][1][:date].to_datetime
+
+      days_between = (s_date - p_date).to_i.abs
+
+      if p_amt >= s_amt
+        final += s_amt * days_between
+        p_copy[p_i][1][:amount] = p_amt - s_amt
+        s_i += 1
+      else
+        final += p_amt * days_between
+        s_copy[s_i][1][:amount] = s_amt - p_amt
+        p_i += 1
+      end
+    end
+
+    profit      = total_payments - final
+    return_days = total_payments > 0 ? (final / total_payments) : 0
+
+    { final: final, profit: profit, return_days: return_days, total_payments: total_payments }
+  end
 
 def calculate_return_days_and_profit
   @final = 0
