@@ -212,34 +212,47 @@ def turnover
       end
       display_payments.sort_by!(&:created_at)
 
-      # DSO inputs (same conversion logic you use in #turnover)
+      # DSO inputs (safe dates + numeric guards)
       advance_payments = {}
       balance_payments = {}
 
+      total_net_weight = project.cis.sum(:net_weight).to_f
+
       balance_projects.each do |bp|
+        spi = bp.ballance&.spi
+        spi_qty = spi&.quantity.to_f
+        factor = (spi_qty.positive? ? (total_net_weight / spi_qty) : 0.0)
+
         PaymentOrder.where(project: nil, ballance: bp.ballance).find_each do |po|
-          amount = (po.currency == "dirham" ? po.amount.to_i : po.amount.to_i * 3.67)
-          amount *= (project.cis.sum(:net_weight) / bp.ballance.spi.quantity)
-          advance_payments[po.id] = { amount: amount.to_i, date: po.cob_confirmed_at }
+          base_amount = po.amount.to_f
+          amount = (po.currency == "dirham" ? base_amount : base_amount * 3.67)
+          amount *= factor
+          date = po.cob_confirmed_at || po.created_at # <- fallback!
+          advance_payments[po.id] = { amount: amount, date: date }
         end
       end
 
       balance_projects.each do |bp|
         PaymentOrder.where(project: project, ballance: bp.ballance).find_each do |po|
-          amount = (po.currency == "dirham" ? po.amount.to_i : po.amount.to_i * 3.67)
-          balance_payments[po.id] = { amount: amount.to_i, date: po.cob_confirmed_at }
+          base_amount = po.amount.to_f
+          amount = (po.currency == "dirham" ? base_amount : base_amount * 3.67)
+          date = po.cob_confirmed_at || po.created_at # <- fallback!
+          balance_payments[po.id] = { amount: amount, date: date }
         end
       end
 
       received_swifts = {}
       project.total_swifts.each do |swift|
         next unless swift.confirmed
-        amt = (swift.currency == "dirham" ? swift.amount.to_i : swift.amount.to_i * 3.67)
-        received_swifts[swift.id] = { amount: amt.to_f, date: swift.created_at }
+        base_amount = swift.amount.to_f
+        amt = (swift.currency == "dirham" ? base_amount : base_amount * 3.67)
+        date = swift.created_at # (always present)
+        received_swifts[swift.id] = { amount: amt, date: date }
       end
-      received_swifts = received_swifts.sort_by { |_id, h| h[:date] }.to_h
 
-      payments_hash = advance_payments.merge(balance_payments).sort_by { |_id, h| h[:date] }.to_h
+      # Sort safely (dates are now non-nil)
+      received_swifts = received_swifts.sort_by { |_id, h| h[:date] }.to_h
+      payments_hash   = advance_payments.merge(balance_payments).sort_by { |_id, h| h[:date] }.to_h
 
       metrics = compute_return_days_and_profit_for_list(payments_hash, received_swifts)
 
@@ -252,6 +265,7 @@ def turnover
         swifts_table:   project.total_swifts
       )
     end
+
   end
 
 
