@@ -18,6 +18,14 @@ class BallancesController < ApplicationController
 
 	end
 
+	  def sixox
+	    # Load all Ballances and sort them alphabetically by associated SPI number (if present)
+	    @ballances = Ballance
+	                   .left_joins(:spi)
+	                   .includes(:spi)
+	                   .order(Arel.sql("COALESCE(spis.number, '') ASC"))
+	  end
+
 	  def index
 	    @q = Ballance.ransack(params[:q])
 	    @sort_column = params[:sort] || 'number'

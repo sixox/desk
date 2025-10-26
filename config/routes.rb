@@ -100,6 +100,10 @@ Rails.application.routes.draw do
     resources :ballance_projects
     resources :spis
     resources :scis
+
+    collection do
+      get :sixox
+    end
   end
   resources :suppliers
   resources :payment_orders do
