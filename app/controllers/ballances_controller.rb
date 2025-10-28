@@ -24,6 +24,12 @@ class BallancesController < ApplicationController
 	                   .left_joins(:spi)
 	                   .includes(:spi)
 	                   .order(Arel.sql("COALESCE(spis.number, '') ASC"))
+	     @spi_only_payments = PaymentOrder
+                           .joins(:spi)
+                           .where(ballance_id: nil)
+                           .includes(:spi, :project) # preload associations you might show
+                           .order('spis.number ASC, payment_orders.created_at DESC')
+                           .to_a
 	  end
 
 	  def index
