@@ -52,7 +52,7 @@
           <thead class="table-light">
             <tr>
               <th>Payment ID</th>
-              <th>SPI #</th>
+              <th>SPI # - inventory</th>
               <th>Project</th>
               <th>Amount</th>
               <th>Currency</th>
@@ -64,7 +64,7 @@
             <% @spi_only_payments.each do |po| %>
               <tr>
                 <td><%= link_to po.id, payment_order_path(po), class: "link-nodecor-po" %></td>
-                <td><%= po.spi&.number || "—" %></td>
+                <td><%= po.spi&.number || "—" %><%= po.spi&.ballance.number %></td>
                 <td>
                   <% if po.project %>
                     <%= link_to po.project.number, project_path(po.project), class: "text-decoration-none" %>
