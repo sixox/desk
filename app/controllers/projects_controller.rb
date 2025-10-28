@@ -182,29 +182,28 @@ def turnover
              .includes(ballance_projects: :ballance)
              .order(created_at: :desc)
 
-    # --- NEW: optional Customer filter ----------------------------------------
-    # Customer is linked via PI: projects -> pi -> customer_id
+    # --- Optional Customer filter ----------------------------------------
     if params[:customer_id].present?
       base = base.joins(:pi).where(pis: { customer_id: params[:customer_id] })
     end
 
-    # For the dropdown (use what you have; change :nickname to :name or :id if needed)
+    # For the dropdown
     @customers = Customer.order(:nickname) rescue Customer.order(:id)
-    # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------
 
-    # Eligible projects: same rule as your single-project turnover view
+    # Eligible projects: same rule as single-project turnover view
     eligible = base.select do |p|
       (p.bookings.present? && p.bookings.all?(&:payment_done)) || p.pi&.packing_type == "bulk"
     end
 
-    # Paginate eligible list
+    # Paginate
     @projects_page = Kaminari.paginate_array(eligible).page(params[:page]).per(30)
 
-    # Build rows exactly like your turnover calculation
+    # Build rows
     @rows = @projects_page.map do |project|
       balance_projects = project.ballance_projects
 
-      # Visible payments table (advance + balance)
+      # Visible payments table (advance + balance) — keep rials visible but we will skip them from calculations below
       display_payments = []
       balance_projects.each do |bp|
         display_payments.concat(PaymentOrder.where(project: nil,  ballance: bp.ballance))
@@ -224,33 +223,36 @@ def turnover
         factor = (spi_qty.positive? ? (total_net_weight / spi_qty) : 0.0)
 
         PaymentOrder.where(project: nil, ballance: bp.ballance).find_each do |po|
+          next if po.currency.to_s.downcase == "rial"   # <-- SKIP rials for calculations
           base_amount = po.amount.to_f
           amount = (po.currency == "dirham" ? base_amount : base_amount * 3.67)
           amount *= factor
-          date = po.cob_confirmed_at || po.created_at # <- fallback!
+          date = po.cob_confirmed_at || po.created_at
           advance_payments[po.id] = { amount: amount, date: date }
         end
       end
 
       balance_projects.each do |bp|
         PaymentOrder.where(project: project, ballance: bp.ballance).find_each do |po|
+          next if po.currency.to_s.downcase == "rial"   # <-- SKIP rials for calculations
           base_amount = po.amount.to_f
           amount = (po.currency == "dirham" ? base_amount : base_amount * 3.67)
-          date = po.cob_confirmed_at || po.created_at # <- fallback!
+          date = po.cob_confirmed_at || po.created_at
           balance_payments[po.id] = { amount: amount, date: date }
         end
       end
 
+      # swifts (received)
       received_swifts = {}
       project.total_swifts.each do |swift|
         next unless swift.confirmed
         base_amount = swift.amount.to_f
         amt = (swift.currency == "dirham" ? base_amount : base_amount * 3.67)
-        date = swift.created_at # (always present)
+        date = swift.created_at
         received_swifts[swift.id] = { amount: amt, date: date }
       end
 
-      # Sort safely (dates are now non-nil)
+      # Sort safely (dates are non-nil because of fallback above)
       received_swifts = received_swifts.sort_by { |_id, h| h[:date] }.to_h
       payments_hash   = advance_payments.merge(balance_payments).sort_by { |_id, h| h[:date] }.to_h
 
@@ -266,6 +268,13 @@ def turnover
       )
     end
 
+    # --- New: if customer filter, compute average DSO for the listed rows (ignore nils) ---
+    if params[:customer_id].present?
+      dso_values = @rows.map(&:dso_days).compact
+      @customer_average_dso = dso_values.any? ? (dso_values.sum.to_f / dso_values.size) : nil
+    else
+      @customer_average_dso = nil
+    end
   end
 
 
