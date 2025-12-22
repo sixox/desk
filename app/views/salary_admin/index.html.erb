@@ -1,25 +1,42 @@
 <!-- app/views/salary_admin/index.html.erb -->
-<h2 class="mb-4">مدیریت حقوق و دستمزد</h2>
+<% if current_user.is_manager %>
+<div class="col-lg-10 mx-auto mt-5">
 
-<div class="list-group">
-  <%= link_to "➕ ایجاد ماه شمسی جدید", new_shamsi_month_path, class: "list-group-item list-group-item-action" %>
+  <h2 class="mb-4">مدیریت حقوق و دستمزد</h2>
 
-  <% if @latest_month.present? %>
+  <div class="list-group">
+    <% if current_user.admin? %>
+    <%= link_to "➕ ایجاد ماه شمسی جدید", new_shamsi_month_path, class: "list-group-item list-group-item-action" %>
+    <% end %>
+    <% if @latest_month.present? %>
+    <% if current_user.admin? %>
     <%= link_to "🗓 انتخاب روزهای تعطیل برای «#{@latest_month.name}»", edit_day_offs_shamsi_month_path(@latest_month), class: "list-group-item list-group-item-action" %>
-      <%= link_to "Manager Review", manager_review_salary_archives_path(month_id: 1), class: "btn btn-outline-primary" %>
+    <% end %>
+    
+    <%= link_to "Manager Review", manager_review_salary_archives_path(month_id: 1), class: "btn btn-outline-primary" %>
+    
 
-  <%= link_to "all users payroll",
-      hr_review_salary_archives_path(month_id: 1),
-      class: "btn btn-outline-secondary btn-sm" %>
-  <%= link_to "Accounting Review",
-      accounting_review_salary_archives_path(month_id: 1),
-      class: "btn btn-outline-dark btn-sm" %>
-      <%= link_to "فیش حقوقی این ماه",
-      payslips_salary_archives_path(month_id: 1),
-      class: "btn btn-outline-dark btn-sm" %>
-  <% else %>
+    <%= link_to "all users payroll",
+    hr_review_salary_archives_path(month_id: 1),
+    class: "btn btn-outline-secondary btn-sm" %>
+    
+    <% if current_user.accounting?%>
+    <%= link_to "Accounting Review",
+    accounting_review_salary_archives_path(month_id: 1),
+    class: "btn btn-outline-dark btn-sm" %>
+    <% end %>
+    <% if current_user.hr? || current_user.admin? || current_user.board? || current_user.ceo? || current_user.procurement? || current_user.cob? || current_user.accounting? %>
+    <%= link_to "فیش حقوقی این ماه",
+    payslips_salary_archives_path(month_id: 1),
+    class: "btn btn-outline-dark btn-sm" %>
+    <% end %>
+    <% else %>
     <div class="list-group-item text-muted">ابتدا باید ماه شمسی جدید بسازید</div>
-  <% end %>
+    <% end %>
 
 
+  </div>
 </div>
+<% else %>
+you are not premitted to be here
+<% end %>
