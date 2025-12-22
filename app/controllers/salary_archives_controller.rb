@@ -658,7 +658,7 @@ end
   end
 
   def authorize_hr_confirm!
-    head :forbidden unless current_user.id == 1
+    head :forbidden unless current_user.id == 17
   end
 
   def authorize_accounting_review!
