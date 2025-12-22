@@ -650,6 +650,7 @@ end
     allowed =
       (current_user.procurement? && current_user.is_manager) ||
       (current_user.hr? && current_user.is_manager) ||
+      (current_user.accounting? && current_user.is_manager) ||
       (current_user.id == 17) ||
       current_user.ceo? ||
       current_user.cob?
