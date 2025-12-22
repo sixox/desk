@@ -13,7 +13,7 @@ class CreateSalaryArchives < ActiveRecord::Migration[7.0]
       t.decimal :penalty
       t.text :notes
       t.datetime :manager_confirmed_at
-      t.references :manager_confirmed_by, null: false, foreign_key: true
+      t.references :manager_confirmed_by, null: true, foreign_key: { to_table: :users }
 
       t.timestamps
     end
