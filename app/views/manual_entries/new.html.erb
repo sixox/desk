@@ -1,0 +1,20 @@
+<h1>Manual Entry for Missed Clock In/Out</h1>
+<%= form_with(model: @manual_entry, url: manual_entries_path) do |f| %>
+  <div>
+    <%= f.label :occurred_at, "Date and Time" %><br>
+    <%= f.datetime_select :occurred_at %>
+  </div>
+  <div>
+    <%= f.label :is_entry, "Type" %><br>
+    <%= f.collection_select :is_entry, [[true,"Entry (Clock-In)"], [false,"Exit (Clock-Out)"]], :first, :last %>
+    <!-- Alternatively, use radio buttons:
+         <%= f.radio_button :is_entry, true %> Entry 
+         <%= f.radio_button :is_entry, false %> Exit 
+    -->
+  </div>
+  <div>
+    <%= f.label :description, "Description/Reason" %><br>
+    <%= f.text_area :description, rows: 3 %>
+  </div>
+  <%= f.submit "Save Manual Entry" %>
+<% end %>

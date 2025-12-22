@@ -1,0 +1,91 @@
+<div class="col-lg-11 mx-auto mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h4 class="mb-0">
+        Attendance — <%= @user.name rescue "User ##{@user.id}" %>
+      </h4>
+      <div class="text-muted small">
+        Month: <strong><%= @month.title.presence || "#{@month.start_on} → #{@month.end_on}" %></strong>
+        · Emp code: <strong><%= @mapping.emp_code %></strong>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <%= link_to "Employees", payroll_month_payroll_attendances_path(@month), class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to "Back", payroll_months_path, class: "btn btn-sm btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted small">Worked time</div>
+          <div class="fs-5 fw-semibold"><%= distance_of_time_in_words(0, @total_worked_seconds) %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted small">Absent days</div>
+          <div class="fs-5 fw-semibold"><%= @absent_days %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted small">Incomplete days</div>
+          <div class="fs-5 fw-semibold"><%= @incomplete_days %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Day</th>
+              <th>Status</th>
+              <th>First in</th>
+              <th>Last out</th>
+              <th>Worked</th>
+              <th class="text-muted">Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @rows.each do |r| %>
+              <tr>
+                <td><%= r.date %></td>
+                <td><%= r.weekday %></td>
+                <td>
+                  <% badge =
+                    case r.status
+                    when :holiday then "bg-secondary"
+                    when :absent then "bg-danger"
+                    when :incomplete then "bg-warning text-dark"
+                    else "bg-success"
+                    end
+                  %>
+                  <span class="badge <%= badge %>"><%= r.status.to_s.humanize %></span>
+                  <% if r.tx_count.to_i > 0 %>
+                    <span class="text-muted small ms-1">(<%= r.tx_count %> logs)</span>
+                  <% end %>
+                </td>
+                <td><%= r.first_in ? l(r.first_in, format: :short) : "—" %></td>
+                <td><%= r.last_out ? l(r.last_out, format: :short) : "—" %></td>
+                <td><%= r.worked_seconds.to_i > 0 ? distance_of_time_in_words(0, r.worked_seconds) : "—" %></td>
+                <td class="text-muted"><%= r.note.presence || "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

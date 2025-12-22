@@ -147,6 +147,8 @@
         <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           HR
         </a>
+
+
         <% if (current_user.is_manager) %>
         <span class="badge bg-danger" style="position: absolute; top: 0; right: 0; font-size: 9px;">
           <%= count_not_confirmed_vacations %>
@@ -169,6 +171,11 @@
           <% if current_user.hr? %>
           <li>
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
+          </li>
+          <% end %>
+          <% if current_user.admin? || true %>
+          <li>
+            <%= link_to "payroll admin panel", salary_admin_path, class: 'dropdown-item' %>
           </li>
           <% end %>
         </ul>

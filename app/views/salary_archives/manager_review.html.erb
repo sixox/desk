@@ -1,0 +1,271 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+<h4 class="mb-3">بررسی مدیر — <%= @shamsi_month.name %></h4>
+
+<%= form_with url: bulk_update_days_salary_archives_path(month_id: @shamsi_month.id), method: :patch do %>
+  <div class="accordion" id="mgrReviewAcc">
+
+    <% @users.each do |user| %>
+      <% archive = @archives[user.id] %>
+      <% next unless archive %>
+
+      <% pay_type_label = @pay_type_by_user_id[user.id] || "نامشخص" %>
+      <% confirmed_badge = archive.manager_confirmed_at.present? ? "تایید مدیر دپارتمان شده" : "پیش‌نویس" %>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="hdr_<%= user.id %>">
+          <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#col_<%= user.id %>" aria-expanded="false" aria-controls="col_<%= user.id %>">
+            <div class="d-flex w-100 align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-semibold"><%= user.name.presence || "کاربر ##{user.id}" %></span>
+                <span class="badge text-bg-light border"><%= pay_type_label %></span>
+              </div>
+              <span class="badge <%= archive.manager_confirmed_at.present? ? "text-bg-success" : "text-bg-secondary" %>"><%= confirmed_badge %></span>
+            </div>
+          </button>
+        </h2>
+
+        <div id="col_<%= user.id %>" class="accordion-collapse collapse" aria-labelledby="hdr_<%= user.id %>" data-bs-parent="#mgrReviewAcc">
+          <div class="accordion-body p-2">
+
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered align-middle mb-2">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-nowrap">تاریخ</th>
+                    <th class="text-nowrap">ورود</th>
+                    <th class="text-nowrap">خروج</th>
+                    <th class="text-nowrap text-end">کسری (ساعت)</th>
+                    <th class="text-nowrap text-end">اضافه‌کاری (ساعت)</th>
+                    <th class="text-nowrap">مرخصی</th>
+                    <th class="text-nowrap">دورکاری</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% archive.days.sort_by(&:work_date).each do |day| %>
+                    <% d = day.work_date %>
+
+                    <% is_off = @off_dates.include?(d) %>
+                    <% weekday = @weekday_fa[d.wday] %>
+
+                    <% vinfo = (@vacation_info_by_user_date[user.id] || {})[d] %>
+                    <% has_vac = vinfo.present? %>
+                    <% vac_daily = has_vac && vinfo[:kind] == :daily %>
+                    <% vac_hourly = has_vac && vinfo[:kind] == :hourly %>
+                    <% vac_confirmed = has_vac && vinfo[:confirmed] == true %>
+
+                    <% remote_day = (@remote_days_by_user_date[user.id] || {})[d] %>
+                    <% remote_confirmed = remote_day.present? && (remote_day.confirmed != false) %>
+
+                    <% manual = (@manual_by_user_date[user.id] || {})[d] || {} %>
+                    <% manual_entry = manual[:entry] %>
+                    <% manual_exit  = manual[:exit] %>
+
+                    <% ots = ((@overtime_by_user_date[user.id] || {})[d] || []) %>
+                    <% outside_list = ots.select { |x| x.outside_system == true } %>
+                    <% inside_list  = ots.select { |x| x.outside_system != true } %>
+
+                    <% outside_confirmed_minutes =
+                        outside_list.select { |x| x.confirmed == true }.sum { |x| (x.hours.to_f * 60).round } %>
+
+                    <% base_overtime_minutes = day.overtime_minutes.to_i - outside_confirmed_minutes %>
+                    <% base_overtime_minutes = 0 if base_overtime_minutes < 0 %>
+
+                    <% row_classes = [] %>
+                    <% row_classes << "table-danger" if is_off %>
+                    <% row_classes << "table-warning" if vac_daily && vac_confirmed %>
+                    <% row_classes << "table-info" if remote_day.present? && remote_confirmed %>
+
+                    <tr class="<%= row_classes.join(" ") %>">
+                      <td class="text-nowrap">
+                        <div class="fw-semibold"><%= d.strftime("%Y/%m/%d") %></div>
+                        <div class="small text-muted"><%= weekday %></div>
+                      </td>
+
+                      <td class="text-nowrap">
+                        <% val_in = day.first_in_at.to_s.presence || "" %>
+                        <%= text_field_tag "days[#{day.id}][first_in_at]", val_in,
+                              class: "form-control form-control-sm",
+                              placeholder: "--:--",
+                              disabled: (vac_daily && vac_confirmed) %>
+
+                        <% if manual_entry.present? %>
+                          <div class="mt-1">
+                            <span class="badge text-bg-secondary"
+                                  title="ورود دستی: <%= manual_entry.occurred_at.strftime("%H:%M") %> — <%= manual_entry.description.to_s %>">دستی</span>
+                          </div>
+                        <% end %>
+                      </td>
+
+                      <td class="text-nowrap">
+                        <% val_out = day.last_out_at.to_s.presence || "" %>
+                        <%= text_field_tag "days[#{day.id}][last_out_at]", val_out,
+                              class: "form-control form-control-sm",
+                              placeholder: "--:--",
+                              disabled: (vac_daily && vac_confirmed) %>
+
+                        <% if manual_exit.present? %>
+                          <div class="mt-1">
+                            <span class="badge text-bg-secondary"
+                                  title="خروج دستی: <%= manual_exit.occurred_at.strftime("%H:%M") %> — <%= manual_exit.description.to_s %>">دستی</span>
+                          </div>
+                        <% end %>
+                      </td>
+
+                      <td class="text-end text-nowrap">
+                        <%= number_field_tag "days[#{day.id}][deficit_hours]", @fmt_hours.call(day.deficit_minutes),
+                              step: 0.25,
+                              class: "form-control form-control-sm text-end",
+                              disabled: (vac_daily && vac_confirmed) %>
+                      </td>
+
+                      <td class="text-end text-nowrap">
+                        <%# IMPORTANT: show BASE overtime only (excluding outside confirmed) to prevent double counting %>
+                        <%= number_field_tag "days[#{day.id}][overtime_hours]", @fmt_hours.call(base_overtime_minutes),
+                              step: 0.25,
+                              class: "form-control form-control-sm text-end",
+                              disabled: (vac_daily && vac_confirmed) %>
+
+                        <%# داخل سیستم: فقط tooltip مقدار+دلیل %>
+                        <% if inside_list.any? %>
+                          <div class="mt-1 d-flex flex-wrap gap-1">
+                            <% inside_list.each do |ot| %>
+                              <span class="badge text-bg-light border"
+                                    title="داخل سیستم — <%= ot.hours.to_f %> ساعت — <%= ot.reason.to_s %>">داخل سیستم</span>
+                            <% end %>
+                          </div>
+                        <% end %>
+
+                        <%# خارج سیستم: checkbox تایید + tooltip reason %>
+                        <% if outside_list.any? %>
+                          <div class="mt-1 d-flex flex-column gap-1">
+                            <% outside_list.each do |ot| %>
+                              <div class="d-flex align-items-center gap-2">
+                                <div class="form-check m-0">
+                                  <%= hidden_field_tag "overtime_updates[#{ot.id}]", "0" %>
+                                  <%= check_box_tag "overtime_updates[#{ot.id}]", "1",
+                                        (ot.confirmed == true),
+                                        class: "form-check-input",
+                                        id: "ot_#{ot.id}" %>
+                                  <%= label_tag "ot_#{ot.id}", "تأیید اضافه‌کاری خارج سیستم", class: "form-check-label small" %>
+                                </div>
+
+                                <span class="badge text-bg-secondary"
+                                      title="<%= ot.reason.to_s %>"><%= ot.hours.to_f %> ساعت</span>
+                              </div>
+                            <% end %>
+                          </div>
+                        <% end %>
+                      </td>
+
+                      <td class="text-nowrap">
+                        <% if has_vac %>
+                          <% vac_title =
+                              if vac_daily
+                                "مرخصی روزانه"
+                              else
+                                "مرخصی ساعتی: #{(vinfo[:minutes].to_i / 60.0).round(2)} ساعت"
+                              end
+                          %>
+
+                          <% vac_details = [vinfo[:details].to_s, vinfo[:comment].to_s].reject(&:blank?).join(" | ") %>
+                          <% vac_tooltip = [vac_title, vac_details].reject(&:blank?).join(" — ") %>
+
+                          <div class="d-flex flex-column gap-1">
+                            <div class="small">
+                              <span class="badge text-bg-warning" title="<%= vac_tooltip %>">
+                                <%= vac_daily ? "مرخصی روزانه" : "مرخصی ساعتی" %>
+                              </span>
+                            </div>
+
+                            <div class="form-check">
+                              <%= hidden_field_tag "vacation_updates[#{vinfo[:vacation_id]}]", "0" %>
+                              <%= check_box_tag "vacation_updates[#{vinfo[:vacation_id]}]", "1",
+                                    vac_confirmed,
+                                    class: "form-check-input",
+                                    id: "vac_#{vinfo[:vacation_id]}_#{day.id}" %>
+                              <%= label_tag "vac_#{vinfo[:vacation_id]}_#{day.id}", "تأیید مرخصی", class: "form-check-label small" %>
+                            </div>
+                          </div>
+                        <% else %>
+                          <span class="text-muted small">—</span>
+                        <% end %>
+                      </td>
+
+                      <td class="text-nowrap">
+                        <% if remote_day.present? %>
+                          <div class="form-check">
+                            <%= hidden_field_tag "remote_updates[#{remote_day.id}]", "0" %>
+                            <%= check_box_tag "remote_updates[#{remote_day.id}]", "1",
+                                  (remote_day.confirmed != false),
+                                  class: "form-check-input",
+                                  id: "remote_#{remote_day.id}" %>
+                            <%= label_tag "remote_#{remote_day.id}", "تأیید دورکاری", class: "form-check-label small" %>
+                          </div>
+                        <% else %>
+                          <span class="text-muted small">—</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+
+            <%# === NEW: Manual totals inputs on SalaryArchive (stored as minutes) === %>
+            <div class="border rounded p-2 mb-2">
+              <div class="fw-semibold small mb-2">تنظیم دستی جمع‌ها (ساعت)</div>
+
+              <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small mb-1">اضافه‌کاری دستی (ساعت)</label>
+                  <%= number_field_tag "archives[#{archive.id}][manual_overtime_hours]",
+                        @fmt_hours.call(archive.manual_overtime_minutes),
+                        step: 0.25,
+                        min: 0,
+                        class: "form-control form-control-sm text-end" %>
+                  <div class="form-text small">به دقیقه ذخیره می‌شود (گام ۰٫۲۵ ساعت).</div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label small mb-1">کسری دستی (ساعت)</label>
+                  <%= number_field_tag "archives[#{archive.id}][manual_deficit_hours]",
+                        @fmt_hours.call(archive.manual_deficit_minutes),
+                        step: 0.25,
+                        min: 0,
+                        class: "form-control form-control-sm text-end" %>
+                  <div class="form-text small">به دقیقه ذخیره می‌شود (گام ۰٫۲۵ ساعت).</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 small">
+              <span class="badge text-bg-light border">
+                جمع کسری (سیستم): <%= @fmt_hours.call(archive.deficit_minutes) %> ساعت
+              </span>
+              <span class="badge text-bg-light border">
+                جمع اضافه‌کاری (سیستم): <%= @fmt_hours.call(archive.overtime_minutes) %> ساعت
+              </span>
+              <span class="badge text-bg-light border">
+                کسری دستی: <%= @fmt_hours.call(archive.manual_deficit_minutes) %> ساعت
+              </span>
+              <span class="badge text-bg-light border">
+                اضافه‌کاری دستی: <%= @fmt_hours.call(archive.manual_overtime_minutes) %> ساعت
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= hidden_field_tag :final_confirm, "0" %>
+
+  <div class="mt-3 d-flex gap-2">
+    <%= submit_tag "ذخیره تغییرات", class: "btn btn-primary btn-sm" %>
+    <%= submit_tag "ذخیره و تأیید نهایی", name: "final_confirm", value: "1", class: "btn btn-success btn-sm" %>
+  </div>
+<% end %>
+</div>

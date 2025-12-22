@@ -1,0 +1,41 @@
+<div class="col-lg-10 mx-auto mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Payroll Months</h4>
+    <%= link_to "Attendance", payroll_month_payroll_attendances_path(m), class: "btn btn-sm btn-outline-primary" %>
+
+    <%= link_to "New Month", new_payroll_month_path, class: "btn btn-sm btn-primary" %>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Days</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @months.each do |m| %>
+            <tr>
+              <td><%= m.title.presence || "—" %></td>
+              <td><%= m.start_on %></td>
+              <td><%= m.end_on %></td>
+              <td><%= m.days_count %></td>
+              <td class="text-end">
+                <%= link_to "Edit holidays", edit_payroll_month_path(m), class: "btn btn-sm btn-outline-secondary" %>
+              </td>
+            </tr>
+          <% end %>
+
+          <% if @months.empty? %>
+            <tr><td colspan="5" class="text-muted">No months yet.</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

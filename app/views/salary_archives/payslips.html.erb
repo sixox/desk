@@ -1,0 +1,78 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <h4 class="mb-1">فیش حقوقی</h4>
+      <div class="text-muted small">ماه: <%= @shamsi_month.name %></div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <%= link_to "Manager Review",
+            manager_review_salary_archives_path(month_id: @shamsi_month.id),
+            class: "btn btn-outline-primary btn-sm" %>
+
+      <%= link_to "HR Review",
+            hr_review_salary_archives_path(month_id: @shamsi_month.id),
+            class: "btn btn-outline-secondary btn-sm" %>
+
+      <%= link_to "Accounting Review",
+            accounting_review_salary_archives_path(month_id: @shamsi_month.id),
+            class: "btn btn-outline-dark btn-sm" %>
+    </div>
+  </div>
+
+  <div class="accordion" id="payslipsAcc">
+    <% @archives.each do |archive| %>
+      <% user = archive.user %>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="hdr_ps_<%= archive.id %>">
+          <button class="accordion-button collapsed py-2" type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#col_ps_<%= archive.id %>"
+                  aria-expanded="false"
+                  aria-controls="col_ps_<%= archive.id %>">
+
+            <div class="d-flex w-100 align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-semibold"><%= user&.name.presence || "کاربر ##{archive.user_id}" %></span>
+                <span class="badge text-bg-light border"><%= @shamsi_month.name %></span>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <% mgr = archive.manager_confirmed_at.present? %>
+                <% hr  = archive.hr_confirmed %>
+                <% acc = archive.accounting_confirmed %>
+
+                <span class="badge <%= mgr ? "text-bg-primary" : "text-bg-secondary" %>">
+                  <%= mgr ? "تأیید مدیر" : "در انتظار مدیر" %>
+                </span>
+
+                <span class="badge <%= hr ? "text-bg-success" : "text-bg-secondary" %>">
+                  <%= hr ? "تأیید HR" : "در انتظار HR" %>
+                </span>
+
+                <span class="badge <%= acc ? "text-bg-dark" : "text-bg-secondary" %>">
+                  <%= acc ? "تأیید حسابداری" : "در انتظار حسابداری" %>
+                </span>
+              </div>
+            </div>
+
+          </button>
+        </h2>
+
+        <div id="col_ps_<%= archive.id %>" class="accordion-collapse collapse"
+             aria-labelledby="hdr_ps_<%= archive.id %>"
+             data-bs-parent="#payslipsAcc">
+
+          <div class="accordion-body p-2">
+            <%= render "salary_archives/payslip_card",
+                  archive: archive,
+                  user: user,
+                  shamsi_month: @shamsi_month %>
+          </div>
+
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

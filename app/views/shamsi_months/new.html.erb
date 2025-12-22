@@ -1,0 +1,25 @@
+<h2>ایجاد ماه شمسی جدید</h2>
+
+<%= form_with model: @shamsi_month, url: shamsi_months_path do |f| %>
+  <div class="mb-3">
+    <%= f.label :name, "نام ماه" %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :start_at, "تاریخ شروع" %>
+    <%= f.date_field :start_at, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :end_at, "تاریخ پایان" %>
+    <%= f.date_field :end_at, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :total_days, "تعداد روزهای ماه" %>
+    <%= f.number_field :total_days, class: "form-control" %>
+  </div>
+
+  <%= f.submit "ایجاد", class: "btn btn-primary" %>
+<% end %>

@@ -1,0 +1,221 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+<h4 class="mb-3">بررسی حسابداری — <%= @shamsi_month.name %></h4>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <%= link_to "Manager Review",
+        manager_review_salary_archives_path(month_id: @shamsi_month.id),
+        class: "btn btn-outline-primary btn-sm" %>
+
+  <%= link_to "HR Review",
+        hr_review_salary_archives_path(month_id: @shamsi_month.id),
+        class: "btn btn-outline-secondary btn-sm" %>
+
+  <%# چون فقط accounting manager می‌تونه این صفحه رو ببینه، دکمه هم همینجا قابل مشاهده‌ست %>
+  <%= button_to "Accounting Confirm (برای کل ماه)",
+        accounting_confirm_all_salary_archives_path(month_id: @shamsi_month.id),
+        method: :patch,
+        class: "btn btn-dark btn-sm",
+        data: { turbo_confirm: "برای این ماه، Accounting Confirm همه‌ی کاربران ثبت شود؟" } %>
+</div>
+
+<div class="accordion" id="accountingReviewAcc">
+  <% @users.each do |user| %>
+    <% archive = @archives[user.id] %>
+    <% next unless archive %>
+
+    <% pay_type_label = @pay_type_by_user_id[user.id] || "نامشخص" %>
+
+    <%# ===== Manager confirm badge ===== %>
+    <% mgr_confirmed   = archive.manager_confirmed_at.present? %>
+    <% mgr_badge_text  = mgr_confirmed ? "Manager Confirmed" : "Manager Pending" %>
+    <% mgr_badge_class = mgr_confirmed ? "text-bg-primary" : "text-bg-secondary" %>
+
+    <%# ===== HR confirm badge ===== %>
+    <% hr_badge_text  = archive.hr_confirmed ? "HR Confirmed" : "HR Pending" %>
+    <% hr_badge_class = archive.hr_confirmed ? "text-bg-success" : "text-bg-secondary" %>
+
+    <%# ===== Accounting confirm badge ===== %>
+    <% acc_badge_text  = archive.accounting_confirmed ? "Accounting Confirmed" : "Accounting Pending" %>
+    <% acc_badge_class = archive.accounting_confirmed ? "text-bg-dark" : "text-bg-secondary" %>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="hdr_acc_<%= user.id %>">
+        <button class="accordion-button collapsed py-2" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#col_acc_<%= user.id %>"
+                aria-expanded="false"
+                aria-controls="col_acc_<%= user.id %>">
+
+          <div class="d-flex w-100 align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="fw-semibold"><%= user.name.presence || "کاربر ##{user.id}" %></span>
+              <span class="badge text-bg-light border"><%= pay_type_label %></span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge <%= mgr_badge_class %>"><%= mgr_badge_text %></span>
+              <span class="badge <%= hr_badge_class %>"><%= hr_badge_text %></span>
+              <span class="badge <%= acc_badge_class %>"><%= acc_badge_text %></span>
+            </div>
+          </div>
+
+        </button>
+      </h2>
+
+      <div id="col_acc_<%= user.id %>" class="accordion-collapse collapse"
+           aria-labelledby="hdr_acc_<%= user.id %>"
+           data-bs-parent="#accountingReviewAcc">
+        <div class="accordion-body p-2">
+
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle mb-2">
+              <thead class="table-light">
+                <tr>
+                  <th class="text-nowrap">تاریخ</th>
+                  <th class="text-nowrap">ورود</th>
+                  <th class="text-nowrap">خروج</th>
+                  <th class="text-nowrap text-end">کسری (ساعت)</th>
+                  <th class="text-nowrap text-end">اضافه‌کاری (ساعت)</th>
+                  <th class="text-nowrap">مرخصی</th>
+                  <th class="text-nowrap">دورکاری</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% archive.days.sort_by(&:work_date).each do |day| %>
+                  <% d = day.work_date %>
+
+                  <% is_off = @off_dates.include?(d) %>
+                  <% weekday = @weekday_fa[d.wday] %>
+
+                  <% vinfo = (@vacation_info_by_user_date[user.id] || {})[d] %>
+                  <% has_vac = vinfo.present? %>
+                  <% vac_daily = has_vac && vinfo[:kind] == :daily %>
+                  <% vac_confirmed = has_vac && vinfo[:confirmed] == true %>
+
+                  <% remote_day = (@remote_days_by_user_date[user.id] || {})[d] %>
+                  <% remote_confirmed = remote_day.present? && (remote_day.confirmed != false) %>
+
+                  <% manual = (@manual_by_user_date[user.id] || {})[d] || {} %>
+                  <% manual_entry = manual[:entry] %>
+                  <% manual_exit  = manual[:exit] %>
+
+                  <% ots = ((@overtime_by_user_date[user.id] || {})[d] || []) %>
+                  <% outside_list = ots.select { |x| x.outside_system == true } %>
+                  <% inside_list  = ots.select { |x| x.outside_system != true } %>
+
+                  <% outside_confirmed_minutes =
+                      outside_list.select { |x| x.confirmed == true }.sum { |x| (x.hours.to_f * 60).round } %>
+
+                  <% base_overtime_minutes = day.overtime_minutes.to_i - outside_confirmed_minutes %>
+                  <% base_overtime_minutes = 0 if base_overtime_minutes < 0 %>
+
+                  <% row_classes = [] %>
+                  <% row_classes << "table-danger" if is_off %>
+                  <% row_classes << "table-warning" if vac_daily && vac_confirmed %>
+                  <% row_classes << "table-info" if remote_day.present? && remote_confirmed %>
+
+                  <tr class="<%= row_classes.join(" ") %>">
+                    <td class="text-nowrap">
+                      <div class="fw-semibold"><%= d.strftime("%Y/%m/%d") %></div>
+                      <div class="small text-muted"><%= weekday %></div>
+                    </td>
+
+                    <td class="text-nowrap">
+                      <span class="badge text-bg-light border"><%= day.first_in_at.to_s.presence || "—" %></span>
+                      <% if manual_entry.present? %>
+                        <div class="mt-1">
+                          <span class="badge text-bg-secondary"
+                                title="ورود دستی: <%= manual_entry.occurred_at.strftime("%H:%M") %> — <%= manual_entry.description.to_s %>">دستی</span>
+                        </div>
+                      <% end %>
+                    </td>
+
+                    <td class="text-nowrap">
+                      <span class="badge text-bg-light border"><%= day.last_out_at.to_s.presence || "—" %></span>
+                      <% if manual_exit.present? %>
+                        <div class="mt-1">
+                          <span class="badge text-bg-secondary"
+                                title="خروج دستی: <%= manual_exit.occurred_at.strftime("%H:%M") %> — <%= manual_exit.description.to_s %>">دستی</span>
+                        </div>
+                      <% end %>
+                    </td>
+
+                    <td class="text-end text-nowrap">
+                      <span class="badge text-bg-light border"><%= @fmt_hours.call(day.deficit_minutes) %></span>
+                    </td>
+
+                    <td class="text-end text-nowrap">
+                      <div class="d-flex flex-column align-items-end gap-1">
+                        <span class="badge text-bg-light border"><%= @fmt_hours.call(base_overtime_minutes) %></span>
+
+                        <% if inside_list.any? %>
+                          <div class="d-flex flex-wrap justify-content-end gap-1">
+                            <% inside_list.each do |ot| %>
+                              <span class="badge text-bg-light border"
+                                    title="داخل سیستم — <%= ot.hours.to_f %> ساعت — <%= ot.reason.to_s %>">داخل سیستم</span>
+                            <% end %>
+                          </div>
+                        <% end %>
+
+                        <% if outside_list.any? %>
+                          <div class="d-flex flex-wrap justify-content-end gap-1">
+                            <% outside_list.each do |ot| %>
+                              <span class="badge text-bg-secondary"
+                                    title="خارج سیستم — <%= ot.reason.to_s %> — وضعیت: <%= ot.confirmed == true ? "تأیید شده" : "تأیید نشده" %>">
+                                <%= ot.hours.to_f %>h
+                              </span>
+                            <% end %>
+                          </div>
+                        <% end %>
+                      </div>
+                    </td>
+
+                    <td class="text-nowrap">
+                      <% if has_vac %>
+                        <span class="badge text-bg-warning">مرخصی</span>
+                        <span class="badge <%= vac_confirmed ? "text-bg-success" : "text-bg-secondary" %> ms-1">
+                          <%= vac_confirmed ? "تأیید" : "عدم تأیید" %>
+                        </span>
+                      <% else %>
+                        <span class="text-muted small">—</span>
+                      <% end %>
+                    </td>
+
+                    <td class="text-nowrap">
+                      <% if remote_day.present? %>
+                        <span class="badge <%= remote_confirmed ? "text-bg-info" : "text-bg-secondary" %>">
+                          <%= remote_confirmed ? "دورکاری" : "دورکاری (رد شده)" %>
+                        </span>
+                      <% else %>
+                        <span class="text-muted small">—</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 small">
+            <span class="badge text-bg-light border">
+              جمع کسری (سیستم): <%= @fmt_hours.call(archive.deficit_minutes) %> ساعت
+            </span>
+            <span class="badge text-bg-light border">
+              جمع اضافه‌کاری (سیستم): <%= @fmt_hours.call(archive.overtime_minutes) %> ساعت
+            </span>
+            <span class="badge text-bg-light border">
+              کسری دستی: <%= @fmt_hours.call(archive.manual_deficit_minutes) %> ساعت
+            </span>
+            <span class="badge text-bg-light border">
+              اضافه‌کاری دستی: <%= @fmt_hours.call(archive.manual_overtime_minutes) %> ساعت
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+</div>

@@ -8,7 +8,19 @@
 
 		</p>
 		<%= link_to new_vacation_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
-  						Add Vacation
-  		<% end %>
+		Add Vacation
+		<% end %>
+		<%= link_to new_remote_day_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
+		Add Remote day
+		<% end %>
+		
+
+<%= link_to "ثبت ورود/خروج دستی", new_manual_entry_path, class: "btn btn-sm btn-outline-primary" %>
+<%= link_to "ثبت اضافه‌کاری", new_overtime_entry_path, class: "btn btn-sm btn-outline-success" %>
+
+
+
+
+	
+		</div>
 	</div>
-</div>

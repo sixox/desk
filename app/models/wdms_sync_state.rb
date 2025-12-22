@@ -1,0 +1,2 @@
+class WdmsSyncState < ApplicationRecord
+end

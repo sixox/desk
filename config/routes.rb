@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  get 'user_manager_mappings/index'
+  get 'user_manager_mappings/update'
+  get 'payroll_attendances/index'
+  get 'payroll_attendances/show'
   get 'home/index', to: 'home#index'  # Ensure this route exists
   get 'home/dashboard', to: 'home#dashboard'  # This should also exist
   get 'home/dashboard'
@@ -279,6 +283,50 @@ Rails.application.routes.draw do
 
 # New tasks hub
 resources :tasks, only: [:index]
+
+
+namespace :api do
+  namespace :wdms do
+    post "transactions/bulk", to: "transactions#bulk_create"
+  end
+end
+
+resources :remote_days
+resources :payroll_months, only: [:index, :new, :create, :edit, :update, :show]
+resources :payroll_months do
+  resources :payroll_attendances, only: [:index, :show], param: :user_id
+end
+resource :user_manager_mappings, only: [:index, :update]
+resources :salary_archives do
+  collection do
+    get :manager_review
+    patch :bulk_update_days
+    get   :hr_review
+    patch :hr_confirm_all
+    get   :accounting_review
+    patch :accounting_confirm_all
+    get :payslips
+
+  end
+end
+resources :shamsi_months, only: [:new, :create]
+get "/salary_admin", to: "salary_admin#index", as: :salary_admin
+resources :shamsi_months do
+  member do
+    get :edit_day_offs
+    patch :update_day_offs
+  end
+end
+resources :manual_entries, only: [:new, :create]
+resources :overtime_entries, only: [:new, :create] do
+  member do
+    patch :toggle_confirm
+  end
+end
+
+
+
+
 
 
 

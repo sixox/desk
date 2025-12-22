@@ -1,0 +1,49 @@
+<div class="col-lg-10 mx-auto mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Manager ↔ Employees</h4>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Manager</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @users.each do |u| %>
+            <% selected_manager_id = u.user_manager_mapping&.manager_id || u.id %>
+            <tr>
+              <td class="fw-semibold"><%= u.name.presence || "User ##{u.id}" %></td>
+
+              <td>
+                <%= form_with url: user_manager_mappings_path, method: :patch, local: true do %>
+                  <%= hidden_field_tag :user_id, u.id %>
+
+                  <select name="manager_id" class="form-select form-select-sm">
+                    <% @managers.each do |m| %>
+                      <option value="<%= m.id %>" <%= "selected" if selected_manager_id == m.id %>>
+                        <%= m.name.presence || "User ##{m.id}" %>
+                      </option>
+                    <% end %>
+                  </select>
+              </td>
+
+              <td class="text-end">
+                  <button class="btn btn-sm btn-primary">Save</button>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <div class="text-muted small mt-2">
+        Note: If no manager is selected, the user is considered their own manager.
+      </div>
+    </div>
+  </div>
+</div>

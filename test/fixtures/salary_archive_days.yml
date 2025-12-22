@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  salary_archive: one
+  work_date: 2025-12-21
+  first_in_at: 2025-12-21 10:01:31
+  last_out_at: 2025-12-21 10:01:31
+  work_minutes: 1
+  overtime_minutes: 1
+  deficit_minutes: 1
+  manual_adjust_minutes: 1
+  note: MyText
+
+two:
+  salary_archive: two
+  work_date: 2025-12-21
+  first_in_at: 2025-12-21 10:01:31
+  last_out_at: 2025-12-21 10:01:31
+  work_minutes: 1
+  overtime_minutes: 1
+  deficit_minutes: 1
+  manual_adjust_minutes: 1
+  note: MyText

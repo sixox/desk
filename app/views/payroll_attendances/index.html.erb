@@ -1,0 +1,44 @@
+<div class="col-lg-10 mx-auto mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h4 class="mb-0">Attendance</h4>
+      <div class="text-muted small">
+        Month: <strong><%= @month.title.presence || "#{@month.start_on} → #{@month.end_on}" %></strong>
+      </div>
+    </div>
+    <%= link_to "Back", payroll_months_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table table-striped mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th class="text-muted">Emp code</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @users.each do |u| %>
+            <tr>
+              <td><%= u.name rescue "User ##{u.id}" %></td>
+              <td class="text-muted"><%= u.wdms_employee_mapping&.emp_code %></td>
+              <td class="text-end">
+                <%= link_to "View month",
+                    payroll_month_payroll_attendance_path(@month, u.id),
+                    class: "btn btn-sm btn-outline-primary" %>
+              </td>
+            </tr>
+          <% end %>
+
+          <% if @users.empty? %>
+            <tr>
+              <td colspan="3" class="text-muted">No mapped employees yet.</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

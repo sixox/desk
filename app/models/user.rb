@@ -54,6 +54,47 @@ class User < ApplicationRecord
            foreign_key: :assigned_to_id,
            dependent: :nullify
 
+  has_many :remote_days, dependent: :destroy
+  has_one :wdms_employee_mapping, dependent: :destroy
+  has_one :salary_profile, dependent: :destroy
+  has_one  :user_manager_mapping, dependent: :destroy
+  has_many :managed_mappings, class_name: "UserManagerMapping", foreign_key: :manager_id, dependent: :destroy
+
+  has_many :managed_users, through: :managed_mappings, source: :user
+  has_many :manual_entries
+  has_many :overtime_entries, dependent: :destroy
+  has_many :overtime_requests, class_name: "OvertimeEntry", dependent: :destroy
+
+
+
+  # مدیر این کاربر:
+  def manager_user
+    user_manager_mapping&.manager || self
+  end
+
+  # زیرمجموعه‌های این مدیر:
+  # اگر کسی mapping نداشته باشه و خودش مدیر خودش باشه، زیرمجموعه کسی حساب نمیشه مگر mapping داشته باشد.
+  def direct_reports
+    managed_users
+  end
+
+
+
+
+
+  def active_wdms_mapping
+    wdms_employee_mappings.find_by(active: true)
+  end
+
+  def emp_code
+    active_wdms_mapping&.emp_code
+  end
+
+  def device_serial
+    active_wdms_mapping&.device_serial
+  end
+
+
 
 
 

@@ -1,0 +1,17 @@
+<!-- app/views/shamsi_months/edit_day_offs.html.erb -->
+<h2>انتخاب روزهای تعطیل برای <%= @shamsi_month.name %></h2>
+
+<%= form_with url: update_day_offs_shamsi_month_path(@shamsi_month), method: :patch do %>
+  <div class="row">
+    <% @date_range.each do |date| %>
+      <div class="col-2 mb-2">
+        <div class="form-check">
+          <%= check_box_tag "off_days[]", date, @selected_offs.include?(date), id: "off_day_#{date}", class: "form-check-input" %>
+          <%= label_tag "off_day_#{date}", l(date, format: :long), class: "form-check-label" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= submit_tag "ذخیره", class: "btn btn-success mt-3" %>
+<% end %>
