@@ -1,13 +1,11 @@
 <%# app/views/salary_archives/_payslip_card.html.erb %>
 <%
-  # ---- helpers کوچک داخل partial ----
   money = ->(n) { number_with_delimiter(n.to_i) }
   hours = ->(mins) { ((mins.to_i) / 60.0).round(2) }
 
   month_days = (shamsi_month.end_at.to_date - shamsi_month.start_at.to_date).to_i + 1
   adjust_30_to_month = ->(monthly_amount) { ((monthly_amount.to_f / 30.0) * month_days).round }
 
-  # ---- داده‌ها از archive ----
   base_salary   = archive.seniority_base.to_i
   paye_sanavat  = archive.monthly_seniority_base.to_i
 
@@ -42,199 +40,151 @@
   payment_2 = (total_salary_adj - fund6 - fund3 - loan - deficit_deduction + overtime_pay).round
 %>
 
-<div class="card border-0 shadow-sm" id="payslip_card_<%= archive.id %>" style="border-radius: 16px;">
-  <div class="card-body p-3 p-md-4">
+<style>
+  /* minimal, classy, inside-card only */
+  .ps-card { border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.06); border: 1px solid rgba(0,0,0,.06); overflow: hidden; }
+  .ps-header { padding: 14px 16px; background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0)); border-bottom: 1px solid rgba(0,0,0,.06); }
+  .ps-title { font-weight: 800; letter-spacing: -.2px; }
+  .ps-sub { font-size: .82rem; color: #6c757d; }
+  .ps-kpi { border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 10px 12px; background: #fff; }
+  .ps-kpi .lbl { font-size: .78rem; color: #6c757d; }
+  .ps-kpi .val { font-size: 1.12rem; font-weight: 800; letter-spacing: -.2px; }
+  .ps-grid { padding: 12px 16px 16px; }
+  .ps-section { border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 12px 12px; background: #fff; height: 100%; }
+  .ps-section .hd { font-weight: 800; font-size: .92rem; margin-bottom: 10px; }
+  .ps-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 8px 0; border-bottom: 1px dashed rgba(0,0,0,.10); }
+  .ps-row:last-child { border-bottom: 0; }
+  .ps-row .k { font-size: .83rem; color: #6c757d; }
+  .ps-row .v { font-size: .88rem; font-weight: 700; }
+  .ps-pill { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.08); background:#fff; font-size: .78rem; color:#343a40; }
+  .ps-footer { padding: 12px 16px; background: #fff; border-top: 1px solid rgba(0,0,0,.06); }
+  .ps-mini { font-size: .8rem; color:#6c757d; }
+</style>
 
-    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+<div class="ps-card" id="payslip_card_<%= archive.id %>">
+  <div class="ps-header">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
       <div>
-        <div class="fw-bold" style="font-size: 1.05rem;">
-          فیش حقوقی — <%= user&.name.presence || "کاربر ##{archive.user_id}" %>
-        </div>
-        <div class="text-muted small">
-          ماه: <%= shamsi_month.name %> • تعداد روز: <%= month_days %>
+        <div class="ps-title">فیش حقوقی — <%= user&.name.presence || "کاربر ##{archive.user_id}" %></div>
+        <div class="ps-sub">
+          ماه: <%= shamsi_month.name %> • <%= month_days %> روز • آرشیو: #<%= archive.id %>
         </div>
       </div>
 
-      <div class="text-end">
-        <div class="text-muted small">پرداختی اول (قانونی)</div>
-        <div class="fw-bold" style="font-size: 1.15rem;">
-          <%= money.call(payment_1) %>
-        </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="ps-pill">پرداختی اول: <strong><%= money.call(payment_1) %></strong></span>
+        <span class="ps-pill">پرداختی دوم: <strong><%= money.call(payment_2) %></strong></span>
       </div>
     </div>
 
+    <div class="row g-2 mt-2">
+      <div class="col-12 col-md-6">
+        <div class="ps-kpi">
+          <div class="lbl">پرداختی اول (قانونی)</div>
+          <div class="val"><%= money.call(payment_1) %></div>
+          <div class="ps-mini">حقوق قانونی − بیمه (۷٪)</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="ps-kpi">
+          <div class="lbl">پرداختی دوم (عملکرد + تعدیلات)</div>
+          <div class="val"><%= money.call(payment_2) %></div>
+          <div class="ps-mini">حقوق مصوب ± اضافه‌کاری/کسری − ذخایر − وام</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ps-grid">
     <div class="row g-3">
 
-      <%# -------- بخش پایه‌ها -------- %>
-      <div class="col-12 col-lg-6">
-        <div class="p-3 bg-light border" style="border-radius: 14px;">
-          <div class="fw-semibold mb-2">حقوق پایه و مزایا</div>
+      <%# --- پایه‌ها و مزایا (مرتبط‌ها کنار هم) --- %>
+      <div class="col-12 col-lg-4">
+        <div class="ps-section">
+          <div class="hd">حقوق پایه و مزایا</div>
 
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">حقوق پایه</span>
-            <span class="fw-semibold"><%= money.call(base_salary) %></span>
+          <div class="ps-row"><span class="k">حقوق پایه</span><span class="v"><%= money.call(base_salary) %></span></div>
+          <div class="ps-row"><span class="k">پایه سنوات</span><span class="v"><%= money.call(paye_sanavat) %></span></div>
+
+          <div class="ps-row"><span class="k">حق مسکن</span><span class="v"><%= money.call(housing) %></span></div>
+          <div class="ps-row"><span class="k">خواربار</span><span class="v"><%= money.call(food) %></span></div>
+
+          <div class="ps-row"><span class="k">حق تأهل</span><span class="v"><%= money.call(marriage) %></span></div>
+          <div class="ps-row"><span class="k">حق اولاد</span><span class="v"><%= money.call(child) %></span></div>
+        </div>
+      </div>
+
+      <%# --- قانونی (تجمیعی‌ها نزدیک هم) --- %>
+      <div class="col-12 col-lg-4">
+        <div class="ps-section">
+          <div class="hd">محاسبات قانونی</div>
+
+          <div class="ps-row"><span class="k">حقوق قانونی</span><span class="v"><%= money.call(legal_salary) %></span></div>
+          <div class="ps-row"><span class="k">بیمه (۷٪)</span><span class="v"><%= money.call(insurance) %></span></div>
+
+          <div class="ps-row">
+            <span class="k"><strong>پرداختی اول</strong></span>
+            <span class="v"><strong><%= money.call(payment_1) %></strong></span>
           </div>
 
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">پایه سنوات</span>
-            <span class="fw-semibold"><%= money.call(paye_sanavat) %></span>
-          </div>
-
-          <hr class="my-2">
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">حق تأهل</span>
-            <span class="fw-semibold"><%= money.call(marriage) %></span>
-          </div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">حق اولاد</span>
-            <span class="fw-semibold"><%= money.call(child) %></span>
-          </div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">حق مسکن</span>
-            <span class="fw-semibold"><%= money.call(housing) %></span>
-          </div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">خواربار</span>
-            <span class="fw-semibold"><%= money.call(food) %></span>
+          <div class="ps-mini mt-2">
+            فرمول: (حقوق پایه + مسکن + خواربار + تأهل + اولاد + سنوات) − بیمه
           </div>
         </div>
       </div>
 
-      <%# -------- بخش قانونی -------- %>
-      <div class="col-12 col-lg-6">
-        <div class="p-3 border" style="border-radius: 14px;">
-          <div class="fw-semibold mb-2">محاسبات قانونی</div>
+      <%# --- کارکرد (ساعت‌ها کنار هم + نرخ) --- %>
+      <div class="col-12 col-lg-4">
+        <div class="ps-section">
+          <div class="hd">کارکرد و حقوق مصوب</div>
 
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">حقوق قانونی</span>
-            <span class="fw-semibold"><%= money.call(legal_salary) %></span>
-          </div>
+          <div class="ps-row"><span class="k">حقوق مصوب (<%= month_days %> روز)</span><span class="v"><%= money.call(total_salary_adj) %></span></div>
+          <div class="ps-row"><span class="k">مجموع ساعات کاری</span><span class="v"><%= total_work_h %> ساعت</span></div>
+          <div class="ps-row"><span class="k">نرخ ساعتی</span><span class="v"><%= number_with_delimiter(hourly_rate.round(2)) %></span></div>
 
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">بیمه (۷٪)</span>
-            <span class="fw-semibold"><%= money.call(insurance) %></span>
-          </div>
-
-          <hr class="my-2">
-
-          <div class="d-flex justify-content-between py-2" style="border-radius: 10px;">
-            <span class="fw-semibold">پرداختی اول</span>
-            <span class="fw-bold"><%= money.call(payment_1) %></span>
-          </div>
-
-          <div class="text-muted small">
-            فرمول: (حقوق قانونی − بیمه)
-          </div>
+          <div class="ps-row"><span class="k">ساعت اضافه‌کاری</span><span class="v"><%= overtime_h %> ساعت</span></div>
+          <div class="ps-row"><span class="k">ساعت کسری</span><span class="v"><%= deficit_h %> ساعت</span></div>
         </div>
       </div>
 
-      <%# -------- حقوق مصوب/کارکرد -------- %>
-      <div class="col-12">
-        <div class="p-3 bg-light border" style="border-radius: 14px;">
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-            <div class="fw-semibold">کارکرد و حقوق مصوب ماه</div>
-            <div class="small text-muted">
-              حقوق مصوب برای <%= month_days %> روز
-            </div>
-          </div>
+      <%# --- کسورات / تعدیلات (مرتبط‌ها کنار هم) --- %>
+      <div class="col-12 col-lg-7">
+        <div class="ps-section">
+          <div class="hd">کسورات و تعدیلات</div>
 
-          <div class="row g-2 small">
-            <div class="col-12 col-md-4">
-              <div class="d-flex justify-content-between py-1">
-                <span class="text-muted">حقوق مصوب</span>
-                <span class="fw-semibold"><%= money.call(total_salary_adj) %></span>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <div class="d-flex justify-content-between py-1">
-                <span class="text-muted">مجموع ساعات کاری</span>
-                <span class="fw-semibold"><%= total_work_h %> ساعت</span>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-              <div class="d-flex justify-content-between py-1">
-                <span class="text-muted">نرخ ساعتی</span>
-                <span class="fw-semibold"><%= number_with_delimiter(hourly_rate.round(2)) %></span>
-              </div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="ps-row"><span class="k">قسط وام</span><span class="v"><%= money.call(loan) %></span></div>
+              <div class="ps-row"><span class="k">ذخیره ۳٪</span><span class="v"><%= money.call(fund3) %></span></div>
+              <div class="ps-row"><span class="k">ذخیره ۶٪</span><span class="v"><%= money.call(fund6) %></span></div>
             </div>
 
             <div class="col-12 col-md-6">
-              <div class="d-flex justify-content-between py-1">
-                <span class="text-muted">ساعت اضافه‌کاری</span>
-                <span class="fw-semibold"><%= overtime_h %> ساعت</span>
-              </div>
+              <div class="ps-row"><span class="k">کسر کسری (ساعت × نرخ)</span><span class="v"><%= money.call(deficit_deduction.round) %></span></div>
+              <div class="ps-row"><span class="k">افزودن اضافه‌کاری (×۱.۴)</span><span class="v"><%= money.call(overtime_pay.round) %></span></div>
+              <div class="ps-mini mt-2">این بخش مستقیماً روی پرداختی دوم اثر می‌گذارد.</div>
             </div>
-
-            <div class="col-12 col-md-6">
-              <div class="d-flex justify-content-between py-1">
-                <span class="text-muted">ساعت کسری</span>
-                <span class="fw-semibold"><%= deficit_h %> ساعت</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <%# -------- کسورات/ذخایر -------- %>
-      <div class="col-12 col-lg-6">
-        <div class="p-3 border" style="border-radius: 14px;">
-          <div class="fw-semibold mb-2">کسورات</div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">قسط وام</span>
-            <span class="fw-semibold"><%= money.call(loan) %></span>
-          </div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">ذخیره ۳٪</span>
-            <span class="fw-semibold"><%= money.call(fund3) %></span>
-          </div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">ذخیره ۶٪</span>
-            <span class="fw-semibold"><%= money.call(fund6) %></span>
-          </div>
-
-          <hr class="my-2">
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">کسر بابت کسری (ساعت × نرخ)</span>
-            <span class="fw-semibold"><%= money.call(deficit_deduction.round) %></span>
-          </div>
-
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">افزودن بابت اضافه‌کاری (ساعت × نرخ × ۱.۴)</span>
-            <span class="fw-semibold"><%= money.call(overtime_pay.round) %></span>
           </div>
         </div>
       </div>
 
-      <%# -------- جمع‌بندی پرداختی دوم -------- %>
-      <div class="col-12 col-lg-6">
-        <div class="p-3 bg-light border" style="border-radius: 14px;">
-          <div class="fw-semibold mb-2">جمع‌بندی پرداختی دوم</div>
+      <%# --- خلاصه پرداختی‌ها (کنار هم، جمع‌بندی) --- %>
+      <div class="col-12 col-lg-5">
+        <div class="ps-section" style="background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0));">
+          <div class="hd">خلاصه پرداختی‌ها</div>
 
-          <div class="d-flex justify-content-between small py-1">
-            <span class="text-muted">مبنای پرداختی (حقوق مصوب)</span>
-            <span class="fw-semibold"><%= money.call(total_salary_adj) %></span>
+          <div class="ps-row">
+            <span class="k">پرداختی اول (قانونی)</span>
+            <span class="v"><%= money.call(payment_1) %></span>
           </div>
 
-          <div class="text-muted small mt-2">
-            فرمول: (حقوق مصوب − ذخیره۶٪ − ذخیره۳٪ − قسط وام − (کسری×نرخ) + (اضافه‌کاری×نرخ×۱.۴))
+          <div class="ps-row">
+            <span class="k">پرداختی دوم</span>
+            <span class="v"><%= money.call(payment_2) %></span>
           </div>
 
-          <hr class="my-3">
-
-          <div class="d-flex align-items-center justify-content-between">
-            <span class="fw-bold">پرداختی دوم</span>
-            <span class="fw-bold" style="font-size: 1.15rem;"><%= money.call(payment_2) %></span>
+          <div class="ps-mini mt-2">
+            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب و ساعات اضافه‌کاری/کسری محاسبه می‌شود.
           </div>
         </div>
       </div>
@@ -242,23 +192,15 @@
     </div>
   </div>
 
-  <div class="card-footer bg-white border-0 px-3 px-md-4 pb-3 pt-0">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2"
-         style="border-top: 1px dashed #ddd; padding-top: 12px;">
-      <div class="small text-muted">
-        فیش تولید شده از آرشیو: <span class="fw-semibold">#<%= archive.id %></span>
+  <div class="ps-footer">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="ps-mini">
+        تولید شده از آرشیو <strong>#<%= archive.id %></strong> • ماه <strong><%= shamsi_month.name %></strong>
       </div>
 
-      <div class="d-flex align-items-center gap-3">
-        <div class="text-end">
-          <div class="text-muted small">پرداختی اول</div>
-          <div class="fw-bold"><%= money.call(payment_1) %></div>
-        </div>
-
-        <div class="text-end">
-          <div class="text-muted small">پرداختی دوم</div>
-          <div class="fw-bold"><%= money.call(payment_2) %></div>
-        </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="ps-pill">پرداختی اول: <strong><%= money.call(payment_1) %></strong></span>
+        <span class="ps-pill">پرداختی دوم: <strong><%= money.call(payment_2) %></strong></span>
       </div>
     </div>
   </div>
