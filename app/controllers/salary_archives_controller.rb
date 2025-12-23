@@ -653,7 +653,8 @@ end
       (current_user.accounting? && current_user.is_manager) ||
       (current_user.id == 17) ||
       current_user.ceo? ||
-      current_user.cob?
+      current_user.cob? || 
+      current_user.id == 17
 
     head :forbidden unless allowed
   end
