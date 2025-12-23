@@ -7,7 +7,7 @@
         manager_review_salary_archives_path(month_id: @shamsi_month.id),
         class: "btn btn-outline-primary btn-sm" %>
 
-  <% if current_user.id == 1 %>
+  <% if current_user.id == 17 || current_user.id == 1 %>
     <%= button_to "HR Confirm (برای کل ماه)",
           hr_confirm_all_salary_archives_path(month_id: @shamsi_month.id),
           method: :patch,

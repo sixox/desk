@@ -25,7 +25,7 @@
     accounting_review_salary_archives_path(month_id: 1),
     class: "btn btn-outline-dark btn-sm" %>
     <% end %>
-    <% if current_user.hr? || current_user.admin? || current_user.board? || current_user.ceo? || current_user.procurement? || current_user.cob? || current_user.accounting? %>
+    <% if current_user.hr? || current_user.admin? || current_user.board? || current_user.ceo? || current_user.procurement? || current_user.cob? || current_user.accounting? || current_user.id == 17 %>
     <%= link_to "فیش حقوقی این ماه",
     payslips_salary_archives_path(month_id: 1),
     class: "btn btn-outline-dark btn-sm" %>
