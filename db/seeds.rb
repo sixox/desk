@@ -52,5 +52,66 @@ users.each do |user|
       
     )
   end
+
 end
+
+
+
+
+
+year = 1404
+period = 3
+
+  Satisfaction.find_each do |satisfaction|
+      User.find_each do |user|
+        # Skip if already exists
+        next if SatisfactionForm.exists?(user: user, satisfaction: satisfaction, year: year, period: period)
+
+        SatisfactionForm.create!(
+          user: user,
+          satisfaction: satisfaction,
+          year: year,
+          period: period
+        )
+      end
+    end
+
+
+
+    u = 3
+f = 1
+Assessment.employee.each do |m|
+  a = AssessmentForm.new
+  a.assessment = m
+  a.user_id = u
+  a.filler_id = f
+  a.year = 1404
+  a.period = 3
+  a.save(validate: false)
+end
+
+
+
+
+
+Assessment.superviser.each do |m|
+  a = AssessmentForm.new
+  a.assessment = m
+  a.user_id = u
+  a.filler_id = f
+  a.year = 1404
+  a.period = 3
+  a.save(validate: false)
+end
+
+Assessment.management.each do |m|
+  a = AssessmentForm.new
+  a.assessment = m
+  a.user_id = u
+  a.filler_id = f
+  a.year = 1404
+  a.period = 3
+  a.save(validate: false)
+end
+
 
