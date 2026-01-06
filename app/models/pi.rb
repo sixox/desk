@@ -18,6 +18,7 @@
 
   AGENT = [
     'CHINA RAILWAYS',
+    'CHINA CIVIL',
     'HUATE',
     'JIANGXI',
     'KAILJEE',
