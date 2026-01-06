@@ -98,6 +98,7 @@
 </small>
 
                 <% elsif (current_user.id == 9) || (evaluation.user.id == 9 && current_user.ceo?) || (evaluation.user.id != 9 && evaluation.user.id != 8 && current_user.id == 9) || ( evaluation.user.id == 8 && current_user.id = 17 ) %>
+                
                   <div class="pe-2 text-end">
                     <%= link_to "✏️ Review", review_quarterly_evaluation_path(evaluation), class: "btn btn-outline-secondary btn-sm" %>
                   </div>
