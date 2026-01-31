@@ -1,15 +1,11 @@
-// Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
 import "controllers"
-import * as bootstrap from "bootstrap"
-import Chart from "chart.js/auto"
-window.Chart = Chart
+import "bootstrap"
+window.bootstrap = globalThis.bootstrap || window.bootstrap
 
 
-window.bootstrap = bootstrap;
-
-
-
+import "chart.js"
+window.Chart = globalThis.Chart
 
 document.addEventListener("turbo:frame-load", function() {
   var rangeInput = document.getElementById("picked_up_range");
@@ -17,11 +13,11 @@ document.addEventListener("turbo:frame-load", function() {
 
   if (rangeInput && valueDisplay) {
     valueDisplay.textContent = rangeInput.value;
-
     rangeInput.addEventListener("input", function() {
       valueDisplay.textContent = rangeInput.value;
     });
   }
 });
+
 import "trix"
 import "@rails/actiontext"
