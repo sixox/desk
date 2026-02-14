@@ -51,6 +51,8 @@ Rails.application.routes.draw do
       get :time_line
       get :update_timeline
       get :turnover
+      patch :finish_sales
+      patch :finish_logistics
 
     end
     resources :ballance_projects

@@ -105,10 +105,16 @@
 		<div class="col-lg-10 mb-2">
 			<div class="d-flex justify-content-start">
 				detail: <span class="fw-bold"><%= payment_order.details %>  </span>
-				
-				
-				
+	
 			</div>
+			<% if payment_order.cost_type.present? %>
+			<div class="d-flex justify-content-start">
+				
+
+				 Cost Type:  <span class="fw-bold"> <%= payment_order.cost_type %> </span>
+					
+			</div>
+			<% end %>
 			<% if payment_order.hamed_confirm.present? %>
 			<div class="text-danger fw-bold"><small> Confirmed by Mr.Iranshahy</small></div>
 			<% end %>

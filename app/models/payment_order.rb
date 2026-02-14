@@ -26,6 +26,21 @@ class PaymentOrder < ApplicationRecord
   validates :currency, presence: true
   validates :amount, presence: true
 
+  COST_TYPES = [
+    "Packing",
+    "Transport",
+    "Customs & Port",
+    "Freight",
+    "Insurance",
+    "Inspection",
+    "Other Costs",
+    "Internal Commission",
+    "Foreign Commission"
+  ].freeze
+
+  validates :cost_type,
+            inclusion: { in: COST_TYPES, allow_blank: true }
+
 
 
   # validate :coo_confirmation_requires_bank, unless: :skip_coo_confirmation_requirement

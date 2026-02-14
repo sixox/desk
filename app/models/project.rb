@@ -21,7 +21,20 @@ class Project < ApplicationRecord
   validates :password, presence: true, on: :create
 
 
+  def finish_sales!
+    return if sales_done?
 
+    update!(sales_done: true)
+  end
+
+  def finish_logistics!
+    return if logistics_done?
+
+    transaction do
+      update!(logistics_done: true)
+      bookings.update_all(payment_done: true)
+    end
+  end
 
 
 

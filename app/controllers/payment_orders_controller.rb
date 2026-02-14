@@ -649,7 +649,8 @@ class PaymentOrdersController < ApplicationController
 			:reject_by,
 			:rejected_at,
 			:bank_id,
-			:mahramane
+			:mahramane,
+			:cost_type
 			)
 	end
 

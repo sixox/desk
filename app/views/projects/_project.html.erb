@@ -74,6 +74,25 @@
             </div>
           </div>
         </div>
+        <div style="font-size: 10px;">
+          <hr>
+          <div class="row">
+            <div class="col-6">
+              <% if project.sales_done %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Sales Process Over</span>
+                <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Sales Process Not Over</span>
+              <% end %>
+            </div>
+             <div class="col-6">
+              <% if project.logistics_done %>
+                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Logistics Over</span>
+                <% else %>
+                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Logistics Not Over</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
       <% end %>
     </div>
   </div>

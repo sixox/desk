@@ -159,11 +159,11 @@
 								|
 							</small>
 							<% if booking.release_request.present? %>
-								<% if booking.release_permission.present? %>
-									<small class="text-success"> release permitted at <%= booking.release_permission_date&.strftime('%Y-%m-%d') %> </small>
-								<% else %>
-									<small class="text-warning">Release permission pending</small>
-								<% end %>
+							<% if booking.release_permission.present? %>
+							<small class="text-success"> release permitted at <%= booking.release_permission_date&.strftime('%Y-%m-%d') %> </small>
+							<% else %>
+							<small class="text-warning">Release permission pending</small>
+							<% end %>
 
 							<% else %>
 							<%= link_to new_project_booking_release_request_path(project_id: @project.id, booking_id: booking.id), 
@@ -237,7 +237,46 @@
 				</div>
 
 			</div>
-		</div>
+			<div class="card card-custom mt-1">
+				<div class="card-body">
 
-	</div>
-	<% end %>
+					<div class="row d-flex justify-content-between mt-2">
+						<div class="col-auto">
+							<h6 class="card-subtitle text-secondary">
+								<small class="text-danger"> <i class="bi bi-activity"></i> </small><span class="text-secondary"> </span><small class="timeline-small">Finish Project</small><small class="text-danger"> <i class="bi bi-activity"></i> </small>
+							</h6>
+						</div>
+						<div class="col-auto">
+
+
+							<% if current_user.sales? && !@project.sales_done? %>
+							<%= button_to "Finish Sales",
+							finish_sales_project_path(@project),
+							method: :patch,
+							class: "btn btn-danger btn-sm" %>
+							<% end %>
+
+							<% if current_user.logistics? && !@project.logistics_done? %>
+							<%= button_to "Finish Logistics",
+							finish_logistics_project_path(@project),
+							method: :patch,
+							class: "btn btn-danger btn-sm",
+								data: { confirm: "This will mark all bookings as payment done. Continue?" } %>
+								<% end %>
+
+
+
+							
+
+							</div>
+
+						</div>
+
+
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+		<% end %>

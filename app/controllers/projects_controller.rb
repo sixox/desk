@@ -71,6 +71,28 @@ class ProjectsController < ApplicationController
   end
 
 
+  def finish_sales
+    @project = Project.find(params[:id])
+
+    authorize_sales! # optional if you already have authorization logic
+
+    @project.finish_sales!
+
+    redirect_to @project, notice: "Sales marked as finished."
+  end
+
+  def finish_logistics
+    @project = Project.find(params[:id])
+
+    authorize_logistics!
+
+    @project.finish_logistics!
+
+    redirect_to @project, notice: "Logistics marked as finished and bookings settled."
+  end
+
+
+
 
 	def destroy
 	end
@@ -287,6 +309,16 @@ def turnover
 
 
 	private
+
+
+
+  def authorize_sales!
+    head :forbidden unless current_user&.sales?
+  end
+
+  def authorize_logistics!
+    head :forbidden unless current_user&.logistics?
+  end
 
 	def set_timeline
 		@project = Project.includes(:pi, :cis, :bookings, :swifts).find(params[:id])
