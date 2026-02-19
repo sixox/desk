@@ -65,7 +65,7 @@ class SalaryArchiveBuilder
   # --- WDMS action_time (NO timezone, NO conversion) ---
   def action_time_local(tx)
     raw = tx.raw_payload.is_a?(String) ? JSON.parse(tx.raw_payload) : tx.raw_payload
-    Time.strptime(raw["upload_time"], "%Y-%m-%d %H:%M:%S")
+    Time.strptime(raw["action_time"], "%Y-%m-%d %H:%M:%S")
   end
 
   # manual times for date (entry+exit)

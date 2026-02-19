@@ -3,8 +3,8 @@ class WdmsTransaction < ApplicationRecord
   def action_time
     # "2025-12-20 21:37:11"
     t = raw_payload.is_a?(String) ? JSON.parse(raw_payload) : raw_payload
-    # str = t["action_time"] *********
-    str = t["upload_time"]
+    str = t["action_time"] 
+    # str = t["upload_time"]
 
     return if str.blank?
 

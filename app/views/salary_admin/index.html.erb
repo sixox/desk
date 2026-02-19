@@ -13,21 +13,21 @@
     <%= link_to "🗓 انتخاب روزهای تعطیل برای «#{@latest_month.name}»", edit_day_offs_shamsi_month_path(@latest_month), class: "list-group-item list-group-item-action" %>
     <% end %>
     
-    <%= link_to "Manager Review", manager_review_salary_archives_path(month_id: 1), class: "btn btn-outline-primary" %>
+    <%= link_to "Manager Review", manager_review_salary_archives_path(month_id: @latest_month.id), class: "btn btn-outline-primary" %>
     
 
     <%= link_to "all users payroll",
-    hr_review_salary_archives_path(month_id: 1),
+    hr_review_salary_archives_path(month_id: @latest_month.id),
     class: "btn btn-outline-secondary btn-sm" %>
     
     <% if current_user.accounting? || current_user.admin?%>
     <%= link_to "Accounting Review",
-    accounting_review_salary_archives_path(month_id: 1),
+    accounting_review_salary_archives_path(month_id: @latest_month.id),
     class: "btn btn-outline-dark btn-sm" %>
     <% end %>
     <% if current_user.hr? || current_user.admin? || current_user.board? || current_user.ceo? || current_user.procurement? || current_user.cob? || current_user.accounting? || current_user.id == 17 %>
     <%= link_to "فیش حقوقی این ماه",
-    payslips_salary_archives_path(month_id: 1),
+    payslips_salary_archives_path(month_id: @latest_month.id),
     class: "btn btn-outline-dark btn-sm" %>
     <% end %>
     <% else %>
