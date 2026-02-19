@@ -2,6 +2,10 @@
 class ShamsiMonth < ApplicationRecord
   has_many :day_offs, dependent: :destroy
   has_many :salary_archives, dependent: :destroy
+  has_many :shamsi_month_remote_days, dependent: :destroy
+
+
+
 
   after_create :schedule_archive_build
 
@@ -14,6 +18,7 @@ class ShamsiMonth < ApplicationRecord
     custom = day_offs.map(&:day)
     (fridays + custom).uniq
   end
+
 
   private
 

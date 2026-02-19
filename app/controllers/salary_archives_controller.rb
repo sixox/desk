@@ -67,7 +67,6 @@ class SalaryArchivesController < ApplicationController
     vacation_updates = params[:vacation_updates] || {}
     overtime_updates = params[:overtime_updates] || {}
 
-    # manual totals on archives
     archives_params  = params[:archives] || {}
 
     touched_archive_ids = Set.new
@@ -119,11 +118,10 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
-      # 2) Overtime confirm toggle (ONLY outside_system)
+      # ✅ 2) Overtime confirm toggle (NOW: ALL overtime entries, not only outside_system)
       overtime_updates.each do |ot_id, checked|
         ot = OvertimeEntry.find_by(id: ot_id)
         next unless ot && allowed_user_ids.include?(ot.user_id)
-        next unless ot.outside_system == true
 
         ot.update!(confirmed: (checked.to_s == "1"))
         touched_user_dates << "#{ot.user_id}|#{ot.date}"
@@ -142,7 +140,7 @@ class SalaryArchivesController < ApplicationController
       ot_map  = build_overtime_map(allowed_user_ids)
       off_dates = @shamsi_month.off_dates.to_set
 
-      # 3) Update day fields (IMPORTANT: overtime_hours is BASE hours now)
+      # 3) Update day fields (still supported; manager view now submits hidden values)
       days_params.each do |day_id, attrs|
         day = SalaryArchiveDay
           .joins(:salary_archive)
@@ -170,15 +168,15 @@ class SalaryArchivesController < ApplicationController
 
         deficit_minutes = hours_to_minutes(attrs[:deficit_hours])
 
-        # BASE overtime from input (does NOT include outside_system anymore)
+        # BASE overtime from input (does NOT include confirmed overtime_entries anymore)
         base_overtime_minutes = hours_to_minutes(attrs[:overtime_hours])
 
-        # outside_system confirmed overtime (idempotent)
-        outside_minutes = outside_system_overtime_minutes(ot_map, user_id, d)
+        # ✅ confirmed overtime entries (ALL kinds) (idempotent)
+        confirmed_ot_minutes = outside_system_overtime_minutes(ot_map, user_id, d)
 
         day.update!(
           deficit_minutes: deficit_minutes,
-          overtime_minutes: base_overtime_minutes + outside_minutes,
+          overtime_minutes: base_overtime_minutes + confirmed_ot_minutes,
           first_in_at: attrs[:first_in_at].to_s.strip.presence,
           last_out_at: attrs[:last_out_at].to_s.strip.presence
         )
@@ -244,7 +242,7 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
-      # 6) If only overtime_confirm changed (without editing row): adjust overtime minutes idempotently
+      # 6) If only overtime_confirm changed: adjust overtime minutes idempotently
       if touched_user_dates.any?
         touched_user_dates.each do |key|
           user_id_s, date_s = key.split("|", 2)
@@ -260,13 +258,13 @@ class SalaryArchivesController < ApplicationController
           daily_confirmed = vinfo.present? && vinfo[:kind] == :daily && vinfo[:confirmed] == true
           next if daily_confirmed
 
-          old_outside = outside_system_overtime_minutes(ot_map_before, user_id, d)
-          new_outside = outside_system_overtime_minutes(ot_map,        user_id, d)
+          old_confirmed = outside_system_overtime_minutes(ot_map_before, user_id, d)
+          new_confirmed = outside_system_overtime_minutes(ot_map,        user_id, d)
 
-          base = day.overtime_minutes.to_i - old_outside
+          base = day.overtime_minutes.to_i - old_confirmed
           base = 0 if base < 0
 
-          desired = base + new_outside
+          desired = base + new_confirmed
           if day.overtime_minutes.to_i != desired
             day.update!(overtime_minutes: desired)
             touched_archive_ids << archive.id
@@ -278,7 +276,7 @@ class SalaryArchivesController < ApplicationController
       # 7) recalc totals (system totals from days)
       SalaryArchive.where(id: touched_archive_ids.to_a).includes(:days).find_each(&:recalculate_totals!)
 
-      # ✅ NEW: set manager_confirmed_at / manager_confirmed_by_id on ANY save (only touched archives)
+      # set manager_confirmed_at / manager_confirmed_by_id
       if touched_archive_ids.any?
         SalaryArchive.where(id: touched_archive_ids.to_a).find_each do |a|
           a.update!(
@@ -288,12 +286,10 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
-      # 8) Final confirm? (only touched archives)
+      # 8) Final confirm?
       if params[:final_confirm].to_s == "1"
         SalaryArchive.where(id: touched_archive_ids.to_a).find_each do |a|
-          a.update!(
-            status: :manager_confirmed
-          )
+          a.update!(status: :manager_confirmed)
         end
       end
     end
@@ -301,12 +297,9 @@ class SalaryArchivesController < ApplicationController
     redirect_to manager_review_salary_archives_path(month_id: @shamsi_month.id), notice: "ذخیره شد."
   end
 
-
-
   def hr_review
     authorize_hr_review!
 
-    # همه‌ی آرشیوهای این ماه (هر کسی که salary_archive دارد)
     scope = SalaryArchive
       .includes(:days)
       .where(shamsi_month_id: @shamsi_month.id)
@@ -361,7 +354,6 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  # ✅ NEW (Confirm برای کل این ماه) — فقط user_id==1
   def hr_confirm_all
     authorize_hr_confirm!
 
@@ -372,8 +364,6 @@ class SalaryArchivesController < ApplicationController
     redirect_to hr_review_salary_archives_path(month_id: @shamsi_month.id),
                 notice: "تأیید HR ثبت شد."
   end
-
-
 
   def accounting_review
     authorize_accounting_review!
@@ -431,107 +421,89 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  # ✅ NEW (bulk confirm برای کل ماه) — فقط Accounting manager
-def accounting_confirm_all
-  authorize_accounting_review!
+  def accounting_confirm_all
+    authorize_accounting_review!
 
-  archives = SalaryArchive.where(shamsi_month_id: @shamsi_month.id)
-  user_ids = archives.pluck(:user_id).uniq
+    archives = SalaryArchive.where(shamsi_month_id: @shamsi_month.id)
+    user_ids = archives.pluck(:user_id).uniq
 
-  profiles_by_user_id =
-    SalaryProfile.where(user_id: user_ids).index_by(&:user_id)
+    profiles_by_user_id =
+      SalaryProfile.where(user_id: user_ids).index_by(&:user_id)
 
-  # تعداد روزهای ماه (بر اساس start_at/end_at)
-  month_days = (@shamsi_month.end_at.to_date - @shamsi_month.start_at.to_date).to_i + 1
+    month_days = (@shamsi_month.end_at.to_date - @shamsi_month.start_at.to_date).to_i + 1
 
-  now = Time.current
+    now = Time.current
 
-  # تابع تعدیل: مبلغ ماه 30 روزه -> به ازای 29/31 تعدیل می‌شود
-  adjust_by_month_days = lambda do |monthly_amount|
-    base = monthly_amount.to_i
-    return 0 if base <= 0
-
-    # daily = base / 30 ، سپس * month_days
-    ((base.to_f / 30.0) * month_days).round
-  end
-
-  SalaryArchive.transaction do
-    archives.find_each do |archive|
-      profile = profiles_by_user_id[archive.user_id]
-
-      # مقادیر پروفایل (nil => 0)
-      seniority_base_profile      = profile&.seniority_base.to_i
-      monthly_seniority_profile   = profile&.monthly_seniority_base.to_i
-
-      housing_allowance           = profile&.housing_allowance.to_i
-      food_allowance              = profile&.food_allowance.to_i
-      marriage_allowance          = profile&.marriage_allowance.to_i
-      child_allowance             = profile&.child_allowance.to_i
-      total_salary                = profile&.total_salary.to_i
-
-      loan_installment            = profile&.loan_installment.to_i
-      fund_three_percent          = profile&.fund_three_percent.to_i
-      fund_six_percent            = profile&.fund_six_percent.to_i
-
-      hourly_rate =
-        if profile&.hourly_rate.present?
-          profile.hourly_rate
-        else
-          BigDecimal("0")
-        end
-
-      # 1) seniority_base تعدیل شده
-      seniority_base_adj = adjust_by_month_days.call(seniority_base_profile)
-
-      # 2) پایه سنوات ماهانه تعدیل شده
-      monthly_seniority_adj = adjust_by_month_days.call(monthly_seniority_profile)
-
-      # 3) بیمه:
-      # (seniority_base + marriage_allowance + housing_allowance + food_allowance + payesanavat) * 0.07
-      insurance_base_sum = seniority_base_adj + marriage_allowance + housing_allowance + food_allowance + monthly_seniority_adj
-      insurance_value = (insurance_base_sum.to_f * 0.07).round
-
-      archive.assign_attributes(
-        accounting_confirmed: true,
-        accounting_confirmed_at: now,
-
-        # فیلدهای قبلی که از پروفایل می‌ریختیم
-        seniority_base:     seniority_base_adj,
-        monthly_seniority_base: monthly_seniority_adj,
-
-        housing_allowance:  housing_allowance,
-        food_allowance:     food_allowance,
-        marriage_allowance: marriage_allowance,
-        child_allowance:    child_allowance,
-        total_salary:       total_salary,
-        hourly_rate:        hourly_rate,
-
-        loan_installment:   loan_installment,
-        fund_three_percent: fund_three_percent,
-        fund_six_percent:   fund_six_percent,
-
-        # بیمه
-        insurance: insurance_value
-      )
-
-      archive.save!(validate: false)
+    adjust_by_month_days = lambda do |monthly_amount|
+      base = monthly_amount.to_i
+      return 0 if base <= 0
+      ((base.to_f / 30.0) * month_days).round
     end
+
+    SalaryArchive.transaction do
+      archives.find_each do |archive|
+        profile = profiles_by_user_id[archive.user_id]
+
+        seniority_base_profile      = profile&.seniority_base.to_i
+        monthly_seniority_profile   = profile&.monthly_seniority_base.to_i
+
+        housing_allowance           = profile&.housing_allowance.to_i
+        food_allowance              = profile&.food_allowance.to_i
+        marriage_allowance          = profile&.marriage_allowance.to_i
+        child_allowance             = profile&.child_allowance.to_i
+        total_salary                = profile&.total_salary.to_i
+
+        loan_installment            = profile&.loan_installment.to_i
+        fund_three_percent          = profile&.fund_three_percent.to_i
+        fund_six_percent            = profile&.fund_six_percent.to_i
+
+        hourly_rate =
+          if profile&.hourly_rate.present?
+            profile.hourly_rate
+          else
+            BigDecimal("0")
+          end
+
+        seniority_base_adj = adjust_by_month_days.call(seniority_base_profile)
+        monthly_seniority_adj = adjust_by_month_days.call(monthly_seniority_profile)
+
+        insurance_base_sum = seniority_base_adj + marriage_allowance + housing_allowance + food_allowance + monthly_seniority_adj
+        insurance_value = (insurance_base_sum.to_f * 0.07).round
+
+        archive.assign_attributes(
+          accounting_confirmed: true,
+          accounting_confirmed_at: now,
+
+          seniority_base:     seniority_base_adj,
+          monthly_seniority_base: monthly_seniority_adj,
+
+          housing_allowance:  housing_allowance,
+          food_allowance:     food_allowance,
+          marriage_allowance: marriage_allowance,
+          child_allowance:    child_allowance,
+          total_salary:       total_salary,
+          hourly_rate:        hourly_rate,
+
+          loan_installment:   loan_installment,
+          fund_three_percent: fund_three_percent,
+          fund_six_percent:   fund_six_percent,
+
+          insurance: insurance_value
+        )
+
+        archive.save!(validate: false)
+      end
+    end
+
+    redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
+                notice: "تأیید حسابداری ثبت شد و محاسبات (تعدیل ۲۹/۳۰/۳۱ + بیمه) داخل آرشیو ذخیره شد."
   end
 
-  redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
-              notice: "تأیید حسابداری ثبت شد و محاسبات (تعدیل ۲۹/۳۰/۳۱ + بیمه) داخل آرشیو ذخیره شد."
-end
-
-
-
-def payslips
-  authorize_hr_review! # اگر می‌خوای محدودتر/متفاوت باشه بگو
-
-  scope = SalaryArchive.includes(:user).where(shamsi_month_id: @shamsi_month.id)
-  @archives = scope.order("user_id ASC")
-end
-
-
+  def payslips
+    authorize_hr_review!
+    scope = SalaryArchive.includes(:user).where(shamsi_month_id: @shamsi_month.id)
+    @archives = scope.order("user_id ASC")
+  end
 
   private
 
@@ -566,55 +538,56 @@ end
     [base - hourly_minutes, 0].max
   end
 
-  def build_vacation_info_map(user_ids)
-    start_t = @shamsi_month.start_at.beginning_of_day
-    end_t   = @shamsi_month.end_at.end_of_day
+def build_vacation_info_map(user_ids)
+  start_t = @shamsi_month.start_at.beginning_of_day
+  end_t   = @shamsi_month.end_at.end_of_day
 
-    vacations = Vacation
-      .where(user_id: user_ids)
-      .where("start_at <= ? AND end_at >= ?", end_t, start_t)
-      .select(:id, :user_id, :hourly, :start_at, :end_at, :confirm, :details, :comment)
+  vacations = Vacation
+    .where(user_id: user_ids)
+    .where("start_at <= ? AND end_at >= ?", end_t, start_t)
+    .select(:id, :user_id, :hourly, :start_at, :end_at, :confirm, :details, :comment)
 
-    map = Hash.new { |h, k| h[k] = {} }
+  map = Hash.new { |h, k| h[k] = {} }
 
-    vacations.each do |v|
-      confirmed = (v.confirm == true)
+  vacations.each do |v|
+    # ✅ default: preconfirmed (nil => true), only explicit false is unconfirmed
+    confirmed = (v.confirm != false)
 
-      if v.hourly
-        d = v.start_at.to_date
-        last = v.end_at.to_date
-        while d <= last
-          day_start = [v.start_at, d.beginning_of_day].max
-          day_end   = [v.end_at,   d.end_of_day].min
-          minutes = ((day_end - day_start) / 60).round
-          if minutes > 0
-            map[v.user_id][d] = {
-              vacation_id: v.id,
-              kind: :hourly,
-              minutes: minutes,
-              confirmed: confirmed,
-              details: v.details.to_s,
-              comment: v.comment.to_s
-            }
-          end
-          d += 1.day
-        end
-      else
-        (v.start_at.to_date..v.end_at.to_date).each do |d2|
-          map[v.user_id][d2] = {
+    if v.hourly
+      d = v.start_at.to_date
+      last = v.end_at.to_date
+      while d <= last
+        day_start = [v.start_at, d.beginning_of_day].max
+        day_end   = [v.end_at,   d.end_of_day].min
+        minutes = ((day_end - day_start) / 60).round
+        if minutes > 0
+          map[v.user_id][d] = {
             vacation_id: v.id,
-            kind: :daily,
-            minutes: 0,
+            kind: :hourly,
+            minutes: minutes,
             confirmed: confirmed,
             details: v.details.to_s,
             comment: v.comment.to_s
           }
         end
+        d += 1.day
+      end
+    else
+      (v.start_at.to_date..v.end_at.to_date).each do |d2|
+        map[v.user_id][d2] = {
+          vacation_id: v.id,
+          kind: :daily,
+          minutes: 0,
+          confirmed: confirmed,
+          details: v.details.to_s,
+          comment: v.comment.to_s
+        }
       end
     end
-
-    map
   end
+
+  map
+end
 
   def build_overtime_map(user_ids)
     overtime_entries = OvertimeEntry.where(
@@ -624,9 +597,10 @@ end
     overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
   end
 
+  # ✅ CHANGED: now counts ALL confirmed overtime entries (inside + outside)
   def outside_system_overtime_minutes(ot_map, user_id, date)
     list = ((ot_map[user_id] || {})[date] || [])
-    list = list.select { |ot| ot.outside_system == true && ot.confirmed == true }
+    list = list.select { |ot| ot.confirmed == true }
     list.sum { |ot| (ot.hours.to_f * 60).round }
   end
 
@@ -653,8 +627,9 @@ end
       (current_user.accounting? && current_user.is_manager) ||
       (current_user.id == 17) ||
       current_user.ceo? ||
-      current_user.cob? || 
-      current_user.id == 17
+      current_user.cob? ||
+      current_user.id == 17 ||
+      current_user.admin?
 
     head :forbidden unless allowed
   end
@@ -664,8 +639,6 @@ end
   end
 
   def authorize_accounting_review!
-    head :forbidden unless (current_user.accounting? && current_user.is_manager)
+    head :forbidden unless ((current_user.accounting? && current_user.is_manager) || current_user.admin?)
   end
-
-
 end

@@ -1,17 +1,81 @@
 <!-- app/views/shamsi_months/edit_day_offs.html.erb -->
-<h2>انتخاب روزهای تعطیل برای <%= @shamsi_month.name %></h2>
 
-<%= form_with url: update_day_offs_shamsi_month_path(@shamsi_month), method: :patch do %>
-  <div class="row">
-    <% @date_range.each do |date| %>
-      <div class="col-2 mb-2">
-        <div class="form-check">
-          <%= check_box_tag "off_days[]", date, @selected_offs.include?(date), id: "off_day_#{date}", class: "form-check-input" %>
-          <%= label_tag "off_day_#{date}", l(date, format: :long), class: "form-check-label" %>
-        </div>
+<div class="container py-4">
+  <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-1"><%= @shamsi_month.name %></h3>
+      <div class="text-muted small">
+        <%= @shamsi_month.start_at.to_date %> → <%= @shamsi_month.end_at.to_date %>
       </div>
-    <% end %>
+    </div>
+
+    <div class="d-flex gap-2">
+      <%= link_to "Back", salary_admin_path, class: "btn btn-outline-secondary" %>
+      <%= submit_tag "Save", form: "month-days-form", class: "btn btn-success" %>
+    </div>
   </div>
 
-  <%= submit_tag "ذخیره", class: "btn btn-success mt-3" %>
-<% end %>
+  <div class="card shadow-sm">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <strong>Month Days</strong>
+      <span class="badge text-bg-secondary"><%= @date_range.size %> days</span>
+    </div>
+
+    <div class="card-body p-0">
+      <%= form_with url: update_day_offs_shamsi_month_path(@shamsi_month),
+                    method: :patch,
+                    id: "month-days-form" do %>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 120px;" class="text-center">Day #</th>
+                <th>Day name</th>
+                <th style="width: 120px;" class="text-center">Off</th>
+                <th style="width: 140px;" class="text-center">Remote</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% @date_range.each_with_index do |date, i| %>
+                <% day_no = i + 1 %>
+                <tr>
+                  <td class="text-center fw-semibold"><%= day_no.ordinalize %> <%= @shamsi_month.name %></td>
+
+                  <td class="text-muted">
+                    <%# If you already have a helper for weekday name, use it here.
+                        Otherwise this shows weekday in current locale. %>
+                    <%= date.strftime("%A") %>
+                    <span class="ms-2 small text-secondary">(<%= date %>)</span>
+                  </td>
+
+                  <td class="text-center">
+                    <div class="form-check form-switch d-flex justify-content-center m-0">
+                      <%= check_box_tag "off_days[]",
+                                        date,
+                                        @selected_offs.include?(date),
+                                        id: "off_#{day_no}",
+                                        class: "form-check-input" %>
+                    </div>
+                  </td>
+
+                  <td class="text-center">
+                    <div class="form-check form-switch d-flex justify-content-center m-0">
+                      <%= check_box_tag "remote_days[]",
+                                        date,
+                                        @selected_remote_days.include?(date),
+                                        id: "remote_#{day_no}",
+                                        class: "form-check-input" %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+      <% end %>
+    </div>
+  </div>
+</div>

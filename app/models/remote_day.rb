@@ -1,6 +1,7 @@
 class RemoteDay < ApplicationRecord
   belongs_to :user
 
+
   validates :date, presence: true
   before_validation :default_confirmed
 

@@ -20,7 +20,7 @@
     hr_review_salary_archives_path(month_id: 1),
     class: "btn btn-outline-secondary btn-sm" %>
     
-    <% if current_user.accounting?%>
+    <% if current_user.accounting? || current_user.admin?%>
     <%= link_to "Accounting Review",
     accounting_review_salary_archives_path(month_id: 1),
     class: "btn btn-outline-dark btn-sm" %>
@@ -40,3 +40,6 @@
 <% else %>
 you are not premitted to be here
 <% end %>
+
+<hr>
+<%= link_to "ویرایش پروفایل حقوق (گروهی)", bulk_edit_salary_profiles_path, class: "btn btn-outline-primary btn-sm" %>

@@ -1,0 +1,268 @@
+<!-- app/views/salary_profiles/bulk_edit.html.erb -->
+
+<div class="container-fluid">
+  <div class="col-12 col-xxl-9 mx-auto mt-4">
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div>
+        <h4 class="mb-1">ویرایش گروهی پروفایل حقوق</h4>
+        <div class="text-muted small">فقط کاربران دارای SalaryProfile نمایش داده می‌شوند.</div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <%= link_to "بازگشت", :back, class: "btn btn-outline-secondary btn-sm" rescue nil %>
+      </div>
+    </div>
+
+    <%= form_with url: bulk_update_salary_profiles_path, method: :patch do %>
+      <div class="accordion shadow-sm" id="salaryProfilesAcc">
+
+        <% @users.each do |user| %>
+          <% sp = user.salary_profile %>
+          <% next unless sp %>
+
+          <% pay_label =
+              {
+                "hourly" => "ساعتی (محاسبه کامل)",
+                "fixed" => "ثابت",
+                "fixed_with_overtime" => "ثابت + اضافه/کسری"
+              }[sp.pay_type.to_s] || "نامشخص"
+          %>
+
+          <% total_salary = sp.total_salary.to_i %>
+          <% hourly_rate  = sp.hourly_rate.to_f %>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="hdr_<%= user.id %>">
+              <button class="accordion-button collapsed py-2" type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#col_<%= user.id %>"
+                      aria-expanded="false"
+                      aria-controls="col_<%= user.id %>">
+                <div class="d-flex w-100 align-items-center justify-content-between gap-2">
+                  <div class="d-flex flex-column">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="fw-semibold"><%= user.name.presence || "کاربر ##{user.id}" %></span>
+                      <span class="badge text-bg-light border">ID: <%= user.id %></span>
+                      <span class="badge text-bg-primary"><%= pay_label %></span>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-1 small text-muted">
+                      <span class="badge text-bg-light border">
+                        حقوق کل: <span class="fw-semibold"><%= total_salary %></span>
+                      </span>
+                      <span class="badge text-bg-light border">
+                        نرخ ساعتی: <span class="fw-semibold"><%= sp.hourly_rate.present? ? sp.hourly_rate : "—" %></span>
+                      </span>
+                      <span class="badge text-bg-light border">
+                        پایه: <span class="fw-semibold"><%= sp.seniority_base.to_i %></span>
+                      </span>
+                      <span class="badge text-bg-light border">
+                        سنوات: <span class="fw-semibold"><%= sp.monthly_seniority_base.to_i %></span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <span class="badge text-bg-secondary">برای ویرایش باز کنید</span>
+                </div>
+              </button>
+            </h2>
+
+            <div id="col_<%= user.id %>" class="accordion-collapse collapse"
+                 aria-labelledby="hdr_<%= user.id %>"
+                 data-bs-parent="#salaryProfilesAcc">
+              <div class="accordion-body">
+
+                <!-- Summary indicators -->
+                <div class="row g-2 mb-3">
+                  <div class="col-12 col-md-4">
+                    <div class="border rounded p-2 bg-light">
+                      <div class="small text-muted">حقوق کل</div>
+                      <div class="fw-semibold"><%= sp.total_salary.to_i %></div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <div class="border rounded p-2 bg-light">
+                      <div class="small text-muted">نرخ ساعتی</div>
+                      <div class="fw-semibold"><%= sp.hourly_rate.present? ? sp.hourly_rate : "—" %></div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <div class="border rounded p-2 bg-light">
+                      <div class="small text-muted">جمع مزایا (مسکن + بن + تاهل + فرزند)</div>
+                      <div class="fw-semibold">
+                        <%= sp.housing_allowance.to_i + sp.food_allowance.to_i + sp.marriage_allowance.to_i + sp.child_allowance.to_i %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card shadow-sm">
+                  <div class="card-body p-3">
+
+                    <div class="row g-3">
+                      <!-- Pay type -->
+                      <div class="col-12 col-lg-4">
+                        <label class="form-label small mb-1">نوع پرداخت</label>
+                        <%= select_tag "salary_profiles[#{sp.id}][pay_type]",
+                              options_for_select(
+                                [
+                                  ["ساعتی (محاسبه کامل)", "hourly"],
+                                  ["ثابت", "fixed"],
+                                  ["ثابت + اضافه/کسری", "fixed_with_overtime"]
+                                ],
+                                sp.pay_type.to_s
+                              ),
+                              class: "form-select" %>
+                      </div>
+
+                      <!-- Total salary -->
+                      <div class="col-12 col-lg-4">
+                        <label class="form-label small mb-1">حقوق کل</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][total_salary]",
+                                sp.total_salary,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <!-- Hourly rate -->
+                      <div class="col-12 col-lg-4">
+                        <label class="form-label small mb-1">نرخ ساعتی</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][hourly_rate]",
+                                sp.hourly_rate,
+                                class: "form-control text-end",
+                                min: 0, step: "0.01" %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12"><hr class="my-1"></div>
+
+                      <!-- Bases -->
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">پایه (seniority_base)</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][seniority_base]",
+                                sp.seniority_base,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">پایه سنوات ماهانه</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][monthly_seniority_base]",
+                                sp.monthly_seniority_base,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <!-- Allowances -->
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">مسکن</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][housing_allowance]",
+                                sp.housing_allowance,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">بن</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][food_allowance]",
+                                sp.food_allowance,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">تاهل</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][marriage_allowance]",
+                                sp.marriage_allowance,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">فرزند</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][child_allowance]",
+                                sp.child_allowance,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12"><hr class="my-1"></div>
+
+                      <!-- Deductions -->
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">قسط وام</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][loan_installment]",
+                                sp.loan_installment,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">صندوق ۳٪</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][fund_three_percent]",
+                                sp.fund_three_percent,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label small mb-1">صندوق ۶٪</label>
+                        <div class="input-group">
+                          <%= number_field_tag "salary_profiles[#{sp.id}][fund_six_percent]",
+                                sp.fund_six_percent,
+                                class: "form-control text-end",
+                                min: 0, step: 1 %>
+                          <span class="input-group-text">ریال</span>
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+      </div>
+
+      <div class="mt-3 d-flex flex-wrap gap-2 justify-content-end">
+        <%= submit_tag "ذخیره تغییرات", class: "btn btn-primary btn-sm px-4" %>
+      </div>
+
+    <% end %>
+
+  </div>
+</div>

@@ -315,7 +315,7 @@ resources :shamsi_months, only: [:new, :create]
 get "/salary_admin", to: "salary_admin#index", as: :salary_admin
 resources :shamsi_months do
   member do
-    get :edit_day_offs
+    get  :edit_day_offs
     patch :update_day_offs
   end
 end
@@ -325,6 +325,14 @@ resources :overtime_entries, only: [:new, :create] do
     patch :toggle_confirm
   end
 end
+
+resources :salary_profiles, only: [] do
+  collection do
+    get  :bulk_edit
+    patch :bulk_update
+  end
+end
+
 
 
 

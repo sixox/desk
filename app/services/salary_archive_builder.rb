@@ -10,6 +10,12 @@ class SalaryArchiveBuilder
     @month = shamsi_month
     @off_dates = @month.off_dates
     @profile = @user.salary_profile
+
+    # preload manual entries for this month (used for overtime on off-days too)
+    @manual_entries = @user.manual_entries
+                          .where(occurred_at: @month.start_at.beginning_of_day..@month.end_at.end_of_day)
+                          .to_a
+    @manual_by_date = @manual_entries.group_by { |m| m.occurred_at.to_date }
   end
 
   def build!
@@ -59,15 +65,41 @@ class SalaryArchiveBuilder
   # --- WDMS action_time (NO timezone, NO conversion) ---
   def action_time_local(tx)
     raw = tx.raw_payload.is_a?(String) ? JSON.parse(tx.raw_payload) : tx.raw_payload
-    # Time.strptime(raw["action_time"], "%Y-%m-%d %H:%M:%S") ******
     Time.strptime(raw["upload_time"], "%Y-%m-%d %H:%M:%S")
+  end
 
+  # manual times for date (entry+exit)
+  def manual_times_for(date)
+    list = @manual_by_date[date] || []
+    list.map(&:occurred_at).compact
   end
 
   def compute_days_fixed
     rows = []
+
     each_month_day do |date|
-      next rows << base_row(date) if off_day?(date)
+      # ✅ OFF DAY: if user has entrance/exit (manual only for fixed), count as overtime
+      if off_day?(date)
+        times = manual_times_for(date).sort
+        if times.size >= 2
+          first_in = times.first
+          last_out = times.last
+          worked = ((last_out - first_in) / 60).round
+          worked = 0 if worked < 0
+
+          rows << base_row(date).merge(
+            first_in_at: first_in.strftime("%H:%M"),
+            last_out_at: last_out.strftime("%H:%M"),
+            overtime_minutes: worked,
+            deficit_minutes: 0,
+            work_minutes: 0,
+            note: "اضافه‌کاری روز تعطیل"
+          )
+        else
+          rows << base_row(date) # normal off day
+        end
+        next
+      end
 
       remote = @user.remote_days.find_by(date: date)
       req = required_minutes_for(date)
@@ -83,6 +115,7 @@ class SalaryArchiveBuilder
 
       rows << base_row(date).merge(work_minutes: req)
     end
+
     rows
   end
 
@@ -96,16 +129,43 @@ class SalaryArchiveBuilder
                            .select { |t| in_month?(action_time_local(t)) }
     end
 
-    manual = @user.manual_entries
-                  .where(occurred_at: @month.start_at..@month.end_at)
-                  .to_a
+    # Combine WDMS + manual
+    combined_by_date = Hash.new { |h, k| h[k] = [] }
 
-    by_date = (txs + manual).group_by do |r|
-      r.is_a?(WdmsTransaction) ? action_time_local(r).to_date : r.occurred_at.to_date
+    txs.each do |t|
+      d = action_time_local(t).to_date
+      combined_by_date[d] << action_time_local(t)
+    end
+
+    @manual_entries.each do |m|
+      d = m.occurred_at.to_date
+      combined_by_date[d] << m.occurred_at
     end
 
     each_month_day do |date|
-      next rows << base_row(date) if off_day?(date)
+      times = (combined_by_date[date] || []).compact.sort
+
+      # ✅ OFF DAY: if has entrance, count as overtime
+      if off_day?(date)
+        if times.size >= 2
+          first_in = times.first
+          last_out = times.last
+          worked = ((last_out - first_in) / 60).round
+          worked = 0 if worked < 0
+
+          rows << base_row(date).merge(
+            first_in_at: first_in.strftime("%H:%M"),
+            last_out_at: last_out.strftime("%H:%M"),
+            overtime_minutes: worked,
+            deficit_minutes: 0,
+            work_minutes: 0,
+            note: "اضافه‌کاری روز تعطیل"
+          )
+        else
+          rows << base_row(date) # normal off day
+        end
+        next
+      end
 
       remote = @user.remote_days.find_by(date: date)
       req = required_minutes_for(date)
@@ -118,10 +178,6 @@ class SalaryArchiveBuilder
         end
         next
       end
-
-      times = (by_date[date] || []).map do |r|
-        r.is_a?(WdmsTransaction) ? action_time_local(r) : r.occurred_at
-      end.compact.sort
 
       if times.size < 2
         rows << base_row(date).merge(deficit_minutes: req, note: "غیبت")
