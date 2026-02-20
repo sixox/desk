@@ -30,7 +30,7 @@ class SalaryProfilesController < ApplicationController
   private
 
   def authorize_accounting_manager!
-    head :forbidden unless (current_user.accounting? && current_user.is_manager)
+    head :forbidden unless ((current_user.accounting? && current_user.is_manager) || current_user.admin?)
   end
 
   # ✅ FIX: permit first, then to_h
