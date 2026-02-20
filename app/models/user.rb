@@ -64,6 +64,7 @@ class User < ApplicationRecord
   has_many :manual_entries
   has_many :overtime_entries, dependent: :destroy
   has_many :overtime_requests, class_name: "OvertimeEntry", dependent: :destroy
+  has_many :salary_archives
 
 
 

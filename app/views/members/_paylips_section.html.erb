@@ -1,0 +1,34 @@
+<%# app/views/members/_paylips_section.html.erb %>
+
+<% return unless @months.present? %>
+
+<div class="card shadow-sm mt-3">
+  <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+      <div class="fw-semibold">فیش‌های حقوقی</div>
+      <div class="text-muted small">فقط ماه‌هایی که تأیید حسابداری شده‌اند فیش دارند.</div>
+    </div>
+
+    <%= form_with url: member_path(@user), method: :get, local: true, class: "d-flex align-items-center gap-2" do %>
+      <label class="small text-muted mb-0">ماه:</label>
+      <%= select_tag :month_id,
+            options_for_select(@months.map { |m| [m.name, m.id] }, @selected_month&.id),
+            class: "form-select form-select-sm",
+            onchange: "this.form.submit()" %>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <% if @selected_archive.blank? %>
+      <div class="text-muted">برای این ماه آرشیو وجود ندارد.</div>
+
+    <% elsif @selected_accounting_confirmed %>
+      <%= render partial: "salary_archives/payslip_card",
+            locals: { archive: @selected_archive, user: @user, shamsi_month: @selected_month } %>
+    <% else %>
+      <div class="alert alert-secondary mb-0">
+        این ماه هنوز تأیید حسابداری نشده است؛ بنابراین فیش حقوقی موجود نیست.
+      </div>
+    <% end %>
+  </div>
+</div>
