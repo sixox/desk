@@ -41,12 +41,13 @@
 			<%# <%= render 'profile_details', user: @user%> 
 			
 			<%# --- Salary block in member profile --- %>
-
+			<% if current_user == @user || current_user.admin? %>
 			<% if @latest_month.present? && @latest_archive.present? %>
 			<div class="">
 				<%= render "last_month_hours_table" %>
 				<%= render "paylips_section" %>
 			</div>
+			<% end %>
 			<% end %>
 			<%= render 'kpi_lists', kpi_lists: @kpi_lists %>
 			<%= render 'profile_payment_orders', user: @user%>
