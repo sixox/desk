@@ -38,8 +38,8 @@
 		</div>
 		<div class="col-lg-8">
 
-			<%= render 'profile_details', user: @user%>
-			<%= render 'kpi_lists', kpi_lists: @kpi_lists %>
+			<%# <%= render 'profile_details', user: @user%> 
+			
 			<%# --- Salary block in member profile --- %>
 
 			<% if @latest_month.present? && @latest_archive.present? %>
@@ -48,6 +48,7 @@
 				<%= render "paylips_section" %>
 			</div>
 			<% end %>
+			<%= render 'kpi_lists', kpi_lists: @kpi_lists %>
 			<%= render 'profile_payment_orders', user: @user%>
 
 
