@@ -173,7 +173,7 @@
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
           <% end %>
-          <% if current_user.admin? || true %>
+          <% if current_user.admin? || current_user.is_manager %>
           <li>
             <%= link_to "payroll admin panel", salary_admin_path, class: 'dropdown-item' %>
           </li>
