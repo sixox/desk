@@ -44,8 +44,11 @@
             <% vac_daily = has_vac && vinfo[:kind] == :daily %>
             <% vac_confirmed = has_vac && (vinfo[:confirmed] != false) %>
 
+            <% global_remote = (@global_remote_dates || Set.new).include?(d) %>
             <% remote_day = (@remote_days_by_user_date[@profile_archive.user_id] || {})[d] %>
-            <% remote_confirmed = remote_day.present? && (remote_day.confirmed != false) %>
+
+            <% remote_present = global_remote || remote_day.present? %>
+            <% remote_confirmed = global_remote || (remote_day.present? && (remote_day.confirmed != false)) %>
 
             <% manual = (@manual_by_user_date[@profile_archive.user_id] || {})[d] || {} %>
             <% manual_entry = manual[:entry] %>
@@ -56,7 +59,9 @@
             <% row_classes = [] %>
             <% row_classes << "table-danger" if is_off %>
             <% row_classes << "table-warning" if vac_daily && vac_confirmed %>
-            <% row_classes << "table-info" if remote_day.present? && remote_confirmed %>
+            <% row_classes << "table-info" if remote_present && remote_confirmed %>
+
+            <% effective_deficit_minutes = global_remote ? 0 : day.deficit_minutes.to_i %>
 
             <tr class="<%= row_classes.join(" ") %>">
               <td class="text-nowrap">
@@ -93,7 +98,7 @@
 
               <td class="text-nowrap text-end">
                 <span class="badge text-bg-light border">
-                  <%= @fmt_hours.call(day.deficit_minutes) %>h
+                  <%= @fmt_hours.call(effective_deficit_minutes) %>h
                 </span>
               </td>
 
@@ -133,8 +138,10 @@
                     </span>
                   <% end %>
 
-                  <% if remote_day.present? %>
-                    <span class="badge text-bg-info">Remote</span>
+                  <% if remote_present %>
+                    <span class="badge text-bg-info">
+                      Remote<%= global_remote ? " (سراسری)" : "" %>
+                    </span>
                     <span class="badge <%= remote_confirmed ? "text-bg-success" : "text-bg-danger" %>">
                       <%= remote_confirmed ? "تایید" : "رد" %>
                     </span>
@@ -144,7 +151,7 @@
                     <span class="badge text-bg-secondary">ثبت دستی</span>
                   <% end %>
 
-                  <% if !has_vac && remote_day.blank? && ots.blank? && manual_entry.blank? && manual_exit.blank? %>
+                  <% if !has_vac && !remote_present && ots.blank? && manual_entry.blank? && manual_exit.blank? %>
                     <span class="text-muted small">—</span>
                   <% end %>
                 </div>

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class SalaryArchivesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_month
@@ -9,44 +7,45 @@ class SalaryArchivesController < ApplicationController
     @users = User.where(id: user_ids).by_name
 
     @archives = SalaryArchive
-      .includes(:days)
-      .where(shamsi_month_id: @shamsi_month.id, user_id: user_ids)
-      .index_by(&:user_id)
+    .includes(:days)
+    .where(shamsi_month_id: @shamsi_month.id, user_id: user_ids)
+    .index_by(&:user_id)
 
     remote_days = RemoteDay.where(
       user_id: user_ids,
       date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
-    )
+      )
     @remote_days_by_user_date =
-      remote_days.group_by(&:user_id).transform_values { |rows| rows.index_by(&:date) }
+    remote_days.group_by(&:user_id).transform_values { |rows| rows.index_by(&:date) }
 
     overtime_entries = OvertimeEntry.where(
       user_id: user_ids,
       date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
-    )
+      )
     @overtime_by_user_date =
-      overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
+    overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
 
     manual_entries = ManualEntry.where(
       user_id: user_ids,
       occurred_at: @shamsi_month.start_at.beginning_of_day..@shamsi_month.end_at.end_of_day
-    )
+      )
     @manual_by_user_date = build_manual_map(manual_entries)
 
     @off_dates = @shamsi_month.off_dates.to_set
+    @global_remote_dates = fetch_global_remote_dates(@shamsi_month) # ✅ NEW (from shamsi_month_remote_days)
     @weekday_fa = %w[یکشنبه دوشنبه سه‌شنبه چهارشنبه پنجشنبه جمعه شنبه]
 
     @pay_type_by_user_id =
-      SalaryProfile.where(user_id: user_ids)
-                   .pluck(:user_id, :pay_type)
-                   .to_h
-                   .transform_values do |v|
-        {
-          "fixed" => "پرداخت ثابت",
-          "hourly" => "محاسبه کامل",
-          "fixed_with_overtime" => "ثابت + اضافه/کسری"
-        }[v.to_s] || "نامشخص"
-      end
+    SalaryProfile.where(user_id: user_ids)
+    .pluck(:user_id, :pay_type)
+    .to_h
+    .transform_values do |v|
+      {
+        "fixed" => "پرداخت ثابت",
+        "hourly" => "محاسبه کامل",
+        "fixed_with_overtime" => "ثابت + اضافه/کسری"
+      }[v.to_s] || "نامشخص"
+    end
 
     @vacation_info_by_user_date = build_vacation_info_map(user_ids)
 
@@ -66,7 +65,6 @@ class SalaryArchivesController < ApplicationController
     remote_updates   = params[:remote_updates] || {}
     vacation_updates = params[:vacation_updates] || {}
     overtime_updates = params[:overtime_updates] || {}
-
     archives_params  = params[:archives] || {}
 
     touched_archive_ids = Set.new
@@ -80,7 +78,7 @@ class SalaryArchivesController < ApplicationController
       month_start = @shamsi_month.start_at.to_date
       month_end   = @shamsi_month.end_at.to_date
 
-      # 0) Update manual totals on archives (minutes) — independent from days
+      # 0) Update manual totals on archives (minutes)
       archives_params.each do |archive_id, attrs|
         a = allowed_archives.find_by(id: archive_id)
         next unless a
@@ -91,12 +89,12 @@ class SalaryArchivesController < ApplicationController
         a.update!(
           manual_overtime_minutes: manual_ot_min,
           manual_deficit_minutes: manual_def_min
-        )
+          )
 
         touched_archive_ids << a.id
       end
 
-      # 1) Vacation confirm toggle (touch related days)
+      # 1) Vacation confirm toggle
       vacation_updates.each do |vac_id, checked|
         v = Vacation.find_by(id: vac_id)
         next unless v && allowed_user_ids.include?(v.user_id)
@@ -118,7 +116,7 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
-      # ✅ 2) Overtime confirm toggle (NOW: ALL overtime entries, not only outside_system)
+      # 2) Overtime confirm toggle (ALL overtime entries)
       overtime_updates.each do |ot_id, checked|
         ot = OvertimeEntry.find_by(id: ot_id)
         next unless ot && allowed_user_ids.include?(ot.user_id)
@@ -139,13 +137,14 @@ class SalaryArchivesController < ApplicationController
       vac_map = build_vacation_info_map(allowed_user_ids)
       ot_map  = build_overtime_map(allowed_user_ids)
       off_dates = @shamsi_month.off_dates.to_set
+      global_remote_dates = fetch_global_remote_dates(@shamsi_month) # ✅ NEW
 
-      # 3) Update day fields (still supported; manager view now submits hidden values)
+      # 3) Update day fields (hidden values from manager view)
       days_params.each do |day_id, attrs|
         day = SalaryArchiveDay
-          .joins(:salary_archive)
-          .where(salary_archives: { id: allowed_archives.select(:id) })
-          .find(day_id)
+        .joins(:salary_archive)
+        .where(salary_archives: { id: allowed_archives.select(:id) })
+        .find(day_id)
 
         touched_archive_ids << day.salary_archive_id
         touched_day_ids << day.id
@@ -162,27 +161,28 @@ class SalaryArchivesController < ApplicationController
             last_out_at: nil,
             overtime_minutes: 0,
             deficit_minutes: 0
-          )
+            )
           next
         end
 
         deficit_minutes = hours_to_minutes(attrs[:deficit_hours])
-
-        # BASE overtime from input (does NOT include confirmed overtime_entries anymore)
         base_overtime_minutes = hours_to_minutes(attrs[:overtime_hours])
 
-        # ✅ confirmed overtime entries (ALL kinds) (idempotent)
+        # confirmed overtime entries (ALL kinds)
         confirmed_ot_minutes = outside_system_overtime_minutes(ot_map, user_id, d)
+
+        # ✅ NEW: global remote => no deficit
+        deficit_minutes = 0 if global_remote_dates.include?(d)
 
         day.update!(
           deficit_minutes: deficit_minutes,
           overtime_minutes: base_overtime_minutes + confirmed_ot_minutes,
           first_in_at: attrs[:first_in_at].to_s.strip.presence,
           last_out_at: attrs[:last_out_at].to_s.strip.presence
-        )
+          )
       end
 
-      # 4) Remote update + touch
+      # 4) Per-user RemoteDay update + touch
       remote_updates.each do |remote_id, checked|
         rd = RemoteDay.find_by(id: remote_id)
         next unless rd && allowed_user_ids.include?(rd.user_id)
@@ -204,9 +204,9 @@ class SalaryArchivesController < ApplicationController
         days = SalaryArchiveDay.includes(:salary_archive).where(id: touched_day_ids.to_a)
 
         remote_map = RemoteDay
-          .where(user_id: allowed_user_ids, date: days.map(&:work_date))
-          .group_by(&:user_id)
-          .transform_values { |rows| rows.index_by(&:date) }
+        .where(user_id: allowed_user_ids, date: days.map(&:work_date))
+        .group_by(&:user_id)
+        .transform_values { |rows| rows.index_by(&:date) }
 
         days.each do |day|
           user_id = day.salary_archive.user_id
@@ -220,7 +220,13 @@ class SalaryArchivesController < ApplicationController
               last_out_at: nil,
               overtime_minutes: 0,
               deficit_minutes: 0
-            )
+              )
+            next
+          end
+
+          # ✅ NEW: global remote => no deficit
+          if global_remote_dates.include?(d)
+            day.update!(deficit_minutes: 0)
             next
           end
 
@@ -273,16 +279,16 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
-      # 7) recalc totals (system totals from days)
+      # 7) recalc totals
       SalaryArchive.where(id: touched_archive_ids.to_a).includes(:days).find_each(&:recalculate_totals!)
 
-      # set manager_confirmed_at / manager_confirmed_by_id
+      # manager_confirmed_at / manager_confirmed_by_id
       if touched_archive_ids.any?
         SalaryArchive.where(id: touched_archive_ids.to_a).find_each do |a|
           a.update!(
             manager_confirmed_at: Time.current,
             manager_confirmed_by_id: current_user.id
-          )
+            )
         end
       end
 
@@ -301,48 +307,48 @@ class SalaryArchivesController < ApplicationController
     authorize_hr_review!
 
     scope = SalaryArchive
-      .includes(:days)
-      .where(shamsi_month_id: @shamsi_month.id)
+    .includes(:days)
+    .where(shamsi_month_id: @shamsi_month.id)
 
     user_ids = scope.pluck(:user_id).uniq
     @users = User.where(id: user_ids).by_name
-
     @archives = scope.index_by(&:user_id)
 
     remote_days = RemoteDay.where(
       user_id: user_ids,
       date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
-    )
+      )
     @remote_days_by_user_date =
-      remote_days.group_by(&:user_id).transform_values { |rows| rows.index_by(&:date) }
+    remote_days.group_by(&:user_id).transform_values { |rows| rows.index_by(&:date) }
 
     overtime_entries = OvertimeEntry.where(
       user_id: user_ids,
       date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
-    )
+      )
     @overtime_by_user_date =
-      overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
+    overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
 
     manual_entries = ManualEntry.where(
       user_id: user_ids,
       occurred_at: @shamsi_month.start_at.beginning_of_day..@shamsi_month.end_at.end_of_day
-    )
+      )
     @manual_by_user_date = build_manual_map(manual_entries)
 
     @off_dates = @shamsi_month.off_dates.to_set
+    @global_remote_dates = fetch_global_remote_dates(@shamsi_month) # ✅ NEW
     @weekday_fa = %w[یکشنبه دوشنبه سه‌شنبه چهارشنبه پنجشنبه جمعه شنبه]
 
     @pay_type_by_user_id =
-      SalaryProfile.where(user_id: user_ids)
-                   .pluck(:user_id, :pay_type)
-                   .to_h
-                   .transform_values do |v|
-        {
-          "fixed" => "پرداخت ثابت",
-          "hourly" => "محاسبه کامل",
-          "fixed_with_overtime" => "ثابت + اضافه/کسری"
-        }[v.to_s] || "نامشخص"
-      end
+    SalaryProfile.where(user_id: user_ids)
+    .pluck(:user_id, :pay_type)
+    .to_h
+    .transform_values do |v|
+      {
+        "fixed" => "پرداخت ثابت",
+        "hourly" => "محاسبه کامل",
+        "fixed_with_overtime" => "ثابت + اضافه/کسری"
+      }[v.to_s] || "نامشخص"
+    end
 
     @vacation_info_by_user_date = build_vacation_info_map(user_ids)
 
@@ -358,19 +364,19 @@ class SalaryArchivesController < ApplicationController
     authorize_hr_confirm!
 
     SalaryArchive
-      .where(shamsi_month_id: @shamsi_month.id)
-      .update_all(hr_confirmed: true, hr_confirmed_at: Time.current)
+    .where(shamsi_month_id: @shamsi_month.id)
+    .update_all(hr_confirmed: true, hr_confirmed_at: Time.current)
 
     redirect_to hr_review_salary_archives_path(month_id: @shamsi_month.id),
-                notice: "تأیید HR ثبت شد."
+    notice: "تأیید HR ثبت شد."
   end
 
   def accounting_review
     authorize_accounting_review!
 
     scope = SalaryArchive
-      .includes(:days)
-      .where(shamsi_month_id: @shamsi_month.id)
+    .includes(:days)
+    .where(shamsi_month_id: @shamsi_month.id)
 
     user_ids = scope.pluck(:user_id).uniq
     @users = User.where(id: user_ids).by_name
@@ -379,37 +385,38 @@ class SalaryArchivesController < ApplicationController
     remote_days = RemoteDay.where(
       user_id: user_ids,
       date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
-    )
+      )
     @remote_days_by_user_date =
-      remote_days.group_by(&:user_id).transform_values { |rows| rows.index_by(&:date) }
+    remote_days.group_by(&:user_id).transform_values { |rows| rows.index_by(&:date) }
 
     overtime_entries = OvertimeEntry.where(
       user_id: user_ids,
       date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
-    )
+      )
     @overtime_by_user_date =
-      overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
+    overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
 
     manual_entries = ManualEntry.where(
       user_id: user_ids,
       occurred_at: @shamsi_month.start_at.beginning_of_day..@shamsi_month.end_at.end_of_day
-    )
+      )
     @manual_by_user_date = build_manual_map(manual_entries)
 
     @off_dates = @shamsi_month.off_dates.to_set
+    @global_remote_dates = fetch_global_remote_dates(@shamsi_month) # ✅ NEW
     @weekday_fa = %w[یکشنبه دوشنبه سه‌شنبه چهارشنبه پنجشنبه جمعه شنبه]
 
     @pay_type_by_user_id =
-      SalaryProfile.where(user_id: user_ids)
-                   .pluck(:user_id, :pay_type)
-                   .to_h
-                   .transform_values do |v|
-        {
-          "fixed" => "پرداخت ثابت",
-          "hourly" => "محاسبه کامل",
-          "fixed_with_overtime" => "ثابت + اضافه/کسری"
-        }[v.to_s] || "نامشخص"
-      end
+    SalaryProfile.where(user_id: user_ids)
+    .pluck(:user_id, :pay_type)
+    .to_h
+    .transform_values do |v|
+      {
+        "fixed" => "پرداخت ثابت",
+        "hourly" => "محاسبه کامل",
+        "fixed_with_overtime" => "ثابت + اضافه/کسری"
+      }[v.to_s] || "نامشخص"
+    end
 
     @vacation_info_by_user_date = build_vacation_info_map(user_ids)
 
@@ -428,10 +435,9 @@ class SalaryArchivesController < ApplicationController
     user_ids = archives.pluck(:user_id).uniq
 
     profiles_by_user_id =
-      SalaryProfile.where(user_id: user_ids).index_by(&:user_id)
+    SalaryProfile.where(user_id: user_ids).index_by(&:user_id)
 
     month_days = (@shamsi_month.end_at.to_date - @shamsi_month.start_at.to_date).to_i + 1
-
     now = Time.current
 
     adjust_by_month_days = lambda do |monthly_amount|
@@ -458,11 +464,11 @@ class SalaryArchivesController < ApplicationController
         fund_six_percent            = profile&.fund_six_percent.to_i
 
         hourly_rate =
-          if profile&.hourly_rate.present?
-            profile.hourly_rate
-          else
-            BigDecimal("0")
-          end
+        if profile&.hourly_rate.present?
+          profile.hourly_rate
+        else
+          BigDecimal("0")
+        end
 
         seniority_base_adj = adjust_by_month_days.call(seniority_base_profile)
         monthly_seniority_adj = adjust_by_month_days.call(monthly_seniority_profile)
@@ -489,14 +495,14 @@ class SalaryArchivesController < ApplicationController
           fund_six_percent:   fund_six_percent,
 
           insurance: insurance_value
-        )
+          )
 
         archive.save!(validate: false)
       end
     end
 
     redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
-                notice: "تأیید حسابداری ثبت شد و محاسبات (تعدیل ۲۹/۳۰/۳۱ + بیمه) داخل آرشیو ذخیره شد."
+    notice: "تأیید حسابداری ثبت شد و محاسبات (تعدیل ۲۹/۳۰/۳۱ + بیمه) داخل آرشیو ذخیره شد."
   end
 
   def payslips
@@ -509,6 +515,18 @@ class SalaryArchivesController < ApplicationController
 
   def set_month
     @shamsi_month = ShamsiMonth.find(params[:month_id])
+  end
+
+  # ✅ Global remote dates come from shamsi_month_remote_days table
+  def fetch_global_remote_dates(shamsi_month)
+    start_d = shamsi_month.start_at.to_date
+    end_d   = shamsi_month.end_at.to_date
+
+    ShamsiMonthRemoteDay
+    .where(shamsi_month_id: shamsi_month.id, day: start_d..end_d)
+    .pluck(:day)
+    .map(&:to_date)
+    .to_set
   end
 
   def hours_to_minutes(val)
@@ -532,24 +550,24 @@ class SalaryArchivesController < ApplicationController
 
     vinfo = (vac_map[user_id] || {})[date]
     hourly_confirmed =
-      vinfo.present? && vinfo[:kind] == :hourly && vinfo[:confirmed] == true
+    vinfo.present? && vinfo[:kind] == :hourly && vinfo[:confirmed] == true
     hourly_minutes = hourly_confirmed ? vinfo[:minutes].to_i : 0
 
     [base - hourly_minutes, 0].max
   end
 
-def build_vacation_info_map(user_ids)
-  start_t = @shamsi_month.start_at.beginning_of_day
-  end_t   = @shamsi_month.end_at.end_of_day
+  def build_vacation_info_map(user_ids)
+    start_t = @shamsi_month.start_at.beginning_of_day
+    end_t   = @shamsi_month.end_at.end_of_day
 
-  vacations = Vacation
+    vacations = Vacation
     .where(user_id: user_ids)
     .where("start_at <= ? AND end_at >= ?", end_t, start_t)
     .select(:id, :user_id, :hourly, :start_at, :end_at, :confirm, :details, :comment)
 
-  map = Hash.new { |h, k| h[k] = {} }
+    map = Hash.new { |h, k| h[k] = {} }
 
-  vacations.each do |v|
+    vacations.each do |v|
     # ✅ default: preconfirmed (nil => true), only explicit false is unconfirmed
     confirmed = (v.confirm != false)
 
@@ -589,13 +607,13 @@ def build_vacation_info_map(user_ids)
   map
 end
 
-  def build_overtime_map(user_ids)
-    overtime_entries = OvertimeEntry.where(
-      user_id: user_ids,
-      date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
+def build_overtime_map(user_ids)
+  overtime_entries = OvertimeEntry.where(
+    user_id: user_ids,
+    date: @shamsi_month.start_at.to_date..@shamsi_month.end_at.to_date
     )
-    overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
-  end
+  overtime_entries.group_by(&:user_id).transform_values { |rows| rows.group_by(&:date) }
+end
 
   # ✅ CHANGED: now counts ALL confirmed overtime entries (inside + outside)
   def outside_system_overtime_minutes(ot_map, user_id, date)
@@ -622,14 +640,14 @@ end
 
   def authorize_hr_review!
     allowed =
-      (current_user.procurement? && current_user.is_manager) ||
-      (current_user.hr? && current_user.is_manager) ||
-      (current_user.accounting? && current_user.is_manager) ||
-      (current_user.id == 17) ||
-      current_user.ceo? ||
-      current_user.cob? ||
-      current_user.id == 17 ||
-      current_user.admin?
+    (current_user.procurement? && current_user.is_manager) ||
+    (current_user.hr? && current_user.is_manager) ||
+    (current_user.accounting? && current_user.is_manager) ||
+    (current_user.id == 17) ||
+    current_user.ceo? ||
+    current_user.cob? ||
+    current_user.id == 17 ||
+    current_user.admin?
 
     head :forbidden unless allowed
   end

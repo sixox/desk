@@ -77,7 +77,6 @@
 
                           <% days_sorted.each_with_index do |day, idx| %>
                             <% d = day.work_date %>
-
                             <% day_no = (idx + 1).ordinalize %>
 
                             <% is_off = @off_dates.include?(d) %>
@@ -88,8 +87,11 @@
                             <% vac_daily = has_vac && vinfo[:kind] == :daily %>
                             <% vac_confirmed = has_vac && (vinfo[:confirmed] != false) %>
 
+                            <% global_remote = (@global_remote_dates || Set.new).include?(d) %>
                             <% remote_day = (@remote_days_by_user_date[user.id] || {})[d] %>
-                            <% remote_confirmed = remote_day.present? && (remote_day.confirmed != false) %>
+
+                            <% remote_present = global_remote || remote_day.present? %>
+                            <% remote_confirmed = global_remote || (remote_day.present? && (remote_day.confirmed != false)) %>
 
                             <% manual = (@manual_by_user_date[user.id] || {})[d] || {} %>
                             <% manual_entry = manual[:entry] %>
@@ -106,21 +108,17 @@
                             <% row_classes = [] %>
                             <% row_classes << "table-danger" if is_off %>
                             <% row_classes << "table-warning" if vac_daily && vac_confirmed %>
-                            <% row_classes << "table-info" if remote_day.present? && remote_confirmed %>
+                            <% row_classes << "table-info" if remote_present && remote_confirmed %>
 
                             <tr class="<%= row_classes.join(" ") %>">
-                              <!-- Day number (ordinal) -->
                               <td class="text-nowrap">
                                 <div class="d-flex align-items-center justify-content-between">
                                   <div class="fw-semibold"><%= day_no %></div>
-                                  <% if is_off %>
-                                    <span class="badge text-bg-danger">تعطیل</span>
-                                  <% end %>
+                                  <% if is_off %><span class="badge text-bg-danger">تعطیل</span><% end %>
                                 </div>
                                 <div class="small text-muted"><%= weekday %></div>
                               </td>
 
-                              <!-- IN -->
                               <td class="text-nowrap">
                                 <% val_in = day.first_in_at.to_s.presence || "--:--" %>
                                 <div class="form-control form-control-sm bg-light border-0"><%= val_in %></div>
@@ -136,7 +134,6 @@
                                 <% end %>
                               </td>
 
-                              <!-- OUT -->
                               <td class="text-nowrap">
                                 <% val_out = day.last_out_at.to_s.presence || "--:--" %>
                                 <div class="form-control form-control-sm bg-light border-0"><%= val_out %></div>
@@ -152,7 +149,6 @@
                                 <% end %>
                               </td>
 
-                              <!-- DEFICIT -->
                               <td class="text-end text-nowrap">
                                 <div class="form-control form-control-sm bg-light border-0 text-end">
                                   <%= @fmt_hours.call(day.deficit_minutes) %>
@@ -160,7 +156,6 @@
                                 <%= hidden_field_tag "days[#{day.id}][deficit_hours]", @fmt_hours.call(day.deficit_minutes) %>
                               </td>
 
-                              <!-- OVERTIME -->
                               <td class="text-end text-nowrap">
                                 <div class="form-control form-control-sm bg-light border-0 text-end">
                                   <%= @fmt_hours.call(base_overtime_minutes) %>
@@ -186,7 +181,6 @@
                                 <% end %>
                               </td>
 
-                              <!-- VACATION -->
                               <td class="text-nowrap">
                                 <% if has_vac %>
                                   <% vac_title =
@@ -216,12 +210,13 @@
                                 <% end %>
                               </td>
 
-                              <!-- REMOTE -->
                               <td class="text-nowrap">
-                                <% if remote_day.present? %>
+                                <% if remote_present %>
                                   <div class="d-flex flex-wrap align-items-center gap-1">
-                                    <span class="badge text-bg-info">Remote</span>
-                                    <% if remote_day.confirmed != false %>
+                                    <span class="badge text-bg-info">
+                                      Remote<%= global_remote ? " (سراسری)" : "" %>
+                                    </span>
+                                    <% if remote_confirmed %>
                                       <span class="badge text-bg-success">تایید</span>
                                     <% else %>
                                       <span class="badge text-bg-danger">رد</span>
@@ -232,7 +227,6 @@
                                 <% end %>
                               </td>
 
-                              <!-- CONFIRMS -->
                               <td class="text-nowrap">
                                 <div class="d-flex flex-column gap-2">
 
@@ -255,6 +249,10 @@
                                             class: "form-check-input",
                                             id: "remote_#{remote_day.id}" %>
                                       <%= label_tag "remote_#{remote_day.id}", "تأیید دورکاری", class: "form-check-label small" %>
+                                    </div>
+                                  <% elsif global_remote %>
+                                    <div class="small text-muted">
+                                      دورکاری سراسری است و تأیید جداگانه ندارد.
                                     </div>
                                   <% end %>
 
@@ -281,7 +279,7 @@
                                     </div>
                                   <% end %>
 
-                                  <% if !has_vac && remote_day.blank? && ots.blank? && manual_entry.blank? && manual_exit.blank? %>
+                                  <% if !has_vac && !remote_present && ots.blank? && manual_entry.blank? && manual_exit.blank? %>
                                     <span class="text-muted small">—</span>
                                   <% end %>
                                 </div>
@@ -295,7 +293,6 @@
                   </div>
                 </div>
 
-                <!-- Manual totals inputs on SalaryArchive (stored as minutes) -->
                 <div class="card mt-3 shadow-sm">
                   <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
