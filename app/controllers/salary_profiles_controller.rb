@@ -1,3 +1,4 @@
+# app/controllers/salary_profiles_controller.rb
 # frozen_string_literal: true
 
 class SalaryProfilesController < ApplicationController
@@ -8,7 +9,7 @@ class SalaryProfilesController < ApplicationController
     @users = User
       .joins(:salary_profile)
       .includes(:salary_profile)
-      .by_name
+      .order("users.id ASC")
   end
 
   def bulk_update
@@ -29,54 +30,40 @@ class SalaryProfilesController < ApplicationController
   private
 
   def authorize_accounting_manager!
-    head :forbidden unless ((current_user.accounting? && current_user.is_manager) || current_user.admin?)
+    head :forbidden unless (current_user.accounting? && current_user.is_manager)
   end
 
+  # ✅ FIX: permit first, then to_h
   def sanitize_profile_attrs(attrs)
-    attrs = attrs.to_h
+    attrs = attrs.is_a?(ActionController::Parameters) ? attrs.permit(
+      :pay_type,
+      :total_salary,
+      :hourly_rate,
+      :seniority_base,
+      :monthly_seniority_base,
+      :housing_allowance,
+      :food_allowance,
+      :marriage_allowance,
+      :child_allowance,
+      :loan_installment,
+      :fund_three_percent,
+      :fund_six_percent
+    ).to_h : attrs.to_h
 
-    # Pay type
+    # normalize pay_type
     attrs["pay_type"] = attrs["pay_type"].to_s.presence
 
-    # Integers (allow blank => nil)
+    # cast numeric values (nil/"" => 0)
     int_fields = %w[
-      seniority_base
-      monthly_seniority_base
-      housing_allowance
-      food_allowance
-      marriage_allowance
-      child_allowance
-      total_salary
-      loan_installment
-      fund_three_percent
-      fund_six_percent
+      total_salary seniority_base monthly_seniority_base housing_allowance food_allowance
+      marriage_allowance child_allowance loan_installment fund_three_percent fund_six_percent
     ]
+    int_fields.each { |k| attrs[k] = attrs[k].to_i }
 
-    int_fields.each do |k|
-      v = attrs[k]
-      attrs[k] = v.present? ? v.to_i : nil
-    end
+    # hourly_rate can be decimal
+    attrs["hourly_rate"] = attrs["hourly_rate"].to_s.strip
+    attrs["hourly_rate"] = attrs["hourly_rate"].present? ? BigDecimal(attrs["hourly_rate"]) : BigDecimal("0")
 
-    # Decimal
-    if attrs["hourly_rate"].present?
-      attrs["hourly_rate"] = BigDecimal(attrs["hourly_rate"].to_s)
-    else
-      attrs["hourly_rate"] = nil
-    end
-
-    attrs.slice(
-      "pay_type",
-      "seniority_base",
-      "monthly_seniority_base",
-      "housing_allowance",
-      "food_allowance",
-      "marriage_allowance",
-      "child_allowance",
-      "total_salary",
-      "hourly_rate",
-      "loan_installment",
-      "fund_three_percent",
-      "fund_six_percent"
-    )
+    attrs
   end
 end
