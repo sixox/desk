@@ -1,5 +1,4 @@
 <!-- app/views/salary_archives/manager_review.html.erb -->
-
 <div class="container-fluid">
   <div class="col-12 col-xxl-10 mx-auto mt-4">
 
@@ -102,13 +101,76 @@
                             <% confirmed_ot_minutes =
                                   ots.select { |x| x.confirmed != false }.sum { |x| (x.hours.to_f * 60).round } %>
 
-                            <% base_overtime_minutes = day.overtime_minutes.to_i - confirmed_ot_minutes %>
-                            <% base_overtime_minutes = 0 if base_overtime_minutes < 0 %>
-
                             <% row_classes = [] %>
                             <% row_classes << "table-danger" if is_off %>
                             <% row_classes << "table-warning" if vac_daily && vac_confirmed %>
                             <% row_classes << "table-info" if remote_present && remote_confirmed %>
+
+                            <% # ✅ Effective IN/OUT: manual overrides system %>
+                            <% eff_in  = manual_entry.present? ? manual_entry.occurred_at.strftime("%H:%M") : day.first_in_at.to_s %>
+                            <% eff_out = manual_exit.present?  ? manual_exit.occurred_at.strftime("%H:%M")  : day.last_out_at.to_s %>
+
+                            <% # ✅ compute base deficit/overtime for UI when we have both times %>
+                            <% req_minutes =
+                                  if @off_dates.include?(d)
+                                    0
+                                  elsif d.thursday?
+                                    240
+                                  else
+                                    480
+                                  end %>
+
+                            <% # hourly vacation minutes reduce deficit only %>
+                            <% hourly_vac_minutes =
+                                  if has_vac && vinfo[:kind] == :hourly && vinfo[:confirmed] != false
+                                    vinfo[:minutes].to_i
+                                  else
+                                    0
+                                  end %>
+
+                            <% base_work_minutes =
+                                  begin
+                                    if eff_in.present? && eff_out.present? && eff_in.match(/\A([01]?\d|2[0-3]):([0-5]?\d)\z/) && eff_out.match(/\A([01]?\d|2[0-3]):([0-5]?\d)\z/)
+                                      ih, im = eff_in.split(":").map(&:to_i)
+                                      oh, om = eff_out.split(":").map(&:to_i)
+                                      in_m = ih*60 + im
+                                      out_m = oh*60 + om
+                                      out_m += 1440 if out_m < in_m
+                                      (out_m - in_m)
+                                    else
+                                      day.work_minutes.to_i
+                                    end
+                                  rescue
+                                    day.work_minutes.to_i
+                                  end %>
+
+                            <% base_work_minutes_final = base_work_minutes.to_i + day.manual_adjust_minutes.to_i %>
+
+                            <% computed_deficit_minutes = [req_minutes - base_work_minutes_final, 0].max %>
+                            <% computed_deficit_minutes = [computed_deficit_minutes - hourly_vac_minutes, 0].max %>
+                            <% computed_base_overtime_minutes = [base_work_minutes_final - req_minutes, 0].max %>
+
+                            <% # remote confirmed => deficit 0, base overtime 0 %>
+                            <% if global_remote || (remote_day.present? && remote_day.confirmed != false) %>
+                              <% computed_deficit_minutes = 0 %>
+                              <% computed_base_overtime_minutes = 0 %>
+                            <% end %>
+
+                            <% # daily confirmed vacation => both 0 %>
+                            <% if vac_daily && vac_confirmed %>
+                              <% computed_deficit_minutes = 0 %>
+                              <% computed_base_overtime_minutes = 0 %>
+                            <% end %>
+
+                            <% # unconfirmed remote => deficit full req %>
+                            <% if remote_day.present? && remote_day.confirmed == false %>
+                              <% computed_deficit_minutes = req_minutes %>
+                              <% computed_base_overtime_minutes = 0 %>
+                            <% end %>
+
+                            <% # what we store in day.overtime_minutes is base + confirmed entries.
+                               # but UI column wants "base overtime" like before.
+                             %>
 
                             <tr class="<%= row_classes.join(" ") %>">
                               <td class="text-nowrap">
@@ -120,9 +182,11 @@
                               </td>
 
                               <td class="text-nowrap">
-                                <% val_in = day.first_in_at.to_s.presence || "--:--" %>
+                                <% val_in = eff_in.presence || "--:--" %>
                                 <div class="form-control form-control-sm bg-light border-0"><%= val_in %></div>
-                                <%= hidden_field_tag "days[#{day.id}][first_in_at]", (day.first_in_at.to_s.presence || "") %>
+
+                                <%# ✅ hidden must submit effective time (manual overrides system) %>
+                                <%= hidden_field_tag "days[#{day.id}][first_in_at]", (eff_in.to_s.presence || "") %>
 
                                 <% if manual_entry.present? %>
                                   <div class="mt-1">
@@ -135,9 +199,11 @@
                               </td>
 
                               <td class="text-nowrap">
-                                <% val_out = day.last_out_at.to_s.presence || "--:--" %>
+                                <% val_out = eff_out.presence || "--:--" %>
                                 <div class="form-control form-control-sm bg-light border-0"><%= val_out %></div>
-                                <%= hidden_field_tag "days[#{day.id}][last_out_at]", (day.last_out_at.to_s.presence || "") %>
+
+                                <%# ✅ hidden must submit effective time (manual overrides system) %>
+                                <%= hidden_field_tag "days[#{day.id}][last_out_at]", (eff_out.to_s.presence || "") %>
 
                                 <% if manual_exit.present? %>
                                   <div class="mt-1">
@@ -151,16 +217,18 @@
 
                               <td class="text-end text-nowrap">
                                 <div class="form-control form-control-sm bg-light border-0 text-end">
-                                  <%= @fmt_hours.call(day.deficit_minutes) %>
+                                  <%= @fmt_hours.call(computed_deficit_minutes) %>
                                 </div>
-                                <%= hidden_field_tag "days[#{day.id}][deficit_hours]", @fmt_hours.call(day.deficit_minutes) %>
+                                <%# ✅ hidden uses computed deficit so controller fallback also matches %>
+                                <%= hidden_field_tag "days[#{day.id}][deficit_hours]", @fmt_hours.call(computed_deficit_minutes) %>
                               </td>
 
                               <td class="text-end text-nowrap">
                                 <div class="form-control form-control-sm bg-light border-0 text-end">
-                                  <%= @fmt_hours.call(base_overtime_minutes) %>
+                                  <%= @fmt_hours.call(computed_base_overtime_minutes) %>
                                 </div>
-                                <%= hidden_field_tag "days[#{day.id}][overtime_hours]", @fmt_hours.call(base_overtime_minutes) %>
+                                <%# ✅ hidden uses computed base overtime %>
+                                <%= hidden_field_tag "days[#{day.id}][overtime_hours]", @fmt_hours.call(computed_base_overtime_minutes) %>
 
                                 <% if ots.any? %>
                                   <div class="mt-2 d-flex flex-column gap-1">
