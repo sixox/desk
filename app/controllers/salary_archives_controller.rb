@@ -528,7 +528,7 @@ class SalaryArchivesController < ApplicationController
         seniority_base_adj = adjust_by_month_days.call(seniority_base_profile)
         monthly_seniority_adj = adjust_by_month_days.call(monthly_seniority_profile)
 
-        insurance_base_sum = seniority_base_adj + marriage_allowance + housing_allowance + food_allowance + monthly_seniority_adj
+        insurance_base_sum = seniority_base_adj + marriage_allowance + housing_allowance + monthly_seniority_adj
         insurance_value = (insurance_base_sum.to_f * 0.07).round
 
         archive.assign_attributes(
