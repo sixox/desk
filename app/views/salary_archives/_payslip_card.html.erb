@@ -14,7 +14,7 @@
   housing       = archive.housing_allowance.to_i
   food          = archive.food_allowance.to_i
 
-  legal_salary  = base_salary + marriage + housing + food + paye_sanavat + child
+  legal_salary  = base_salary + marriage + housing  + paye_sanavat + child
   insurance     = archive.insurance.to_i
   payment_1     = legal_salary - insurance
 
@@ -37,7 +37,35 @@
   overtime_pay      = (overtime_h * hourly_rate * 1.4)
   deficit_deduction = (deficit_h  * hourly_rate)
 
-  payment_2 = (total_salary_adj - fund6 - fund3 - loan - deficit_deduction + overtime_pay).round
+  # -----------------------------
+  # ✅ NEW: Accounting adjustments (part 2) + supplementary insurance
+  # -----------------------------
+  acc_add_1_title  = archive.respond_to?(:acc_add_1_title) ? archive.acc_add_1_title.to_s.strip : ""
+  acc_add_2_title  = archive.respond_to?(:acc_add_2_title) ? archive.acc_add_2_title.to_s.strip : ""
+  acc_ded_1_title  = archive.respond_to?(:acc_ded_1_title) ? archive.acc_ded_1_title.to_s.strip : ""
+  acc_ded_2_title  = archive.respond_to?(:acc_ded_2_title) ? archive.acc_ded_2_title.to_s.strip : ""
+
+  acc_add_1_amount = archive.respond_to?(:acc_add_1_amount) ? archive.acc_add_1_amount.to_i : 0
+  acc_add_2_amount = archive.respond_to?(:acc_add_2_amount) ? archive.acc_add_2_amount.to_i : 0
+  acc_ded_1_amount = archive.respond_to?(:acc_ded_1_amount) ? archive.acc_ded_1_amount.to_i : 0
+  acc_ded_2_amount = archive.respond_to?(:acc_ded_2_amount) ? archive.acc_ded_2_amount.to_i : 0
+
+  supplementary_insurance = archive.respond_to?(:supplementary_insurance) ? archive.supplementary_insurance.to_i : 0
+
+  acc_add_total = acc_add_1_amount + acc_add_2_amount
+  acc_ded_total = acc_ded_1_amount + acc_ded_2_amount + supplementary_insurance
+
+  # ✅ CHANGED: payment_2 includes accounting additions/deductions + supplementary insurance
+  payment_2 = (
+    total_salary_adj - fund6 - fund3 - loan - deficit_deduction + overtime_pay +
+    acc_add_total - acc_ded_total + food
+  ).round
+
+  has_acc_add_1 = acc_add_1_amount != 0 || acc_add_1_title.present?
+  has_acc_add_2 = acc_add_2_amount != 0 || acc_add_2_title.present?
+  has_acc_ded_1 = acc_ded_1_amount != 0 || acc_ded_1_title.present?
+  has_acc_ded_2 = acc_ded_2_amount != 0 || acc_ded_2_title.present?
+  has_supp_ins  = supplementary_insurance.to_i != 0
 %>
 
 <style>
@@ -89,7 +117,7 @@
         <div class="ps-kpi">
           <div class="lbl">پرداختی دوم (عملکرد + تعدیلات)</div>
           <div class="val"><%= money.call(payment_2) %></div>
-          <div class="ps-mini">حقوق مصوب ± اضافه‌کاری/کسری − ذخایر − وام</div>
+          <div class="ps-mini">حقوق مصوب ± اضافه‌کاری/کسری − ذخایر − وام ± آیتم‌های حسابداری</div>
         </div>
       </div>
     </div>
@@ -98,7 +126,7 @@
   <div class="ps-grid">
     <div class="row g-3">
 
-      <%# --- پایه‌ها و مزایا (مرتبط‌ها کنار هم) --- %>
+      <%# --- پایه‌ها و مزایا --- %>
       <div class="col-12 col-lg-4">
         <div class="ps-section">
           <div class="hd">حقوق پایه و مزایا</div>
@@ -114,7 +142,7 @@
         </div>
       </div>
 
-      <%# --- قانونی (تجمیعی‌ها نزدیک هم) --- %>
+      <%# --- قانونی --- %>
       <div class="col-12 col-lg-4">
         <div class="ps-section">
           <div class="hd">محاسبات قانونی</div>
@@ -133,7 +161,7 @@
         </div>
       </div>
 
-      <%# --- کارکرد (ساعت‌ها کنار هم + نرخ) --- %>
+      <%# --- کارکرد --- %>
       <div class="col-12 col-lg-4">
         <div class="ps-section">
           <div class="hd">کارکرد و حقوق مصوب</div>
@@ -147,7 +175,7 @@
         </div>
       </div>
 
-      <%# --- کسورات / تعدیلات (مرتبط‌ها کنار هم) --- %>
+      <%# --- کسورات / تعدیلات --- %>
       <div class="col-12 col-lg-7">
         <div class="ps-section">
           <div class="hd">کسورات و تعدیلات</div>
@@ -157,18 +185,45 @@
               <div class="ps-row"><span class="k">قسط وام</span><span class="v"><%= money.call(loan) %></span></div>
               <div class="ps-row"><span class="k">ذخیره ۳٪</span><span class="v"><%= money.call(fund3) %></span></div>
               <div class="ps-row"><span class="k">ذخیره ۶٪</span><span class="v"><%= money.call(fund6) %></span></div>
+
+              <%# ✅ NEW: Accounting deductions/additions + supp insurance %>
+              <% if has_supp_ins %>
+                <div class="ps-row"><span class="k">بیمه تکمیلی</span><span class="v"><%= money.call(supplementary_insurance) %></span></div>
+              <% end %>
+
+              <% if has_acc_ded_1 %>
+                <div class="ps-row"><span class="k"><%= acc_ded_1_title.presence || "کسورات حسابداری ۱" %></span><span class="v"><%= money.call(acc_ded_1_amount) %></span></div>
+              <% end %>
+              <% if has_acc_ded_2 %>
+                <div class="ps-row"><span class="k"><%= acc_ded_2_title.presence || "کسورات حسابداری ۲" %></span><span class="v"><%= money.call(acc_ded_2_amount) %></span></div>
+              <% end %>
+
+              <% if has_acc_add_1 %>
+                <div class="ps-row"><span class="k"><%= acc_add_1_title.presence || "افزایشی حسابداری ۱" %></span><span class="v"><%= money.call(acc_add_1_amount) %></span></div>
+              <% end %>
+              <% if has_acc_add_2 %>
+                <div class="ps-row"><span class="k"><%= acc_add_2_title.presence || "افزایشی حسابداری ۲" %></span><span class="v"><%= money.call(acc_add_2_amount) %></span></div>
+              <% end %>
             </div>
 
             <div class="col-12 col-md-6">
               <div class="ps-row"><span class="k">کسر کسری (ساعت × نرخ)</span><span class="v"><%= money.call(deficit_deduction.round) %></span></div>
               <div class="ps-row"><span class="k">افزودن اضافه‌کاری (×۱.۴)</span><span class="v"><%= money.call(overtime_pay.round) %></span></div>
+
+              <% if (acc_add_total != 0 || acc_ded_total != 0) %>
+                <div class="ps-row">
+                  <span class="k">خالص آیتم‌های حسابداری (قسمت دوم)</span>
+                  <span class="v"><%= money.call(acc_add_total - acc_ded_total) %></span>
+                </div>
+              <% end %>
+
               <div class="ps-mini mt-2">این بخش مستقیماً روی پرداختی دوم اثر می‌گذارد.</div>
             </div>
           </div>
         </div>
       </div>
 
-      <%# --- خلاصه پرداختی‌ها (کنار هم، جمع‌بندی) --- %>
+      <%# --- خلاصه پرداختی‌ها --- %>
       <div class="col-12 col-lg-5">
         <div class="ps-section" style="background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0));">
           <div class="hd">خلاصه پرداختی‌ها</div>
@@ -183,8 +238,19 @@
             <span class="v"><%= money.call(payment_2) %></span>
           </div>
 
+          <% if (acc_add_total != 0 || acc_ded_total != 0) %>
+            <div class="ps-row">
+              <span class="k">جمع افزایشی حسابداری</span>
+              <span class="v"><%= money.call(acc_add_total) %></span>
+            </div>
+            <div class="ps-row">
+              <span class="k">جمع کسورات حسابداری</span>
+              <span class="v"><%= money.call(acc_ded_total) %></span>
+            </div>
+          <% end %>
+
           <div class="ps-mini mt-2">
-            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب و ساعات اضافه‌کاری/کسری محاسبه می‌شود.
+            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب، ساعات اضافه‌کاری/کسری و آیتم‌های حسابداری محاسبه می‌شود.
           </div>
         </div>
       </div>

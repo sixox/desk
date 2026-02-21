@@ -11,4 +11,9 @@ class SalaryProfile < ApplicationRecord
   # Validate presence of total salary for calculations
 
   # (Other allowance fields like base_salary, housing_allowance, etc., are assumed to be present as columns)
+
+  def supplementary_insurance_amount
+    supplementary_insurance.to_i
+  end
+
 end

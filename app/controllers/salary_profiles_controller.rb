@@ -33,22 +33,28 @@ class SalaryProfilesController < ApplicationController
     head :forbidden unless ((current_user.accounting? && current_user.is_manager) || current_user.admin?)
   end
 
-  # ✅ FIX: permit first, then to_h
+  # ✅ permit first, then to_h + safe casting
   def sanitize_profile_attrs(attrs)
-    attrs = attrs.is_a?(ActionController::Parameters) ? attrs.permit(
-      :pay_type,
-      :total_salary,
-      :hourly_rate,
-      :seniority_base,
-      :monthly_seniority_base,
-      :housing_allowance,
-      :food_allowance,
-      :marriage_allowance,
-      :child_allowance,
-      :loan_installment,
-      :fund_three_percent,
-      :fund_six_percent
-    ).to_h : attrs.to_h
+    attrs =
+      if attrs.is_a?(ActionController::Parameters)
+        attrs.permit(
+          :pay_type,
+          :total_salary,
+          :hourly_rate,
+          :seniority_base,
+          :monthly_seniority_base,
+          :housing_allowance,
+          :food_allowance,
+          :marriage_allowance,
+          :child_allowance,
+          :loan_installment,
+          :fund_three_percent,
+          :fund_six_percent,
+          :supplementary_insurance # ✅ NEW
+        ).to_h
+      else
+        attrs.to_h
+      end
 
     # normalize pay_type
     attrs["pay_type"] = attrs["pay_type"].to_s.presence
@@ -57,6 +63,7 @@ class SalaryProfilesController < ApplicationController
     int_fields = %w[
       total_salary seniority_base monthly_seniority_base housing_allowance food_allowance
       marriage_allowance child_allowance loan_installment fund_three_percent fund_six_percent
+      supplementary_insurance
     ]
     int_fields.each { |k| attrs[k] = attrs[k].to_i }
 

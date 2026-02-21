@@ -307,6 +307,8 @@ resources :salary_archives do
     patch :hr_confirm_all
     get   :accounting_review
     patch :accounting_confirm_all
+    patch :accounting_update_adjustments
+
     get :payslips
 
   end

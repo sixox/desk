@@ -478,6 +478,8 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
+
+
   def accounting_confirm_all
     authorize_accounting_review!
 
@@ -512,6 +514,9 @@ class SalaryArchivesController < ApplicationController
         loan_installment            = profile&.loan_installment.to_i
         fund_three_percent          = profile&.fund_three_percent.to_i
         fund_six_percent            = profile&.fund_six_percent.to_i
+        supp_ins                    = profile&.supplementary_insurance.to_i
+
+
 
         hourly_rate =
           if profile&.hourly_rate.present?
@@ -543,6 +548,7 @@ class SalaryArchivesController < ApplicationController
           loan_installment:   loan_installment,
           fund_three_percent: fund_three_percent,
           fund_six_percent:   fund_six_percent,
+          supplementary_insurance: supp_ins,
 
           insurance: insurance_value
         )
@@ -553,6 +559,37 @@ class SalaryArchivesController < ApplicationController
 
     redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
       notice: "تأیید حسابداری ثبت شد و محاسبات (تعدیل ۲۹/۳۰/۳۱ + بیمه) داخل آرشیو ذخیره شد."
+  end
+
+
+  def accounting_update_adjustments
+    authorize_accounting_review!
+
+    allowed_archives = SalaryArchive.where(shamsi_month_id: @shamsi_month.id)
+
+    archives_params = params[:archives] || {}
+
+    SalaryArchive.transaction do
+      archives_params.each do |archive_id, attrs|
+        a = allowed_archives.find_by(id: archive_id)
+        next unless a
+
+        a.update!(
+          acc_add_1_title:  attrs[:acc_add_1_title].to_s.strip.presence,
+          acc_add_1_amount: attrs[:acc_add_1_amount].to_i,
+          acc_add_2_title:  attrs[:acc_add_2_title].to_s.strip.presence,
+          acc_add_2_amount: attrs[:acc_add_2_amount].to_i,
+
+          acc_ded_1_title:  attrs[:acc_ded_1_title].to_s.strip.presence,
+          acc_ded_1_amount: attrs[:acc_ded_1_amount].to_i,
+          acc_ded_2_title:  attrs[:acc_ded_2_title].to_s.strip.presence,
+          acc_ded_2_amount: attrs[:acc_ded_2_amount].to_i
+        )
+      end
+    end
+
+    redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
+                notice: "آیتم‌های افزایشی/کاهشی حسابداری ذخیره شد."
   end
 
   def payslips
