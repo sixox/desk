@@ -14,7 +14,7 @@
   housing       = archive.housing_allowance.to_i
   food          = archive.food_allowance.to_i
 
-  legal_salary  = base_salary + marriage + housing + food + paye_sanavat
+  legal_salary  = base_salary + marriage + housing + food + paye_sanavat + child
   insurance     = archive.insurance.to_i
   payment_1     = legal_salary - insurance
 
