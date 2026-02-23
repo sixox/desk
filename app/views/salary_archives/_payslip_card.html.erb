@@ -35,7 +35,7 @@
   fund6  = archive.fund_six_percent.to_i
 
   overtime_pay      = (overtime_h * hourly_rate * 1.4)
-  deficit_deduction = (deficit_h  * hourly_rate)
+  deficit_deduction = (deficit_h  * hourly_rate * 2)
 
   # -----------------------------
   # ✅ NEW: Accounting adjustments (part 2) + supplementary insurance
@@ -207,7 +207,7 @@
             </div>
 
             <div class="col-12 col-md-6">
-              <div class="ps-row"><span class="k">کسر کسری (ساعت × نرخ)</span><span class="v"><%= money.call(deficit_deduction.round) %></span></div>
+              <div class="ps-row"><span class="k">کسر کسری (ساعت × نرخ × ۲)</span><span class="v"><%= money.call(deficit_deduction.round) %></span></div>
               <div class="ps-row"><span class="k">افزودن اضافه‌کاری (×۱.۴)</span><span class="v"><%= money.call(overtime_pay.round) %></span></div>
 
               <% if (acc_add_total != 0 || acc_ded_total != 0) %>
