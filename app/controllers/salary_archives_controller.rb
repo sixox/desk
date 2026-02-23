@@ -566,15 +566,18 @@ class SalaryArchivesController < ApplicationController
     authorize_accounting_review!
 
     allowed_archives = SalaryArchive.where(shamsi_month_id: @shamsi_month.id)
-
     archives_params = params[:archives] || {}
 
     SalaryArchive.transaction do
       archives_params.each do |archive_id, attrs|
         a = allowed_archives.find_by(id: archive_id)
         next unless a
+        attrs = attrs || {}
 
         a.update!(
+          # -----------------------
+          # Part 2 (همونی که داری) ✅ unchanged
+          # -----------------------
           acc_add_1_title:  attrs[:acc_add_1_title].to_s.strip.presence,
           acc_add_1_amount: attrs[:acc_add_1_amount].to_i,
           acc_add_2_title:  attrs[:acc_add_2_title].to_s.strip.presence,
@@ -583,13 +586,26 @@ class SalaryArchivesController < ApplicationController
           acc_ded_1_title:  attrs[:acc_ded_1_title].to_s.strip.presence,
           acc_ded_1_amount: attrs[:acc_ded_1_amount].to_i,
           acc_ded_2_title:  attrs[:acc_ded_2_title].to_s.strip.presence,
-          acc_ded_2_amount: attrs[:acc_ded_2_amount].to_i
+          acc_ded_2_amount: attrs[:acc_ded_2_amount].to_i,
+
+          # -----------------------
+          # Part 1 ✅ NEW
+          # -----------------------
+          legal_add_1_title:  attrs[:legal_add_1_title].to_s.strip.presence,
+          legal_add_1_amount: attrs[:legal_add_1_amount].to_i,
+          legal_add_2_title:  attrs[:legal_add_2_title].to_s.strip.presence,
+          legal_add_2_amount: attrs[:legal_add_2_amount].to_i,
+
+          legal_ded_1_title:  attrs[:legal_ded_1_title].to_s.strip.presence,
+          legal_ded_1_amount: attrs[:legal_ded_1_amount].to_i,
+          legal_ded_2_title:  attrs[:legal_ded_2_title].to_s.strip.presence,
+          legal_ded_2_amount: attrs[:legal_ded_2_amount].to_i
         )
       end
     end
 
     redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
-                notice: "آیتم‌های افزایشی/کاهشی حسابداری ذخیره شد."
+                notice: "آیتم‌های حسابداری (قسمت اول و دوم) ذخیره شد."
   end
 
   def payslips

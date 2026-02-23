@@ -16,7 +16,30 @@
 
   legal_salary  = base_salary + marriage + housing  + paye_sanavat + child
   insurance     = archive.insurance.to_i
-  payment_1     = legal_salary - insurance
+
+  # -----------------------------
+  # ✅ NEW: Part 1 accounting items
+  # -----------------------------
+  legal_add_1_title  = archive.legal_add_1_title.to_s.strip
+  legal_add_2_title  = archive.legal_add_2_title.to_s.strip
+  legal_ded_1_title  = archive.legal_ded_1_title.to_s.strip
+  legal_ded_2_title  = archive.legal_ded_2_title.to_s.strip
+
+  legal_add_1_amount = archive.legal_add_1_amount.to_i
+  legal_add_2_amount = archive.legal_add_2_amount.to_i
+  legal_ded_1_amount = archive.legal_ded_1_amount.to_i
+  legal_ded_2_amount = archive.legal_ded_2_amount.to_i
+
+  legal_add_total = legal_add_1_amount + legal_add_2_amount
+  legal_ded_total = legal_ded_1_amount + legal_ded_2_amount
+
+  has_legal_add_1 = legal_add_1_amount != 0 || legal_add_1_title.present?
+  has_legal_add_2 = legal_add_2_amount != 0 || legal_add_2_title.present?
+  has_legal_ded_1 = legal_ded_1_amount != 0 || legal_ded_1_title.present?
+  has_legal_ded_2 = legal_ded_2_amount != 0 || legal_ded_2_title.present?
+
+  # ✅ CHANGED: payment_1 includes Part 1 items
+  payment_1 = (legal_salary - insurance + legal_add_total - legal_ded_total)
 
   total_salary_adj = adjust_30_to_month.call(archive.total_salary.to_i)
 
@@ -38,7 +61,7 @@
   deficit_deduction = (deficit_h  * hourly_rate * 2)
 
   # -----------------------------
-  # ✅ NEW: Accounting adjustments (part 2) + supplementary insurance
+  # Part 2 items (همون چیزی که داری) ✅ unchanged
   # -----------------------------
   acc_add_1_title  = archive.respond_to?(:acc_add_1_title) ? archive.acc_add_1_title.to_s.strip : ""
   acc_add_2_title  = archive.respond_to?(:acc_add_2_title) ? archive.acc_add_2_title.to_s.strip : ""
@@ -55,7 +78,6 @@
   acc_add_total = acc_add_1_amount + acc_add_2_amount
   acc_ded_total = acc_ded_1_amount + acc_ded_2_amount + supplementary_insurance
 
-  # ✅ CHANGED: payment_2 includes accounting additions/deductions + supplementary insurance
   payment_2 = (
     total_salary_adj - fund6 - fund3 - loan - deficit_deduction + overtime_pay +
     acc_add_total - acc_ded_total + food
@@ -110,7 +132,7 @@
         <div class="ps-kpi">
           <div class="lbl">پرداختی اول (قانونی)</div>
           <div class="val"><%= money.call(payment_1) %></div>
-          <div class="ps-mini">حقوق قانونی − بیمه (۷٪)</div>
+          <div class="ps-mini">حقوق قانونی − بیمه (۷٪) ± آیتم‌های حسابداری (قسمت اول)</div>
         </div>
       </div>
       <div class="col-12 col-md-6">
@@ -126,7 +148,6 @@
   <div class="ps-grid">
     <div class="row g-3">
 
-      <%# --- پایه‌ها و مزایا --- %>
       <div class="col-12 col-lg-4">
         <div class="ps-section">
           <div class="hd">حقوق پایه و مزایا</div>
@@ -142,7 +163,6 @@
         </div>
       </div>
 
-      <%# --- قانونی --- %>
       <div class="col-12 col-lg-4">
         <div class="ps-section">
           <div class="hd">محاسبات قانونی</div>
@@ -150,18 +170,35 @@
           <div class="ps-row"><span class="k">حقوق قانونی</span><span class="v"><%= money.call(legal_salary) %></span></div>
           <div class="ps-row"><span class="k">بیمه (۷٪)</span><span class="v"><%= money.call(insurance) %></span></div>
 
+          <% if (legal_add_total != 0 || legal_ded_total != 0) %>
+            <div class="ps-row"><span class="k">جمع افزایشی (قسمت اول)</span><span class="v"><%= money.call(legal_add_total) %></span></div>
+            <div class="ps-row"><span class="k">جمع کاهشی (قسمت اول)</span><span class="v"><%= money.call(legal_ded_total) %></span></div>
+
+            <% if has_legal_add_1 %>
+              <div class="ps-row"><span class="k"><%= legal_add_1_title.presence || "افزایشی ۱ (قسمت اول)" %></span><span class="v"><%= money.call(legal_add_1_amount) %></span></div>
+            <% end %>
+            <% if has_legal_add_2 %>
+              <div class="ps-row"><span class="k"><%= legal_add_2_title.presence || "افزایشی ۲ (قسمت اول)" %></span><span class="v"><%= money.call(legal_add_2_amount) %></span></div>
+            <% end %>
+            <% if has_legal_ded_1 %>
+              <div class="ps-row"><span class="k"><%= legal_ded_1_title.presence || "کاهشی ۱ (قسمت اول)" %></span><span class="v"><%= money.call(legal_ded_1_amount) %></span></div>
+            <% end %>
+            <% if has_legal_ded_2 %>
+              <div class="ps-row"><span class="k"><%= legal_ded_2_title.presence || "کاهشی ۲ (قسمت اول)" %></span><span class="v"><%= money.call(legal_ded_2_amount) %></span></div>
+            <% end %>
+          <% end %>
+
           <div class="ps-row">
             <span class="k"><strong>پرداختی اول</strong></span>
             <span class="v"><strong><%= money.call(payment_1) %></strong></span>
           </div>
 
           <div class="ps-mini mt-2">
-            فرمول: (حقوق پایه + مسکن + خواربار + تأهل + اولاد + سنوات) − بیمه
+            فرمول: (حقوق قانونی − بیمه) ± آیتم‌های حسابداری (قسمت اول)
           </div>
         </div>
       </div>
 
-      <%# --- کارکرد --- %>
       <div class="col-12 col-lg-4">
         <div class="ps-section">
           <div class="hd">کارکرد و حقوق مصوب</div>
@@ -175,7 +212,6 @@
         </div>
       </div>
 
-      <%# --- کسورات / تعدیلات --- %>
       <div class="col-12 col-lg-7">
         <div class="ps-section">
           <div class="hd">کسورات و تعدیلات</div>
@@ -186,7 +222,6 @@
               <div class="ps-row"><span class="k">ذخیره ۳٪</span><span class="v"><%= money.call(fund3) %></span></div>
               <div class="ps-row"><span class="k">ذخیره ۶٪</span><span class="v"><%= money.call(fund6) %></span></div>
 
-              <%# ✅ NEW: Accounting deductions/additions + supp insurance %>
               <% if has_supp_ins %>
                 <div class="ps-row"><span class="k">بیمه تکمیلی</span><span class="v"><%= money.call(supplementary_insurance) %></span></div>
               <% end %>
@@ -223,7 +258,6 @@
         </div>
       </div>
 
-      <%# --- خلاصه پرداختی‌ها --- %>
       <div class="col-12 col-lg-5">
         <div class="ps-section" style="background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0));">
           <div class="hd">خلاصه پرداختی‌ها</div>
@@ -238,19 +272,15 @@
             <span class="v"><%= money.call(payment_2) %></span>
           </div>
 
-          <% if (acc_add_total != 0 || acc_ded_total != 0) %>
+          <% if (legal_add_total != 0 || legal_ded_total != 0) %>
             <div class="ps-row">
-              <span class="k">جمع افزایشی حسابداری</span>
-              <span class="v"><%= money.call(acc_add_total) %></span>
-            </div>
-            <div class="ps-row">
-              <span class="k">جمع کسورات حسابداری</span>
-              <span class="v"><%= money.call(acc_ded_total) %></span>
+              <span class="k">خالص آیتم‌های حسابداری (قسمت اول)</span>
+              <span class="v"><%= money.call(legal_add_total - legal_ded_total) %></span>
             </div>
           <% end %>
 
           <div class="ps-mini mt-2">
-            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب، ساعات اضافه‌کاری/کسری و آیتم‌های حسابداری محاسبه می‌شود.
+            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب و ساعات اضافه‌کاری/کسری محاسبه می‌شود.
           </div>
         </div>
       </div>

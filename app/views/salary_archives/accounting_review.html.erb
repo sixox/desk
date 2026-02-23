@@ -71,7 +71,104 @@
                data-bs-parent="#accountingReviewAcc">
             <div class="accordion-body p-2">
 
-              <!-- ✅ NEW: Accounting items inputs -->
+              <!-- ✅ NEW: Part 1 items (Payment 1 / قانونی) -->
+              <div class="card mb-3">
+                <div class="card-body">
+                  <div class="fw-semibold mb-2">آیتم‌های حسابداری (قسمت اول / پرداختی قانونی)</div>
+
+                  <div class="row g-2">
+                    <div class="col-12 col-lg-6">
+                      <div class="border rounded p-2">
+                        <div class="small text-muted mb-2">افزایشی ۱ (قسمت اول)</div>
+                        <div class="row g-2">
+                          <div class="col-7">
+                            <%= text_field_tag "archives[#{archive.id}][legal_add_1_title]",
+                                  archive.legal_add_1_title.to_s,
+                                  class: "form-control form-control-sm",
+                                  placeholder: "علت (مثلاً اصلاح بیمه / پاداش قانونی)" %>
+                          </div>
+                          <div class="col-5">
+                            <%= number_field_tag "archives[#{archive.id}][legal_add_1_amount]",
+                                  archive.legal_add_1_amount.to_i,
+                                  class: "form-control form-control-sm text-end",
+                                  min: 0,
+                                  placeholder: "مبلغ" %>
+                          </div>
+                        </div>
+
+                        <div class="small text-muted mt-3 mb-2">افزایشی ۲ (قسمت اول)</div>
+                        <div class="row g-2">
+                          <div class="col-7">
+                            <%= text_field_tag "archives[#{archive.id}][legal_add_2_title]",
+                                  archive.legal_add_2_title.to_s,
+                                  class: "form-control form-control-sm",
+                                  placeholder: "علت" %>
+                          </div>
+                          <div class="col-5">
+                            <%= number_field_tag "archives[#{archive.id}][legal_add_2_amount]",
+                                  archive.legal_add_2_amount.to_i,
+                                  class: "form-control form-control-sm text-end",
+                                  min: 0,
+                                  placeholder: "مبلغ" %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                      <div class="border rounded p-2">
+                        <div class="small text-muted mb-2">کاهشی ۱ (قسمت اول)</div>
+                        <div class="row g-2">
+                          <div class="col-7">
+                            <%= text_field_tag "archives[#{archive.id}][legal_ded_1_title]",
+                                  archive.legal_ded_1_title.to_s,
+                                  class: "form-control form-control-sm",
+                                  placeholder: "علت (مثلاً اصلاح کسورات قانونی)" %>
+                          </div>
+                          <div class="col-5">
+                            <%= number_field_tag "archives[#{archive.id}][legal_ded_1_amount]",
+                                  archive.legal_ded_1_amount.to_i,
+                                  class: "form-control form-control-sm text-end",
+                                  min: 0,
+                                  placeholder: "مبلغ" %>
+                          </div>
+                        </div>
+
+                        <div class="small text-muted mt-3 mb-2">کاهشی ۲ (قسمت اول)</div>
+                        <div class="row g-2">
+                          <div class="col-7">
+                            <%= text_field_tag "archives[#{archive.id}][legal_ded_2_title]",
+                                  archive.legal_ded_2_title.to_s,
+                                  class: "form-control form-control-sm",
+                                  placeholder: "علت" %>
+                          </div>
+                          <div class="col-5">
+                            <%= number_field_tag "archives[#{archive.id}][legal_ded_2_amount]",
+                                  archive.legal_ded_2_amount.to_i,
+                                  class: "form-control form-control-sm text-end",
+                                  min: 0,
+                                  placeholder: "مبلغ" %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <% legal_add_total = archive.legal_add_1_amount.to_i + archive.legal_add_2_amount.to_i %>
+                  <% legal_ded_total = archive.legal_ded_1_amount.to_i + archive.legal_ded_2_amount.to_i %>
+
+                  <div class="mt-2 small">
+                    <span class="badge text-bg-light border">
+                      جمع افزایشی (قسمت اول): <%= legal_add_total %>
+                    </span>
+                    <span class="badge text-bg-light border">
+                      جمع کاهشی (قسمت اول): <%= legal_ded_total %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ✅ Part 2 items inputs (همون کدی که خودت دادی) -->
               <div class="card mb-3">
                 <div class="card-body">
                   <div class="fw-semibold mb-2">آیتم‌های افزایشی/کاهشی حسابداری (قسمت دوم فیش)</div>
@@ -169,6 +266,7 @@
                 </div>
               </div>
 
+              <!-- بقیه جدول روزها (همون کد خودت) -->
               <div class="table-responsive">
                 <table class="table table-sm table-bordered align-middle mb-2">
                   <thead class="table-light">
