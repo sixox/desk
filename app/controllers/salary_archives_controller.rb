@@ -609,10 +609,201 @@ class SalaryArchivesController < ApplicationController
   end
 
   def payslips
-    authorize_hr_review!
-    scope = SalaryArchive.includes(:user).where(shamsi_month_id: @shamsi_month.id)
-    @archives = scope.order("user_id ASC")
-  end
+      authorize_hr_review!
+
+      scope = SalaryArchive.includes(:user).where(shamsi_month_id: @shamsi_month.id)
+      @archives = scope.order("user_id ASC")
+
+      respond_to do |format|
+        format.html
+
+        format.csv do
+          month_days = (@shamsi_month.end_at.to_date - @shamsi_month.start_at.to_date).to_i + 1
+          adjust_30_to_month = ->(monthly_amount) { ((monthly_amount.to_f / 30.0) * month_days).round }
+          hours = ->(mins) { ((mins.to_i) / 60.0).round(2) }
+
+          # برای اینکه delimiter دقیقاً مثل UI بشه
+          helpers = view_context
+          money_ui = ->(n) { helpers.number_with_delimiter(n.to_i) }
+          num_ui   = ->(n) { helpers.number_with_delimiter(n) } # برای نرخ ساعتی/اعشاری
+
+          # Excel-friendly UTF-8 BOM
+          bom = "\uFEFF"
+
+          csv_data = bom + CSV.generate(headers: true) do |csv|
+            csv << [
+              "نام ماه",
+              "شناسه کاربر",
+              "نام کاربر",
+
+              # پرداختی‌ها
+              "پرداختی اول (UI)",
+              "پرداختی دوم (UI)",
+
+              # پایه‌ها و مزایا
+              "حقوق پایه (UI)",
+              "پایه سنوات (UI)",
+              "حق مسکن و خواروبار (UI)",
+              "ایاب و ذهاب (UI)", # همان food
+              "حق تأهل (UI)",
+              "حق اولاد (UI)",
+
+              # قانونی
+              "حقوق قانونی (UI)",
+              "بیمه (۷٪) (UI)",
+
+              # کارکرد
+              "حقوق مصوب (#{month_days} روز) (UI)",
+              "مجموع ساعات کاری",
+              "نرخ ساعتی (UI)",
+              "ساعت اضافه‌کاری",
+              "ساعت کسری",
+
+              # کسورات / تعدیلات
+              "قسط وام (UI)",
+              "ذخیره ۳٪ (UI)",
+              "ذخیره ۶٪ (UI)",
+              "کسر کسری (ساعت × نرخ × ۲) (UI)",
+              "افزودن اضافه‌کاری (×۱.۴) (UI)",
+
+              # آیتم‌های حسابداری (قسمت دوم)
+              "بیمه تکمیلی (UI)",
+              "افزایشی حسابداری ۱ - عنوان",
+              "افزایشی حسابداری ۱ - مبلغ (UI)",
+              "افزایشی حسابداری ۲ - عنوان",
+              "افزایشی حسابداری ۲ - مبلغ (UI)",
+              "کاهشی حسابداری ۱ - عنوان",
+              "کاهشی حسابداری ۱ - مبلغ (UI)",
+              "کاهشی حسابداری ۲ - عنوان",
+              "کاهشی حسابداری ۲ - مبلغ (UI)",
+
+              "جمع افزایشی حسابداری (UI)",
+              "جمع کسورات حسابداری (UI)",
+              "خالص آیتم‌های حسابداری (UI)"
+            ]
+
+            @archives.each do |archive|
+              user = archive.user
+
+              # ---- دقیقاً مطابق آخرین partial که خودت فرستادی ----
+              base_salary  = archive.seniority_base.to_i
+              paye_sanavat = archive.monthly_seniority_base.to_i
+
+              marriage = archive.marriage_allowance.to_i
+              child    = archive.child_allowance.to_i
+              housing  = archive.housing_allowance.to_i
+              food     = archive.food_allowance.to_i # در UI: ایاب و ذهاب
+
+              # ✅ مطابق partial: food داخل legal_salary نیست
+              legal_salary = base_salary + marriage + housing + paye_sanavat + child
+
+              insurance = archive.insurance.to_i
+              payment_1 = legal_salary - insurance
+
+              total_salary_adj = adjust_30_to_month.call(archive.total_salary.to_i)
+
+              total_work_h = hours.call(archive.total_work_minutes)
+
+              overtime_mins =
+                archive.manual_overtime_minutes.to_i != 0 ? archive.manual_overtime_minutes.to_i : archive.overtime_minutes.to_i
+              deficit_mins =
+                archive.manual_deficit_minutes.to_i != 0 ? archive.manual_deficit_minutes.to_i : archive.deficit_minutes.to_i
+
+              overtime_h = hours.call(overtime_mins)
+              deficit_h  = hours.call(deficit_mins)
+
+              hourly_rate = archive.hourly_rate.present? ? archive.hourly_rate.to_f : 0.0
+
+              loan  = archive.loan_installment.to_i
+              fund3 = archive.fund_three_percent.to_i
+              fund6 = archive.fund_six_percent.to_i
+
+              overtime_pay      = (overtime_h * hourly_rate * 1.4)
+              deficit_deduction = (deficit_h  * hourly_rate * 2)
+
+              # part2 accounting items
+              acc_add_1_title  = archive.respond_to?(:acc_add_1_title) ? archive.acc_add_1_title.to_s.strip : ""
+              acc_add_2_title  = archive.respond_to?(:acc_add_2_title) ? archive.acc_add_2_title.to_s.strip : ""
+              acc_ded_1_title  = archive.respond_to?(:acc_ded_1_title) ? archive.acc_ded_1_title.to_s.strip : ""
+              acc_ded_2_title  = archive.respond_to?(:acc_ded_2_title) ? archive.acc_ded_2_title.to_s.strip : ""
+
+              acc_add_1_amount = archive.respond_to?(:acc_add_1_amount) ? archive.acc_add_1_amount.to_i : 0
+              acc_add_2_amount = archive.respond_to?(:acc_add_2_amount) ? archive.acc_add_2_amount.to_i : 0
+              acc_ded_1_amount = archive.respond_to?(:acc_ded_1_amount) ? archive.acc_ded_1_amount.to_i : 0
+              acc_ded_2_amount = archive.respond_to?(:acc_ded_2_amount) ? archive.acc_ded_2_amount.to_i : 0
+
+              supplementary_insurance =
+                archive.respond_to?(:supplementary_insurance) ? archive.supplementary_insurance.to_i : 0
+
+              acc_add_total = acc_add_1_amount + acc_add_2_amount
+              acc_ded_total = acc_ded_1_amount + acc_ded_2_amount + supplementary_insurance
+              acc_net = acc_add_total - acc_ded_total
+
+              # ✅ مطابق partial: payment_2 شامل +food هست
+              payment_2 = (
+                total_salary_adj - fund6 - fund3 - loan - deficit_deduction + overtime_pay +
+                acc_add_total - acc_ded_total + food
+              ).round
+
+              # ---- UI formatting (delimiter + round مثل UI) ----
+              # در partial: money.call(n) => number_with_delimiter(n.to_i)
+              # و برای overtime_pay/deficit_deduction: round
+              overtime_pay_ui      = money_ui.call(overtime_pay.round)
+              deficit_deduction_ui = money_ui.call(deficit_deduction.round)
+
+              csv << [
+                @shamsi_month.name,
+                archive.user_id,
+                user&.name.to_s,
+
+                money_ui.call(payment_1),
+                money_ui.call(payment_2),
+
+                money_ui.call(base_salary),
+                money_ui.call(paye_sanavat),
+                money_ui.call(housing),
+                money_ui.call(food),
+                money_ui.call(marriage),
+                money_ui.call(child),
+
+                money_ui.call(legal_salary),
+                money_ui.call(insurance),
+
+                money_ui.call(total_salary_adj),
+                total_work_h,                         # UI: عدد اعشاری ساعت
+                num_ui.call(hourly_rate.round(2)),     # UI: number_with_delimiter(hourly_rate.round(2))
+                overtime_h,                            # UI: ساعت با ۲ رقم اعشار
+                deficit_h,
+
+                money_ui.call(loan),
+                money_ui.call(fund3),
+                money_ui.call(fund6),
+                deficit_deduction_ui,
+                overtime_pay_ui,
+
+                money_ui.call(supplementary_insurance),
+                acc_add_1_title,
+                money_ui.call(acc_add_1_amount),
+                acc_add_2_title,
+                money_ui.call(acc_add_2_amount),
+                acc_ded_1_title,
+                money_ui.call(acc_ded_1_amount),
+                acc_ded_2_title,
+                money_ui.call(acc_ded_2_amount),
+
+                money_ui.call(acc_add_total),
+                money_ui.call(acc_ded_total),
+                money_ui.call(acc_net)
+              ]
+            end
+          end
+
+          filename = "payslips-#{@shamsi_month.id}-#{@shamsi_month.name}.csv".gsub(/[^\w\-.]/, "_")
+          send_data csv_data, filename: filename, type: "text/csv; charset=utf-8"
+        end
+      end
+    end
+
 
   private
 
