@@ -176,32 +176,52 @@
     <div class="sa-grid">
 
       <!-- Month setup (Admin only) -->
-      <div class="sa-card">
-        <div class="sa-card-hd">
-          <div class="fw-bold">تنظیمات ماه</div>
-          <div class="small sa-muted">تعریف تعطیلات و تنظیمات عمومی ماه جاری.</div>
+<div class="sa-card">
+  <div class="sa-card-hd">
+    <div class="fw-bold">تنظیمات ماه</div>
+    <div class="small sa-muted">تعریف تعطیلات و تنظیمات عمومی ماه جاری.</div>
+  </div>
+
+  <div class="sa-card-bd d-grid gap-2">
+    <% if current_user.admin? %>
+
+      <%= link_to edit_day_offs_shamsi_month_path(@latest_month), class: "sa-action" do %>
+        <div class="d-flex align-items-center gap-3">
+          <div class="sa-ic">🗓</div>
+          <div>
+            <div class="sa-name">تعطیلات ماه «<%= @latest_month.name %>»</div>
+            <div class="sa-desc">روزهای تعطیل و جمعه‌ها برای محاسبه کسری/کارکرد اثر دارند.</div>
+          </div>
+        </div>
+        <span class="sa-chip">Admin</span>
+      <% end %>
+
+      <!-- 🔥 NEW LINK -->
+      <%= link_to rebuild_last_month_salary_archives_path,
+            data: { turbo_method: :post, turbo_confirm: "آرشیو ماه «#{@latest_month.name}» کامل حذف و دوباره ساخته شود؟" },
+            class: "sa-action" do %>
+
+        <div class="d-flex align-items-center gap-3">
+          <div class="sa-ic">♻️</div>
+          <div>
+            <div class="sa-name">Rebuild آرشیو ماه «<%= @latest_month.name %>»</div>
+            <div class="sa-desc">
+              آرشیو حقوق این ماه حذف می‌شود و دوباره از ابتدا ساخته خواهد شد.
+            </div>
+          </div>
         </div>
 
-        <div class="sa-card-bd d-grid gap-2">
-          <% if current_user.admin? %>
-            <%= link_to edit_day_offs_shamsi_month_path(@latest_month), class: "sa-action" do %>
-              <div class="d-flex align-items-center gap-3">
-                <div class="sa-ic">🗓</div>
-                <div>
-                  <div class="sa-name">تعطیلات ماه «<%= @latest_month.name %>»</div>
-                  <div class="sa-desc">روزهای تعطیل و جمعه‌ها برای محاسبه کسری/کارکرد اثر دارند.</div>
-                </div>
-              </div>
-              <span class="sa-chip">Admin</span>
-            <% end %>
-          <% else %>
-            <div class="alert alert-light border rounded-4 mb-0">
-              <div class="fw-semibold">این بخش فقط برای Admin فعال است.</div>
-              <div class="small sa-muted">در صورت نیاز، از ادمین بخواهید تعطیلات را تنظیم کند.</div>
-            </div>
-          <% end %>
-        </div>
+        <span class="sa-chip bg-warning text-dark">Danger</span>
+      <% end %>
+
+    <% else %>
+      <div class="alert alert-light border rounded-4 mb-0">
+        <div class="fw-semibold">این بخش فقط برای Admin فعال است.</div>
+        <div class="small sa-muted">در صورت نیاز، از ادمین بخواهید تعطیلات را تنظیم کند.</div>
       </div>
+    <% end %>
+  </div>
+</div>
 
       <!-- Reviews -->
       <div class="sa-card">

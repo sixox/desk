@@ -1,7 +1,7 @@
 # app/controllers/salary_archives_controller.rb
 class SalaryArchivesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_month
+  before_action :set_month, except: [:rebuild_last_month]
 
   def manager_review
     user_ids = current_user.direct_reports.pluck(:id) | [current_user.id]
@@ -476,6 +476,36 @@ class SalaryArchivesController < ApplicationController
       q = (m / 15.0).round
       (q * 0.25)
     end
+  end
+
+
+  def rebuild_last_month
+    authorize_accounting_review! # or stricter if needed
+
+    last_month = ShamsiMonth.order(start_at: :asc).last
+    # or simply: ShamsiMonth.last
+    # but ordering by start_at is safer if IDs are not chronological
+
+    unless last_month
+      redirect_back fallback_location: root_path, alert: "هیچ ماهی پیدا نشد."
+      return
+    end
+
+    SalaryArchive.transaction do
+      archives = SalaryArchive.where(shamsi_month_id: last_month.id)
+
+      # delete days first (safe way)
+      SalaryArchiveDay.where(salary_archive_id: archives.select(:id)).delete_all
+
+      # delete archives
+      archives.delete_all
+    end
+
+    # 🔥 Call your builder here (replace with your real builder call)
+     GenerateArchivesJob.perform_now(last_month.id)
+
+    redirect_to salary_admin_path,
+                notice: "آرشیو ماه #{last_month.name} پاک شد و دوباره ساخته شد."
   end
 
 

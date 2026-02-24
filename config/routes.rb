@@ -308,6 +308,7 @@ resources :salary_archives do
     get   :accounting_review
     patch :accounting_confirm_all
     patch :accounting_update_adjustments
+    post :rebuild_last_month
 
     get :payslips
 
