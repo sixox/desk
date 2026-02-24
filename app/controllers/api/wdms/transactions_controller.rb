@@ -25,8 +25,8 @@ class Api::Wdms::TransactionsController < ApplicationController
     rows.each do |r|
       device_serial = r["device_serial"].to_s.strip
       emp_code      = r["emp_code"].to_s.strip
-      # action_time_s = r["action_time"].to_s.strip ***************
-      action_time_s = r["upload_time"].to_s.strip
+      action_time_s = r["action_time"].to_s.strip
+      # action_time_s = r["upload_time"].to_s.strip
 
 
       next if device_serial.empty? || emp_code.empty? || action_time_s.empty?
