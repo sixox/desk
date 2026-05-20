@@ -103,6 +103,8 @@ class MembersController < ApplicationController
     end
   end
 
+  
+
   def signatures
     @users = User.all
   end
