@@ -509,42 +509,76 @@ class SalaryArchivesController < ApplicationController
   end
 
   def calculate_vacations
-    start_date = @shamsi_month.start_at
-    end_date   = @shamsi_month.end_at
+    ActiveRecord::Base.transaction do
+      # Lock this month row so another request cannot finalize it simultaneously
+      @shamsi_month.lock!
 
-    vacations_by_user =
-      Vacation.includes(:user)
-              .where("start_at <= ? AND end_at >= ?", end_date, start_date)
-              .group_by(&:user)
+      # Prevent running again
+      if @shamsi_month.finalized?
+        redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
+                    alert: "This month is already closed."
+        return
+      end
 
-    vacations_by_user.each do |user, vacations|
+      start_date = @shamsi_month.start_at
+      end_date   = @shamsi_month.end_at
 
-      total_days = 0
-      total_hours = 0.0
+      vacations_by_user =
+        Vacation.includes(:user)
+                .where("start_at <= ? AND end_at >= ?", end_date, start_date)
+                .group_by(&:user)
 
-      vacations.each do |vacation|
-        if vacation.hourly?
-          hours = ((vacation.end_at - vacation.start_at) / 1.hour).round(5)
-          total_hours += hours
+      vacations_by_user.each do |user, vacations|
 
-        else
-          overlap_start = [vacation.start_at.to_date, start_date.to_date].max
-          overlap_end   = [vacation.end_at.to_date, end_date.to_date].min
+        total_days = 0
+        total_hours = 0.0
 
-          days = (overlap_end - overlap_start).to_i + 1
-          total_days += days
+        vacations.each do |vacation|
+          if vacation.hourly?
+            hours = ((vacation.end_at - vacation.start_at) / 1.hour).round(5)
+            total_hours += hours
+          else
+            overlap_start = [vacation.start_at.to_date, start_date.to_date].max
+            overlap_end   = [vacation.end_at.to_date, end_date.to_date].min
 
+            days = (overlap_end - overlap_start).to_i + 1
+            total_days += days
+          end
         end
 
+        used_vacation = total_days + (total_hours / 8.0)
+
+        if used_vacation > 0 && user.salary_profile.present?
+          user.salary_profile.update!(
+            remain_vacation: user.salary_profile.remain_vacation - used_vacation.round(5)
+          )
+
+          salary_archive = user.salary_archives.find_by(
+            shamsi_month_id: @shamsi_month.id
+          )
+
+          if salary_archive
+            salary_archive.update!(
+              remain_vacation: user.salary_profile.reload.remain_vacation
+            )
+          end
+        end
       end
-      a = total_days + (total_hours / 8.0)
-      if a > 0
-        user.salary_profile.remain_vacation  -= a.round(5)
-        user.salary_profile.save
+      @shamsi_month.salary_archives.includes(:user).each do |salary_archive|
+        next if salary_archive.remain_vacation.present?
+
+        if salary_archive.user.salary_profile&.remain_vacation.present?
+          salary_archive.update!(
+            remain_vacation: salary_archive.user.salary_profile.remain_vacation
+          )
+        end
       end
+
+      @shamsi_month.update!(finalized: true)
     end
 
-    redirect_to shamsi_months_path, notice: "Vacation calculation completed."
+    redirect_to accounting_review_salary_archives_path(month_id: @shamsi_month.id),
+                notice: "This month closed."
   end
 
   def accounting_confirm_all

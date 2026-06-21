@@ -1,6 +1,14 @@
 <div class="col-lg-10 mx-auto mt-5">
 
-  <h4 class="mb-3">بررسی حسابداری — <%= @shamsi_month.name %></h4>
+  <h4 class="mb-3">
+  بررسی حسابداری — <%= @shamsi_month.name %>
+  <% if @shamsi_month.finalized == true%>
+  <small class="text-muted fs-6">
+    (فیش صادر شده و امکان ویرایش ندارد)
+  </small>
+  <% end %>
+</h4>
+
 
   <div class="d-flex flex-wrap gap-2 mb-3">
     <%= link_to "Manager Review",
@@ -11,17 +19,22 @@
     hr_review_salary_archives_path(month_id: @shamsi_month.id),
     class: "btn btn-outline-secondary btn-sm" %>
 
+    <% if (current_user.admin? || current_user.accounting?) && (@shamsi_month.finalized == false || true) %>
+
     <%= button_to "Accounting Confirm (برای کل ماه)",
     accounting_confirm_all_salary_archives_path(month_id: @shamsi_month.id),
     method: :patch,
     class: "btn btn-dark btn-sm",
       data: { turbo_confirm: "برای این ماه، Accounting Confirm همه‌ی کاربران ثبت شود؟" } %>
+    
+     <%= link_to "Finalize & Close this month",
+    calculate_vacations_salary_archives_path(month_id: @shamsi_month.id),
+    class: "btn btn-danger btn-sm",
+    data: { turbo_confirm: "Are you sure? Non-editable after this" } %>
+    <% end %>
     </div>
 
-    <% if current_user.admin? %>
-      <%= link_to "Calculate",
-      calculate_vacations_salary_archives_path(month_id: @shamsi_month.id) %>
-    <% end %>
+   
 
 
     <%= form_with url: accounting_update_adjustments_salary_archives_path(month_id: @shamsi_month.id),
