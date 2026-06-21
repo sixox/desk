@@ -50,6 +50,7 @@ class SalaryProfilesController < ApplicationController
           :loan_installment,
           :fund_three_percent,
           :fund_six_percent,
+          :remain_vacation,
           :supplementary_insurance # ✅ NEW
         ).to_h
       else

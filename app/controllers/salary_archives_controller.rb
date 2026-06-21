@@ -508,7 +508,44 @@ class SalaryArchivesController < ApplicationController
                 notice: "آرشیو ماه #{last_month.name} پاک شد و دوباره ساخته شد."
   end
 
+  def calculate_vacations
+    start_date = @shamsi_month.start_at
+    end_date   = @shamsi_month.end_at
 
+    vacations_by_user =
+      Vacation.includes(:user)
+              .where("start_at <= ? AND end_at >= ?", end_date, start_date)
+              .group_by(&:user)
+
+    vacations_by_user.each do |user, vacations|
+
+      total_days = 0
+      total_hours = 0.0
+
+      vacations.each do |vacation|
+        if vacation.hourly?
+          hours = ((vacation.end_at - vacation.start_at) / 1.hour).round(5)
+          total_hours += hours
+
+        else
+          overlap_start = [vacation.start_at.to_date, start_date.to_date].max
+          overlap_end   = [vacation.end_at.to_date, end_date.to_date].min
+
+          days = (overlap_end - overlap_start).to_i + 1
+          total_days += days
+
+        end
+
+      end
+      a = total_days + (total_hours / 8.0)
+      if a > 0
+        user.salary_profile.remain_vacation  -= a.round(5)
+        user.salary_profile.save
+      end
+    end
+
+    redirect_to shamsi_months_path, notice: "Vacation calculation completed."
+  end
 
   def accounting_confirm_all
     authorize_accounting_review!

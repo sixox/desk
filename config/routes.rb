@@ -300,7 +300,11 @@ resources :payroll_months do
 end
 resource :user_manager_mappings, only: [:index, :update]
 resources :salary_archives do
+
+
+
   collection do
+    get :calculate_vacations
     get :manager_review
     patch :bulk_update_days
     get   :hr_review
@@ -309,7 +313,6 @@ resources :salary_archives do
     patch :accounting_confirm_all
     patch :accounting_update_adjustments
     post :rebuild_last_month
-
     get :payslips
 
   end
