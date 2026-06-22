@@ -841,7 +841,13 @@ class SalaryArchivesController < ApplicationController
               overtime_mins =
                 archive.manual_overtime_minutes.to_i != 0 ? archive.manual_overtime_minutes.to_i : archive.overtime_minutes.to_i
               deficit_mins =
-                archive.manual_deficit_minutes.to_i != 0 ? archive.manual_deficit_minutes.to_i : archive.deficit_minutes.to_i
+                if archive.no_dificit == true
+                  0
+                else
+                  archive.manual_deficit_minutes.to_i != 0 ? 
+                    archive.manual_deficit_minutes.to_i : 
+                    archive.deficit_minutes.to_i
+                end
 
               overtime_h = hours.call(overtime_mins)
               deficit_h  = hours.call(deficit_mins)
@@ -853,8 +859,12 @@ class SalaryArchivesController < ApplicationController
               fund6 = archive.fund_six_percent.to_i
 
               overtime_pay      = (overtime_h * hourly_rate * 1.4)
-              deficit_deduction = (deficit_h  * hourly_rate * 2)
-
+              deficit_deduction =
+                if archive.no_dificit == true
+                  0
+                else
+                  (deficit_h * hourly_rate)
+                end
               # part2 accounting items
               acc_add_1_title  = archive.respond_to?(:acc_add_1_title) ? archive.acc_add_1_title.to_s.strip : ""
               acc_add_2_title  = archive.respond_to?(:acc_add_2_title) ? archive.acc_add_2_title.to_s.strip : ""

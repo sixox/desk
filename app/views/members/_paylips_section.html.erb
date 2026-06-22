@@ -22,7 +22,7 @@
     <% if @selected_archive.blank? %>
       <div class="text-muted">برای این ماه آرشیو وجود ندارد.</div>
 
-    <% elsif @selected_accounting_confirmed %>
+    <% elsif @selected_accounting_confirmed && @selected_month.finalized == true %>
       <%= render partial: "salary_archives/payslip_card",
             locals: { archive: @selected_archive, user: @user, shamsi_month: @selected_month } %>
     <% else %>
