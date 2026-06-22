@@ -297,6 +297,39 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
+      if params[:archives].present?
+
+        params[:archives].each do |archive_id, attrs|
+
+          salary_archive = SalaryArchive.find_by(
+            id: archive_id,
+            shamsi_month_id: @shamsi_month.id
+          )
+
+          next unless salary_archive
+
+          user = salary_archive.user
+
+          # fixed salary with overtime users are always without deficit
+          if user.salary_profile&.pay_type == "fixed_with_overtime"
+
+            salary_archive.update!(
+              no_dificit: true
+            )
+
+          elsif attrs[:no_dificit].present?
+
+            # keep manual selection from form for other users
+            salary_archive.update!(
+              no_dificit: attrs[:no_dificit] == "1"
+            )
+
+          end
+
+        end
+
+      end
+
       # 6) If only overtime_confirm changed: adjust overtime minutes idempotently
       if touched_user_dates.any?
         touched_user_dates.each do |key|
@@ -550,7 +583,7 @@ class SalaryArchivesController < ApplicationController
 
         if used_vacation > 0 && user.salary_profile.present?
           user.salary_profile.update!(
-            remain_vacation: user.salary_profile.remain_vacation - used_vacation.round(5)
+            remain_vacation: user.salary_profile.remain_vacation - used_vacation.round(5) + 2.5
           )
 
           salary_archive = user.salary_archives.find_by(
@@ -569,7 +602,7 @@ class SalaryArchivesController < ApplicationController
 
         if salary_archive.user.salary_profile&.remain_vacation.present?
           salary_archive.update!(
-            remain_vacation: salary_archive.user.salary_profile.remain_vacation
+            remain_vacation: salary_archive.user.salary_profile.remain_vacation + 2.5
           )
         end
       end

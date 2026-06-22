@@ -369,7 +369,7 @@
                     </div>
 
                     <div class="row g-2">
-                      <div class="col-12 col-md-6">
+                      <div class="col-12 col-md-4">
                         <label class="form-label small mb-1">اضافه‌کاری دستی (ساعت)</label>
                         <%= number_field_tag "archives[#{archive.id}][manual_overtime_hours]",
                               @fmt_hours.call(archive.manual_overtime_minutes),
@@ -377,12 +377,27 @@
                               class: "form-control form-control-sm text-end" %>
                       </div>
 
-                      <div class="col-12 col-md-6">
+                      <div class="col-12 col-md-4">
                         <label class="form-label small mb-1">کسری دستی (ساعت)</label>
                         <%= number_field_tag "archives[#{archive.id}][manual_deficit_hours]",
                               @fmt_hours.call(archive.manual_deficit_minutes),
                               step: 0.25, min: 0,
                               class: "form-control form-control-sm text-end" %>
+                      </div>
+                      <div class="col-12 col-md-4">
+                         <label class="form-label small">
+                        وضعیت کسری
+                      </label>
+
+                      <%= select_tag "archives[#{archive.id}][no_dificit]",
+                            options_for_select(
+                              [
+                                ["دارای کسری", "0"],
+                                ["بدون کسری", "1"]
+                              ],
+                              archive.no_dificit ? "1" : "0"
+                            ),
+                            class: "form-select form-select-sm" %>
                       </div>
                     </div>
 
@@ -400,6 +415,7 @@
                         اضافه‌کاری دستی: <%= @fmt_hours.call(archive.manual_overtime_minutes) %> ساعت
                       </span>
                     </div>
+                 
                   </div>
                 </div>
 
