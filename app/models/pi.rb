@@ -27,6 +27,7 @@
     'MR.SEASON',
     'MR.SEIFI',
     'MS.SUJEETHA',
+    'MS.SHAFIEI',
     'MR.SHINSIKA'
   ]
 
