@@ -94,7 +94,9 @@
   'RPO40',
   'SLACK WAX',
   'UREA',
-  'UREA 46%'
+  'UREA 46%',
+  'CAR AB',
+  'CAR MO'
 ]
 
 
