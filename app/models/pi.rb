@@ -28,7 +28,8 @@
     'MR.SEIFI',
     'MS.SUJEETHA',
     'MS.SHAFIEI',
-    'MR.SHINSIKA'
+    'MR.SHINSIKA',
+    'JASWORLD'
   ]
   
 
