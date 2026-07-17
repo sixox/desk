@@ -120,7 +120,8 @@ class User < ApplicationRecord
     exchange: 'exchange',
     board: 'board',
     cob: 'cob' ,
-    logistics: 'logistics'   
+    logistics: 'logistics',
+    investment: 'investment'   
   }
 
 

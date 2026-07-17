@@ -26,8 +26,6 @@ class MembersController < ApplicationController
         KpiList.where(department: "Board of Directors")
       elsif @user.id == 17
         KpiList.where(department: "Strategy & Dev")
-      elsif @user.id == 27
-        KpiList.where(department: "AI & Investment")
       else
         KpiList.where(department: @user.role)
       end

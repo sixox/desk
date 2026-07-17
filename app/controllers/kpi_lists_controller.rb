@@ -33,8 +33,6 @@ class KpiListsController < ApplicationController
       @kpi_list.department = "IT"
     elsif current_user.is_manager && current_user.procurement?
       @kpi_list.department = "COO"
-    elsif current_user.id == 27
-      @kpi_list.department = "AI & Investment"
     elsif current_user.id == 10
       @kpi_list.department = "Logestic"
     elsif current_user.id == 17
