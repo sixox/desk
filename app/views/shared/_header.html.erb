@@ -52,7 +52,7 @@
           </li>
           
           <% end %>
-          <% if current_user.sales? || current_user.marketing? %>
+          <% if current_user.sales? || current_user.investment? %>
           <li>
             <%= link_to 'Reports', reports_path, class: 'dropdown-item' %>
           </li>
