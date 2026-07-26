@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  start_at: 2026-07-26
+  end_at: 2026-07-26
+  mission_type: MyString
+  description: MyText
+  confirmed: false
+  confirmed_at: 2026-07-26
+  where: MyString
+
+two:
+  user: two
+  start_at: 2026-07-26
+  end_at: 2026-07-26
+  mission_type: MyString
+  description: MyText
+  confirmed: false
+  confirmed_at: 2026-07-26
+  where: MyString

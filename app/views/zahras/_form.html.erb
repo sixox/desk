@@ -1,0 +1,32 @@
+<%= form_with(model: zahra) do |form| %>
+  <% if zahra.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(zahra.errors.count, "error") %> prohibited this zahra from being saved:</h2>
+
+      <ul>
+        <% zahra.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, style: "display: block" %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :family, style: "display: block" %>
+    <%= form.text_field :family %>
+  </div>
+
+  <div>
+    <%= form.label :phone, style: "display: block" %>
+    <%= form.number_field :phone %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,2 @@
+class Zahra < ApplicationRecord
+end

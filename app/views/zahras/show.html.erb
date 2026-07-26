@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @zahra %>
+
+<div>
+  <%= link_to "Edit this zahra", edit_zahra_path(@zahra) %> |
+  <%= link_to "Back to zahras", zahras_path %>
+
+  <%= button_to "Destroy this zahra", @zahra, method: :delete %>
+</div>

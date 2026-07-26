@@ -1,0 +1,19 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Zahras</h1>
+
+<div id="zahras">
+  <% @zahras.each do |zahra| %>
+    <%= render zahra %>
+    <p>
+      <%= link_to "Show this zahra", zahra %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New zahra", new_zahra_path %>
+
+
+<%= link_to new_mission_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
+          <i class="bi bi-plus"></i> Add mission
+          <%end %>

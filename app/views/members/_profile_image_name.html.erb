@@ -1,26 +1,54 @@
-<div class="card mb-4">
-	<div class="card-body text-center">
-		<%= image_tag 'dmu1.jpeg', alt: 'avatar', class: 'rounded-circle img-fluid', style: 'width: 120px;' %>
-		<h5 class="my-3"><%= user.name.titleize %></h5>
-		<p class="text-muted">
-			<%= user.role.capitalize %> 
-			<%= user.is_manager ? "Manager" : "Expert" %>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body text-center py-4">
 
-		</p>
-		<%= link_to new_vacation_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
-		Add Vacation
-		<% end %>
-		<%= link_to new_remote_day_path, data: { controller: "bs-modal-form" }, class: "btn btn-primary" do %>
-		Add Remote day
-		<% end %>
-		
+    <%= image_tag "dmu1.jpeg",
+      alt: "Avatar",
+      class: "rounded-circle border mb-3",
+      style: "width: 90px; height: 90px; object-fit: cover;" %>
 
-<%= link_to "ثبت ورود/خروج دستی", new_manual_entry_path, class: "btn btn-sm btn-outline-primary" %>
-<%= link_to "ثبت اضافه‌کاری", new_overtime_entry_path, class: "btn btn-sm btn-outline-success" %>
+    <h6 class="fw-semibold mb-1"><%= user.name.titleize %></h6>
 
+    <small class="text-muted d-block mb-4">
+      <%= user.role.capitalize %> ·
+      <%= user.is_manager ? "Manager" : "Expert" %>
+    </small>
 
+    <div class="d-grid gap-2">
 
+      <%= link_to new_vacation_path,
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-outline-dark" do %>
+        <i class="bi bi-calendar-plus me-1"></i>
+        Vacation
+      <% end %>
 
-	
-		</div>
-	</div>
+      <%= link_to new_remote_day_path,
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-outline-dark" do %>
+        <i class="bi bi-house-door me-1"></i>
+        Remote Day
+      <% end %>
+
+      <%= link_to new_mission_path,
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-sm btn-outline-dark" do %>
+        <i class="bi bi-briefcase me-1"></i>
+        Mission
+      <% end %>
+
+      <%= link_to new_manual_entry_path,
+          class: "btn btn-sm btn-outline-dark" do %>
+        <i class="bi bi-box-arrow-in-right me-1"></i>
+        Manual Entry
+      <% end %>
+
+      <%= link_to new_overtime_entry_path,
+          class: "btn btn-sm btn-outline-dark" do %>
+        <i class="bi bi-clock-history me-1"></i>
+        Overtime
+      <% end %>
+
+    </div>
+
+  </div>
+</div>

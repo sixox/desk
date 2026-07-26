@@ -1,0 +1,86 @@
+<div class="p-3">
+<%= form_with model: @mission do |f| %>
+
+<% if @mission.errors.any? %>
+<div class="alert alert-danger py-2">
+  <strong>Please fix the following:</strong>
+  <ul class="mb-0 mt-1 small">
+    <% @mission.errors.full_messages.each do |message| %>
+    <li><%= message %></li>
+    <% end %>
+  </ul>
+</div>
+<% end %>
+
+<div class="row g-3">
+
+<h3 class="mt-3 pb-3">Mission</h3>
+  <div class="col-md-6">
+
+    <%= f.label :start_at, class: "form-label small fw-semibold text-muted" %>
+    <span class="text-danger">*</span>
+    <%= f.datetime_field :start_at, class: "form-control" %>
+
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :end_at, class: "form-label small fw-semibold text-muted" %>
+    <span class="text-danger">*</span>
+    <%= f.datetime_field :end_at, class: "form-control" %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :mission_type, class: "form-label small fw-semibold text-muted" %>
+    <span class="text-danger">*</span>
+    <%= f.select :mission_type,
+    Mission::TYPES,
+    { prompt: "Select a mission type" },
+    { class: "form-select" } %>
+  </div>
+
+  <div class="col-md-6">
+    <%= f.label :location, "Location", class: "form-label small fw-semibold text-muted" %>
+    <%= f.text_field :location,
+    class: "form-control",
+      placeholder: "Office, Client Site, City..." %>
+    </div>
+
+    <div class="col-12">
+      <%= f.label :description, class: "form-label small fw-semibold text-muted" %>
+      <span class="text-danger">*</span>
+      <%= f.text_area :description,
+      rows: 4,
+      class: "form-control",
+        placeholder: "Describe the purpose of the mission..." %>
+      </div>
+
+      <div class="col-12">
+        <%= f.label :documents, class: "form-label small fw-semibold text-muted" %>
+        <%= f.file_field :documents,
+        multiple: true,
+        direct_upload: true,
+        class: "form-control" %>
+
+        <div class="form-text">
+          Attach supporting documents (optional).
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button"
+      class="btn btn-light border"
+      data-bs-dismiss="modal">
+      Cancel
+    </button>
+
+    <%= f.submit "Save Mission",
+    class: "btn btn-primary px-4",
+      data: { action: "click->bs-modal#submitEnd" } %>
+    </div>
+
+    <% end %>
+  </div>

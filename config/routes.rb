@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :zahras
   get 'user_manager_mappings/index'
   get 'user_manager_mappings/update'
   get 'payroll_attendances/index'
@@ -338,6 +339,8 @@ resources :salary_profiles, only: [] do
     patch :bulk_update
   end
 end
+
+resources :missions
 
 
 
