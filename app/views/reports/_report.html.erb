@@ -35,7 +35,7 @@
 			</div>
 			<br>
 
-				<% if current_user == report.user && report.created_within_24_hours? %>
+				<% if current_user == report.user && (report.created_within_24_hours? || true) %>
 				<%= link_to "Edit", edit_report_path(report), data: { controller: "bs-modal-form" }, class: "btn btn-info" %>
 				<% end %>
 			
