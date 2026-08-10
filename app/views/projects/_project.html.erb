@@ -7,7 +7,7 @@
           <span class="text-danger fw-bold">
               NO_PI
               <% if current_user.id == 5 %>
-              <%= link_to new_project_swift_path(@project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
+              <%= link_to new_project_swift_path(project), data: { controller: "bs-modal-form" }, class: "text-decoration-none" do %>
               <span class="mb-1 timeline-h5">ADVANCE SWIFT</span>
               <% end %>
               <% end %>
