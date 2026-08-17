@@ -642,7 +642,9 @@ class SalaryArchivesController < ApplicationController
 
     archives = SalaryArchive
       .where(shamsi_month_id: @shamsi_month.id)
-      .joins(user: :salary_profile)    user_ids = archives.pluck(:user_id).uniq
+      .joins(user: :salary_profile)  
+        
+    user_ids = archives.pluck(:user_id).uniq
 
     profiles_by_user_id =
       SalaryProfile.where(user_id: user_ids).index_by(&:user_id)
