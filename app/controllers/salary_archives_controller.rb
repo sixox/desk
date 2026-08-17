@@ -5,6 +5,12 @@ class SalaryArchivesController < ApplicationController
 
   def manager_review
     user_ids = current_user.direct_reports.pluck(:id) | [current_user.id]
+
+    user_ids = User
+      .where(id: user_ids)
+      .joins(:salary_profile)
+      .pluck(:id)
+
     @users = User.where(id: user_ids).by_name
 
     @archives = SalaryArchive
@@ -60,7 +66,16 @@ class SalaryArchivesController < ApplicationController
 
   def bulk_update_days
     allowed_user_ids = current_user.direct_reports.pluck(:id) | [current_user.id]
-    allowed_archives = SalaryArchive.where(shamsi_month_id: @shamsi_month.id, user_id: allowed_user_ids)
+
+    allowed_user_ids = User
+      .where(id: allowed_user_ids)
+      .joins(:salary_profile)
+      .pluck(:id)
+
+    allowed_archives = SalaryArchive.where(
+      shamsi_month_id: @shamsi_month.id,
+      user_id: allowed_user_ids
+    )
 
     days_params      = params[:days] || {}
     remote_updates   = params[:remote_updates] || {}
@@ -392,8 +407,10 @@ class SalaryArchivesController < ApplicationController
     scope = SalaryArchive
       .includes(:days)
       .where(shamsi_month_id: @shamsi_month.id)
+      .joins(user: :salary_profile)
 
     user_ids = scope.pluck(:user_id).uniq
+
     @users = User.where(id: user_ids).by_name
     @archives = scope.index_by(&:user_id)
 
@@ -447,8 +464,12 @@ class SalaryArchivesController < ApplicationController
     authorize_hr_confirm!
 
     SalaryArchive
+      .joins(user: :salary_profile)
       .where(shamsi_month_id: @shamsi_month.id)
-      .update_all(hr_confirmed: true, hr_confirmed_at: Time.current)
+      .update_all(
+        hr_confirmed: true,
+        hr_confirmed_at: Time.current
+      )
 
     redirect_to hr_review_salary_archives_path(month_id: @shamsi_month.id),
       notice: "تأیید HR ثبت شد."
@@ -460,8 +481,10 @@ class SalaryArchivesController < ApplicationController
     scope = SalaryArchive
       .includes(:days)
       .where(shamsi_month_id: @shamsi_month.id)
+      .joins(user: :salary_profile)
 
     user_ids = scope.pluck(:user_id).uniq
+
     @users = User.where(id: user_ids).by_name
     @archives = scope.index_by(&:user_id)
 
@@ -617,8 +640,9 @@ class SalaryArchivesController < ApplicationController
   def accounting_confirm_all
     authorize_accounting_review!
 
-    archives = SalaryArchive.where(shamsi_month_id: @shamsi_month.id)
-    user_ids = archives.pluck(:user_id).uniq
+    archives = SalaryArchive
+      .where(shamsi_month_id: @shamsi_month.id)
+      .joins(user: :salary_profile)    user_ids = archives.pluck(:user_id).uniq
 
     profiles_by_user_id =
       SalaryProfile.where(user_id: user_ids).index_by(&:user_id)
@@ -745,8 +769,12 @@ class SalaryArchivesController < ApplicationController
   def payslips
       authorize_hr_review!
 
-      scope = SalaryArchive.includes(:user).where(shamsi_month_id: @shamsi_month.id)
-      @archives = scope.order("user_id ASC")
+     scope = SalaryArchive
+      .includes(:user)
+      .where(shamsi_month_id: @shamsi_month.id)
+      .joins(user: :salary_profile)
+
+    @archives = scope.order("user_id ASC")
 
       respond_to do |format|
         format.html
