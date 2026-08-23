@@ -55,11 +55,8 @@ class SalaryArchivesController < ApplicationController
 
       # ------------------------------------------------------------
       # 1. Update archive-level manual values
-      #
-      # IMPORTANT:
-      # Updating archive-level values does NOT touch/recalculate
-      # every SalaryArchiveDay anymore.
       # ------------------------------------------------------------
+
       archives_params.each do |archive_id, attrs|
         archive = allowed_archives.find_by(id: archive_id)
         next unless archive
@@ -85,22 +82,12 @@ class SalaryArchivesController < ApplicationController
         end
 
         touched_archive_ids << archive.id
-
-        # DO NOT add all archive days here.
-        #
-        # Previously this did:
-        #
-        # archive.days.pluck(:id).each do |day_id|
-        #   touched_day_ids << day_id
-        # end
-        #
-        # That caused every day to be recalculated whenever the
-        # archive was submitted.
       end
 
       # ------------------------------------------------------------
       # 2. Vacation confirmations
       # ------------------------------------------------------------
+
       vacation_updates.each do |vac_id, checked|
         vacation = Vacation.find_by(id: vac_id)
         next unless vacation
@@ -145,6 +132,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 3. External overtime confirmations
       # ------------------------------------------------------------
+
       overtime_updates.each do |ot_id, checked|
         overtime = OvertimeEntry.find_by(id: ot_id)
         next unless overtime
@@ -175,6 +163,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 4. Update submitted day values
       # ------------------------------------------------------------
+
       days_params.each do |day_id, attrs|
         day =
           SalaryArchiveDay
@@ -210,6 +199,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 5. Remote day confirmations
       # ------------------------------------------------------------
+
       remote_updates.each do |remote_id, checked|
         remote_day = RemoteDay.find_by(id: remote_id)
         next unless remote_day
@@ -240,6 +230,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 6. Build current maps AFTER all updates
       # ------------------------------------------------------------
+
       vac_map =
         build_vacation_info_map(
           allowed_user_ids
@@ -271,6 +262,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 7. Recalculate ONLY touched days
       # ------------------------------------------------------------
+
       if touched_day_ids.any?
         days =
           SalaryArchiveDay
@@ -295,6 +287,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 8. Recalculate archive totals
       # ------------------------------------------------------------
+
       if touched_archive_ids.any?
         SalaryArchive
           .where(id: touched_archive_ids.to_a)
@@ -305,6 +298,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 9. Recalculate mission payroll
       # ------------------------------------------------------------
+
       if touched_archive_ids.any?
         recalculate_mission_payroll_for_archives(
           SalaryArchive
@@ -316,6 +310,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 10. Manager confirmation
       # ------------------------------------------------------------
+
       if touched_archive_ids.any?
         SalaryArchive
           .where(id: touched_archive_ids.to_a)
@@ -332,6 +327,7 @@ class SalaryArchivesController < ApplicationController
       # ------------------------------------------------------------
       # 11. Final confirmation
       # ------------------------------------------------------------
+
       if params[:final_confirm].to_s == "1"
         SalaryArchive
           .where(id: touched_archive_ids.to_a)
@@ -1259,12 +1255,6 @@ class SalaryArchivesController < ApplicationController
 
   # ============================================================
   # REQUIRED WORKING TIME
-  #
-  # Normal INCLUDING Friday:
-  #   08:30 -> 16:30 = 480
-  #
-  # Thursday:
-  #   08:30 -> 12:30 = 240
   # ============================================================
 
   def required_minutes_for(
@@ -1280,22 +1270,6 @@ class SalaryArchivesController < ApplicationController
 
   # ============================================================
   # FLEXIBLE ATTENDANCE WINDOWS
-  #
-  # Normal:
-  #
-  #   Earliest arrival: 08:30
-  #   Latest valid arrival: 09:15
-  #
-  #   Earliest valid exit: 16:30
-  #   Latest valid exit: 17:15
-  #
-  # Thursday:
-  #
-  #   Earliest arrival: 08:30
-  #   Latest valid arrival: 09:15
-  #
-  #   Earliest valid exit: 12:30
-  #   Latest valid exit: 13:15
   # ============================================================
 
   def attendance_boundaries_for(date)
@@ -2252,6 +2226,7 @@ class SalaryArchivesController < ApplicationController
     # ------------------------------------------------------------
     # 1. DAILY CONFIRMED VACATION
     # ------------------------------------------------------------
+
     vinfo =
       (vac_map[user_id] || {})[date]
 
@@ -2274,6 +2249,7 @@ class SalaryArchivesController < ApplicationController
     # ------------------------------------------------------------
     # 2. GLOBAL REMOTE DAY
     # ------------------------------------------------------------
+
     if global_remote_dates.include?(date)
       confirmed_ot =
         outside_system_overtime_minutes(
@@ -2293,6 +2269,7 @@ class SalaryArchivesController < ApplicationController
     # ------------------------------------------------------------
     # 3. REMOTE DAY
     # ------------------------------------------------------------
+
     remote_day =
       RemoteDay.find_by(
         user_id: user_id,
@@ -2337,6 +2314,7 @@ class SalaryArchivesController < ApplicationController
     # ------------------------------------------------------------
     # 4. NORMAL ATTENDANCE CALCULATION
     # ------------------------------------------------------------
+
     deficit_minutes,
       base_overtime_minutes =
       compute_deficit_and_base_overtime_minutes(
@@ -2353,6 +2331,7 @@ class SalaryArchivesController < ApplicationController
     # ------------------------------------------------------------
     # 5. EXTERNAL CONFIRMED OVERTIME
     # ------------------------------------------------------------
+
     confirmed_ot_minutes =
       outside_system_overtime_minutes(
         ot_map,
@@ -2374,7 +2353,7 @@ class SalaryArchivesController < ApplicationController
   end
 
   # ============================================================
-  # CORRECT FLEXIBLE ATTENDANCE CALCULATION
+  # FLEXIBLE ATTENDANCE CALCULATION
   #
   # NORMAL DAY
   #
@@ -2384,23 +2363,12 @@ class SalaryArchivesController < ApplicationController
   # Departure:
   #   16:30 -> 17:15
   #
-  # Examples:
-  #
-  #   08:30 -> 16:30
-  #   deficit  = 0
-  #   overtime = 0
-  #
-  #   09:15 -> 17:15
-  #   deficit  = 0
-  #   overtime = 0
+  # Example:
   #
   #   10:00 -> 20:00
-  #   arrival deficit = 45
-  #   overtime = 165
   #
-  #   09:00 -> 16:00
-  #   arrival deficit = 0
-  #   departure deficit = 30
+  #   deficit = 45
+  #   overtime = 165
   #
   # THURSDAY
   #
@@ -2410,17 +2378,26 @@ class SalaryArchivesController < ApplicationController
   # Departure:
   #   12:30 -> 13:15
   #
-  # Mission / vacation:
-  #   Can cover deficit.
+  # FRIDAY / OFF DAY
   #
-  # Mission outside working hours:
-  #   Does NOT reduce attendance deficit.
-  #   It is handled by mission payroll separately.
+  # There is NO required attendance deficit.
+  #
+  # The COMPLETE actual attendance interval is overtime.
+  #
+  # Examples:
+  #
+  #   Friday 08:30 -> 16:30
+  #   overtime = 480
+  #
+  #   Friday 10:00 -> 18:00
+  #   overtime = 480
+  #
+  #   Off day 09:00 -> 14:00
+  #   overtime = 300
+  #
+  # Confirmed OvertimeEntry is still added separately.
   #
   # Mission does NOT create attendance overtime.
-  #
-  # Attendance overtime is ONLY time after the flexible
-  # departure boundary.
   # ============================================================
 
   def compute_deficit_and_base_overtime_minutes(
@@ -2432,17 +2409,12 @@ class SalaryArchivesController < ApplicationController
     mission_map: {},
     vacation_intervals_map: nil
   )
-    required_minutes =
-      required_minutes_for(
-        date,
-        off_dates: off_dates
-      )
-
-    return [0, 0] if required_minutes <= 0
-
     # ------------------------------------------------------------
-    # If there is no attendance, the whole required working
-    # period is deficit unless vacation/mission covers it.
+    # Parse attendance FIRST.
+    #
+    # This must happen BEFORE checking required_minutes because
+    # Friday/off days have required_minutes = 0 but their actual
+    # attendance must still become overtime.
     # ------------------------------------------------------------
 
     in_time = nil
@@ -2473,6 +2445,62 @@ class SalaryArchivesController < ApplicationController
     end
 
     # ------------------------------------------------------------
+    # FRIDAY / OFF DAY
+    #
+    # Complete actual attendance is overtime.
+    #
+    # IMPORTANT:
+    # We do NOT use the flexible 17:15 boundary here.
+    #
+    # Friday:
+    #   08:30 -> 16:30 = 480 OT
+    #
+    # Off day:
+    #   10:00 -> 18:00 = 480 OT
+    #
+    # There is no attendance deficit.
+    # ------------------------------------------------------------
+
+    if off_dates.include?(date) ||
+       date.friday?
+
+      base_overtime_minutes = 0
+
+      if in_time.present? &&
+         out_time.present?
+
+        base_overtime_minutes =
+          interval_minutes(
+            in_time,
+            out_time
+          )
+      end
+
+      # No required attendance on these days.
+      #
+      # Any actual attendance is overtime.
+      #
+      # Manual adjustment remains an additional working-time
+      # credit, but there is no deficit to reduce here.
+      return [
+        0,
+        base_overtime_minutes
+      ]
+    end
+
+    # ------------------------------------------------------------
+    # NORMAL / THURSDAY REQUIRED TIME
+    # ------------------------------------------------------------
+
+    required_minutes =
+      required_minutes_for(
+        date,
+        off_dates: off_dates
+      )
+
+    return [0, 0] if required_minutes <= 0
+
+    # ------------------------------------------------------------
     # FLEXIBLE BOUNDARIES
     # ------------------------------------------------------------
 
@@ -2484,35 +2512,19 @@ class SalaryArchivesController < ApplicationController
 
     # ------------------------------------------------------------
     # ATTENDANCE DEFICIT
-    #
-    # We calculate the two sides independently.
-    #
-    # Late arrival:
-    #
-    #   if in > 09:15
-    #   deficit = in - 09:15
-    #
-    # Early departure:
-    #
-    #   if out < 16:30 / 12:30
-    #   deficit = boundary - out
-    #
-    # This is exactly what gives:
-    #
-    # 10:00 -> 20:00
-    #
-    #   10:00 - 09:15 = 45 deficit
-    #   20:00 - 17:15 = 165 overtime
-    #
-    # They coexist.
     # ------------------------------------------------------------
 
     attendance_deficit_intervals = []
 
     if in_time.present? && out_time.present?
+
       # ----------------------------------------
       # Late arrival
+      #
+      # 09:15 is the end of flexibility.
+      # After that every minute is deficit.
       # ----------------------------------------
+
       if in_time > arrival_flexible_end
         attendance_deficit_intervals << [
           arrival_flexible_end,
@@ -2522,21 +2534,27 @@ class SalaryArchivesController < ApplicationController
 
       # ----------------------------------------
       # Early departure
+      #
+      # 16:30 normal
+      # 12:30 Thursday
+      #
+      # Before this point is deficit.
       # ----------------------------------------
+
       if out_time < departure_start
         attendance_deficit_intervals << [
           out_time,
           departure_start
         ]
       end
+
     else
       # No complete attendance.
       #
       # Credit can still come from confirmed
       # vacation or mission below.
-      #
-      # Therefore the initial deficit is represented
-      # by the official working interval.
+      # ----------------------------------------------------------
+
       attendance_deficit_intervals << [
         arrival_flexible_end,
         departure_start
@@ -2544,15 +2562,17 @@ class SalaryArchivesController < ApplicationController
     end
 
     # ------------------------------------------------------------
-    # OVERTIME
+    # ATTENDANCE OVERTIME
     #
-    # Only actual attendance after the flexible departure
-    # boundary creates attendance overtime.
+    # Only time after 17:15 / 13:15 counts as normal attendance OT.
     #
     # Example:
     #
     # 10:00 -> 20:00
-    # 17:15 -> 20:00 = 165
+    #
+    # 20:00 - 17:15 = 165 OT
+    #
+    # The 45-minute late arrival deficit remains independent.
     # ------------------------------------------------------------
 
     base_overtime_minutes = 0
@@ -2568,21 +2588,10 @@ class SalaryArchivesController < ApplicationController
     end
 
     # ------------------------------------------------------------
-    # CREDITED DEFICIT INTERVALS
-    #
-    # Start with the deficit portions created by attendance.
-    # Then vacation and mission can cover those missing periods.
+    # VACATION / MISSION COVERAGE
     # ------------------------------------------------------------
 
-    credited_deficit_intervals =
-      attendance_deficit_intervals.dup
-
-    # ------------------------------------------------------------
-    # CONFIRMED HOURLY VACATION
-    #
-    # Vacation is allowed to cover working-time deficit.
-    # It is clipped to the official working interval.
-    # ------------------------------------------------------------
+    coverage_intervals = []
 
     vinfo =
       (vac_map[user_id] || {})[date]
@@ -2602,18 +2611,10 @@ class SalaryArchivesController < ApplicationController
         vacation_intervals,
         date
       ).each do |interval|
-        credited_deficit_intervals << interval
+
+        coverage_intervals << interval
       end
     end
-
-    # ------------------------------------------------------------
-    # MISSION
-    #
-    # Only mission time inside the official working period
-    # can cover attendance deficit.
-    #
-    # Mission after the working period does NOT erase deficit.
-    # ------------------------------------------------------------
 
     missions =
       (
@@ -2624,23 +2625,12 @@ class SalaryArchivesController < ApplicationController
       missions,
       date
     ).each do |interval|
-      credited_deficit_intervals << interval
+
+      coverage_intervals << interval
     end
 
     # ------------------------------------------------------------
-    # Calculate total deficit coverage.
-    #
-    # IMPORTANT:
-    #
-    # We do NOT simply calculate:
-    #
-    # required - total attendance
-    #
-    # anymore.
-    #
-    # We calculate the actual missing periods caused by late
-    # arrival / early departure and then remove vacation/mission
-    # coverage from those periods.
+    # RAW DEFICIT
     # ------------------------------------------------------------
 
     raw_deficit_minutes =
@@ -2648,49 +2638,15 @@ class SalaryArchivesController < ApplicationController
         attendance_deficit_intervals
       )
 
-    credited_minutes =
-      merged_interval_minutes(
-        credited_deficit_intervals
-      )
-
-    # The credited intervals include the original deficit
-    # intervals plus vacation/mission. Therefore calculate
-    # how much of the ORIGINAL deficit is actually covered.
-    #
-    # Build the original deficit interval set and compare
-    # it against vacation/mission coverage separately.
-
-    coverage_intervals = []
-
-    if hourly_confirmed
-      vacation_intervals =
-        (
-          vacation_intervals_map[user_id] || {}
-        )[date] || []
-
-      vacation_working_intervals_for(
-        vacation_intervals,
-        date
-      ).each do |interval|
-        coverage_intervals << interval
-      end
-    end
-
-    mission_working_intervals_for(
-      missions,
-      date
-    ).each do |interval|
-      coverage_intervals << interval
-    end
-
     # ------------------------------------------------------------
-    # Coverage must be clipped to the actual deficit intervals.
+    # COVER ONLY THE ACTUAL DEFICIT PERIODS
     # ------------------------------------------------------------
 
     covered_deficit_intervals = []
 
     attendance_deficit_intervals.each do |deficit_from, deficit_to|
       coverage_intervals.each do |cover_from, cover_to|
+
         clipped =
           clipped_interval(
             cover_from,
@@ -2717,9 +2673,6 @@ class SalaryArchivesController < ApplicationController
 
     # ------------------------------------------------------------
     # MANUAL ADJUSTMENT
-    #
-    # Existing manual_adjust_minutes is still respected as
-    # additional working-time credit.
     # ------------------------------------------------------------
 
     manual_adjust =
@@ -2732,7 +2685,9 @@ class SalaryArchivesController < ApplicationController
           manual_adjust,
           0
         ].max
+
     elsif manual_adjust < 0
+
       deficit_minutes +=
         manual_adjust.abs
     end
