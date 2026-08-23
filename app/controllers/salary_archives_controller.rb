@@ -15,7 +15,10 @@ class SalaryArchivesController < ApplicationController
 
     @archives = SalaryArchive
       .includes(:days)
-      .where(shamsi_month_id: @shamsi_month.id, user_id: user_ids)
+      .where(
+        shamsi_month_id: @shamsi_month.id,
+        user_id: user_ids
+      )
       .index_by(&:user_id)
 
     load_review_data(user_ids)
@@ -69,7 +72,9 @@ class SalaryArchivesController < ApplicationController
             no_dificit: attrs[:no_dificit].to_s == "1"
           )
         elsif archive.user.salary_profile&.pay_type == "fixed_with_overtime"
-          archive.update!(no_dificit: true)
+          archive.update!(
+            no_dificit: true
+          )
         end
 
         touched_archive_ids << archive.id
@@ -110,7 +115,10 @@ class SalaryArchivesController < ApplicationController
         next unless archive
 
         (from..to).each do |date|
-          day = archive.days.find_by(work_date: date)
+          day = archive.days.find_by(
+            work_date: date
+          )
+
           next unless day
 
           touched_archive_ids << archive.id
@@ -202,7 +210,7 @@ class SalaryArchivesController < ApplicationController
       end
 
       # ------------------------------------------------------------
-      # 6. Build ALL current maps AFTER updates
+      # 6. Build current maps AFTER all updates
       # ------------------------------------------------------------
       vac_map = build_vacation_info_map(
         allowed_user_ids
@@ -228,7 +236,7 @@ class SalaryArchivesController < ApplicationController
         fetch_global_remote_dates(@shamsi_month)
 
       # ------------------------------------------------------------
-      # 7. Recalculate EVERY touched day exactly once
+      # 7. Recalculate touched days
       # ------------------------------------------------------------
       if touched_day_ids.any?
         days = SalaryArchiveDay
@@ -332,8 +340,10 @@ class SalaryArchivesController < ApplicationController
         hr_confirmed_at: Time.current
       )
 
-    redirect_to hr_review_salary_archives_path(month_id: @shamsi_month.id),
-      notice: "تأیید HR ثبت شد."
+    redirect_to hr_review_salary_archives_path(
+      month_id: @shamsi_month.id
+    ),
+    notice: "تأیید HR ثبت شد."
   end
 
   def accounting_review
@@ -358,16 +368,21 @@ class SalaryArchivesController < ApplicationController
     last_month = ShamsiMonth.order(start_at: :asc).last
 
     unless last_month
-      redirect_back fallback_location: root_path, alert: "هیچ ماهی پیدا نشد."
+      redirect_back(
+        fallback_location: root_path,
+        alert: "هیچ ماهی پیدا نشد."
+      )
       return
     end
 
     SalaryArchive.transaction do
-      archives = SalaryArchive.where(shamsi_month_id: last_month.id)
+      archives = SalaryArchive.where(
+        shamsi_month_id: last_month.id
+      )
 
-      SalaryArchiveDay.where(
-        salary_archive_id: archives.select(:id)
-      ).delete_all
+      SalaryArchiveDay
+        .where(salary_archive_id: archives.select(:id))
+        .delete_all
 
       archives.delete_all
     end
@@ -387,6 +402,7 @@ class SalaryArchivesController < ApplicationController
           month_id: @shamsi_month.id
         ),
         alert: "This month is already closed."
+
         return
       end
 
@@ -394,13 +410,14 @@ class SalaryArchivesController < ApplicationController
       end_date   = @shamsi_month.end_at
 
       vacations_by_user =
-        Vacation.includes(:user)
-                .where(
-                  "start_at <= ? AND end_at >= ?",
-                  end_date,
-                  start_date
-                )
-                .group_by(&:user)
+        Vacation
+          .includes(:user)
+          .where(
+            "start_at <= ? AND end_at >= ?",
+            end_date,
+            start_date
+          )
+          .group_by(&:user)
 
       vacations_by_user.each do |user, vacations|
         total_days = 0
@@ -408,9 +425,9 @@ class SalaryArchivesController < ApplicationController
 
         vacations.each do |vacation|
           if vacation.hourly?
-            hours =
-              ((vacation.end_at - vacation.start_at) / 1.hour)
-                .round(5)
+            hours = (
+              (vacation.end_at - vacation.start_at) / 1.hour
+            ).round(5)
 
             total_hours += hours
           else
@@ -458,13 +475,17 @@ class SalaryArchivesController < ApplicationController
         end
       end
 
-      @shamsi_month.salary_archives.includes(:user).each do |salary_archive|
+      @shamsi_month.salary_archives
+        .includes(:user)
+        .each do |salary_archive|
+
         next if salary_archive.remain_vacation.present?
 
         if salary_archive.user.salary_profile&.remain_vacation.present?
           salary_archive.update!(
             remain_vacation:
-              salary_archive.user.salary_profile.remain_vacation + 2.5
+              salary_archive.user.salary_profile.remain_vacation +
+              2.5
           )
         end
       end
@@ -473,7 +494,9 @@ class SalaryArchivesController < ApplicationController
         @shamsi_month.salary_archives.includes(:user)
       )
 
-      @shamsi_month.update!(finalized: true)
+      @shamsi_month.update!(
+        finalized: true
+      )
     end
 
     redirect_to accounting_review_salary_archives_path(
@@ -578,22 +601,44 @@ class SalaryArchivesController < ApplicationController
           accounting_confirmed: true,
           accounting_confirmed_at: now,
 
-          seniority_base: seniority_base_adj,
-          monthly_seniority_base: monthly_seniority_adj,
+          seniority_base:
+            seniority_base_adj,
 
-          housing_allowance: housing_allowance,
-          food_allowance: food_allowance,
-          marriage_allowance: marriage_allowance,
-          child_allowance: child_allowance,
-          total_salary: total_salary,
-          hourly_rate: hourly_rate,
+          monthly_seniority_base:
+            monthly_seniority_adj,
 
-          loan_installment: loan_installment,
-          fund_three_percent: fund_three_percent,
-          fund_six_percent: fund_six_percent,
-          supplementary_insurance: supp_ins,
+          housing_allowance:
+            housing_allowance,
 
-          insurance: insurance_value
+          food_allowance:
+            food_allowance,
+
+          marriage_allowance:
+            marriage_allowance,
+
+          child_allowance:
+            child_allowance,
+
+          total_salary:
+            total_salary,
+
+          hourly_rate:
+            hourly_rate,
+
+          loan_installment:
+            loan_installment,
+
+          fund_three_percent:
+            fund_three_percent,
+
+          fund_six_percent:
+            fund_six_percent,
+
+          supplementary_insurance:
+            supp_ins,
+
+          insurance:
+            insurance_value
         )
 
         archive.save!(validate: false)
@@ -626,41 +671,49 @@ class SalaryArchivesController < ApplicationController
         a.update!(
           acc_add_1_title:
             attrs[:acc_add_1_title].to_s.strip.presence,
+
           acc_add_1_amount:
             attrs[:acc_add_1_amount].to_i,
 
           acc_add_2_title:
             attrs[:acc_add_2_title].to_s.strip.presence,
+
           acc_add_2_amount:
             attrs[:acc_add_2_amount].to_i,
 
           acc_ded_1_title:
             attrs[:acc_ded_1_title].to_s.strip.presence,
+
           acc_ded_1_amount:
             attrs[:acc_ded_1_amount].to_i,
 
           acc_ded_2_title:
             attrs[:acc_ded_2_title].to_s.strip.presence,
+
           acc_ded_2_amount:
             attrs[:acc_ded_2_amount].to_i,
 
           legal_add_1_title:
             attrs[:legal_add_1_title].to_s.strip.presence,
+
           legal_add_1_amount:
             attrs[:legal_add_1_amount].to_i,
 
           legal_add_2_title:
             attrs[:legal_add_2_title].to_s.strip.presence,
+
           legal_add_2_amount:
             attrs[:legal_add_2_amount].to_i,
 
           legal_ded_1_title:
             attrs[:legal_ded_1_title].to_s.strip.presence,
+
           legal_ded_1_amount:
             attrs[:legal_ded_1_amount].to_i,
 
           legal_ded_2_title:
             attrs[:legal_ded_2_title].to_s.strip.presence,
+
           legal_ded_2_amount:
             attrs[:legal_ded_2_amount].to_i
         )
@@ -695,7 +748,10 @@ class SalaryArchivesController < ApplicationController
 
         adjust_30_to_month =
           lambda do |monthly_amount|
-            ((monthly_amount.to_f / 30.0) * month_days).round
+            (
+              (monthly_amount.to_f / 30.0) *
+              month_days
+            ).round
           end
 
         hours =
@@ -706,281 +762,294 @@ class SalaryArchivesController < ApplicationController
         helpers = view_context
 
         money_ui =
-          ->(n) { helpers.number_with_delimiter(n.to_i) }
+          lambda do |n|
+            helpers.number_with_delimiter(n.to_i)
+          end
 
         num_ui =
-          ->(n) { helpers.number_with_delimiter(n) }
+          lambda do |n|
+            helpers.number_with_delimiter(n)
+          end
 
         bom = "\uFEFF"
 
-        csv_data = bom + CSV.generate(headers: true) do |csv|
-          csv << [
-            "نام ماه",
-            "شناسه کاربر",
-            "نام کاربر",
+        csv_data =
+          bom +
+          CSV.generate(headers: true) do |csv|
 
-            "پرداختی اول (UI)",
-            "پرداختی دوم (UI)",
+            csv << [
+              "نام ماه",
+              "شناسه کاربر",
+              "نام کاربر",
 
-            "حقوق پایه (UI)",
-            "پایه سنوات (UI)",
-            "حق مسکن و خواروبار (UI)",
-            "ایاب و ذهاب (UI)",
-            "حق تأهل (UI)",
-            "حق اولاد (UI)",
+              "پرداختی اول (UI)",
+              "پرداختی دوم (UI)",
 
-            "حقوق قانونی (UI)",
-            "بیمه (۷٪) (UI)",
+              "حقوق پایه (UI)",
+              "پایه سنوات (UI)",
+              "حق مسکن و خواروبار (UI)",
+              "ایاب و ذهاب (UI)",
+              "حق تأهل (UI)",
+              "حق اولاد (UI)",
 
-            "حقوق مصوب (#{month_days} روز) (UI)",
-            "مجموع ساعات کاری",
-            "نرخ ساعتی (UI)",
-            "ساعت اضافه‌کاری",
-            "ساعت کسری",
+              "حقوق قانونی (UI)",
+              "بیمه (۷٪) (UI)",
 
-            "قسط وام (UI)",
-            "ذخیره ۳٪ (UI)",
-            "ذخیره ۶٪ (UI)",
-            "کسر کسری (ساعت × نرخ × ۲) (UI)",
-            "افزودن اضافه‌کاری (×۱.۴) (UI)",
+              "حقوق مصوب (#{month_days} روز) (UI)",
+              "مجموع ساعات کاری",
+              "نرخ ساعتی (UI)",
+              "ساعت اضافه‌کاری",
+              "ساعت کسری",
 
-            "بیمه تکمیلی (UI)",
-            "افزایشی حسابداری ۱ - عنوان",
-            "افزایشی حسابداری ۱ - مبلغ (UI)",
-            "افزایشی حسابداری ۲ - عنوان",
-            "افزایشی حسابداری ۲ - مبلغ (UI)",
-            "کاهشی حسابداری ۱ - عنوان",
-            "کاهشی حسابداری ۱ - مبلغ (UI)",
-            "کاهشی حسابداری ۲ - عنوان",
-            "کاهشی حسابداری ۲ - مبلغ (UI)",
+              "قسط وام (UI)",
+              "ذخیره ۳٪ (UI)",
+              "ذخیره ۶٪ (UI)",
+              "کسر کسری (ساعت × نرخ × ۲) (UI)",
+              "افزودن اضافه‌کاری (×۱.۴) (UI)",
 
-            "جمع افزایشی حسابداری (UI)",
-            "جمع کسورات حسابداری (UI)",
-            "خالص آیتم‌های حسابداری (UI)"
-          ]
+              "بیمه تکمیلی (UI)",
+              "افزایشی حسابداری ۱ - عنوان",
+              "افزایشی حسابداری ۱ - مبلغ (UI)",
+              "افزایشی حسابداری ۲ - عنوان",
+              "افزایشی حسابداری ۲ - مبلغ (UI)",
+              "کاهشی حسابداری ۱ - عنوان",
+              "کاهشی حسابداری ۱ - مبلغ (UI)",
+              "کاهشی حسابداری ۲ - عنوان",
+              "کاهشی حسابداری ۲ - مبلغ (UI)",
 
-          @archives.each do |archive|
-            user = archive.user
+              "جمع افزایشی حسابداری (UI)",
+              "جمع کسورات حسابداری (UI)",
+              "خالص آیتم‌های حسابداری (UI)"
+            ]
 
-            base_salary =
-              archive.seniority_base.to_i
+            @archives.each do |archive|
+              user = archive.user
 
-            paye_sanavat =
-              archive.monthly_seniority_base.to_i
+              base_salary =
+                archive.seniority_base.to_i
 
-            marriage =
-              archive.marriage_allowance.to_i
+              paye_sanavat =
+                archive.monthly_seniority_base.to_i
 
-            child =
-              archive.child_allowance.to_i
+              marriage =
+                archive.marriage_allowance.to_i
 
-            housing =
-              archive.housing_allowance.to_i
+              child =
+                archive.child_allowance.to_i
 
-            food =
-              archive.food_allowance.to_i
+              housing =
+                archive.housing_allowance.to_i
 
-            legal_salary =
-              base_salary +
-              marriage +
-              housing +
-              paye_sanavat +
-              child
+              food =
+                archive.food_allowance.to_i
 
-            insurance =
-              archive.insurance.to_i
+              legal_salary =
+                base_salary +
+                marriage +
+                housing +
+                paye_sanavat +
+                child
 
-            payment_1 =
-              legal_salary - insurance
+              insurance =
+                archive.insurance.to_i
 
-            total_salary_adj =
-              adjust_30_to_month.call(
-                archive.total_salary.to_i
-              )
+              payment_1 =
+                legal_salary - insurance
 
-            total_work_h =
-              hours.call(
-                archive.total_work_minutes
-              )
+              total_salary_adj =
+                adjust_30_to_month.call(
+                  archive.total_salary.to_i
+                )
 
-            overtime_mins =
-              if archive.manual_overtime_minutes.to_i != 0
-                archive.manual_overtime_minutes.to_i
-              else
-                archive.overtime_minutes.to_i
-              end
+              total_work_h =
+                hours.call(
+                  archive.total_work_minutes
+                )
 
-            deficit_mins =
-              if archive.no_dificit == true
-                0
-              else
-                if archive.manual_deficit_minutes.to_i != 0
+              overtime_mins =
+                if archive.manual_overtime_minutes.to_i != 0
+                  archive.manual_overtime_minutes.to_i
+                else
+                  archive.overtime_minutes.to_i
+                end
+
+              deficit_mins =
+                if archive.no_dificit == true
+                  0
+                elsif archive.manual_deficit_minutes.to_i != 0
                   archive.manual_deficit_minutes.to_i
                 else
                   archive.deficit_minutes.to_i
                 end
-              end
 
-            overtime_h =
-              hours.call(overtime_mins)
+              overtime_h =
+                hours.call(overtime_mins)
 
-            deficit_h =
-              hours.call(deficit_mins)
+              deficit_h =
+                hours.call(deficit_mins)
 
-            hourly_rate =
-              archive.hourly_rate.present? ?
-                archive.hourly_rate.to_f :
-                0.0
+              hourly_rate =
+                archive.hourly_rate.present? ?
+                  archive.hourly_rate.to_f :
+                  0.0
 
-            loan =
-              archive.loan_installment.to_i
+              loan =
+                archive.loan_installment.to_i
 
-            fund3 =
-              archive.fund_three_percent.to_i
+              fund3 =
+                archive.fund_three_percent.to_i
 
-            fund6 =
-              archive.fund_six_percent.to_i
+              fund6 =
+                archive.fund_six_percent.to_i
 
-            overtime_pay =
-              overtime_h * hourly_rate * 1.4
+              overtime_pay =
+                overtime_h *
+                hourly_rate *
+                1.4
 
-            deficit_deduction =
-              if archive.no_dificit == true
-                0
-              else
-                deficit_h * hourly_rate
-              end
+              deficit_deduction =
+                if archive.no_dificit == true
+                  0
+                else
+                  deficit_h * hourly_rate
+                end
 
-            acc_add_1_title =
-              archive.respond_to?(:acc_add_1_title) ?
-                archive.acc_add_1_title.to_s.strip :
-                ""
+              acc_add_1_title =
+                archive.respond_to?(:acc_add_1_title) ?
+                  archive.acc_add_1_title.to_s.strip :
+                  ""
 
-            acc_add_2_title =
-              archive.respond_to?(:acc_add_2_title) ?
-                archive.acc_add_2_title.to_s.strip :
-                ""
+              acc_add_2_title =
+                archive.respond_to?(:acc_add_2_title) ?
+                  archive.acc_add_2_title.to_s.strip :
+                  ""
 
-            acc_ded_1_title =
-              archive.respond_to?(:acc_ded_1_title) ?
-                archive.acc_ded_1_title.to_s.strip :
-                ""
+              acc_ded_1_title =
+                archive.respond_to?(:acc_ded_1_title) ?
+                  archive.acc_ded_1_title.to_s.strip :
+                  ""
 
-            acc_ded_2_title =
-              archive.respond_to?(:acc_ded_2_title) ?
-                archive.acc_ded_2_title.to_s.strip :
-                ""
+              acc_ded_2_title =
+                archive.respond_to?(:acc_ded_2_title) ?
+                  archive.acc_ded_2_title.to_s.strip :
+                  ""
 
-            acc_add_1_amount =
-              archive.respond_to?(:acc_add_1_amount) ?
-                archive.acc_add_1_amount.to_i :
-                0
+              acc_add_1_amount =
+                archive.respond_to?(:acc_add_1_amount) ?
+                  archive.acc_add_1_amount.to_i :
+                  0
 
-            acc_add_2_amount =
-              archive.respond_to?(:acc_add_2_amount) ?
-                archive.acc_add_2_amount.to_i :
-                0
+              acc_add_2_amount =
+                archive.respond_to?(:acc_add_2_amount) ?
+                  archive.acc_add_2_amount.to_i :
+                  0
 
-            acc_ded_1_amount =
-              archive.respond_to?(:acc_ded_1_amount) ?
-                archive.acc_ded_1_amount.to_i :
-                0
+              acc_ded_1_amount =
+                archive.respond_to?(:acc_ded_1_amount) ?
+                  archive.acc_ded_1_amount.to_i :
+                  0
 
-            acc_ded_2_amount =
-              archive.respond_to?(:acc_ded_2_amount) ?
-                archive.acc_ded_2_amount.to_i :
-                0
+              acc_ded_2_amount =
+                archive.respond_to?(:acc_ded_2_amount) ?
+                  archive.acc_ded_2_amount.to_i :
+                  0
 
-            supplementary_insurance =
-              archive.respond_to?(:supplementary_insurance) ?
-                archive.supplementary_insurance.to_i :
-                0
+              supplementary_insurance =
+                archive.respond_to?(:supplementary_insurance) ?
+                  archive.supplementary_insurance.to_i :
+                  0
 
-            acc_add_total =
-              acc_add_1_amount +
-              acc_add_2_amount
+              acc_add_total =
+                acc_add_1_amount +
+                acc_add_2_amount
 
-            acc_ded_total =
-              acc_ded_1_amount +
-              acc_ded_2_amount +
-              supplementary_insurance
+              acc_ded_total =
+                acc_ded_1_amount +
+                acc_ded_2_amount +
+                supplementary_insurance
 
-            acc_net =
-              acc_add_total -
-              acc_ded_total
+              acc_net =
+                acc_add_total -
+                acc_ded_total
 
-            payment_2 = (
-              total_salary_adj -
-              fund6 -
-              fund3 -
-              loan -
-              deficit_deduction +
-              overtime_pay +
-              acc_add_total -
-              acc_ded_total +
-              food
-            ).round
+              payment_2 = (
+                total_salary_adj -
+                fund6 -
+                fund3 -
+                loan -
+                deficit_deduction +
+                overtime_pay +
+                acc_add_total -
+                acc_ded_total +
+                food
+              ).round
 
-            overtime_pay_ui =
-              money_ui.call(overtime_pay.round)
+              overtime_pay_ui =
+                money_ui.call(
+                  overtime_pay.round
+                )
 
-            deficit_deduction_ui =
-              money_ui.call(deficit_deduction.round)
+              deficit_deduction_ui =
+                money_ui.call(
+                  deficit_deduction.round
+                )
 
-            csv << [
-              @shamsi_month.name,
-              archive.user_id,
-              user&.name.to_s,
+              csv << [
+                @shamsi_month.name,
+                archive.user_id,
+                user&.name.to_s,
 
-              money_ui.call(payment_1),
-              money_ui.call(payment_2),
+                money_ui.call(payment_1),
+                money_ui.call(payment_2),
 
-              money_ui.call(base_salary),
-              money_ui.call(paye_sanavat),
-              money_ui.call(housing),
-              money_ui.call(food),
-              money_ui.call(marriage),
-              money_ui.call(child),
+                money_ui.call(base_salary),
+                money_ui.call(paye_sanavat),
+                money_ui.call(housing),
+                money_ui.call(food),
+                money_ui.call(marriage),
+                money_ui.call(child),
 
-              money_ui.call(legal_salary),
-              money_ui.call(insurance),
+                money_ui.call(legal_salary),
+                money_ui.call(insurance),
 
-              money_ui.call(total_salary_adj),
-              total_work_h,
-              num_ui.call(hourly_rate.round(2)),
-              overtime_h,
-              deficit_h,
+                money_ui.call(total_salary_adj),
+                total_work_h,
+                num_ui.call(hourly_rate.round(2)),
+                overtime_h,
+                deficit_h,
 
-              money_ui.call(loan),
-              money_ui.call(fund3),
-              money_ui.call(fund6),
-              deficit_deduction_ui,
-              overtime_pay_ui,
+                money_ui.call(loan),
+                money_ui.call(fund3),
+                money_ui.call(fund6),
+                deficit_deduction_ui,
+                overtime_pay_ui,
 
-              money_ui.call(supplementary_insurance),
-              acc_add_1_title,
-              money_ui.call(acc_add_1_amount),
-              acc_add_2_title,
-              money_ui.call(acc_add_2_amount),
-              acc_ded_1_title,
-              money_ui.call(acc_ded_1_amount),
-              acc_ded_2_title,
-              money_ui.call(acc_ded_2_amount),
+                money_ui.call(supplementary_insurance),
+                acc_add_1_title,
+                money_ui.call(acc_add_1_amount),
+                acc_add_2_title,
+                money_ui.call(acc_add_2_amount),
+                acc_ded_1_title,
+                money_ui.call(acc_ded_1_amount),
+                acc_ded_2_title,
+                money_ui.call(acc_ded_2_amount),
 
-              money_ui.call(acc_add_total),
-              money_ui.call(acc_ded_total),
-              money_ui.call(acc_net)
-            ]
+                money_ui.call(acc_add_total),
+                money_ui.call(acc_ded_total),
+                money_ui.call(acc_net)
+              ]
+            end
           end
-        end
 
         filename =
           "payslips-#{@shamsi_month.id}-#{@shamsi_month.name}.csv"
             .gsub(/[^\w\-.]/, "_")
 
-        send_data csv_data,
-                  filename: filename,
-                  type: "text/csv; charset=utf-8"
+        send_data(
+          csv_data,
+          filename: filename,
+          type: "text/csv; charset=utf-8"
+        )
       end
     end
   end
@@ -988,7 +1057,8 @@ class SalaryArchivesController < ApplicationController
   private
 
   def set_month
-    @shamsi_month = ShamsiMonth.find(params[:month_id])
+    @shamsi_month =
+      ShamsiMonth.find(params[:month_id])
   end
 
   def fetch_global_remote_dates(shamsi_month)
@@ -1014,22 +1084,23 @@ class SalaryArchivesController < ApplicationController
     (h * 60).round
   end
 
+  # ------------------------------------------------------------
+  # Required working time
+  #
+  # Normal days INCLUDING Friday:
+  #   08:30 -> 16:30 = 8 hours
+  #
+  # Thursday:
+  #   08:30 -> 12:30 = 4 hours
+  # ------------------------------------------------------------
   def required_minutes_for(date, off_dates:)
     return 0 if off_dates.include?(date)
+
     return 240 if date.thursday?
 
     480
   end
 
-  # ------------------------------------------------------------
-  # Official working window
-  #
-  # Thursday:
-  #   08:30 - 12:30
-  #
-  # Every other day, including Friday:
-  #   08:30 - 16:30
-  # ------------------------------------------------------------
   def working_interval_for(date)
     work_start =
       date.in_time_zone.change(
@@ -1065,20 +1136,23 @@ class SalaryArchivesController < ApplicationController
   end
 
   def merged_interval_minutes(intervals)
-    normalized = intervals
-      .select do |from, to|
-        from.present? &&
-          to.present? &&
-          to > from
-      end
-      .sort_by(&:first)
+    normalized =
+      intervals
+        .select do |from, to|
+          from.present? &&
+            to.present? &&
+            to > from
+        end
+        .sort_by(&:first)
 
     return 0 if normalized.empty?
 
     merged = []
 
     normalized.each do |from, to|
-      if merged.empty? || from > merged.last[1]
+      if merged.empty? ||
+         from > merged.last[1]
+
         merged << [from, to]
       else
         merged.last[1] =
@@ -1091,9 +1165,21 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  def clipped_interval(start_at, end_at, range_start, range_end)
-    from = [start_at, range_start].max
-    to   = [end_at, range_end].min
+  def clipped_interval(
+    start_at,
+    end_at,
+    range_start,
+    range_end
+  )
+    from = [
+      start_at,
+      range_start
+    ].max
+
+    to = [
+      end_at,
+      range_end
+    ].min
 
     return nil unless to > from
 
@@ -1101,8 +1187,9 @@ class SalaryArchivesController < ApplicationController
   end
 
   # ------------------------------------------------------------
-  # Mission working intervals
+  # Mission calculation
   # ------------------------------------------------------------
+
   def mission_working_intervals_for(missions, date)
     return [] if missions.blank?
 
@@ -1179,7 +1266,9 @@ class SalaryArchivesController < ApplicationController
       )
 
     map =
-      Hash.new { |h, k| h[k] = {} }
+      Hash.new do |h, k|
+        h[k] = {}
+      end
 
     missions.each do |mission|
       from = [
@@ -1204,6 +1293,7 @@ class SalaryArchivesController < ApplicationController
   # ------------------------------------------------------------
   # Vacation interval map
   # ------------------------------------------------------------
+
   def build_vacation_intervals_map(user_ids)
     start_t =
       @shamsi_month.start_at.beginning_of_day
@@ -1228,7 +1318,9 @@ class SalaryArchivesController < ApplicationController
       )
 
     map =
-      Hash.new { |h, k| h[k] = {} }
+      Hash.new do |h, k|
+        h[k] = {}
+      end
 
     vacations.each do |vacation|
       next if vacation.confirm == false
@@ -1271,7 +1363,10 @@ class SalaryArchivesController < ApplicationController
     map
   end
 
-  def vacation_working_intervals_for(vacation_intervals, date)
+  def vacation_working_intervals_for(
+    vacation_intervals,
+    date
+  )
     return [] if vacation_intervals.blank?
 
     work_start, work_end =
@@ -1289,31 +1384,10 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  def recompute_deficit_minutes(
-    day,
-    user_id,
-    date,
-    off_dates:,
-    vac_map:,
-    mission_map: {},
-    vacation_intervals_map: nil
-  )
-    deficit, = compute_deficit_and_base_overtime_minutes(
-      day: day,
-      user_id: user_id,
-      date: date,
-      off_dates: off_dates,
-      vac_map: vac_map,
-      mission_map: mission_map,
-      vacation_intervals_map: vacation_intervals_map
-    )
-
-    deficit
-  end
-
   # ------------------------------------------------------------
-  # Vacation information
+  # Vacation info
   # ------------------------------------------------------------
+
   def build_vacation_info_map(user_ids)
     start_t =
       @shamsi_month.start_at.beginning_of_day
@@ -1340,7 +1414,9 @@ class SalaryArchivesController < ApplicationController
       )
 
     map =
-      Hash.new { |h, k| h[k] = {} }
+      Hash.new do |h, k|
+        h[k] = {}
+      end
 
     vacations.each do |vacation|
       confirmed =
@@ -1415,6 +1491,7 @@ class SalaryArchivesController < ApplicationController
   # ------------------------------------------------------------
   # Review data
   # ------------------------------------------------------------
+
   def load_review_data(user_ids)
     remote_days = RemoteDay.where(
       user_id: user_ids,
@@ -1458,7 +1535,9 @@ class SalaryArchivesController < ApplicationController
       @shamsi_month.off_dates.to_set
 
     @global_remote_dates =
-      fetch_global_remote_dates(@shamsi_month)
+      fetch_global_remote_dates(
+        @shamsi_month
+      )
 
     @weekday_fa =
       %w[
@@ -1478,9 +1557,14 @@ class SalaryArchivesController < ApplicationController
         .to_h
         .transform_values do |value|
           {
-            "fixed" => "پرداخت ثابت",
-            "hourly" => "محاسبه کامل",
-            "fixed_with_overtime" => "ثابت + اضافه/کسری"
+            "fixed" =>
+              "پرداخت ثابت",
+
+            "hourly" =>
+              "محاسبه کامل",
+
+            "fixed_with_overtime" =>
+              "ثابت + اضافه/کسری"
           }[value.to_s] || "نامشخص"
         end
 
@@ -1497,18 +1581,20 @@ class SalaryArchivesController < ApplicationController
         @off_dates
       )
 
-    @fmt_hours = lambda do |minutes|
-      m = minutes.to_i
-      return 0 if m <= 0
+    @fmt_hours =
+      lambda do |minutes|
+        m = minutes.to_i
+        return 0 if m <= 0
 
-      q = (m / 15.0).round
-      q * 0.25
-    end
+        q = (m / 15.0).round
+        q * 0.25
+      end
   end
 
   # ------------------------------------------------------------
   # Mission payroll
   # ------------------------------------------------------------
+
   def mission_payroll_by_user_ids(
     user_ids,
     mission_map,
@@ -1609,7 +1695,9 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  def recalculate_mission_payroll_for_archives(archives)
+  def recalculate_mission_payroll_for_archives(
+    archives
+  )
     archives = archives.to_a
     return if archives.empty?
 
@@ -1664,8 +1752,9 @@ class SalaryArchivesController < ApplicationController
   end
 
   # ------------------------------------------------------------
-  # Overtime
+  # Overtime / manual entries
   # ------------------------------------------------------------
+
   def build_overtime_map(user_ids)
     overtime_entries = OvertimeEntry.where(
       user_id: user_ids,
@@ -1687,7 +1776,9 @@ class SalaryArchivesController < ApplicationController
     date
   )
     list =
-      ((ot_map[user_id] || {})[date] || [])
+      (
+        ot_map[user_id] || {}
+      )[date] || []
 
     list =
       list.select do |ot|
@@ -1701,10 +1792,13 @@ class SalaryArchivesController < ApplicationController
 
   def build_manual_map(manual_entries)
     map =
-      Hash.new { |h, k| h[k] = {} }
+      Hash.new do |h, k|
+        h[k] = {}
+      end
 
     manual_entries.each do |m|
-      d = m.occurred_at.to_date
+      d =
+        m.occurred_at.to_date
 
       map[m.user_id][d] ||= {}
 
@@ -1721,22 +1815,21 @@ class SalaryArchivesController < ApplicationController
   # ------------------------------------------------------------
   # Authorization
   # ------------------------------------------------------------
+
   def authorize_hr_review!
     allowed =
       (current_user.procurement? &&
-       current_user.is_manager) ||
+        current_user.is_manager) ||
 
       (current_user.hr? &&
-       current_user.is_manager) ||
+        current_user.is_manager) ||
 
       (current_user.accounting? &&
-       current_user.is_manager) ||
+        current_user.is_manager) ||
 
-      (current_user.id == 17) ||
-
+      current_user.id == 17 ||
       current_user.ceo? ||
       current_user.cob? ||
-      current_user.id == 17 ||
       current_user.admin?
 
     head :forbidden unless allowed
@@ -1747,16 +1840,20 @@ class SalaryArchivesController < ApplicationController
   end
 
   def authorize_accounting_review!
-    head :forbidden unless (
-      (current_user.accounting? &&
-       current_user.is_manager) ||
+    allowed =
+      (
+        current_user.accounting? &&
+        current_user.is_manager
+      ) ||
       current_user.admin?
-    )
+
+    head :forbidden unless allowed
   end
 
   # ------------------------------------------------------------
-  # Time helpers
+  # Time parsing
   # ------------------------------------------------------------
+
   def parse_hhmm_to_time(date, value)
     normalized =
       normalize_hhmm(value)
@@ -1795,9 +1892,10 @@ class SalaryArchivesController < ApplicationController
     )
   end
 
-  # ------------------------------------------------------------
-  # Recalculate one SalaryArchiveDay
-  # ------------------------------------------------------------
+  # ============================================================
+  # DAY RECALCULATION
+  # ============================================================
+
   def recalculate_salary_archive_day!(
     day:,
     vac_map:,
@@ -1899,10 +1997,10 @@ class SalaryArchivesController < ApplicationController
     end
 
     # ------------------------------------------------------------
-    # 4. Normal attendance / vacation / mission calculation
+    # 4. Normal calculation
     # ------------------------------------------------------------
     deficit_minutes,
-    base_overtime_minutes =
+      base_overtime_minutes =
       compute_deficit_and_base_overtime_minutes(
         day: day,
         user_id: user_id,
@@ -1915,7 +2013,7 @@ class SalaryArchivesController < ApplicationController
       )
 
     # ------------------------------------------------------------
-    # 5. Confirmed external overtime
+    # 5. External confirmed overtime
     # ------------------------------------------------------------
     confirmed_ot_minutes =
       outside_system_overtime_minutes(
@@ -1935,26 +2033,28 @@ class SalaryArchivesController < ApplicationController
   end
 
   # ============================================================
-  # DEFICIT + OVERTIME
-  #
   # IMPORTANT:
-  # Deficit and overtime are calculated independently.
   #
-  # Example:
+  # This is the corrected deficit/overtime calculation.
   #
-  #   Arrival: 16:00
-  #   Leave:   20:00
+  # Attendance is NOT clipped to 08:30-16:30.
   #
-  # Deficit:
-  #   Only 16:00-16:30 is inside the normal work window.
-  #   Therefore there is a large deficit.
+  # Therefore:
   #
-  # Overtime:
-  #   Overtime starts at 17:00.
-  #   Therefore 17:00-20:00 = 180 minutes overtime.
+  # Normal:
+  #   08:30 -> 16:30 = 480
+  #   09:00 -> 17:00 = 480
+  #   09:15 -> 17:15 = 480
   #
-  # These two calculations DO NOT cancel each other.
+  # Thursday:
+  #   08:30 -> 12:30 = 240
+  #   09:00 -> 13:00 = 240
+  #   09:15 -> 13:15 = 240
+  #
+  # Mission working time can cover deficit.
+  # Mission NEVER creates attendance overtime.
   # ============================================================
+
   def compute_deficit_and_base_overtime_minutes(
     day:,
     user_id:,
@@ -1970,16 +2070,77 @@ class SalaryArchivesController < ApplicationController
         off_dates: off_dates
       )
 
-    work_start, work_end =
-      working_interval_for(date)
+    return [0, 0] if required_minutes <= 0
+
+    # ============================================================
+    # 1. ACTUAL ATTENDANCE
+    #
+    # IMPORTANT:
+    # Do NOT clip this to the official working window.
+    #
+    # This preserves the old flexible attendance rule:
+    #
+    # Normal day:
+    #   08:30 -> 16:30
+    #   09:15 -> 17:15
+    #
+    # Thursday:
+    #   08:30 -> 12:30
+    #   09:15 -> 13:15
+    #
+    # All of these equal the required duration.
+    # ============================================================
+
+    attendance_minutes = 0
+
+    if day.first_in_at.present? &&
+       day.last_out_at.present?
+
+      in_time =
+        parse_hhmm_to_time(
+          date,
+          day.first_in_at
+        )
+
+      out_time =
+        parse_hhmm_to_time(
+          date,
+          day.last_out_at
+        )
+
+      if in_time && out_time
+        # Support overnight attendance.
+        out_time += 1.day if out_time < in_time
+
+        attendance_minutes =
+          interval_minutes(
+            in_time,
+            out_time
+          )
+      end
+    end
+
+    # ============================================================
+    # 2. MANUAL ADJUSTMENT
+    # ============================================================
+
+    actual_work_minutes =
+      attendance_minutes +
+      day.manual_adjust_minutes.to_i
+
+    actual_work_minutes =
+      [actual_work_minutes, 0].max
+
+    # ============================================================
+    # 3. CONFIRMED HOURLY VACATION
+    #
+    # Vacation can cover required working time.
+    #
+    # We merge it with attendance only for deficit calculation,
+    # so overlapping attendance + vacation is never counted twice.
+    # ============================================================
 
     credited_intervals = []
-
-    # ------------------------------------------------------------
-    # Parse attendance
-    # ------------------------------------------------------------
-    in_time = nil
-    out_time = nil
 
     if day.first_in_at.present? &&
        day.last_out_at.present?
@@ -1998,59 +2159,19 @@ class SalaryArchivesController < ApplicationController
 
       if in_time && out_time
         out_time += 1.day if out_time < in_time
-      else
-        in_time = nil
-        out_time = nil
+
+        # Attendance is kept as the ACTUAL interval.
+        #
+        # This is intentional. We do not clip it to
+        # 08:30-16:30 because 09:15-17:15 is a valid
+        # full working day.
+        credited_intervals << [
+          in_time,
+          out_time
+        ]
       end
     end
 
-    # ------------------------------------------------------------
-    # 1. DEFICIT CREDIT
-    #
-    # Flexible arrival:
-    #
-    # Normal:
-    #   08:30 -> 16:30
-    #   09:00 -> 17:00
-    #   09:15 -> 17:15
-    #
-    # Thursday:
-    #   08:30 -> 12:30
-    #   09:00 -> 13:00
-    #   09:15 -> 13:15
-    #
-    # Only arrivals up to 09:15 receive this shifted end.
-    # ------------------------------------------------------------
-    attendance_interval = nil
-
-    if in_time && out_time
-      flexible_latest_arrival =
-        work_start + 45.minutes
-
-      deficit_work_end =
-        if in_time >= work_start &&
-           in_time <= flexible_latest_arrival
-
-          work_end +
-            (in_time - work_start)
-        else
-          work_end
-        end
-
-      attendance_interval =
-        clipped_interval(
-          in_time,
-          out_time,
-          work_start,
-          deficit_work_end
-        )
-
-      credited_intervals << attendance_interval if attendance_interval
-    end
-
-    # ------------------------------------------------------------
-    # 2. CONFIRMED HOURLY VACATION
-    # ------------------------------------------------------------
     vinfo =
       (vac_map[user_id] || {})[date]
 
@@ -2061,129 +2182,88 @@ class SalaryArchivesController < ApplicationController
 
     if hourly_confirmed
       vacation_intervals =
-        (vacation_intervals_map[user_id] || {})[date] || []
+        (
+          vacation_intervals_map[user_id] || {}
+        )[date] || []
 
+      # Vacation itself is only used to cover required
+      # working time. Therefore clip vacation to the
+      # official working window.
       vacation_working_intervals_for(
         vacation_intervals,
         date
       ).each do |interval|
-
         credited_intervals << interval
       end
     end
 
-    # ------------------------------------------------------------
-    # 3. MISSION
-    # ------------------------------------------------------------
+    # ============================================================
+    # 4. MISSION CREDIT
+    #
+    # ONLY the working part of a mission can cover deficit.
+    #
+    # Mission outside working hours is payroll ×1.4 but it
+    # does NOT reduce deficit.
+    # ============================================================
+
     missions =
-      (mission_map[user_id] || {})[date] || []
+      (
+        mission_map[user_id] || {}
+      )[date] || []
 
     mission_working_intervals_for(
       missions,
       date
     ).each do |interval|
-
       credited_intervals << interval
     end
 
-    # ------------------------------------------------------------
-    # 4. UNION ALL CREDITED TIME
-    # ------------------------------------------------------------
+    # ============================================================
+    # 5. DEFICIT CREDIT
+    #
+    # Attendance + confirmed hourly vacation + working mission
+    # are merged so overlapping time is never counted twice.
+    #
+    # IMPORTANT:
+    # Attendance can extend to 17:15 on normal days and 13:15
+    # on Thursday. This is why attendance is NOT clipped.
+    # ============================================================
+
     credited_minutes =
       merged_interval_minutes(
         credited_intervals
       )
 
+    # Manual adjustment is an additional credit.
     credited_minutes +=
       day.manual_adjust_minutes.to_i
 
     credited_minutes =
       [credited_minutes, 0].max
 
-    # ------------------------------------------------------------
-    # 5. DEFICIT
-    #
-    # Off days / Fridays have zero required time.
-    # ------------------------------------------------------------
     deficit_minutes =
-      if required_minutes <= 0
+      [
+        required_minutes - credited_minutes,
         0
-      else
-        [
-          required_minutes - credited_minutes,
-          0
-        ].max
-      end
+      ].max
 
     # ============================================================
-    # 6. OVERTIME — COMPLETELY INDEPENDENT FROM DEFICIT
+    # 6. BASE OVERTIME
+    #
+    # Mission and vacation do NOT create overtime.
+    #
+    # Overtime is based ONLY on actual attendance duration
+    # + manual adjustment.
+    #
+    # This preserves the previous behavior.
     # ============================================================
-    #
-    # Off days / Fridays:
-    #   Every actual attendance minute is overtime.
-    #
-    # Normal days:
-    #   Overtime starts after the flexible end.
-    #
-    # If arrival is within 08:30-09:15:
-    #   overtime_start = normal_end + arrival_delay
-    #
-    # Example:
-    #   09:15 -> overtime starts 17:15
-    #
-    # If arrival is later than 09:15:
-    #   overtime starts at 17:00.
-    #
-    # Example:
-    #   16:00 -> 17:00
-    #   16:00-20:00 = 3h overtime
-    # ============================================================
-    base_overtime_minutes = 0
 
-    if in_time && out_time
-      if off_dates.include?(date) ||
-         date.friday?
-
-        # Friday / off day:
-        # all actual attendance is overtime.
-        base_overtime_minutes =
-          interval_minutes(
-            in_time,
-            out_time
-          )
-
-      else
-        flexible_latest_arrival =
-          work_start + 45.minutes
-
-        overtime_start =
-          if in_time >= work_start &&
-             in_time <= flexible_latest_arrival
-
-            # Arrival delay is carried forward.
-            work_end +
-              (in_time - work_start)
-
-          else
-            # For a very late arrival, do not keep
-            # moving the overtime boundary.
-            #
-            # Example:
-            # 16:00 -> overtime starts 17:00.
-            work_end + 30.minutes
-          end
-
-        base_overtime_minutes =
-          if out_time > overtime_start
-            interval_minutes(
-              overtime_start,
-              out_time
-            )
-          else
-            0
-          end
-      end
-    end
+    base_overtime_minutes =
+      [
+        actual_work_minutes -
+        required_minutes,
+        0
+      ].max
 
     [
       deficit_minutes,
