@@ -4,13 +4,14 @@ class SalaryArchivesController < ApplicationController
   before_action :set_month, except: [:rebuild_last_month]
 
   def manager_review
-    authorize_manager_review!
+    user_ids = current_user.direct_reports.pluck(:id) | [current_user.id]
 
-    user_ids = manager_allowed_user_ids
-
-    @users = User
+    user_ids = User
       .where(id: user_ids)
-      .by_name
+      .joins(:salary_profile)
+      .pluck(:id)
+
+    @users = User.where(id: user_ids).by_name
 
     @archives = SalaryArchive
       .includes(:days)
@@ -24,9 +25,12 @@ class SalaryArchivesController < ApplicationController
   end
 
   def bulk_update_days
-    authorize_manager_review!
+    allowed_user_ids = current_user.direct_reports.pluck(:id) | [current_user.id]
 
-    allowed_user_ids = manager_allowed_user_ids
+    allowed_user_ids = User
+      .where(id: allowed_user_ids)
+      .joins(:salary_profile)
+      .pluck(:id)
 
     allowed_archives = SalaryArchive.where(
       shamsi_month_id: @shamsi_month.id,
@@ -75,7 +79,6 @@ class SalaryArchivesController < ApplicationController
 
         touched_archive_ids << archive.id
 
-        # Archive-level manual changes affect every day.
         archive.days.pluck(:id).each do |day_id|
           touched_day_ids << day_id
         end
@@ -112,7 +115,10 @@ class SalaryArchivesController < ApplicationController
         next unless archive
 
         (from..to).each do |date|
-          day = archive.days.find_by(work_date: date)
+          day = archive.days.find_by(
+            work_date: date
+          )
+
           next unless day
 
           touched_archive_ids << archive.id
@@ -150,9 +156,6 @@ class SalaryArchivesController < ApplicationController
 
       # ------------------------------------------------------------
       # 4. Update submitted day values
-      #
-      # Attendance values are saved FIRST.
-      # Calculation happens only once afterward.
       # ------------------------------------------------------------
       days_params.each do |day_id, attrs|
         day = SalaryArchiveDay
@@ -207,7 +210,7 @@ class SalaryArchivesController < ApplicationController
       end
 
       # ------------------------------------------------------------
-      # 6. Build ALL current maps AFTER updates
+      # 6. Build current maps AFTER all updates
       # ------------------------------------------------------------
       vac_map = build_vacation_info_map(
         allowed_user_ids
@@ -233,7 +236,7 @@ class SalaryArchivesController < ApplicationController
         fetch_global_remote_dates(@shamsi_month)
 
       # ------------------------------------------------------------
-      # 7. Recalculate EVERY touched day exactly once
+      # 7. Recalculate touched days
       # ------------------------------------------------------------
       if touched_day_ids.any?
         days = SalaryArchiveDay
@@ -320,10 +323,7 @@ class SalaryArchivesController < ApplicationController
 
     user_ids = scope.pluck(:user_id).uniq
 
-    @users = User
-      .where(id: user_ids)
-      .by_name
-
+    @users = User.where(id: user_ids).by_name
     @archives = scope.index_by(&:user_id)
 
     load_review_data(user_ids)
@@ -356,10 +356,7 @@ class SalaryArchivesController < ApplicationController
 
     user_ids = scope.pluck(:user_id).uniq
 
-    @users = User
-      .where(id: user_ids)
-      .by_name
-
+    @users = User.where(id: user_ids).by_name
     @archives = scope.index_by(&:user_id)
 
     load_review_data(user_ids)
@@ -397,15 +394,16 @@ class SalaryArchivesController < ApplicationController
   end
 
   def calculate_vacations
-    already_finalized = false
-
     ActiveRecord::Base.transaction do
-      # Lock this month so another request cannot finalize it simultaneously.
       @shamsi_month.lock!
 
       if @shamsi_month.finalized?
-        already_finalized = true
-        raise ActiveRecord::Rollback
+        redirect_to accounting_review_salary_archives_path(
+          month_id: @shamsi_month.id
+        ),
+        alert: "This month is already closed."
+
+        return
       end
 
       start_date = @shamsi_month.start_at
@@ -419,19 +417,17 @@ class SalaryArchivesController < ApplicationController
             end_date,
             start_date
           )
-          .where(confirm: true)
           .group_by(&:user)
 
       vacations_by_user.each do |user, vacations|
-        total_days  = 0
+        total_days = 0
         total_hours = 0.0
 
         vacations.each do |vacation|
           if vacation.hourly?
-            hours =
-              (
-                (vacation.end_at - vacation.start_at) / 1.hour
-              ).round(5)
+            hours = (
+              (vacation.end_at - vacation.start_at) / 1.hour
+            ).round(5)
 
             total_hours += hours
           else
@@ -445,8 +441,6 @@ class SalaryArchivesController < ApplicationController
               end_date.to_date
             ].min
 
-            next if overlap_start > overlap_end
-
             days =
               (overlap_end - overlap_start).to_i + 1
 
@@ -457,49 +451,45 @@ class SalaryArchivesController < ApplicationController
         used_vacation =
           total_days + (total_hours / 8.0)
 
-        next unless used_vacation > 0
-        next unless user.salary_profile.present?
+        if used_vacation > 0 &&
+           user.salary_profile.present?
 
-        new_remain =
-          user.salary_profile.remain_vacation.to_f -
-          used_vacation.round(5)
-
-        user.salary_profile.update!(
-          remain_vacation: new_remain.round(5)
-        )
-
-        salary_archive = user.salary_archives.find_by(
-          shamsi_month_id: @shamsi_month.id
-        )
-
-        if salary_archive
-          salary_archive.update!(
+          user.salary_profile.update!(
             remain_vacation:
-              user.salary_profile.reload.remain_vacation
+              user.salary_profile.remain_vacation -
+              used_vacation.round(5) +
+              2.5
           )
+
+          salary_archive =
+            user.salary_archives.find_by(
+              shamsi_month_id: @shamsi_month.id
+            )
+
+          if salary_archive
+            salary_archive.update!(
+              remain_vacation:
+                user.salary_profile.reload.remain_vacation
+            )
+          end
         end
       end
 
-      # Any archive which was not affected by a vacation calculation
-      # gets the current SalaryProfile balance.
-      @shamsi_month
-        .salary_archives
+      @shamsi_month.salary_archives
         .includes(:user)
         .each do |salary_archive|
 
         next if salary_archive.remain_vacation.present?
 
-        profile_balance =
-          salary_archive.user.salary_profile&.remain_vacation
-
-        next if profile_balance.nil?
-
-        salary_archive.update!(
-          remain_vacation: profile_balance.round(5)
-        )
+        if salary_archive.user.salary_profile&.remain_vacation.present?
+          salary_archive.update!(
+            remain_vacation:
+              salary_archive.user.salary_profile.remain_vacation +
+              2.5
+          )
+        end
       end
 
-      # Persist Mission payroll summary for every archive in this month.
       recalculate_mission_payroll_for_archives(
         @shamsi_month.salary_archives.includes(:user)
       )
@@ -507,15 +497,6 @@ class SalaryArchivesController < ApplicationController
       @shamsi_month.update!(
         finalized: true
       )
-    end
-
-    if already_finalized
-      redirect_to accounting_review_salary_archives_path(
-        month_id: @shamsi_month.id
-      ),
-      alert: "This month is already closed."
-
-      return
     end
 
     redirect_to accounting_review_salary_archives_path(
@@ -548,7 +529,6 @@ class SalaryArchivesController < ApplicationController
 
     adjust_by_month_days = lambda do |monthly_amount|
       base = monthly_amount.to_i
-
       return 0 if base <= 0
 
       ((base.to_f / 30.0) * month_days).round
@@ -621,22 +601,44 @@ class SalaryArchivesController < ApplicationController
           accounting_confirmed: true,
           accounting_confirmed_at: now,
 
-          seniority_base: seniority_base_adj,
-          monthly_seniority_base: monthly_seniority_adj,
+          seniority_base:
+            seniority_base_adj,
 
-          housing_allowance: housing_allowance,
-          food_allowance: food_allowance,
-          marriage_allowance: marriage_allowance,
-          child_allowance: child_allowance,
-          total_salary: total_salary,
-          hourly_rate: hourly_rate,
+          monthly_seniority_base:
+            monthly_seniority_adj,
 
-          loan_installment: loan_installment,
-          fund_three_percent: fund_three_percent,
-          fund_six_percent: fund_six_percent,
-          supplementary_insurance: supp_ins,
+          housing_allowance:
+            housing_allowance,
 
-          insurance: insurance_value
+          food_allowance:
+            food_allowance,
+
+          marriage_allowance:
+            marriage_allowance,
+
+          child_allowance:
+            child_allowance,
+
+          total_salary:
+            total_salary,
+
+          hourly_rate:
+            hourly_rate,
+
+          loan_installment:
+            loan_installment,
+
+          fund_three_percent:
+            fund_three_percent,
+
+          fund_six_percent:
+            fund_six_percent,
+
+          supplementary_insurance:
+            supp_ins,
+
+          insurance:
+            insurance_value
         )
 
         archive.save!(validate: false)
@@ -652,23 +654,21 @@ class SalaryArchivesController < ApplicationController
   def accounting_update_adjustments
     authorize_accounting_review!
 
-    allowed_archives = SalaryArchive
-      .where(shamsi_month_id: @shamsi_month.id)
-      .joins(user: :salary_profile)
+    allowed_archives =
+      SalaryArchive.where(
+        shamsi_month_id: @shamsi_month.id
+      )
 
     archives_params = params[:archives] || {}
 
     SalaryArchive.transaction do
       archives_params.each do |archive_id, attrs|
-        archive = allowed_archives.find_by(id: archive_id)
-        next unless archive
+        a = allowed_archives.find_by(id: archive_id)
+        next unless a
 
         attrs ||= {}
 
-        archive.update!(
-          # ----------------------------------------------------------
-          # Accounting additions / deductions
-          # ----------------------------------------------------------
+        a.update!(
           acc_add_1_title:
             attrs[:acc_add_1_title].to_s.strip.presence,
 
@@ -693,9 +693,6 @@ class SalaryArchivesController < ApplicationController
           acc_ded_2_amount:
             attrs[:acc_ded_2_amount].to_i,
 
-          # ----------------------------------------------------------
-          # Legal additions / deductions
-          # ----------------------------------------------------------
           legal_add_1_title:
             attrs[:legal_add_1_title].to_s.strip.presence,
 
@@ -1028,16 +1025,12 @@ class SalaryArchivesController < ApplicationController
                 overtime_pay_ui,
 
                 money_ui.call(supplementary_insurance),
-
                 acc_add_1_title,
                 money_ui.call(acc_add_1_amount),
-
                 acc_add_2_title,
                 money_ui.call(acc_add_2_amount),
-
                 acc_ded_1_title,
                 money_ui.call(acc_ded_1_amount),
-
                 acc_ded_2_title,
                 money_ui.call(acc_ded_2_amount),
 
@@ -1063,69 +1056,10 @@ class SalaryArchivesController < ApplicationController
 
   private
 
-  # ================================================================
-  # Authorization / User scope
-  # ================================================================
-
-  def manager_allowed_user_ids
-    ids =
-      current_user
-        .direct_reports
-        .pluck(:id) |
-      [current_user.id]
-
-    User
-      .where(id: ids)
-      .joins(:salary_profile)
-      .pluck(:id)
-  end
-
-  def authorize_manager_review!
-    allowed =
-      current_user.is_manager ||
-      current_user.admin? ||
-      current_user.ceo? ||
-      current_user.cob?
-
-    head :forbidden unless allowed
-  end
-
-  def authorize_hr_review!
-    allowed =
-      (current_user.procurement? && current_user.is_manager) ||
-      (current_user.hr? && current_user.is_manager) ||
-      (current_user.accounting? && current_user.is_manager) ||
-      current_user.id == 17 ||
-      current_user.ceo? ||
-      current_user.cob? ||
-      current_user.admin?
-
-    head :forbidden unless allowed
-  end
-
-  def authorize_hr_confirm!
-    head :forbidden unless current_user.id == 17
-  end
-
-  def authorize_accounting_review!
-    allowed =
-      (current_user.accounting? && current_user.is_manager) ||
-      current_user.admin?
-
-    head :forbidden unless allowed
-  end
-
-  # ================================================================
-  # Month
-  # ================================================================
-
   def set_month
-    @shamsi_month = ShamsiMonth.find(params[:month_id])
+    @shamsi_month =
+      ShamsiMonth.find(params[:month_id])
   end
-
-  # ================================================================
-  # Remote days
-  # ================================================================
 
   def fetch_global_remote_dates(shamsi_month)
     start_d = shamsi_month.start_at.to_date
@@ -1141,21 +1075,24 @@ class SalaryArchivesController < ApplicationController
       .to_set
   end
 
-  # ================================================================
-  # Time helpers
-  # ================================================================
-
   def hours_to_minutes(val)
     return 0 if val.blank?
 
     h = val.to_f
-
-    # Quarter-hour precision.
     h = (h * 4).round / 4.0
 
     (h * 60).round
   end
 
+  # ------------------------------------------------------------
+  # Required working time
+  #
+  # Normal days INCLUDING Friday:
+  #   08:30 -> 16:30 = 8 hours
+  #
+  # Thursday:
+  #   08:30 -> 12:30 = 4 hours
+  # ------------------------------------------------------------
   def required_minutes_for(date, off_dates:)
     return 0 if off_dates.include?(date)
 
@@ -1164,10 +1101,6 @@ class SalaryArchivesController < ApplicationController
     480
   end
 
-  # Official working window:
-  #
-  # Thursday = 08:30 - 12:30
-  # Every other day, INCLUDING Friday = 08:30 - 16:30
   def working_interval_for(date)
     work_start =
       date.in_time_zone.change(
@@ -1202,16 +1135,6 @@ class SalaryArchivesController < ApplicationController
     ((end_at - start_at) / 60.0).round
   end
 
-  # Merge overlapping/touching intervals.
-  #
-  # This prevents:
-  #
-  # attendance 08:30-10:00
-  # vacation   09:00-11:00
-  #
-  # from becoming 90 + 120.
-  #
-  # It becomes 08:30-11:00 = 150 minutes.
   def merged_interval_minutes(intervals)
     normalized =
       intervals
@@ -1227,7 +1150,9 @@ class SalaryArchivesController < ApplicationController
     merged = []
 
     normalized.each do |from, to|
-      if merged.empty? || from > merged.last[1]
+      if merged.empty? ||
+         from > merged.last[1]
+
         merged << [from, to]
       else
         merged.last[1] =
@@ -1246,9 +1171,6 @@ class SalaryArchivesController < ApplicationController
     range_start,
     range_end
   )
-    return nil if start_at.blank?
-    return nil if end_at.blank?
-
     from = [
       start_at,
       range_start
@@ -1264,9 +1186,9 @@ class SalaryArchivesController < ApplicationController
     [from, to]
   end
 
-  # ================================================================
+  # ------------------------------------------------------------
   # Mission calculation
-  # ================================================================
+  # ------------------------------------------------------------
 
   def mission_working_intervals_for(missions, date)
     return [] if missions.blank?
@@ -1312,20 +1234,18 @@ class SalaryArchivesController < ApplicationController
         date
       )
 
-    total_minutes =
-      merged_interval_minutes(
-        total_intervals
-      )
-
-    working_minutes =
-      merged_interval_minutes(
-        working_intervals
-      )
-
     {
-      working_minutes: working_minutes,
+      working_minutes:
+        merged_interval_minutes(
+          working_intervals
+        ),
+
       non_working_minutes:
-        [total_minutes - working_minutes, 0].max
+        [
+          merged_interval_minutes(total_intervals) -
+          merged_interval_minutes(working_intervals),
+          0
+        ].max
     }
   end
 
@@ -1361,11 +1281,8 @@ class SalaryArchivesController < ApplicationController
         @shamsi_month.end_at.to_date
       ].min
 
-      next if from > to
-
       (from..to).each do |date|
         map[mission.user_id][date] ||= []
-
         map[mission.user_id][date] << mission
       end
     end
@@ -1373,9 +1290,9 @@ class SalaryArchivesController < ApplicationController
     map
   end
 
-  # ================================================================
-  # Vacation maps
-  # ================================================================
+  # ------------------------------------------------------------
+  # Vacation interval map
+  # ------------------------------------------------------------
 
   def build_vacation_intervals_map(user_ids)
     start_t =
@@ -1406,9 +1323,7 @@ class SalaryArchivesController < ApplicationController
       end
 
     vacations.each do |vacation|
-      # IMPORTANT:
-      # Only confirmed vacations contribute credited time.
-      next unless vacation.confirm == true
+      next if vacation.confirm == false
 
       from = [
         vacation.start_at.to_date,
@@ -1419,8 +1334,6 @@ class SalaryArchivesController < ApplicationController
         vacation.end_at.to_date,
         @shamsi_month.end_at.to_date
       ].min
-
-      next if from > to
 
       (from..to).each do |date|
         map[vacation.user_id][date] ||= []
@@ -1471,9 +1384,9 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  # ================================================================
-  # Vacation info map for UI
-  # ================================================================
+  # ------------------------------------------------------------
+  # Vacation info
+  # ------------------------------------------------------------
 
   def build_vacation_info_map(user_ids)
     start_t =
@@ -1520,8 +1433,6 @@ class SalaryArchivesController < ApplicationController
           @shamsi_month.end_at.to_date
         ].min
 
-        next if from > to
-
         (from..to).each do |date|
           day_start = [
             vacation.start_at,
@@ -1561,8 +1472,6 @@ class SalaryArchivesController < ApplicationController
           @shamsi_month.end_at.to_date
         ].min
 
-        next if from > to
-
         (from..to).each do |date|
           map[vacation.user_id][date] = {
             vacation_id: vacation.id,
@@ -1579,9 +1488,9 @@ class SalaryArchivesController < ApplicationController
     map
   end
 
-  # ================================================================
+  # ------------------------------------------------------------
   # Review data
-  # ================================================================
+  # ------------------------------------------------------------
 
   def load_review_data(user_ids)
     remote_days = RemoteDay.where(
@@ -1675,32 +1584,17 @@ class SalaryArchivesController < ApplicationController
     @fmt_hours =
       lambda do |minutes|
         m = minutes.to_i
-
         return 0 if m <= 0
 
-        q =
-          (m / 15.0).round
-
+        q = (m / 15.0).round
         q * 0.25
       end
   end
 
-  # ================================================================
+  # ------------------------------------------------------------
   # Mission payroll
-  # ================================================================
+  # ------------------------------------------------------------
 
-  # Mission salary rules:
-  #
-  # 1. Working mission time on normal days => x1
-  # 2. Non-working mission time => x1.4
-  # 3. Working mission time on off-days / Friday => x2
-  #
-  # Thursday working window:
-  #   08:30 - 12:30
-  #
-  # Friday working window:
-  #   08:30 - 16:30
-  #
   def mission_payroll_by_user_ids(
     user_ids,
     mission_map,
@@ -1735,7 +1629,9 @@ class SalaryArchivesController < ApplicationController
         non_working_minutes +=
           non_working
 
-        if off_dates.include?(date) || date.friday?
+        if off_dates.include?(date) ||
+           date.friday?
+
           working_holiday_minutes +=
             working_minutes
         else
@@ -1748,7 +1644,7 @@ class SalaryArchivesController < ApplicationController
         users[user_id]
           &.salary_profile
           &.hourly_rate
-          &.to_d || 0.to_d
+          .to_d || 0.to_d
 
       normal_pay =
         (
@@ -1799,15 +1695,14 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  def recalculate_mission_payroll_for_archives(archives)
+  def recalculate_mission_payroll_for_archives(
+    archives
+  )
     archives = archives.to_a
-
     return if archives.empty?
 
     user_ids =
-      archives
-        .map(&:user_id)
-        .uniq
+      archives.map(&:user_id).uniq
 
     mission_map =
       build_mission_map(user_ids)
@@ -1856,18 +1751,17 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  # ================================================================
-  # Overtime
-  # ================================================================
+  # ------------------------------------------------------------
+  # Overtime / manual entries
+  # ------------------------------------------------------------
 
   def build_overtime_map(user_ids)
-    overtime_entries =
-      OvertimeEntry.where(
-        user_id: user_ids,
-        date:
-          @shamsi_month.start_at.to_date..
-          @shamsi_month.end_at.to_date
-      )
+    overtime_entries = OvertimeEntry.where(
+      user_id: user_ids,
+      date:
+        @shamsi_month.start_at.to_date..
+        @shamsi_month.end_at.to_date
+    )
 
     overtime_entries
       .group_by(&:user_id)
@@ -1883,8 +1777,8 @@ class SalaryArchivesController < ApplicationController
   )
     list =
       (
-        (ot_map[user_id] || {})[date] || []
-      )
+        ot_map[user_id] || {}
+      )[date] || []
 
     list =
       list.select do |ot|
@@ -1896,65 +1790,111 @@ class SalaryArchivesController < ApplicationController
     end
   end
 
-  # ================================================================
-  # Manual entries
-  # ================================================================
-
   def build_manual_map(manual_entries)
     map =
       Hash.new do |h, k|
         h[k] = {}
       end
 
-    manual_entries.each do |manual_entry|
-      date =
-        manual_entry.occurred_at.to_date
+    manual_entries.each do |m|
+      d =
+        m.occurred_at.to_date
 
-      map[manual_entry.user_id][date] ||= {}
+      map[m.user_id][d] ||= {}
 
-      if manual_entry.is_entry
-        map[manual_entry.user_id][date][:entry] =
-          manual_entry
+      if m.is_entry
+        map[m.user_id][d][:entry] = m
       else
-        map[manual_entry.user_id][date][:exit] =
-          manual_entry
+        map[m.user_id][d][:exit] = m
       end
     end
 
     map
   end
 
-  # ================================================================
-  # Deficit calculation
-  # ================================================================
+  # ------------------------------------------------------------
+  # Authorization
+  # ------------------------------------------------------------
 
-  def recompute_deficit_minutes(
-    day,
-    user_id,
-    date,
-    off_dates:,
-    vac_map:,
-    mission_map: {},
-    vacation_intervals_map: nil
-  )
-    deficit, =
-      compute_deficit_and_base_overtime_minutes(
-        day: day,
-        user_id: user_id,
-        date: date,
-        off_dates: off_dates,
-        vac_map: vac_map,
-        mission_map: mission_map,
-        vacation_intervals_map:
-          vacation_intervals_map
-      )
+  def authorize_hr_review!
+    allowed =
+      (current_user.procurement? &&
+        current_user.is_manager) ||
 
-    deficit
+      (current_user.hr? &&
+        current_user.is_manager) ||
+
+      (current_user.accounting? &&
+        current_user.is_manager) ||
+
+      current_user.id == 17 ||
+      current_user.ceo? ||
+      current_user.cob? ||
+      current_user.admin?
+
+    head :forbidden unless allowed
   end
 
-  # ================================================================
-  # SalaryArchiveDay recalculation
-  # ================================================================
+  def authorize_hr_confirm!
+    head :forbidden unless current_user.id == 17
+  end
+
+  def authorize_accounting_review!
+    allowed =
+      (
+        current_user.accounting? &&
+        current_user.is_manager
+      ) ||
+      current_user.admin?
+
+    head :forbidden unless allowed
+  end
+
+  # ------------------------------------------------------------
+  # Time parsing
+  # ------------------------------------------------------------
+
+  def parse_hhmm_to_time(date, value)
+    normalized =
+      normalize_hhmm(value)
+
+    return nil if normalized.blank?
+
+    hour, minute =
+      normalized.split(":").map(&:to_i)
+
+    date.in_time_zone.change(
+      hour: hour,
+      min: minute,
+      sec: 0
+    )
+  end
+
+  TIME_RE =
+    /\A([01]?\d|2[0-3]):([0-5]?\d)\z/
+
+  def normalize_hhmm(val)
+    s = val.to_s.strip
+
+    return nil if s.blank?
+
+    m = TIME_RE.match(s)
+
+    return nil unless m
+
+    hh = m[1].to_i
+    mm = m[2].to_i
+
+    format(
+      "%02d:%02d",
+      hh,
+      mm
+    )
+  end
+
+  # ============================================================
+  # DAY RECALCULATION
+  # ============================================================
 
   def recalculate_salary_archive_day!(
     day:,
@@ -2021,8 +1961,6 @@ class SalaryArchivesController < ApplicationController
         date: date
       )
 
-    # Rejected remote day:
-    # full required working time becomes deficit.
     if remote_day &&
        remote_day.confirmed == false
 
@@ -2040,8 +1978,6 @@ class SalaryArchivesController < ApplicationController
       return
     end
 
-    # Confirmed remote day:
-    # no deficit and no stale overtime.
     if remote_day &&
        remote_day.confirmed == true
 
@@ -2061,26 +1997,23 @@ class SalaryArchivesController < ApplicationController
     end
 
     # ------------------------------------------------------------
-    # 4. Normal attendance / vacation / mission calculation
+    # 4. Normal calculation
     # ------------------------------------------------------------
     deficit_minutes,
       base_overtime_minutes =
-        compute_deficit_and_base_overtime_minutes(
-          day: day,
-          user_id: user_id,
-          date: date,
-          off_dates: off_dates,
-          vac_map: vac_map,
-          mission_map: mission_map,
-          vacation_intervals_map:
-            vacation_intervals_map
-        )
+      compute_deficit_and_base_overtime_minutes(
+        day: day,
+        user_id: user_id,
+        date: date,
+        off_dates: off_dates,
+        vac_map: vac_map,
+        mission_map: mission_map,
+        vacation_intervals_map:
+          vacation_intervals_map
+      )
 
     # ------------------------------------------------------------
-    # 5. Confirmed external overtime
-    #
-    # This is calculated fresh from OvertimeEntry.
-    # We do NOT add it to the old SalaryArchiveDay value.
+    # 5. External confirmed overtime
     # ------------------------------------------------------------
     confirmed_ot_minutes =
       outside_system_overtime_minutes(
@@ -2099,9 +2032,28 @@ class SalaryArchivesController < ApplicationController
     )
   end
 
-  # ================================================================
-  # Core attendance / vacation / mission calculation
-  # ================================================================
+  # ============================================================
+  # IMPORTANT:
+  #
+  # This is the corrected deficit/overtime calculation.
+  #
+  # Attendance is NOT clipped to 08:30-16:30.
+  #
+  # Therefore:
+  #
+  # Normal:
+  #   08:30 -> 16:30 = 480
+  #   09:00 -> 17:00 = 480
+  #   09:15 -> 17:15 = 480
+  #
+  # Thursday:
+  #   08:30 -> 12:30 = 240
+  #   09:00 -> 13:00 = 240
+  #   09:15 -> 13:15 = 240
+  #
+  # Mission working time can cover deficit.
+  # Mission NEVER creates attendance overtime.
+  # ============================================================
 
   def compute_deficit_and_base_overtime_minutes(
     day:,
@@ -2120,14 +2072,26 @@ class SalaryArchivesController < ApplicationController
 
     return [0, 0] if required_minutes <= 0
 
-    work_start, work_end =
-      working_interval_for(date)
-
-    credited_intervals = []
-
     # ============================================================
-    # 1. ATTENDANCE
+    # 1. ACTUAL ATTENDANCE
+    #
+    # IMPORTANT:
+    # Do NOT clip this to the official working window.
+    #
+    # This preserves the old flexible attendance rule:
+    #
+    # Normal day:
+    #   08:30 -> 16:30
+    #   09:15 -> 17:15
+    #
+    # Thursday:
+    #   08:30 -> 12:30
+    #   09:15 -> 13:15
+    #
+    # All of these equal the required duration.
     # ============================================================
+
+    attendance_minutes = 0
 
     if day.first_in_at.present? &&
        day.last_out_at.present?
@@ -2145,25 +2109,68 @@ class SalaryArchivesController < ApplicationController
         )
 
       if in_time && out_time
-        # Night shift / crossing midnight.
+        # Support overnight attendance.
         out_time += 1.day if out_time < in_time
 
-        attendance_interval =
-          clipped_interval(
+        attendance_minutes =
+          interval_minutes(
             in_time,
-            out_time,
-            work_start,
-            work_end
+            out_time
           )
-
-        credited_intervals <<
-          attendance_interval if attendance_interval
       end
     end
 
     # ============================================================
-    # 2. CONFIRMED HOURLY VACATION
+    # 2. MANUAL ADJUSTMENT
     # ============================================================
+
+    actual_work_minutes =
+      attendance_minutes +
+      day.manual_adjust_minutes.to_i
+
+    actual_work_minutes =
+      [actual_work_minutes, 0].max
+
+    # ============================================================
+    # 3. CONFIRMED HOURLY VACATION
+    #
+    # Vacation can cover required working time.
+    #
+    # We merge it with attendance only for deficit calculation,
+    # so overlapping attendance + vacation is never counted twice.
+    # ============================================================
+
+    credited_intervals = []
+
+    if day.first_in_at.present? &&
+       day.last_out_at.present?
+
+      in_time =
+        parse_hhmm_to_time(
+          date,
+          day.first_in_at
+        )
+
+      out_time =
+        parse_hhmm_to_time(
+          date,
+          day.last_out_at
+        )
+
+      if in_time && out_time
+        out_time += 1.day if out_time < in_time
+
+        # Attendance is kept as the ACTUAL interval.
+        #
+        # This is intentional. We do not clip it to
+        # 08:30-16:30 because 09:15-17:15 is a valid
+        # full working day.
+        credited_intervals << [
+          in_time,
+          out_time
+        ]
+      end
+    end
 
     vinfo =
       (vac_map[user_id] || {})[date]
@@ -2179,17 +2186,24 @@ class SalaryArchivesController < ApplicationController
           vacation_intervals_map[user_id] || {}
         )[date] || []
 
+      # Vacation itself is only used to cover required
+      # working time. Therefore clip vacation to the
+      # official working window.
       vacation_working_intervals_for(
         vacation_intervals,
         date
       ).each do |interval|
-
         credited_intervals << interval
       end
     end
 
     # ============================================================
-    # 3. MISSION
+    # 4. MISSION CREDIT
+    #
+    # ONLY the working part of a mission can cover deficit.
+    #
+    # Mission outside working hours is payroll ×1.4 but it
+    # does NOT reduce deficit.
     # ============================================================
 
     missions =
@@ -2201,12 +2215,18 @@ class SalaryArchivesController < ApplicationController
       missions,
       date
     ).each do |interval|
-
       credited_intervals << interval
     end
 
     # ============================================================
-    # 4. UNION ALL CREDITED TIME
+    # 5. DEFICIT CREDIT
+    #
+    # Attendance + confirmed hourly vacation + working mission
+    # are merged so overlapping time is never counted twice.
+    #
+    # IMPORTANT:
+    # Attendance can extend to 17:15 on normal days and 13:15
+    # on Thursday. This is why attendance is NOT clipped.
     # ============================================================
 
     credited_minutes =
@@ -2214,7 +2234,7 @@ class SalaryArchivesController < ApplicationController
         credited_intervals
       )
 
-    # Existing manual adjustment.
+    # Manual adjustment is an additional credit.
     credited_minutes +=
       day.manual_adjust_minutes.to_i
 
@@ -2228,24 +2248,20 @@ class SalaryArchivesController < ApplicationController
       ].max
 
     # ============================================================
-    # 5. BASE OVERTIME
+    # 6. BASE OVERTIME
     #
-    # Mission/vacation credit does NOT create overtime.
-    # Overtime comes from actual attendance + manual adjustment.
-    # External overtime is added separately by
-    # recalculate_salary_archive_day!.
+    # Mission and vacation do NOT create overtime.
+    #
+    # Overtime is based ONLY on actual attendance duration
+    # + manual adjustment.
+    #
+    # This preserves the previous behavior.
     # ============================================================
-
-    actual_work_minutes =
-      day.computed_work_minutes.to_i +
-      day.manual_adjust_minutes.to_i
-
-    actual_work_minutes =
-      [actual_work_minutes, 0].max
 
     base_overtime_minutes =
       [
-        actual_work_minutes - required_minutes,
+        actual_work_minutes -
+        required_minutes,
         0
       ].max
 
@@ -2253,53 +2269,5 @@ class SalaryArchivesController < ApplicationController
       deficit_minutes,
       base_overtime_minutes
     ]
-  end
-
-  # ================================================================
-  # HH:MM parsing
-  # ================================================================
-
-  def parse_hhmm_to_time(date, value)
-    normalized =
-      normalize_hhmm(value)
-
-    return nil if normalized.blank?
-
-    hour, minute =
-      normalized.split(":").map(&:to_i)
-
-    date.in_time_zone.change(
-      hour: hour,
-      min: minute,
-      sec: 0
-    )
-  end
-
-  # normalize "8:3" => "08:03"
-  TIME_RE =
-    /\A([01]?\d|2[0-3]):([0-5]?\d)\z/
-
-  def normalize_hhmm(val)
-    s =
-      val.to_s.strip
-
-    return nil if s.blank?
-
-    match =
-      TIME_RE.match(s)
-
-    return nil unless match
-
-    hh =
-      match[1].to_i
-
-    mm =
-      match[2].to_i
-
-    format(
-      "%02d:%02d",
-      hh,
-      mm
-    )
   end
 end
