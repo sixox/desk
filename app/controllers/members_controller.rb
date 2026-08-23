@@ -5,7 +5,7 @@ class MembersController < ApplicationController
     edit_personal_details update_personal_details
   ]
 
-  def show
+def show
     @user = User.find(params[:id])
 
     @vacations_for_same_role = Vacation.joins(:user)
@@ -13,6 +13,7 @@ class MembersController < ApplicationController
                                        .where.not(users: { id: @user.id })
 
     @vacations = Vacation.all
+
     @fillers_grouped = fillers_grouped_by_year_and_period(@user)
 
     @kpi_lists =
@@ -31,7 +32,7 @@ class MembersController < ApplicationController
       end
 
     # ----------------------------
-    # ✅ Paylips + last month hours
+    # Payslips + last month hours
     # ----------------------------
 
     @user_archives = SalaryArchive
@@ -54,16 +55,34 @@ class MembersController < ApplicationController
 
     @selected_archive =
       if @selected_month.present?
-        @user_archives.find { |a| a.shamsi_month_id == @selected_month.id }
+        @user_archives.find do |archive|
+          archive.shamsi_month_id == @selected_month.id
+        end
       end
 
     @selected_accounting_confirmed =
       @selected_archive.present? &&
-      (@selected_archive.accounting_confirmed_at.present? || @selected_archive.accounting_confirmed == true)
+      (
+        @selected_archive.accounting_confirmed_at.present? ||
+        @selected_archive.accounting_confirmed == true
+      )
 
-    # Build "manager-like" maps ONLY for latest month (hours status table)
+    # ----------------------------
+    # Last month hours/status table
+    # ----------------------------
+
     if @latest_month.present? && @latest_archive.present?
-      build_month_context_for_user!(@user.id, @latest_month)
+
+      build_month_context_for_user!(
+        @user.id,
+        @latest_month
+      )
+
+      build_mission_context_for_user!(
+        @user.id,
+        @latest_month
+      )
+
     end
   end
 
@@ -262,5 +281,32 @@ class MembersController < ApplicationController
     end
 
     map
+  end
+
+  def build_mission_context_for_user!(user_id, shamsi_month)
+    start_date = shamsi_month.start_at.to_date
+    end_date   = shamsi_month.end_at.to_date
+
+    missions = Mission
+      .where(user_id: user_id)
+      .where("start_at <= ? AND end_at >= ?", end_date, start_date)
+      .order(:start_at, :end_at)
+
+    missions_by_date = Hash.new { |hash, key| hash[key] = [] }
+
+    missions.each do |mission|
+      mission_start =
+        [mission.start_at.to_date, start_date].max
+
+      mission_end =
+        [mission.end_at.to_date, end_date].min
+
+      (mission_start..mission_end).each do |date|
+        missions_by_date[date] << mission
+      end
+    end
+
+    @mission_by_user_date ||= {}
+    @mission_by_user_date[user_id] = missions_by_date
   end
 end

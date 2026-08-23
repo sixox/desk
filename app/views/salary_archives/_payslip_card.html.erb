@@ -1,10 +1,16 @@
 <%# app/views/salary_archives/_payslip_card.html.erb %>
+
 <%
   money = ->(n) { number_with_delimiter(n.to_i) }
   hours = ->(mins) { ((mins.to_i) / 60.0).round(2) }
 
-  month_days = (shamsi_month.end_at.to_date - shamsi_month.start_at.to_date).to_i + 1
-  adjust_30_to_month = ->(monthly_amount) { ((monthly_amount.to_f / 30.0) * month_days).round }
+  month_days =
+    (shamsi_month.end_at.to_date - shamsi_month.start_at.to_date).to_i + 1
+
+  adjust_30_to_month =
+    ->(monthly_amount) {
+      ((monthly_amount.to_f / 30.0) * month_days).round
+    }
 
   base_salary   = archive.seniority_base.to_i
   paye_sanavat  = archive.monthly_seniority_base.to_i
@@ -14,314 +20,944 @@
   housing       = archive.housing_allowance.to_i
   food          = archive.food_allowance.to_i
 
-  legal_salary  = base_salary + marriage + housing  + paye_sanavat + child
-  insurance     = archive.insurance.to_i
+  legal_salary =
+    base_salary +
+    marriage +
+    housing +
+    paye_sanavat +
+    child
 
-  # -----------------------------
-  # ✅ NEW: Part 1 accounting items
-  # -----------------------------
-  legal_add_1_title  = archive.legal_add_1_title.to_s.strip
-  legal_add_2_title  = archive.legal_add_2_title.to_s.strip
-  legal_ded_1_title  = archive.legal_ded_1_title.to_s.strip
-  legal_ded_2_title  = archive.legal_ded_2_title.to_s.strip
+  insurance = archive.insurance.to_i
+
+  legal_add_1_title = archive.legal_add_1_title.to_s.strip
+  legal_add_2_title = archive.legal_add_2_title.to_s.strip
+  legal_ded_1_title = archive.legal_ded_1_title.to_s.strip
+  legal_ded_2_title = archive.legal_ded_2_title.to_s.strip
 
   legal_add_1_amount = archive.legal_add_1_amount.to_i
   legal_add_2_amount = archive.legal_add_2_amount.to_i
   legal_ded_1_amount = archive.legal_ded_1_amount.to_i
   legal_ded_2_amount = archive.legal_ded_2_amount.to_i
 
-  legal_add_total = legal_add_1_amount + legal_add_2_amount
-  legal_ded_total = legal_ded_1_amount + legal_ded_2_amount
+  legal_add_total =
+    legal_add_1_amount +
+    legal_add_2_amount
 
-  has_legal_add_1 = legal_add_1_amount != 0 || legal_add_1_title.present?
-  has_legal_add_2 = legal_add_2_amount != 0 || legal_add_2_title.present?
-  has_legal_ded_1 = legal_ded_1_amount != 0 || legal_ded_1_title.present?
-  has_legal_ded_2 = legal_ded_2_amount != 0 || legal_ded_2_title.present?
+  legal_ded_total =
+    legal_ded_1_amount +
+    legal_ded_2_amount
 
-  # ✅ CHANGED: payment_1 includes Part 1 items
-  payment_1 = (legal_salary - insurance + legal_add_total - legal_ded_total)
+  has_legal_add_1 =
+    legal_add_1_amount != 0 ||
+    legal_add_1_title.present?
 
-  total_salary_adj = adjust_30_to_month.call(archive.total_salary.to_i)
+  has_legal_add_2 =
+    legal_add_2_amount != 0 ||
+    legal_add_2_title.present?
 
-  total_work_h = hours.call(archive.total_work_minutes)
+  has_legal_ded_1 =
+    legal_ded_1_amount != 0 ||
+    legal_ded_1_title.present?
+
+  has_legal_ded_2 =
+    legal_ded_2_amount != 0 ||
+    legal_ded_2_title.present?
+
+  payment_1 =
+    (
+      legal_salary -
+      insurance +
+      legal_add_total -
+      legal_ded_total
+    )
+
+  total_salary_adj =
+    adjust_30_to_month.call(archive.total_salary.to_i)
+
+  total_work_h =
+    hours.call(archive.total_work_minutes)
 
   overtime_mins =
-    archive.manual_overtime_minutes.to_i != 0 ? 
-      archive.manual_overtime_minutes.to_i : 
+    archive.manual_overtime_minutes.to_i != 0 ?
+      archive.manual_overtime_minutes.to_i :
       archive.overtime_minutes.to_i
-
 
   deficit_mins =
     if archive.no_dificit == true
       0
     else
-      archive.manual_deficit_minutes.to_i != 0 ? 
-        archive.manual_deficit_minutes.to_i : 
+      archive.manual_deficit_minutes.to_i != 0 ?
+        archive.manual_deficit_minutes.to_i :
         archive.deficit_minutes.to_i
     end
-
 
   overtime_h = hours.call(overtime_mins)
   deficit_h  = hours.call(deficit_mins)
 
+  hourly_rate =
+    archive.hourly_rate.present? ?
+      archive.hourly_rate.to_f :
+      0.0
 
-  hourly_rate = archive.hourly_rate.present? ? archive.hourly_rate.to_f : 0.0
-
-
-  loan   = archive.loan_installment.to_i
-  fund3  = archive.fund_three_percent.to_i
-  fund6  = archive.fund_six_percent.to_i
-
+  loan  = archive.loan_installment.to_i
+  fund3 = archive.fund_three_percent.to_i
+  fund6 = archive.fund_six_percent.to_i
 
   overtime_pay =
-    (overtime_h * hourly_rate * 1.4)
-
+    overtime_h *
+    hourly_rate *
+    1.4
 
   deficit_deduction =
     if archive.no_dificit == true
       0
     else
-      (deficit_h * hourly_rate )
+      deficit_h * hourly_rate
     end
 
-  # -----------------------------
-  # Part 2 items (همون چیزی که داری) ✅ unchanged
-  # -----------------------------
-  acc_add_1_title  = archive.respond_to?(:acc_add_1_title) ? archive.acc_add_1_title.to_s.strip : ""
-  acc_add_2_title  = archive.respond_to?(:acc_add_2_title) ? archive.acc_add_2_title.to_s.strip : ""
-  acc_ded_1_title  = archive.respond_to?(:acc_ded_1_title) ? archive.acc_ded_1_title.to_s.strip : ""
-  acc_ded_2_title  = archive.respond_to?(:acc_ded_2_title) ? archive.acc_ded_2_title.to_s.strip : ""
+  # ============================================================
+  # MISSION PAY
+  # کاملاً مستقل از overtime
+  # ============================================================
 
-  acc_add_1_amount = archive.respond_to?(:acc_add_1_amount) ? archive.acc_add_1_amount.to_i : 0
-  acc_add_2_amount = archive.respond_to?(:acc_add_2_amount) ? archive.acc_add_2_amount.to_i : 0
-  acc_ded_1_amount = archive.respond_to?(:acc_ded_1_amount) ? archive.acc_ded_1_amount.to_i : 0
-  acc_ded_2_amount = archive.respond_to?(:acc_ded_2_amount) ? archive.acc_ded_2_amount.to_i : 0
+  mission_working_minutes =
+    archive.mission_working_minutes.to_i
 
-  supplementary_insurance = archive.respond_to?(:supplementary_insurance) ? archive.supplementary_insurance.to_i : 0
+  mission_non_working_minutes =
+    archive.mission_non_working_minutes.to_i
 
-  acc_add_total = acc_add_1_amount + acc_add_2_amount
-  acc_ded_total = acc_ded_1_amount + acc_ded_2_amount + supplementary_insurance
+  mission_holiday_working_minutes =
+    archive.mission_holiday_working_minutes.to_i
 
-  payment_2 = (
-    total_salary_adj - fund6 - fund3 - loan - deficit_deduction + overtime_pay +
-    acc_add_total - acc_ded_total + food
-  ).round
+  mission_working_hours =
+    mission_working_minutes / 60.0
 
-  has_acc_add_1 = acc_add_1_amount != 0 || acc_add_1_title.present?
-  has_acc_add_2 = acc_add_2_amount != 0 || acc_add_2_title.present?
-  has_acc_ded_1 = acc_ded_1_amount != 0 || acc_ded_1_title.present?
-  has_acc_ded_2 = acc_ded_2_amount != 0 || acc_ded_2_title.present?
-  has_supp_ins  = supplementary_insurance.to_i != 0
+  mission_non_working_hours =
+    mission_non_working_minutes / 60.0
+
+  mission_holiday_working_hours =
+    mission_holiday_working_minutes / 60.0
+
+  mission_working_pay =
+    mission_working_hours *
+    hourly_rate *
+    1.0
+
+  mission_non_working_pay =
+    mission_non_working_hours *
+    hourly_rate *
+    1.4
+
+  mission_holiday_working_pay =
+    mission_holiday_working_hours *
+    hourly_rate *
+    2.0
+
+  mission_total_pay =
+    (
+      mission_working_pay +
+      mission_non_working_pay +
+      mission_holiday_working_pay
+    )
+
+  # ============================================================
+
+  acc_add_1_title =
+    archive.respond_to?(:acc_add_1_title) ?
+      archive.acc_add_1_title.to_s.strip :
+      ""
+
+  acc_add_2_title =
+    archive.respond_to?(:acc_add_2_title) ?
+      archive.acc_add_2_title.to_s.strip :
+      ""
+
+  acc_ded_1_title =
+    archive.respond_to?(:acc_ded_1_title) ?
+      archive.acc_ded_1_title.to_s.strip :
+      ""
+
+  acc_ded_2_title =
+    archive.respond_to?(:acc_ded_2_title) ?
+      archive.acc_ded_2_title.to_s.strip :
+      ""
+
+  acc_add_1_amount =
+    archive.respond_to?(:acc_add_1_amount) ?
+      archive.acc_add_1_amount.to_i :
+      0
+
+  acc_add_2_amount =
+    archive.respond_to?(:acc_add_2_amount) ?
+      archive.acc_add_2_amount.to_i :
+      0
+
+  acc_ded_1_amount =
+    archive.respond_to?(:acc_ded_1_amount) ?
+      archive.acc_ded_1_amount.to_i :
+      0
+
+  acc_ded_2_amount =
+    archive.respond_to?(:acc_ded_2_amount) ?
+      archive.acc_ded_2_amount.to_i :
+      0
+
+  supplementary_insurance =
+    archive.respond_to?(:supplementary_insurance) ?
+      archive.supplementary_insurance.to_i :
+      0
+
+  acc_add_total =
+    acc_add_1_amount +
+    acc_add_2_amount
+
+  acc_ded_total =
+    acc_ded_1_amount +
+    acc_ded_2_amount +
+    supplementary_insurance
+
+  acc_net =
+    acc_add_total -
+    acc_ded_total
+
+  payment_2 =
+    (
+      total_salary_adj -
+      fund6 -
+      fund3 -
+      loan -
+      deficit_deduction +
+      overtime_pay +
+
+      # Mission کاملاً جدا از overtime
+      mission_working_pay +
+      mission_non_working_pay +
+      mission_holiday_working_pay +
+
+      acc_add_total -
+      acc_ded_total +
+      food
+    ).round
+
+  has_acc_add_1 =
+    acc_add_1_amount != 0 ||
+    acc_add_1_title.present?
+
+  has_acc_add_2 =
+    acc_add_2_amount != 0 ||
+    acc_add_2_title.present?
+
+  has_acc_ded_1 =
+    acc_ded_1_amount != 0 ||
+    acc_ded_1_title.present?
+
+  has_acc_ded_2 =
+    acc_ded_2_amount != 0 ||
+    acc_ded_2_title.present?
+
+  has_supp_ins =
+    supplementary_insurance.to_i != 0
 %>
 
 <style>
-  /* minimal, classy, inside-card only */
-  .ps-card { border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.06); border: 1px solid rgba(0,0,0,.06); overflow: hidden; }
-  .ps-header { padding: 14px 16px; background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0)); border-bottom: 1px solid rgba(0,0,0,.06); }
-  .ps-title { font-weight: 800; letter-spacing: -.2px; }
-  .ps-sub { font-size: .82rem; color: #6c757d; }
-  .ps-kpi { border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 10px 12px; background: #fff; }
-  .ps-kpi .lbl { font-size: .78rem; color: #6c757d; }
-  .ps-kpi .val { font-size: 1.12rem; font-weight: 800; letter-spacing: -.2px; }
-  .ps-grid { padding: 12px 16px 16px; }
-  .ps-section { border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 12px 12px; background: #fff; height: 100%; }
-  .ps-section .hd { font-weight: 800; font-size: .92rem; margin-bottom: 10px; }
-  .ps-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 8px 0; border-bottom: 1px dashed rgba(0,0,0,.10); }
-  .ps-row:last-child { border-bottom: 0; }
-  .ps-row .k { font-size: .83rem; color: #6c757d; }
-  .ps-row .v { font-size: .88rem; font-weight: 700; }
-  .ps-pill { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.08); background:#fff; font-size: .78rem; color:#343a40; }
-  .ps-footer { padding: 12px 16px; background: #fff; border-top: 1px solid rgba(0,0,0,.06); }
-  .ps-mini { font-size: .8rem; color:#6c757d; }
+  .ps-card {
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    border: 1px solid rgba(0,0,0,.06);
+    overflow: hidden;
+  }
+
+  .ps-header {
+    padding: 14px 16px;
+    background: linear-gradient(
+      180deg,
+      rgba(0,0,0,.03),
+      rgba(0,0,0,0)
+    );
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+
+  .ps-title {
+    font-weight: 800;
+    letter-spacing: -.2px;
+  }
+
+  .ps-sub {
+    font-size: .82rem;
+    color: #6c757d;
+  }
+
+  .ps-kpi {
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: #fff;
+  }
+
+  .ps-kpi .lbl {
+    font-size: .78rem;
+    color: #6c757d;
+  }
+
+  .ps-kpi .val {
+    font-size: 1.12rem;
+    font-weight: 800;
+    letter-spacing: -.2px;
+  }
+
+  .ps-grid {
+    padding: 12px 16px 16px;
+  }
+
+  .ps-section {
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 14px;
+    padding: 12px 12px;
+    background: #fff;
+    height: 100%;
+  }
+
+  .ps-section .hd {
+    font-weight: 800;
+    font-size: .92rem;
+    margin-bottom: 10px;
+  }
+
+  .ps-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(0,0,0,.10);
+  }
+
+  .ps-row:last-child {
+    border-bottom: 0;
+  }
+
+  .ps-row .k {
+    font-size: .83rem;
+    color: #6c757d;
+  }
+
+  .ps-row .v {
+    font-size: .88rem;
+    font-weight: 700;
+  }
+
+  .ps-pill {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,.08);
+    background:#fff;
+    font-size:.78rem;
+    color:#343a40;
+  }
+
+  .ps-footer {
+    padding:12px 16px;
+    background:#fff;
+    border-top:1px solid rgba(0,0,0,.06);
+  }
+
+  .ps-mini {
+    font-size:.8rem;
+    color:#6c757d;
+  }
 </style>
 
 <div class="ps-card" id="payslip_card_<%= archive.id %>">
+
   <div class="ps-header">
+
     <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+
       <div>
-        <div class="ps-title">فیش حقوقی — <%= user&.name.presence || "کاربر ##{archive.user_id}" %></div>
-        <div class="ps-sub">
-          ماه: <%= shamsi_month.name %> • <%= month_days %> روز • آرشیو: #<%= archive.id %>
+
+        <div class="ps-title">
+          فیش حقوقی —
+          <%= user&.name.presence || "کاربر ##{archive.user_id}" %>
         </div>
+
+        <div class="ps-sub">
+          ماه: <%= shamsi_month.name %>
+          • <%= month_days %> روز
+          • آرشیو: #<%= archive.id %>
+        </div>
+
       </div>
 
       <div class="d-flex flex-wrap gap-2">
-        <span class="ps-pill">پرداختی اول: <strong><%= money.call(payment_1) %></strong></span>
-        <span class="ps-pill">پرداختی دوم: <strong><%= money.call(payment_2) %></strong></span>
+
+        <span class="ps-pill">
+          پرداختی اول:
+          <strong><%= money.call(payment_1) %></strong>
+        </span>
+
+        <span class="ps-pill">
+          پرداختی دوم:
+          <strong><%= money.call(payment_2) %></strong>
+        </span>
+
       </div>
+
     </div>
 
     <div class="row g-2 mt-2">
+
       <div class="col-12 col-md-6">
+
         <div class="ps-kpi">
-          <div class="lbl">پرداختی اول (قانونی)</div>
-          <div class="val"><%= money.call(payment_1) %></div>
-          <div class="ps-mini">حقوق قانونی − بیمه (۷٪) ± آیتم‌های حسابداری (قسمت اول)</div>
+
+          <div class="lbl">
+            پرداختی اول (قانونی)
+          </div>
+
+          <div class="val">
+            <%= money.call(payment_1) %>
+          </div>
+
+          <div class="ps-mini">
+            حقوق قانونی − بیمه ± آیتم‌های حسابداری قسمت اول
+          </div>
+
         </div>
+
       </div>
+
       <div class="col-12 col-md-6">
+
         <div class="ps-kpi">
-          <div class="lbl">پرداختی دوم (عملکرد + تعدیلات)</div>
-          <div class="val"><%= money.call(payment_2) %></div>
-          <div class="ps-mini">حقوق مصوب ± اضافه‌کاری/کسری − ذخایر − وام ± آیتم‌های حسابداری</div>
+
+          <div class="lbl">
+            پرداختی دوم (عملکرد + تعدیلات)
+          </div>
+
+          <div class="val">
+            <%= money.call(payment_2) %>
+          </div>
+
+          <div class="ps-mini">
+            حقوق مصوب ± اضافه‌کاری/کسری ± مأموریت − ذخایر − وام ± آیتم‌های حسابداری
+          </div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
 
   <div class="ps-grid">
+
     <div class="row g-3">
 
       <div class="col-12 col-lg-4">
+
         <div class="ps-section">
-          <div class="hd">حقوق پایه و مزایا</div>
 
-          <div class="ps-row"><span class="k">حقوق پایه</span><span class="v"><%= money.call(base_salary) %></span></div>
-          <div class="ps-row"><span class="k">پایه سنوات</span><span class="v"><%= money.call(paye_sanavat) %></span></div>
+          <div class="hd">
+            حقوق پایه و مزایا
+          </div>
 
-          <div class="ps-row"><span class="k">حق مسکن و خواربار</span><span class="v"><%= money.call(housing) %></span></div>
-          <div class="ps-row"><span class="k">ایاب ذهاب</span><span class="v"><%= money.call(food) %></span></div>
+          <div class="ps-row">
+            <span class="k">حقوق پایه</span>
+            <span class="v"><%= money.call(base_salary) %></span>
+          </div>
 
-          <div class="ps-row"><span class="k">حق تأهل</span><span class="v"><%= money.call(marriage) %></span></div>
-          <div class="ps-row"><span class="k">حق اولاد</span><span class="v"><%= money.call(child) %></span></div>
+          <div class="ps-row">
+            <span class="k">پایه سنوات</span>
+            <span class="v"><%= money.call(paye_sanavat) %></span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">حق مسکن و خواربار</span>
+            <span class="v"><%= money.call(housing) %></span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">ایاب ذهاب</span>
+            <span class="v"><%= money.call(food) %></span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">حق تأهل</span>
+            <span class="v"><%= money.call(marriage) %></span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">حق اولاد</span>
+            <span class="v"><%= money.call(child) %></span>
+          </div>
+
         </div>
+
       </div>
 
       <div class="col-12 col-lg-4">
+
         <div class="ps-section">
-          <div class="hd">محاسبات قانونی</div>
 
-          <div class="ps-row"><span class="k">حقوق قانونی</span><span class="v"><%= money.call(legal_salary) %></span></div>
-          <div class="ps-row"><span class="k">بیمه (۷٪)</span><span class="v"><%= money.call(insurance) %></span></div>
+          <div class="hd">
+            محاسبات قانونی
+          </div>
 
-          <% if (legal_add_total != 0 || legal_ded_total != 0) %>
-            <div class="ps-row"><span class="k">جمع افزایشی (قسمت اول)</span><span class="v"><%= money.call(legal_add_total) %></span></div>
-            <div class="ps-row"><span class="k">جمع کاهشی (قسمت اول)</span><span class="v"><%= money.call(legal_ded_total) %></span></div>
+          <div class="ps-row">
+            <span class="k">حقوق قانونی</span>
+            <span class="v"><%= money.call(legal_salary) %></span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">بیمه (۷٪)</span>
+            <span class="v"><%= money.call(insurance) %></span>
+          </div>
+
+          <% if legal_add_total != 0 || legal_ded_total != 0 %>
+
+            <div class="ps-row">
+              <span class="k">جمع افزایشی قسمت اول</span>
+              <span class="v"><%= money.call(legal_add_total) %></span>
+            </div>
+
+            <div class="ps-row">
+              <span class="k">جمع کاهشی قسمت اول</span>
+              <span class="v"><%= money.call(legal_ded_total) %></span>
+            </div>
 
             <% if has_legal_add_1 %>
-              <div class="ps-row"><span class="k"><%= legal_add_1_title.presence || "افزایشی ۱ (قسمت اول)" %></span><span class="v"><%= money.call(legal_add_1_amount) %></span></div>
+              <div class="ps-row">
+                <span class="k">
+                  <%= legal_add_1_title.presence || "افزایشی ۱" %>
+                </span>
+                <span class="v">
+                  <%= money.call(legal_add_1_amount) %>
+                </span>
+              </div>
             <% end %>
+
             <% if has_legal_add_2 %>
-              <div class="ps-row"><span class="k"><%= legal_add_2_title.presence || "افزایشی ۲ (قسمت اول)" %></span><span class="v"><%= money.call(legal_add_2_amount) %></span></div>
+              <div class="ps-row">
+                <span class="k">
+                  <%= legal_add_2_title.presence || "افزایشی ۲" %>
+                </span>
+                <span class="v">
+                  <%= money.call(legal_add_2_amount) %>
+                </span>
+              </div>
             <% end %>
+
             <% if has_legal_ded_1 %>
-              <div class="ps-row"><span class="k"><%= legal_ded_1_title.presence || "کاهشی ۱ (قسمت اول)" %></span><span class="v"><%= money.call(legal_ded_1_amount) %></span></div>
+              <div class="ps-row">
+                <span class="k">
+                  <%= legal_ded_1_title.presence || "کاهشی ۱" %>
+                </span>
+                <span class="v">
+                  <%= money.call(legal_ded_1_amount) %>
+                </span>
+              </div>
             <% end %>
+
             <% if has_legal_ded_2 %>
-              <div class="ps-row"><span class="k"><%= legal_ded_2_title.presence || "کاهشی ۲ (قسمت اول)" %></span><span class="v"><%= money.call(legal_ded_2_amount) %></span></div>
+              <div class="ps-row">
+                <span class="k">
+                  <%= legal_ded_2_title.presence || "کاهشی ۲" %>
+                </span>
+                <span class="v">
+                  <%= money.call(legal_ded_2_amount) %>
+                </span>
+              </div>
             <% end %>
+
           <% end %>
 
           <div class="ps-row">
-            <span class="k"><strong>پرداختی اول</strong></span>
-            <span class="v"><strong><%= money.call(payment_1) %></strong></span>
+
+            <span class="k">
+              <strong>پرداختی اول</strong>
+            </span>
+
+            <span class="v">
+              <strong><%= money.call(payment_1) %></strong>
+            </span>
+
           </div>
 
-          <div class="ps-mini mt-2">
-            فرمول: (حقوق قانونی − بیمه) ± آیتم‌های حسابداری (قسمت اول)
-          </div>
         </div>
+
       </div>
 
       <div class="col-12 col-lg-4">
+
         <div class="ps-section">
-          <div class="hd">کارکرد و حقوق مصوب</div>
 
-          <div class="ps-row"><span class="k">حقوق مصوب (<%= month_days %> روز)</span><span class="v"><%= money.call(total_salary_adj) %></span></div>
-          <div class="ps-row"><span class="k">مجموع ساعات کاری</span><span class="v"><%= total_work_h %> ساعت</span></div>
-          <div class="ps-row"><span class="k">نرخ ساعتی</span><span class="v"><%= number_with_delimiter(hourly_rate.round(2)) %></span></div>
+          <div class="hd">
+            کارکرد و حقوق مصوب
+          </div>
 
-          <div class="ps-row"><span class="k">ساعت اضافه‌کاری</span><span class="v"><%= overtime_h %> ساعت</span></div>
-          <div class="ps-row"><span class="k">ساعت کسری</span><span class="v"><%= deficit_h %> ساعت</span></div>
+          <div class="ps-row">
+            <span class="k">
+              حقوق مصوب (<%= month_days %> روز)
+            </span>
+            <span class="v">
+              <%= money.call(total_salary_adj) %>
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              مجموع ساعات کاری
+            </span>
+            <span class="v">
+              <%= total_work_h %> ساعت
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              نرخ ساعتی
+            </span>
+            <span class="v">
+              <%= number_with_delimiter(hourly_rate.round(2)) %>
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              ساعت اضافه‌کاری
+            </span>
+            <span class="v">
+              <%= overtime_h %> ساعت
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              ساعت کسری
+            </span>
+            <span class="v">
+              <%= deficit_h %> ساعت
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              مأموریت کاری روزهای عادی
+            </span>
+            <span class="v">
+              <%= mission_working_hours.round(2) %> ساعت
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              مأموریت غیرکاری
+            </span>
+            <span class="v">
+              <%= mission_non_working_hours.round(2) %> ساعت
+            </span>
+          </div>
+
+          <div class="ps-row">
+            <span class="k">
+              مأموریت کاری تعطیل/جمعه
+            </span>
+            <span class="v">
+              <%= mission_holiday_working_hours.round(2) %> ساعت
+            </span>
+          </div>
+
         </div>
+
       </div>
 
       <div class="col-12 col-lg-7">
+
         <div class="ps-section">
-          <div class="hd">کسورات و تعدیلات</div>
+
+          <div class="hd">
+            کسورات و تعدیلات
+          </div>
 
           <div class="row g-3">
+
             <div class="col-12 col-md-6">
-              <div class="ps-row"><span class="k">قسط وام</span><span class="v"><%= money.call(loan) %></span></div>
-              <div class="ps-row"><span class="k">ذخیره ۳٪</span><span class="v"><%= money.call(fund3) %></span></div>
-              <div class="ps-row"><span class="k">ذخیره ۶٪</span><span class="v"><%= money.call(fund6) %></span></div>
+
+              <div class="ps-row">
+                <span class="k">قسط وام</span>
+                <span class="v"><%= money.call(loan) %></span>
+              </div>
+
+              <div class="ps-row">
+                <span class="k">ذخیره ۳٪</span>
+                <span class="v"><%= money.call(fund3) %></span>
+              </div>
+
+              <div class="ps-row">
+                <span class="k">ذخیره ۶٪</span>
+                <span class="v"><%= money.call(fund6) %></span>
+              </div>
 
               <% if has_supp_ins %>
-                <div class="ps-row"><span class="k">بیمه تکمیلی</span><span class="v"><%= money.call(supplementary_insurance) %></span></div>
+
+                <div class="ps-row">
+                  <span class="k">بیمه تکمیلی</span>
+                  <span class="v">
+                    <%= money.call(supplementary_insurance) %>
+                  </span>
+                </div>
+
               <% end %>
 
               <% if has_acc_ded_1 %>
-                <div class="ps-row"><span class="k"><%= acc_ded_1_title.presence || "کسورات حسابداری ۱" %></span><span class="v"><%= money.call(acc_ded_1_amount) %></span></div>
-              <% end %>
-              <% if has_acc_ded_2 %>
-                <div class="ps-row"><span class="k"><%= acc_ded_2_title.presence || "کسورات حسابداری ۲" %></span><span class="v"><%= money.call(acc_ded_2_amount) %></span></div>
-              <% end %>
-
-              <% if has_acc_add_1 %>
-                <div class="ps-row"><span class="k"><%= acc_add_1_title.presence || "افزایشی حسابداری ۱" %></span><span class="v"><%= money.call(acc_add_1_amount) %></span></div>
-              <% end %>
-              <% if has_acc_add_2 %>
-                <div class="ps-row"><span class="k"><%= acc_add_2_title.presence || "افزایشی حسابداری ۲" %></span><span class="v"><%= money.call(acc_add_2_amount) %></span></div>
-              <% end %>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <div class="ps-row"><span class="k">کسر کسری (ساعت × نرخ × ۲)</span><span class="v"><%= money.call(deficit_deduction.round) %></span></div>
-              <div class="ps-row"><span class="k">افزودن اضافه‌کاری (×۱.۴)</span><span class="v"><%= money.call(overtime_pay.round) %></span></div>
-
-              <% if (acc_add_total != 0 || acc_ded_total != 0) %>
                 <div class="ps-row">
-                  <span class="k">خالص آیتم‌های حسابداری (قسمت دوم)</span>
-                  <span class="v"><%= money.call(acc_add_total - acc_ded_total) %></span>
+                  <span class="k">
+                    <%= acc_ded_1_title.presence || "کسورات حسابداری ۱" %>
+                  </span>
+                  <span class="v">
+                    <%= money.call(acc_ded_1_amount) %>
+                  </span>
                 </div>
               <% end %>
 
-              <div class="ps-mini mt-2">این بخش مستقیماً روی پرداختی دوم اثر می‌گذارد.</div>
+              <% if has_acc_ded_2 %>
+                <div class="ps-row">
+                  <span class="k">
+                    <%= acc_ded_2_title.presence || "کسورات حسابداری ۲" %>
+                  </span>
+                  <span class="v">
+                    <%= money.call(acc_ded_2_amount) %>
+                  </span>
+                </div>
+              <% end %>
+
+              <% if has_acc_add_1 %>
+                <div class="ps-row">
+                  <span class="k">
+                    <%= acc_add_1_title.presence || "افزایشی حسابداری ۱" %>
+                  </span>
+                  <span class="v">
+                    <%= money.call(acc_add_1_amount) %>
+                  </span>
+                </div>
+              <% end %>
+
+              <% if has_acc_add_2 %>
+                <div class="ps-row">
+                  <span class="k">
+                    <%= acc_add_2_title.presence || "افزایشی حسابداری ۲" %>
+                  </span>
+                  <span class="v">
+                    <%= money.call(acc_add_2_amount) %>
+                  </span>
+                </div>
+              <% end %>
+
             </div>
+
+            <div class="col-12 col-md-6">
+
+              <div class="ps-row">
+                <span class="k">
+                  کسر کسری (ساعت × نرخ)
+                </span>
+                <span class="v">
+                  <%= money.call(deficit_deduction.round) %>
+                </span>
+              </div>
+
+              <div class="ps-row">
+                <span class="k">
+                  افزودن اضافه‌کاری (×۱.۴)
+                </span>
+                <span class="v">
+                  <%= money.call(overtime_pay.round) %>
+                </span>
+              </div>
+
+              <!-- MISSION 1 -->
+
+              <div class="ps-row">
+                <span class="k">
+                  مأموریت کاری عادی (×۱)
+                </span>
+                <span class="v">
+                  <%= money.call(mission_working_pay.round) %>
+                </span>
+              </div>
+
+              <!-- MISSION 2 -->
+
+              <div class="ps-row">
+                <span class="k">
+                  مأموریت غیرکاری (×۱.۴)
+                </span>
+                <span class="v">
+                  <%= money.call(mission_non_working_pay.round) %>
+                </span>
+              </div>
+
+              <!-- MISSION 3 -->
+
+              <div class="ps-row">
+                <span class="k">
+                  مأموریت کاری تعطیل/جمعه (×۲)
+                </span>
+                <span class="v">
+                  <%= money.call(mission_holiday_working_pay.round) %>
+                </span>
+              </div>
+
+              <div class="ps-row">
+
+                <span class="k">
+                  <strong>جمع مبلغ مأموریت</strong>
+                </span>
+
+                <span class="v">
+                  <strong>
+                    <%= money.call(mission_total_pay.round) %>
+                  </strong>
+                </span>
+
+              </div>
+
+              <% if acc_add_total != 0 || acc_ded_total != 0 %>
+
+                <div class="ps-row">
+
+                  <span class="k">
+                    خالص آیتم‌های حسابداری قسمت دوم
+                  </span>
+
+                  <span class="v">
+                    <%= money.call(acc_add_total - acc_ded_total) %>
+                  </span>
+
+                </div>
+
+              <% end %>
+
+              <div class="ps-mini mt-2">
+                این بخش مستقیماً روی پرداختی دوم اثر می‌گذارد.
+              </div>
+
+            </div>
+
           </div>
+
         </div>
+
       </div>
 
       <div class="col-12 col-lg-5">
-        <div class="ps-section" style="background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0));">
-          <div class="hd">خلاصه پرداختی‌ها</div>
 
-          <div class="ps-row">
-            <span class="k">پرداختی اول (قانونی)</span>
-            <span class="v"><%= money.call(payment_1) %></span>
+        <div class="ps-section"
+             style="background: linear-gradient(
+               180deg,
+               rgba(0,0,0,.03),
+               rgba(0,0,0,0)
+             );">
+
+          <div class="hd">
+            خلاصه پرداختی‌ها
           </div>
 
           <div class="ps-row">
-            <span class="k">پرداختی دوم</span>
-            <span class="v"><%= money.call(payment_2) %></span>
+
+            <span class="k">
+              پرداختی اول (قانونی)
+            </span>
+
+            <span class="v">
+              <%= money.call(payment_1) %>
+            </span>
+
           </div>
 
-          <% if (legal_add_total != 0 || legal_ded_total != 0) %>
+          <div class="ps-row">
+
+            <span class="k">
+              پرداختی دوم
+            </span>
+
+            <span class="v">
+              <%= money.call(payment_2) %>
+            </span>
+
+          </div>
+
+          <div class="ps-row">
+
+            <span class="k">
+              مجموع مبلغ مأموریت
+            </span>
+
+            <span class="v">
+              <%= money.call(mission_total_pay.round) %>
+            </span>
+
+          </div>
+
+          <% if legal_add_total != 0 || legal_ded_total != 0 %>
+
             <div class="ps-row">
-              <span class="k">خالص آیتم‌های حسابداری (قسمت اول)</span>
-              <span class="v"><%= money.call(legal_add_total - legal_ded_total) %></span>
+
+              <span class="k">
+                خالص آیتم‌های حسابداری قسمت اول
+              </span>
+
+              <span class="v">
+                <%= money.call(legal_add_total - legal_ded_total) %>
+              </span>
+
             </div>
+
           <% end %>
 
           <div class="ps-mini mt-2">
-            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب و ساعات اضافه‌کاری/کسری محاسبه می‌شود.
+            پرداختی اول مربوط به محاسبات قانونی است و پرداختی دوم بر اساس حقوق مصوب، اضافه‌کاری، کسری و مأموریت محاسبه می‌شود.
           </div>
+
         </div>
+
       </div>
 
     </div>
+
   </div>
 
   <div class="ps-footer">
+
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+
       <div class="ps-mini">
-        تولید شده از آرشیو <strong>#<%= archive.id %></strong> • ماه <strong><%= shamsi_month.name %></strong>
+        تولید شده از آرشیو
+        <strong>#<%= archive.id %></strong>
+        • ماه
+        <strong><%= shamsi_month.name %></strong>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <span class="ps-pill">پرداختی اول: <strong><%= money.call(payment_1) %></strong></span>
-        <span class="ps-pill">پرداختی دوم: <strong><%= money.call(payment_2) %></strong></span>
+
+        <span class="ps-pill">
+          پرداختی اول:
+          <strong><%= money.call(payment_1) %></strong>
+        </span>
+
+        <span class="ps-pill">
+          پرداختی دوم:
+          <strong><%= money.call(payment_2) %></strong>
+        </span>
+
       </div>
+
     </div>
+
   </div>
+
 </div>

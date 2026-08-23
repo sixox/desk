@@ -5,11 +5,21 @@
 <div class="card shadow-sm">
   <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
     <div>
-      <div class="fw-semibold">وضعیت ساعات — <%= @profile_month.name %></div>
-      <div class="text-muted small">نمایش فقط خواندنی (مثل بررسی مدیر)</div>
+      <div class="fw-semibold">
+        وضعیت ساعات — <%= @profile_month.name %>
+      </div>
+
+      <div class="text-muted small">
+        نمایش فقط خواندنی (مثل بررسی مدیر)
+      </div>
     </div>
 
-    <% confirmed = (@profile_archive.accounting_confirmed_at.present? || @profile_archive.accounting_confirmed == true) %>
+    <% confirmed =
+         (
+           @profile_archive.accounting_confirmed_at.present? ||
+           @profile_archive.accounting_confirmed == true
+         ) %>
+
     <span class="badge <%= confirmed ? "text-bg-success" : "text-bg-secondary" %>">
       <%= confirmed ? "تأیید حسابداری" : "در انتظار تأیید حسابداری" %>
     </span>
@@ -17,149 +27,626 @@
 
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-sm table-hover table-bordered align-middle mb-0" style="font-size:.84rem;">
-        <thead class="table-light" style="position: sticky; top: 0; z-index: 2;">
+
+      <table class="table table-sm table-hover table-bordered align-middle mb-0"
+             style="font-size:.84rem;">
+
+        <thead class="table-light"
+               style="position: sticky; top: 0; z-index: 2;">
+
           <tr>
-            <th class="text-nowrap" style="width: 90px;">روز ماه</th>
-            <th class="text-nowrap" style="width: 110px;">ورود</th>
-            <th class="text-nowrap" style="width: 110px;">خروج</th>
-            <th class="text-nowrap text-end" style="width: 90px;">کسری</th>
-            <th class="text-nowrap text-end" style="width: 110px;">اضافه‌کاری</th>
-            <th class="text-nowrap" style="min-width: 220px;">وضعیت‌ها</th>
+            <th class="text-nowrap" style="width: 90px;">
+              روز ماه
+            </th>
+
+            <th class="text-nowrap" style="width: 110px;">
+              ورود
+            </th>
+
+            <th class="text-nowrap" style="width: 110px;">
+              خروج
+            </th>
+
+            <th class="text-nowrap text-end" style="width: 90px;">
+              کسری
+            </th>
+
+            <th class="text-nowrap text-end" style="width: 110px;">
+              اضافه‌کاری
+            </th>
+
+            <th class="text-nowrap text-end" style="width: 120px;">
+              مأموریت کاری
+            </th>
+
+            <th class="text-nowrap text-end" style="width: 130px;">
+              مأموریت غیرکاری
+            </th>
+
+            <th class="text-nowrap text-end" style="width: 150px;">
+              مأموریت کاری تعطیل/جمعه
+            </th>
+
+            <th class="text-nowrap" style="min-width: 260px;">
+              وضعیت‌ها
+            </th>
           </tr>
+
         </thead>
 
         <tbody>
+
           <% days_sorted = @profile_archive.days.sort_by(&:work_date) %>
 
           <% days_sorted.each_with_index do |day, idx| %>
+
             <% d = day.work_date %>
             <% day_no = (idx + 1).ordinalize %>
 
             <% is_off = @off_dates.include?(d) %>
+            <% is_friday = d.friday? %>
             <% weekday = @weekday_fa[d.wday] %>
 
-            <% vinfo = (@vacation_info_by_user_date[@profile_archive.user_id] || {})[d] %>
+            <% vinfo =
+                 (
+                   @vacation_info_by_user_date[@profile_archive.user_id] || {}
+                 )[d] %>
+
             <% has_vac = vinfo.present? %>
             <% vac_daily = has_vac && vinfo[:kind] == :daily %>
-            <% vac_confirmed = has_vac && (vinfo[:confirmed] != false) %>
+            <% vac_confirmed = has_vac && vinfo[:confirmed] != false %>
 
-            <% global_remote = (@global_remote_dates || Set.new).include?(d) %>
-            <% remote_day = (@remote_days_by_user_date[@profile_archive.user_id] || {})[d] %>
+            <% global_remote =
+                 (@global_remote_dates || Set.new).include?(d) %>
 
-            <% remote_present = global_remote || remote_day.present? %>
-            <% remote_confirmed = global_remote || (remote_day.present? && (remote_day.confirmed != false)) %>
+            <% remote_day =
+                 (
+                   @remote_days_by_user_date[@profile_archive.user_id] || {}
+                 )[d] %>
 
-            <% manual = (@manual_by_user_date[@profile_archive.user_id] || {})[d] || {} %>
+            <% remote_present =
+                 global_remote || remote_day.present? %>
+
+            <% remote_confirmed =
+                 global_remote ||
+                 (
+                   remote_day.present? &&
+                   remote_day.confirmed != false
+                 ) %>
+
+            <% manual =
+                 (
+                   @manual_by_user_date[@profile_archive.user_id] || {}
+                 )[d] || {} %>
+
             <% manual_entry = manual[:entry] %>
             <% manual_exit  = manual[:exit] %>
 
-            <% ots = ((@overtime_by_user_date[@profile_archive.user_id] || {})[d] || []) %>
+            <% ots =
+                 (
+                   @overtime_by_user_date[@profile_archive.user_id] || {}
+                 )[d] || [] %>
+
+
+            <%# ---------------------------------------- %>
+            <%# Missions                              %>
+            <%# ---------------------------------------- %>
+
+            <% mission_list =
+                 (
+                   @mission_by_user_date[@profile_archive.user_id] || {}
+                 )[d] || [] %>
+
+            <% mission_working_minutes =
+                 mission_list.sum do |mission|
+                   mission.hours_for_date(d)[:working_hours].to_f * 60
+                 end.round %>
+
+            <% mission_non_working_minutes =
+                 mission_list.sum do |mission|
+                   mission.hours_for_date(d)[:non_working_hours].to_f * 60
+                 end.round %>
+
+            <% if is_off || is_friday %>
+
+              <% mission_holiday_working_minutes =
+                   mission_working_minutes %>
+
+              <% mission_normal_working_minutes = 0 %>
+
+            <% else %>
+
+              <% mission_holiday_working_minutes = 0 %>
+
+              <% mission_normal_working_minutes =
+                   mission_working_minutes %>
+
+            <% end %>
+
+
+            <%# ---------------------------------------- %>
+            <%# Row styling                           %>
+            <%# ---------------------------------------- %>
 
             <% row_classes = [] %>
-            <% row_classes << "table-danger" if is_off %>
+
+            <% row_classes << "table-danger" if is_off || is_friday %>
+
             <% row_classes << "table-warning" if vac_daily && vac_confirmed %>
+
             <% row_classes << "table-info" if remote_present && remote_confirmed %>
 
-            <% effective_deficit_minutes = global_remote ? 0 : day.deficit_minutes.to_i %>
+
+            <%# ---------------------------------------- %>
+            <%# Deficit                              %>
+            <%# ---------------------------------------- %>
+
+            <% effective_deficit_minutes =
+                 global_remote ? 0 : day.deficit_minutes.to_i %>
+
 
             <tr class="<%= row_classes.join(" ") %>">
-              <td class="text-nowrap">
-                <div class="d-flex align-items-center justify-content-between">
-                  <div class="fw-semibold"><%= day_no %></div>
-                  <% if is_off %><span class="badge text-bg-danger">تعطیل</span><% end %>
-                </div>
-                <div class="small text-muted"><%= weekday %></div>
-              </td>
+
+              <%# ------------------------------------ %>
+              <%# Day                                  %>
+              <%# ------------------------------------ %>
 
               <td class="text-nowrap">
+
+                <div class="d-flex align-items-center justify-content-between">
+
+                  <div class="fw-semibold">
+                    <%= day_no %>
+                  </div>
+
+                  <% if is_off %>
+
+                    <span class="badge text-bg-danger">
+                      تعطیل
+                    </span>
+
+                  <% elsif is_friday %>
+
+                    <span class="badge text-bg-danger">
+                      جمعه
+                    </span>
+
+                  <% end %>
+
+                </div>
+
+                <div class="small text-muted">
+                  <%= weekday %>
+                </div>
+
+              </td>
+
+
+              <%# ------------------------------------ %>
+              <%# Entry                                %>
+              <%# ------------------------------------ %>
+
+              <td class="text-nowrap">
+
                 <span class="badge text-bg-light border w-100 text-start">
                   <%= day.first_in_at.to_s.presence || "--:--" %>
                 </span>
+
                 <% if manual_entry.present? %>
+
                   <div class="mt-1">
+
                     <span class="badge text-bg-secondary"
-                          title="ورود دستی: <%= manual_entry.occurred_at.strftime("%H:%M") %> — <%= manual_entry.description.to_s %>">ورود دستی</span>
+                          title="ورود دستی: <%= manual_entry.occurred_at.strftime("%H:%M") %> — <%= manual_entry.description.to_s %>">
+
+                      ورود دستی
+
+                    </span>
+
                   </div>
+
                 <% end %>
+
               </td>
 
+
+              <%# ------------------------------------ %>
+              <%# Exit                                 %>
+              <%# ------------------------------------ %>
+
               <td class="text-nowrap">
+
                 <span class="badge text-bg-light border w-100 text-start">
                   <%= day.last_out_at.to_s.presence || "--:--" %>
                 </span>
+
                 <% if manual_exit.present? %>
+
                   <div class="mt-1">
+
                     <span class="badge text-bg-secondary"
-                          title="خروج دستی: <%= manual_exit.occurred_at.strftime("%H:%M") %> — <%= manual_exit.description.to_s %>">خروج دستی</span>
+                          title="خروج دستی: <%= manual_exit.occurred_at.strftime("%H:%M") %> — <%= manual_exit.description.to_s %>">
+
+                      خروج دستی
+
+                    </span>
+
                   </div>
+
                 <% end %>
+
               </td>
 
+
+              <%# ------------------------------------ %>
+              <%# Deficit                               %>
+              <%# ------------------------------------ %>
+
               <td class="text-nowrap text-end">
+
                 <span class="badge text-bg-light border">
                   <%= @fmt_hours.call(effective_deficit_minutes) %>h
                 </span>
+
               </td>
 
+
+              <%# ------------------------------------ %>
+              <%# Overtime                              %>
+              <%# ------------------------------------ %>
+
               <td class="text-nowrap text-end">
+
                 <span class="badge text-bg-light border">
                   <%= @fmt_hours.call(day.overtime_minutes) %>h
                 </span>
 
                 <% if ots.any? %>
+
                   <div class="mt-2 d-flex flex-column gap-1">
+
                     <% ots.each do |ot| %>
+
                       <div class="d-flex justify-content-between align-items-center">
+
                         <span class="small text-muted">
+
                           <%= ot.outside_system == true ? "خارج سیستم" : "داخل سیستم" %>
+
                           <% if ot.confirmed != false %>
-                            <span class="badge text-bg-success ms-1">تایید</span>
+
+                            <span class="badge text-bg-success ms-1">
+                              تایید
+                            </span>
+
                           <% else %>
-                            <span class="badge text-bg-danger ms-1">رد</span>
+
+                            <span class="badge text-bg-danger ms-1">
+                              رد
+                            </span>
+
                           <% end %>
+
                         </span>
-                        <span class="small fw-semibold" title="<%= ot.reason.to_s %>"><%= ot.hours.to_f %>h</span>
+
+                        <span class="small fw-semibold"
+                              title="<%= ot.reason.to_s %>">
+
+                          <%= ot.hours.to_f %>h
+
+                        </span>
+
                       </div>
+
                     <% end %>
+
                   </div>
+
                 <% end %>
+
               </td>
+
+
+              <%# ------------------------------------ %>
+              <%# Mission - normal working             %>
+              <%# ------------------------------------ %>
+
+              <td class="text-nowrap text-end">
+
+                <% if mission_normal_working_minutes > 0 %>
+
+                  <span class="badge text-bg-primary">
+                    <%= @fmt_hours.call(mission_normal_working_minutes) %>
+                  </span>
+
+                <% else %>
+
+                  <span class="text-muted small">
+                    —
+                  </span>
+
+                <% end %>
+
+              </td>
+
+
+              <%# ------------------------------------ %>
+              <%# Mission - non working                %>
+              <%# ------------------------------------ %>
+
+              <td class="text-nowrap text-end">
+
+                <% if mission_non_working_minutes > 0 %>
+
+                  <span class="badge text-bg-secondary">
+                    <%= @fmt_hours.call(mission_non_working_minutes) %>
+                  </span>
+
+                <% else %>
+
+                  <span class="text-muted small">
+                    —
+                  </span>
+
+                <% end %>
+
+              </td>
+
+
+              <%# ------------------------------------ %>
+              <%# Mission - holiday / Friday           %>
+              <%# ------------------------------------ %>
+
+              <td class="text-nowrap text-end">
+
+                <% if mission_holiday_working_minutes > 0 %>
+
+                  <span class="badge text-bg-danger">
+                    <%= @fmt_hours.call(mission_holiday_working_minutes) %>
+                  </span>
+
+                <% else %>
+
+                  <span class="text-muted small">
+                    —
+                  </span>
+
+                <% end %>
+
+              </td>
+
+
+              <%# ------------------------------------ %>
+              <%# Statuses + mission details            %>
+              <%# ------------------------------------ %>
 
               <td class="text-nowrap">
-                <div class="d-flex flex-wrap gap-1">
+
+                <div class="d-flex flex-column gap-2">
+
+                  <%# Vacation %>
+
                   <% if has_vac %>
-                    <span class="badge text-bg-warning"
-                          title="<%= [vinfo[:details].to_s, vinfo[:comment].to_s].reject(&:blank?).join(" | ") %>">
-                      مرخصی <%= vinfo[:kind] == :daily ? "روزانه" : "ساعتی" %>
-                    </span>
-                    <span class="badge <%= (vinfo[:confirmed] != false) ? "text-bg-success" : "text-bg-danger" %>">
-                      <%= (vinfo[:confirmed] != false) ? "تایید" : "رد" %>
-                    </span>
+
+                    <div class="d-flex flex-wrap gap-1">
+
+                      <span class="badge text-bg-warning"
+                            title="<%= [
+                              vinfo[:details].to_s,
+                              vinfo[:comment].to_s
+                            ].reject(&:blank?).join(" | ") %>">
+
+                        مرخصی
+                        <%= vinfo[:kind] == :daily ? "روزانه" : "ساعتی" %>
+
+                      </span>
+
+                      <span class="badge <%= vac_confirmed ? "text-bg-success" : "text-bg-danger" %>">
+
+                        <%= vac_confirmed ? "تایید" : "رد" %>
+
+                      </span>
+
+                    </div>
+
                   <% end %>
+
+
+                  <%# Remote %>
 
                   <% if remote_present %>
-                    <span class="badge text-bg-info">
-                      Remote<%= global_remote ? " (سراسری)" : "" %>
-                    </span>
-                    <span class="badge <%= remote_confirmed ? "text-bg-success" : "text-bg-danger" %>">
-                      <%= remote_confirmed ? "تایید" : "رد" %>
-                    </span>
+
+                    <div class="d-flex flex-wrap gap-1">
+
+                      <span class="badge text-bg-info">
+
+                        Remote<%= global_remote ? " (سراسری)" : "" %>
+
+                      </span>
+
+                      <span class="badge <%= remote_confirmed ? "text-bg-success" : "text-bg-danger" %>">
+
+                        <%= remote_confirmed ? "تایید" : "رد" %>
+
+                      </span>
+
+                    </div>
+
                   <% end %>
+
+
+                  <%# Overtime status %>
+
+                  <% if ots.any? %>
+
+                    <div class="d-flex flex-wrap gap-1">
+
+                      <span class="badge text-bg-light border">
+                        اضافه‌کاری
+                      </span>
+
+                      <% confirmed_ots = ots.count { |ot| ot.confirmed != false } %>
+
+                      <span class="badge <%= confirmed_ots == ots.size ? "text-bg-success" : "text-bg-warning" %>">
+
+                        <%= confirmed_ots %>/<%= ots.size %> تأیید
+
+                      </span>
+
+                    </div>
+
+                  <% end %>
+
+
+                  <%# Manual entry/exit %>
 
                   <% if manual_entry.present? || manual_exit.present? %>
-                    <span class="badge text-bg-secondary">ثبت دستی</span>
+
+                    <div>
+
+                      <span class="badge text-bg-secondary">
+                        ثبت دستی
+                      </span>
+
+                    </div>
+
                   <% end %>
 
-                  <% if !has_vac && !remote_present && ots.blank? && manual_entry.blank? && manual_exit.blank? %>
-                    <span class="text-muted small">—</span>
+
+                  <%# -------------------------------- %>
+                  <%# Missions details                 %>
+                  <%# -------------------------------- %>
+
+                  <% if mission_list.any? %>
+
+                    <div class="border rounded p-2 bg-light">
+
+                      <div class="small fw-semibold mb-1">
+                        مأموریت
+                      </div>
+
+                      <div class="d-flex flex-column gap-1">
+
+                        <% mission_list.each do |mission| %>
+
+                          <% mission_hours =
+                               mission.hours_for_date(d) %>
+
+                          <% mission_working_hours =
+                               mission_hours[:working_hours].to_f %>
+
+                          <% mission_non_working_hours =
+                               mission_hours[:non_working_hours].to_f %>
+
+                          <div class="small">
+
+                            <div class="d-flex flex-wrap gap-1 align-items-center">
+
+                              <span class="badge text-bg-primary">
+                                <%= mission.mission_type.presence || "مأموریت" %>
+                              </span>
+
+                              <% if mission.confirmed == true %>
+
+                                <span class="badge text-bg-success">
+                                  تأیید
+                                </span>
+
+                              <% else %>
+
+                                <span class="badge text-bg-secondary">
+                                  ثبت شده
+                                </span>
+
+                              <% end %>
+
+                            </div>
+
+                            <div class="mt-1 text-muted">
+
+                              <% if mission.location.present? %>
+
+                                محل:
+                                <%= mission.location %>
+
+                              <% end %>
+
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+
+                              <% if mission_working_hours > 0 %>
+
+                                <span class="badge text-bg-primary">
+                                  کاری:
+                                  <%= @fmt_hours.call((mission_working_hours * 60).round) %>
+                                </span>
+
+                              <% end %>
+
+                              <% if mission_non_working_hours > 0 %>
+
+                                <span class="badge text-bg-secondary">
+                                  غیرکاری:
+                                  <%= @fmt_hours.call((mission_non_working_hours * 60).round) %>
+                                </span>
+
+                              <% end %>
+
+                            </div>
+
+                            <% if mission.description.present? %>
+
+                              <div class="text-muted mt-1"
+                                   title="<%= mission.description %>">
+
+                                <%= truncate(
+                                  mission.description.to_s,
+                                  length: 100
+                                ) %>
+
+                              </div>
+
+                            <% end %>
+
+                          </div>
+
+                        <% end %>
+
+                      </div>
+
+                    </div>
+
                   <% end %>
+
+
+                  <%# Nothing %>
+
+                  <% if !has_vac &&
+                        !remote_present &&
+                        ots.blank? &&
+                        manual_entry.blank? &&
+                        manual_exit.blank? &&
+                        mission_list.blank? %>
+
+                    <span class="text-muted small">
+                      —
+                    </span>
+
+                  <% end %>
+
                 </div>
+
               </td>
+
             </tr>
+
           <% end %>
+
         </tbody>
+
       </table>
+
     </div>
   </div>
 </div>
