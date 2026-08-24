@@ -2065,128 +2065,262 @@ def payslips
   # ============================================================
 
   def mission_payroll_by_user_ids(
-    user_ids,
-    mission_map,
-    off_dates
-  )
-    users =
-      User
-        .where(id: user_ids)
-        .includes(:salary_profile)
-        .index_by(&:id)
+  user_ids,
+  mission_map,
+  off_dates,
+  archives_by_user_id = {}
+)
+  users =
+    User
+      .where(id: user_ids)
+      .includes(:salary_profile)
+      .index_by(&:id)
 
-    user_ids.index_with do |user_id|
-      missions_by_date =
-        mission_map[user_id] || {}
+  user_ids.index_with do |user_id|
+    missions_by_date =
+      mission_map[user_id] || {}
 
-      working_normal_minutes = 0
-      non_working_minutes = 0
-      working_holiday_minutes = 0
+    working_normal_minutes = 0
+    non_working_minutes = 0
+    working_holiday_minutes = 0
 
-      missions_by_date.each do |date, missions|
-        info =
-          mission_hours_for_date(
-            missions,
-            date
-          )
+    missions_by_date.each do |date, missions|
+      info =
+        mission_hours_for_date(
+          missions,
+          date
+        )
 
-        working_minutes =
-          info[:working_minutes].to_i
+      working_minutes =
+        info[:working_minutes].to_i
 
-        non_working =
-          info[:non_working_minutes].to_i
+      non_working =
+        info[:non_working_minutes].to_i
 
-        non_working_minutes +=
-          non_working
+      non_working_minutes +=
+        non_working
 
-        if off_dates.include?(date) ||
-           date.friday?
+      if off_dates.include?(date) ||
+         date.friday?
 
-          working_holiday_minutes +=
-            working_minutes
-        else
-          working_normal_minutes +=
-            working_minutes
-        end
+        working_holiday_minutes +=
+          working_minutes
+      else
+        working_normal_minutes +=
+          working_minutes
+      end
+    end
+
+    # ============================================================
+    # Salary archive for this user
+    #
+    # We use the archive values because they represent the salary
+    # snapshot for the current Shamsi month.
+    # ============================================================
+
+    archive =
+      archives_by_user_id[user_id]
+
+    salary_profile =
+      users[user_id]&.salary_profile
+
+    # ============================================================
+    # Existing hourly rate
+    #
+    # Used ONLY for non-working mission hours.
+    #
+    # Formula:
+    #   hours × existing hourly_rate × 1.4
+    #
+    # Prefer SalaryArchive.hourly_rate.
+    # Fallback to SalaryProfile.hourly_rate.
+    # ============================================================
+
+    hourly_rate =
+      if archive&.hourly_rate.present?
+        archive.hourly_rate.to_d
+      elsif salary_profile&.hourly_rate.present?
+        salary_profile.hourly_rate.to_d
+      else
+        0.to_d
       end
 
-      hourly_rate =
-        users[user_id]
-          &.salary_profile
-          &.hourly_rate
-          .to_d || 0.to_d
+    # ============================================================
+    # NEW Mission hourly rate
+    #
+    # Formula:
+    #
+    # (
+    #   seniority_base +
+    #   housing_allowance +
+    #   food_allowance +
+    #   marriage_allowance +
+    #   child_allowance +
+    #   total_salary
+    # ) / 220
+    #
+    # This rate is independent of whether the month has
+    # 30 or 31 days.
+    # ============================================================
 
-      normal_pay =
+    if archive
+      mission_hourly_rate =
         (
-          working_normal_minutes / 60.0 *
-          hourly_rate
-        ).round(2)
-
-      non_working_pay =
+          archive.seniority_base.to_d +
+          archive.housing_allowance.to_d +
+          archive.food_allowance.to_d +
+          archive.marriage_allowance.to_d +
+          archive.child_allowance.to_d +
+          archive.total_salary.to_d
+        ) / 220.to_d
+    else
+      # Fallback only if an archive was not supplied.
+      # Normally recalculate_mission_payroll_for_archives
+      # always supplies the archive.
+      mission_hourly_rate =
         (
-          non_working_minutes / 60.0 *
-          hourly_rate *
-          1.4
-        ).round(2)
-
-      holiday_pay =
-        (
-          working_holiday_minutes / 60.0 *
-          hourly_rate *
-          2
-        ).round(2)
-
-      {
-        working_minutes:
-          working_normal_minutes,
-
-        non_working_minutes:
-          non_working_minutes,
-
-        holiday_working_minutes:
-          working_holiday_minutes,
-
-        working_pay:
-          normal_pay,
-
-        non_working_pay:
-          non_working_pay,
-
-        holiday_working_pay:
-          holiday_pay,
-
-        total_pay:
-          (
-            normal_pay +
-            non_working_pay +
-            holiday_pay
-          ).round(2)
-      }
+          salary_profile&.seniority_base.to_d +
+          salary_profile&.housing_allowance.to_d +
+          salary_profile&.food_allowance.to_d +
+          salary_profile&.marriage_allowance.to_d +
+          salary_profile&.child_allowance.to_d +
+          salary_profile&.total_salary.to_d
+        ) / 220.to_d
     end
-  end
 
-  def recalculate_mission_payroll_for_archives(
+    # ============================================================
+    # 1. Normal working mission
+    #
+    # NEW mission hourly rate
+    # × 1
+    # ============================================================
+
+    normal_pay =
+      (
+        working_normal_minutes / 60.0 *
+        mission_hourly_rate
+      ).round(2)
+
+    # ============================================================
+    # 2. Non-working mission
+    #
+    # EXISTING hourly rate
+    # × 1.4
+    #
+    # This part remains exactly like the previous calculation.
+    # ============================================================
+
+    non_working_pay =
+      (
+        non_working_minutes / 60.0 *
+        hourly_rate *
+        1.4
+      ).round(2)
+
+    # ============================================================
+    # 3. Friday / holiday working mission
+    #
+    # NEW mission hourly rate
+    # × 1.4
+    #
+    # Previously this was × 2.
+    # ============================================================
+
+    holiday_pay =
+      (
+        working_holiday_minutes / 60.0 *
+        mission_hourly_rate *
+        1.4
+      ).round(2)
+
+    # ============================================================
+    # Total Mission payment
+    # ============================================================
+
+    {
+      working_minutes:
+        working_normal_minutes,
+
+      non_working_minutes:
+        non_working_minutes,
+
+      holiday_working_minutes:
+        working_holiday_minutes,
+
+      working_pay:
+        normal_pay,
+
+      non_working_pay:
+        non_working_pay,
+
+      holiday_working_pay:
+        holiday_pay,
+
+      total_pay:
+        (
+          normal_pay +
+          non_working_pay +
+          holiday_pay
+        ).round(2)
+    }
+  end
+end
+
+
+def recalculate_mission_payroll_for_archives(
     archives
   )
     archives =
-      archives.to_a
+      archives
+        .includes(:user)
+        .to_a
 
     return if archives.empty?
 
+    # ============================================================
+    # User IDs
+    # ============================================================
+
     user_ids =
-      archives.map(&:user_id).uniq
+      archives
+        .map(&:user_id)
+        .uniq
+
+    # ============================================================
+    # Build missions for these users
+    # ============================================================
 
     mission_map =
       build_mission_map(
         user_ids
       )
 
+    # ============================================================
+    # Build archive map
+    #
+    # Important:
+    # Mission hourly rate is calculated from the SalaryArchive
+    # belonging to the current Shamsi month.
+    # ============================================================
+
+    archives_by_user_id =
+      archives.index_by(&:user_id)
+
+    # ============================================================
+    # Calculate Mission payroll
+    # ============================================================
+
     payroll_map =
       mission_payroll_by_user_ids(
         user_ids,
         mission_map,
-        @shamsi_month.off_dates.to_set
+        @shamsi_month.off_dates.to_set,
+        archives_by_user_id
       )
+
+    # ============================================================
+    # Save Mission values into SalaryArchive
+    # ============================================================
 
     archives.each do |archive|
       values =
