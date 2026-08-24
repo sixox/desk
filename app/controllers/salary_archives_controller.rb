@@ -2274,12 +2274,14 @@ end
 def recalculate_mission_payroll_for_archives(
     archives
   )
-    archives =
-      archives
-        .includes(:user)
-        .to_a
+    archives = Array(archives)
 
     return if archives.empty?
+
+    archives = SalaryArchive
+      .where(id: archives.map(&:id))
+      .includes(:user)
+      .to_a
 
     # ============================================================
     # User IDs
