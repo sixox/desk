@@ -143,22 +143,17 @@
     hourly_rate *
     1.0
 
+  mission_working_pay =
+    archive.mission_working_pay.to_d
+
   mission_non_working_pay =
-    mission_non_working_hours *
-    hourly_rate *
-    1.4
+    archive.mission_non_working_pay.to_d
 
   mission_holiday_working_pay =
-    mission_holiday_working_hours *
-    hourly_rate *
-    2.0
+    archive.mission_holiday_working_pay.to_d
 
   mission_total_pay =
-    (
-      mission_working_pay +
-      mission_non_working_pay +
-      mission_holiday_working_pay
-    )
+    archive.mission_total_pay.to_d
 
   # ============================================================
 

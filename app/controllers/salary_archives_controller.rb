@@ -799,6 +799,10 @@ def bulk_update_days
         archive.save!(
           validate: false
         )
+
+        recalculate_mission_payroll_for_archives(
+          [archive]
+        )
       end
     end
 
