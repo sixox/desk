@@ -24,7 +24,7 @@ class SalaryArchivesController < ApplicationController
     load_review_data(user_ids)
   end
 
-  def bulk_update_days
+def bulk_update_days
     allowed_user_ids =
       current_user.direct_reports.pluck(:id) | [current_user.id]
 
@@ -63,22 +63,60 @@ class SalaryArchivesController < ApplicationController
 
         attrs ||= {}
 
-        archive.update!(
-          manual_overtime_minutes:
-            hours_to_minutes(attrs[:manual_overtime_hours]),
+        pay_type =
+          archive.user.salary_profile&.pay_type.to_s
 
-          manual_deficit_minutes:
-            hours_to_minutes(attrs[:manual_deficit_hours])
-        )
+        fixed_pay_type =
+          %w[fixed fixed_with_overtime].include?(pay_type)
 
-        if attrs.key?(:no_dificit)
-          archive.update!(
-            no_dificit: attrs[:no_dificit].to_s == "1"
+        manual_overtime_minutes =
+          hours_to_minutes(
+            attrs[:manual_overtime_hours]
           )
-        elsif archive.user.salary_profile&.pay_type == "fixed_with_overtime"
+
+        manual_deficit_minutes =
+          hours_to_minutes(
+            attrs[:manual_deficit_hours]
+          )
+
+        if fixed_pay_type
+          # --------------------------------------------------------
+          # Fixed / Fixed + Overtime:
+          # No deficit is allowed.
+          #
+          # IMPORTANT:
+          # We only disable deficit.
+          # Overtime is kept exactly as submitted.
+          # --------------------------------------------------------
+
           archive.update!(
+            manual_overtime_minutes:
+              manual_overtime_minutes,
+
+            manual_deficit_minutes: 0,
+
             no_dificit: true
           )
+        else
+          # --------------------------------------------------------
+          # Hourly:
+          # Keep the existing deficit logic.
+          # --------------------------------------------------------
+
+          archive.update!(
+            manual_overtime_minutes:
+              manual_overtime_minutes,
+
+            manual_deficit_minutes:
+              manual_deficit_minutes
+          )
+
+          if attrs.key?(:no_dificit)
+            archive.update!(
+              no_dificit:
+                attrs[:no_dificit].to_s == "1"
+            )
+          end
         end
 
         touched_archive_ids << archive.id
@@ -292,7 +330,34 @@ class SalaryArchivesController < ApplicationController
         SalaryArchive
           .where(id: touched_archive_ids.to_a)
           .includes(:days, :user)
-          .find_each(&:recalculate_totals!)
+          .find_each do |archive|
+
+          archive.recalculate_totals!
+
+          # ----------------------------------------------------------
+          # Fixed / Fixed + Overtime:
+          # Make absolutely sure deficit stays zero after totals
+          # are recalculated.
+          # ----------------------------------------------------------
+
+          pay_type =
+            archive.user.salary_profile&.pay_type.to_s
+
+          if %w[fixed fixed_with_overtime].include?(pay_type)
+            archive.update!(
+              manual_deficit_minutes: 0,
+              no_dificit: true
+            )
+
+            # If recalculate_totals! has recalculated deficit_minutes
+            # from the days, force the archive-level deficit to zero.
+            #
+            # This does NOT touch overtime.
+            archive.update!(
+              deficit_minutes: 0
+            )
+          end
+        end
       end
 
       # ------------------------------------------------------------
