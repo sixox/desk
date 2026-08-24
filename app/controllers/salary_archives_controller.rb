@@ -837,7 +837,7 @@ class SalaryArchivesController < ApplicationController
       "آیتم‌های حسابداری (قسمت اول و دوم) ذخیره شد."
   end
 
-  def payslips
+def payslips
     authorize_hr_review!
 
     scope =
@@ -928,18 +928,34 @@ class SalaryArchivesController < ApplicationController
               "افزودن اضافه‌کاری (×۱.۴) (UI)",
 
               "بیمه تکمیلی (UI)",
+
               "افزایشی حسابداری ۱ - عنوان",
               "افزایشی حسابداری ۱ - مبلغ (UI)",
+
               "افزایشی حسابداری ۲ - عنوان",
               "افزایشی حسابداری ۲ - مبلغ (UI)",
+
               "کاهشی حسابداری ۱ - عنوان",
               "کاهشی حسابداری ۱ - مبلغ (UI)",
+
               "کاهشی حسابداری ۲ - عنوان",
               "کاهشی حسابداری ۲ - مبلغ (UI)",
 
               "جمع افزایشی حسابداری (UI)",
               "جمع کسورات حسابداری (UI)",
-              "خالص آیتم‌های حسابداری (UI)"
+              "خالص آیتم‌های حسابداری (UI)",
+
+              # =========================
+              # Mission
+              # =========================
+              "ماموریت - ساعات کاری",
+              "ماموریت - ساعات غیرکاری",
+              "ماموریت - ساعات کاری روز تعطیل",
+
+              "ماموریت - مبلغ ساعات کاری (UI)",
+              "ماموریت - مبلغ ساعات غیرکاری (UI)",
+              "ماموریت - مبلغ ساعات کاری روز تعطیل (UI)",
+              "ماموریت - مجموع مبلغ ماموریت (UI)"
             ]
 
             @archives.each do |archive|
@@ -1037,6 +1053,10 @@ class SalaryArchivesController < ApplicationController
                     hourly_rate
                 end
 
+              # =========================================================
+              # Accounting additions / deductions
+              # =========================================================
+
               acc_add_1_title =
                 archive.respond_to?(
                   :acc_add_1_title
@@ -1116,6 +1136,78 @@ class SalaryArchivesController < ApplicationController
               acc_net =
                 acc_add_total -
                 acc_ded_total
+
+              # =========================================================
+              # Mission
+              # =========================================================
+
+              mission_working_minutes =
+                archive.respond_to?(
+                  :mission_working_minutes
+                ) ?
+                  archive.mission_working_minutes.to_i :
+                  0
+
+              mission_non_working_minutes =
+                archive.respond_to?(
+                  :mission_non_working_minutes
+                ) ?
+                  archive.mission_non_working_minutes.to_i :
+                  0
+
+              mission_holiday_working_minutes =
+                archive.respond_to?(
+                  :mission_holiday_working_minutes
+                ) ?
+                  archive.mission_holiday_working_minutes.to_i :
+                  0
+
+              mission_working_h =
+                hours.call(
+                  mission_working_minutes
+                )
+
+              mission_non_working_h =
+                hours.call(
+                  mission_non_working_minutes
+                )
+
+              mission_holiday_working_h =
+                hours.call(
+                  mission_holiday_working_minutes
+                )
+
+              mission_working_pay =
+                archive.respond_to?(
+                  :mission_working_pay
+                ) ?
+                  archive.mission_working_pay.to_f :
+                  0.0
+
+              mission_non_working_pay =
+                archive.respond_to?(
+                  :mission_non_working_pay
+                ) ?
+                  archive.mission_non_working_pay.to_f :
+                  0.0
+
+              mission_holiday_working_pay =
+                archive.respond_to?(
+                  :mission_holiday_working_pay
+                ) ?
+                  archive.mission_holiday_working_pay.to_f :
+                  0.0
+
+              mission_total_pay =
+                archive.respond_to?(
+                  :mission_total_pay
+                ) ?
+                  archive.mission_total_pay.to_f :
+                  0.0
+
+              # =========================================================
+              # Payment 2
+              # =========================================================
 
               payment_2 = (
                 total_salary_adj -
@@ -1197,7 +1289,31 @@ class SalaryArchivesController < ApplicationController
 
                 money_ui.call(acc_add_total),
                 money_ui.call(acc_ded_total),
-                money_ui.call(acc_net)
+                money_ui.call(acc_net),
+
+                # =======================================================
+                # Mission values
+                # =======================================================
+
+                mission_working_h,
+                mission_non_working_h,
+                mission_holiday_working_h,
+
+                money_ui.call(
+                  mission_working_pay.round
+                ),
+
+                money_ui.call(
+                  mission_non_working_pay.round
+                ),
+
+                money_ui.call(
+                  mission_holiday_working_pay.round
+                ),
+
+                money_ui.call(
+                  mission_total_pay.round
+                )
               ]
             end
           end
@@ -1214,7 +1330,6 @@ class SalaryArchivesController < ApplicationController
       end
     end
   end
-
   private
 
   def set_month
