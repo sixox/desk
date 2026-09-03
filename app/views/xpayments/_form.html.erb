@@ -1,0 +1,371 @@
+<div data-controller="xpayment" class="xe-form">
+
+  <%= form_for @xpayment do |form| %>
+
+    <div class="modal-body p-3 p-md-4">
+
+      <% if @xpayment.errors.any? %>
+        <div class="xe-error">
+
+          <div class="xe-error-title">
+            <i class="bi bi-exclamation-circle"></i>
+            <%= pluralize(@xpayment.errors.count, "error") %>
+            prohibited this payment from being saved.
+          </div>
+
+          <ul>
+            <% @xpayment.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+
+        </div>
+      <% end %>
+
+
+      <!-- HEADER -->
+
+      <div class="xe-form-header">
+
+        <h4 class="xe-form-title">
+
+          <span class="xe-form-title-icon">
+            <i class="bi bi-credit-card"></i>
+          </span>
+
+          <%= @xpayment.new_record? ? "Create Payment" : "Edit Payment" %>
+
+        </h4>
+
+      </div>
+
+
+      <!-- SENDER / RECEIVER -->
+
+      <div class="row g-3">
+
+        <!-- SENDER -->
+
+        <div class="col-lg-6">
+
+          <div class="xe-party-panel xe-seller-panel">
+
+            <div class="xe-party-header">
+
+              <div class="xe-party-icon">
+                <i class="bi bi-box-arrow-up-right"></i>
+              </div>
+
+              <div>
+                <div class="xe-party-title">
+                  Sender
+                </div>
+              </div>
+
+            </div>
+
+
+            <div class="xe-party-body">
+
+              <!-- SENDER ORGANIZATION -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Organization
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= select_tag(
+                  :sender_organization_id,
+                  options_from_collection_for_select(
+                    @organizations,
+                    :id,
+                    :name,
+                    @xpayment.sender_account&.organization_id
+                  ),
+                  prompt: "Select organization",
+                  class: "form-select",
+                  data: {
+                    xpayment_target: "senderOrganization",
+                    action: "change->xpayment#loadSenderAccounts"
+                  }
+                ) %>
+
+                <div data-xpayment-target="senderInfo"></div>
+
+              </div>
+
+
+              <!-- SENDER ACCOUNT -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Account
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :sender_account_id,
+                  @sender_accounts,
+                  :id,
+                  ->(account) {
+                    "#{account.number} - #{account.currency.name}"
+                  },
+                  { prompt: "Select account" },
+                  {
+                    class: "form-select",
+                    data: {
+                      xpayment_target: "senderAccount"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+
+              <!-- SENT AMOUNT -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Sent Amount
+                  <span class="xe-required">*</span>
+                </label>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-cash-stack"></i>
+                  </span>
+
+                  <%= form.number_field(
+                    :sent_amount,
+                    class: "form-control",
+                    placeholder: "0"
+                  ) %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- RECEIVER -->
+
+        <div class="col-lg-6">
+
+          <div class="xe-party-panel xe-buyer-panel">
+
+            <div class="xe-party-header">
+
+              <div class="xe-party-icon">
+                <i class="bi bi-box-arrow-in-down-left"></i>
+              </div>
+
+              <div>
+                <div class="xe-party-title">
+                  Receiver
+                </div>
+              </div>
+
+            </div>
+
+
+            <div class="xe-party-body">
+
+              <!-- RECEIVER ORGANIZATION -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Organization
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= select_tag(
+                  :receiver_organization_id,
+                  options_from_collection_for_select(
+                    @organizations,
+                    :id,
+                    :name,
+                    @xpayment.receiver_account&.organization_id
+                  ),
+                  prompt: "Select organization",
+                  class: "form-select",
+                  data: {
+                    xpayment_target: "receiverOrganization",
+                    action: "change->xpayment#loadReceiverAccounts"
+                  }
+                ) %>
+
+                <div data-xpayment-target="receiverInfo"></div>
+
+              </div>
+
+
+              <!-- RECEIVER ACCOUNT -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Account
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :receiver_account_id,
+                  @receiver_accounts,
+                  :id,
+                  ->(account) {
+                    "#{account.number} - #{account.currency.name}"
+                  },
+                  { prompt: "Select account" },
+                  {
+                    class: "form-select",
+                    data: {
+                      xpayment_target: "receiverAccount"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+
+              <!-- RECEIVED AMOUNT -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Received Amount
+                  <span class="xe-required">*</span>
+                </label>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-cash-coin"></i>
+                  </span>
+
+                  <%= form.number_field(
+                    :received_amount,
+                    class: "form-control",
+                    placeholder: "0"
+                  ) %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- PAYMENT DETAILS -->
+
+      <div class="xe-form-section">
+
+        <div class="xe-section-title">
+          <i class="bi bi-currency-exchange"></i>
+          Payment Details
+        </div>
+
+
+        <div class="row g-3">
+
+          <!-- CURRENCY -->
+
+          <div class="col-md-6">
+
+            <div class="xe-field">
+
+              <label class="xe-label">
+                Currency
+                <span class="xe-required">*</span>
+              </label>
+
+              <%= form.collection_select(
+                :currency_id,
+                @currencies,
+                :id,
+                :name,
+                { prompt: "Select currency" },
+                { class: "form-select" }
+              ) %>
+
+            </div>
+
+          </div>
+
+
+          <!-- WAGE -->
+
+          <div class="col-md-6">
+
+            <div class="xe-field">
+
+              <label class="xe-label">
+                Wage
+              </label>
+
+              <div class="input-group">
+
+                <span class="input-group-text">
+                  <i class="bi bi-cash"></i>
+                </span>
+
+                <%= form.number_field(
+                  :wage,
+                  class: "form-control",
+                  placeholder: "0"
+                ) %>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="modal-footer xe-form-footer px-3 px-md-4 pb-3">
+
+      <button
+        type="button"
+        class="btn btn-light border xe-close"
+        data-bs-dismiss="modal"
+      >
+        Close
+      </button>
+
+      <%= form.submit(
+        @xpayment.new_record? ? "Create Payment" : "Update Payment",
+        class: "btn btn-success xe-submit",
+        data: {
+          action: "click->bs-modal#submitEnd"
+        }
+      ) %>
+
+    </div>
+
+  <% end %>
+
+</div>

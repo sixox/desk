@@ -1,0 +1,300 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+  <div class="exchange-page">
+
+    <div class="container-fluid py-3">
+
+      <!-- HEADER -->
+
+      <div class="exchange-header d-flex justify-content-between align-items-center">
+
+        <div>
+
+          <h5 class="exchange-title">
+            Exchanges
+          </h5>
+
+          <div class="exchange-subtitle">
+            <%= @exchanges.count %> exchanges
+          </div>
+
+        </div>
+
+
+        <%= link_to new_exchange_path,
+        data: { controller: "bs-modal-form" },
+        class: "btn btn-success exchange-create" do %>
+
+        <i class="bi bi-plus-lg me-1"></i>
+        Create Exchange
+
+        <% end %>
+
+      </div>
+
+
+      <!-- CARD -->
+
+      <div class="exchange-card">
+
+        <div class="table-responsive">
+
+          <table class="table exchange-table align-middle mb-0">
+
+            <thead>
+
+              <tr>
+
+                <th>Kind</th>
+                <th>Seller</th>
+                <th>Buyer</th>
+                <th>Sell</th>
+                <th>Buy</th>
+                <th>Rate</th>
+                <th>Wage</th>
+                <th>Transfers</th>
+                <th>Attach</th>
+                <th>Pending</th>
+                <th class="text-end">Actions</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              <% @exchanges.each do |exchange| %>
+
+              <tr id="<%= dom_id(exchange) %>">
+
+
+                <!-- KIND -->
+
+                <td>
+
+                  <span class="exchange-kind">
+
+                    <%= exchange.kind.humanize %>
+
+                  </span>
+
+                </td>
+
+
+                <!-- SELLER -->
+
+                <td>
+
+                  <div
+                  class="account-name text-truncate"
+                  style="max-width: 19ch;"
+                  title="<%= exchange.seller_account.organization.name %>"
+                  >
+                  <%= exchange.seller_account.organization.name %>
+                </div>
+
+                <span
+                class="account-number d-inline-block text-truncate"
+                style="max-width: 19ch;"
+                title="<%= exchange.seller_account.number %>"
+                >
+                <%= exchange.seller_account.number %>
+              </span>
+
+            </td>
+
+
+            <!-- BUYER -->
+
+            <td>
+
+              <div
+              class="account-name text-truncate"
+              style="max-width: 19ch;"
+              title="<%= exchange.buyer_account.organization.name %>"
+              >
+              <%= exchange.buyer_account.organization.name %>
+            </div>
+
+            <span
+            class="account-number d-inline-block text-truncate"
+            style="max-width: 19ch;"
+            title="<%= exchange.buyer_account.number %>"
+            >
+            <%= exchange.buyer_account.number %>
+          </span>
+
+        </td>
+
+
+        <!-- SELL -->
+
+        <td>
+          <span class="amount-value text-danger">
+            <%= number_with_delimiter(exchange.sell_amount) %>
+          </span>
+
+          <span class="currency-inline">
+            <%= exchange.sell_currency.name %>
+          </span>
+        </td>
+
+
+        <!-- BUY -->
+
+        <td>
+          <span class="amount-value text-success">
+            <%= number_with_delimiter(exchange.buy_amount) %>
+          </span>
+
+          <span class="currency-inline">
+            <%= exchange.buy_currency.name %>
+          </span>
+        </td>
+
+
+        <!-- RATE -->
+
+        <td>
+
+          <span class="rate-value">
+            <%= exchange.exchange_rate %>
+          </span>
+
+        </td>
+
+
+        <!-- WAGE -->
+
+        <td>
+
+          <span class="rate-value">
+            <%= number_with_delimiter(exchange.wage) %>
+          </span>
+
+        </td>
+
+
+        <!-- TRANSFERS -->
+
+        <td>
+
+          <% if exchange.xtransfers.any? %>
+
+          <span class="exchange-transfers-badge">
+
+            <i class="bi bi-arrow-left-right"></i>
+
+            <%= exchange.xtransfers.count %>
+
+          </span>
+
+          <% else %>
+
+          <span class="no-transfers">
+            -
+          </span>
+
+          <% end %>
+
+        </td>
+        <td>
+          <% if exchange.documents.attached? %>
+
+          <span class="badge bg-light text-dark">
+            <i class="bi bi-paperclip"></i>
+            <%= exchange.documents.count %>
+          </span>
+
+          <% else %>
+
+          <span class="text-muted">—</span>
+
+          <% end %>
+        </td>
+
+
+        <!-- PENDING -->
+
+        <td>
+
+          <%= button_to(
+            toggle_pending_exchange_path(exchange),
+            method: :patch,
+            class: "exchange-pending-button #{exchange.pending? ? 'is-pending' : 'is-not-pending'}",
+              title: exchange.pending? ? "Click to unset pending" : "Click to set pending"
+              ) do %>
+
+              <% if exchange.pending? %>
+
+              <span class="pending-dot"></span>
+              <span>Pending</span>
+
+              <% else %>
+
+              <span class="pending-dot"></span>
+              <span>No</span>
+
+              <% end %>
+
+              <% end %>
+
+            </td>
+
+
+            <!-- ACTIONS -->
+
+            <td class="text-end">
+
+              <div class="xe-actions">
+
+                <%= link_to edit_exchange_path(exchange),
+                data: { controller: "bs-modal-form" },
+                class: "btn btn-sm btn-outline-secondary xe-action" do %>
+
+                <span>Edit</span>
+                <i class="bi bi-pencil ms-1"></i>
+
+                <% end %>
+
+
+                <%= button_to(
+                  exchange_path(exchange),
+                  method: :delete,
+                  class: "btn btn-sm btn-outline-danger xe-action",
+                    form: {
+                      data: {
+                        turbo_confirm: "Delete this exchange?"
+                      }
+                    }
+                    ) do %>
+
+                    <i class="bi bi-trash3"></i>
+
+                    <% end %>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+              <% end %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<%= turbo_frame_tag "modal" %>

@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sender_account: one
+  receiver_account: one
+  currency: one
+  wage: 1.5
+
+two:
+  sender_account: two
+  receiver_account: two
+  currency: two
+  wage: 1.5

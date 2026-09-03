@@ -1,0 +1,179 @@
+<div class="col-lg-10 mx-auto mt-5">
+  <div class="container-fluid py-3 xtransfer-page">
+
+    <!-- HEADER -->
+
+    <div class="xtransfer-header d-flex justify-content-between align-items-center">
+
+      <div>
+        <h5 class="xtransfer-title">
+          Remittances
+        </h5>
+
+        <div class="xtransfer-subtitle">
+          <%= @remittances.count %> records
+        </div>
+      </div>
+
+      <%= link_to new_remittance_path,
+      data: { controller: "bs-modal-form" },
+      class: "btn btn-success xtransfer-create" do %>
+
+      <i class="bi bi-plus"></i>
+      Create Remittance
+
+      <% end %>
+
+    </div>
+
+
+    <!-- TABLE CARD -->
+
+    <div class="xtransfer-card">
+
+      <div class="table-responsive">
+
+        <table class="table table-sm align-middle mb-0 xtransfer-table">
+
+          <thead>
+
+            <tr>
+
+              <th>Sender</th>
+
+              <th>Receiver</th>
+
+              <th>Sent</th>
+
+              <th>Received</th>
+
+
+              <th class="text-end">Actions</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <% @remittances.each do |remittance| %>
+
+            <tr>
+
+              <!-- SENDER -->
+
+              <td>
+
+                <div class="account-name">
+                  <%= remittance.sender_account.organization.name %>
+                </div>
+
+                <span class="account-number">
+                  <%= remittance.sender_account.number %>
+                </span>
+
+              </td>
+
+
+              <!-- RECEIVER -->
+
+              <td>
+
+                <div class="account-name">
+                  <%= remittance.receiver_account.organization.name %>
+                </div>
+
+                <span class="account-number">
+                  <%= remittance.receiver_account.number %>
+                </span>
+
+              </td>
+
+
+              <!-- SENT -->
+
+              <td>
+
+                <span class="amount-value text-danger">
+
+                  <%= number_with_delimiter(remittance.sent_amount) %>
+                </span>
+                <span class="currency-inline">
+                  <%= remittance.currency.name %>
+                </span>
+
+              </td>
+
+
+              <!-- RECEIVED -->
+
+              <td>
+
+                <span class="amount-value text-success">
+                  <%= number_with_delimiter(remittance.received_amount) %>
+                </span>
+                <span class="currency-inline">
+                  <%= remittance.currency.name %>
+                </span>
+
+              </td>
+
+
+
+
+
+
+              <!-- ACTIONS -->
+
+              <td>
+
+                <div class="xt-actions">
+
+                  <%= link_to edit_remittance_path(remittance),
+                  data: { controller: "bs-modal-form" },
+                  class: "btn btn-sm btn-outline-secondary xt-action" do %>
+
+                  <i class="bi bi-pencil"></i>
+                  <span>Edit</span>
+
+                  <% end %>
+
+
+                  <%= button_to(
+                    remittance_path(remittance),
+                    method: :delete,
+                    class: "btn btn-sm btn-outline-danger xt-action",
+                      form: {
+                        data: {
+                          turbo_confirm: "Delete this remittance?"
+                        }
+                      }
+                      ) do %>
+
+                      <i class="bi bi-trash"></i>
+                      <span>Delete</span>
+
+                      <% end %>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+                <% end %>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        <%= turbo_frame_tag "modal" %>
+
+      </div>
+    </div>

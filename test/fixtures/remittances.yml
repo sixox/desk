@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sender: one
+  receiver: one
+  sent_amount: 1
+  received_amount: 1
+  currency: one
+
+two:
+  sender: two
+  receiver: two
+  sent_amount: 1
+  received_amount: 1
+  currency: two

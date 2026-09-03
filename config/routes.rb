@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  get 'xtransfers/index'
+  get 'xtransfers/new'
+  get 'xtransfers/create'
+  get 'xtransfers/edit'
+  get 'xtransfers/update'
+  get 'xtransfers/destroy'
+  get 'xtransfers/toggle_pending'
+  get 'xtransfers/accounts'
   resources :zahras
   get 'user_manager_mappings/index'
   get 'user_manager_mappings/update'
@@ -341,6 +349,42 @@ resources :salary_profiles, only: [] do
 end
 
 resources :missions
+
+resources :xtransfers do
+  member do
+    patch :toggle_pending
+    delete :remove_document
+    delete :remove_all_documents
+  end
+
+  collection do
+    get :accounts
+  end
+end
+
+
+resources :exchanges do
+  member do
+    patch :toggle_pending
+    delete :remove_document
+  end
+
+  collection do
+    get :accounts
+  end
+end
+
+resources :remittances do
+  collection do
+    get :accounts
+  end
+end
+
+resources :xpayments do
+  collection do
+    get :accounts
+  end
+end
 
 
 

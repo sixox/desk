@@ -1,0 +1,1037 @@
+<div data-controller="exchange" class="xe-form">
+
+  <%= form_for @exchange, html: { multipart: true } do |form| %>
+
+    <div class="modal-body p-3 p-md-4">
+
+      <% if @exchange.errors.any? %>
+        <div class="xe-error">
+          <div class="xe-error-title">
+            <i class="bi bi-exclamation-circle"></i>
+            <%= pluralize(@exchange.errors.count, "error") %>
+            prohibited this exchange from being saved.
+          </div>
+
+          <ul>
+            <% @exchange.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+
+      <!-- HEADER -->
+
+      <div class="xe-form-header">
+        <h4 class="xe-form-title">
+          <span class="xe-form-title-icon">
+            <i class="bi bi-arrow-left-right"></i>
+          </span>
+
+          <%= @exchange.new_record? ? "Create Exchange" : "Edit Exchange" %>
+        </h4>
+      </div>
+
+
+      <!-- EXCHANGE TYPE -->
+
+      <div class="xe-form-section">
+
+        <div class="xe-section-title">
+          <i class="bi bi-diagram-3"></i>
+          Exchange Type
+        </div>
+
+        <div class="row g-3">
+
+          <div class="col-md-12">
+
+            <div class="xe-field">
+
+              <label class="xe-label">
+                Exchange Type
+                <span class="xe-required">*</span>
+              </label>
+
+              <%= form.select(
+                :kind,
+                [
+                  ["Different Currency", "cross_currency"],
+                  ["Same Currency", "same_currency"],
+                  ["Currency Exchange", "currency_exchange"]
+                ],
+                { prompt: "Select exchange type" },
+                {
+                  class: "form-select",
+                  data: {
+                    exchange_target: "kind",
+                    action: "change->exchange#changeKind"
+                  }
+                }
+              ) %>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- SELLER / BUYER -->
+
+      <div class="row g-3 mt-0">
+
+        <!-- SELLER -->
+
+        <div class="col-lg-6">
+
+          <div class="xe-party-panel xe-seller-panel">
+
+            <div class="xe-party-header">
+
+              <div class="xe-party-icon">
+                <i class="bi bi-box-arrow-up-right"></i>
+              </div>
+
+              <div>
+                <div class="xe-party-title">
+                  Seller
+                </div>
+              </div>
+
+            </div>
+
+
+            <div class="xe-party-body">
+
+              <!-- Seller Organization -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Organization
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= select_tag(
+                  :seller_organization_id,
+                  options_from_collection_for_select(
+                    @organizations,
+                    :id,
+                    :name,
+                    @exchange.seller_account&.organization_id
+                  ),
+                  prompt: "Select organization",
+                  class: "form-select",
+                  data: {
+                    exchange_target: "sellerOrganization",
+                    action: "change->exchange#loadSellerAccounts"
+                  }
+                ) %>
+
+                <div data-exchange-target="sellerInfo"></div>
+
+              </div>
+
+
+              <!-- Seller Account -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Account
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :seller_account_id,
+                  @seller_accounts,
+                  :id,
+                  ->(account) {
+                    "#{account.number} - #{account.currency.name}"
+                  },
+                  { prompt: "Select account" },
+                  {
+                    class: "form-select",
+                    data: {
+                      exchange_target: "sellerAccount"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+
+              <!-- Sell Amount -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Sell Amount
+                  <span class="xe-required">*</span>
+                </label>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-cash-stack"></i>
+                  </span>
+
+                  <%= form.number_field(
+                    :sell_amount,
+                    class: "form-control",
+                    placeholder: "0"
+                  ) %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- BUYER -->
+
+        <div class="col-lg-6">
+
+          <div class="xe-party-panel xe-buyer-panel">
+
+            <div class="xe-party-header">
+
+              <div class="xe-party-icon">
+                <i class="bi bi-box-arrow-in-down-left"></i>
+              </div>
+
+              <div>
+                <div class="xe-party-title">
+                  Buyer
+                </div>
+              </div>
+
+            </div>
+
+
+            <div class="xe-party-body">
+
+              <!-- Buyer Organization -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Organization
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= select_tag(
+                  :buyer_organization_id,
+                  options_from_collection_for_select(
+                    @organizations,
+                    :id,
+                    :name,
+                    @exchange.buyer_account&.organization_id
+                  ),
+                  prompt: "Select organization",
+                  class: "form-select",
+                  data: {
+                    exchange_target: "buyerOrganization",
+                    action: "change->exchange#loadBuyerAccounts"
+                  }
+                ) %>
+
+                <div data-exchange-target="buyerInfo"></div>
+
+              </div>
+
+
+              <!-- Buyer Account -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Account
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :buyer_account_id,
+                  @buyer_accounts,
+                  :id,
+                  ->(account) {
+                    "#{account.number} - #{account.currency.name}"
+                  },
+                  { prompt: "Select account" },
+                  {
+                    class: "form-select",
+                    data: {
+                      exchange_target: "buyerAccount"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+
+              <!-- Buy Amount -->
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Buy Amount
+                  <span class="xe-required">*</span>
+                </label>
+
+                <div class="input-group">
+
+                  <span class="input-group-text">
+                    <i class="bi bi-cash-coin"></i>
+                  </span>
+
+                  <%= form.number_field(
+                    :buy_amount,
+                    class: "form-control",
+                    placeholder: "0"
+                  ) %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- CURRENCY -->
+
+      <div class="xe-form-section">
+
+        <div class="xe-section-title">
+          <i class="bi bi-currency-exchange"></i>
+          Currency
+        </div>
+
+
+        <!-- CROSS CURRENCY -->
+
+        <div
+          class="d-none"
+          data-exchange-target="crossCurrencyFields"
+        >
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Sell Currency
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :sell_currency_id,
+                  @currencies,
+                  :id,
+                  :name,
+                  { prompt: "Select currency" },
+                  {
+                    class: "form-select",
+                    data: {
+                      exchange_target: "sellCurrency"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Buy Currency
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :buy_currency_id,
+                  @currencies,
+                  :id,
+                  :name,
+                  { prompt: "Select currency" },
+                  {
+                    class: "form-select",
+                    data: {
+                      exchange_target: "buyCurrency"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- SAME CURRENCY -->
+
+        <div
+          class="d-none"
+          data-exchange-target="sameCurrencyFields"
+        >
+
+          <div class="row g-3">
+
+            <div class="col-md-12">
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Currency
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= select_tag(
+                  :same_currency_id,
+                  options_from_collection_for_select(
+                    @currencies,
+                    :id,
+                    :name,
+                    @exchange.sell_currency_id
+                  ),
+                  prompt: "Select currency",
+                  class: "form-select",
+                  data: {
+                    action: "change->exchange#sameCurrencyChanged"
+                  }
+                ) %>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- CURRENCY EXCHANGE -->
+
+        <div
+          class="d-none"
+          data-exchange-target="currencyExchangeFields"
+        >
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Sell Currency
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :sell_currency_id,
+                  @currencies,
+                  :id,
+                  :name,
+                  { prompt: "Select currency" },
+                  {
+                    class: "form-select"
+                  }
+                ) %>
+
+              </div>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+              <div class="xe-field">
+
+                <label class="xe-label">
+                  Buy Currency
+                  <span class="xe-required">*</span>
+                </label>
+
+                <%= form.collection_select(
+                  :buy_currency_id,
+                  @currencies,
+                  :id,
+                  :name,
+                  { prompt: "Select currency" },
+                  {
+                    class: "form-select"
+                  }
+                ) %>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- FINANCIAL DETAILS -->
+
+      <div class="xe-form-section">
+
+        <div class="xe-section-title">
+          <i class="bi bi-calculator"></i>
+          Financial Details
+        </div>
+
+        <div class="row g-3">
+
+          <!-- RATE -->
+
+          <div class="col-md-6">
+
+            <div class="xe-field">
+
+              <label class="xe-label">
+                Exchange Rate
+              </label>
+
+              <%= form.number_field(
+                :exchange_rate,
+                class: "form-control",
+                step: "any",
+                placeholder: "0.00000",
+                data: {
+                  exchange_target: "exchangeRate"
+                }
+              ) %>
+
+            </div>
+
+          </div>
+
+
+          <!-- WAGE -->
+
+          <div class="col-md-6">
+
+            <div class="xe-field">
+
+              <label class="xe-label">
+                Wage
+              </label>
+
+              <%= form.number_field(
+                :wage,
+                class: "form-control",
+                placeholder: "0"
+              ) %>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- RELATED TRANSFERS -->
+
+      <div class="xt-exchanges-panel">
+
+        <div
+          class="xt-exchanges-body"
+          data-exchange-target="transfersContainer"
+        >
+
+          <% selected_transfer_ids = @exchange.xtransfer_ids.reject(&:blank?) %>
+
+          <% if selected_transfer_ids.any? %>
+
+            <% selected_transfer_ids.each do |transfer_id| %>
+
+              <div class="xt-exchange-row">
+
+                <div class="xt-exchange-number">
+                  <i class="bi bi-arrow-left-right"></i>
+                </div>
+
+                <div class="flex-grow-1">
+
+                  <label class="xt-label">
+                    Related Transfer
+                  </label>
+
+                  <%= select_tag(
+                    "exchange[xtransfer_ids][]",
+                    options_from_collection_for_select(
+                      @finished_transfers,
+                      :id,
+                      ->(transfer) {
+                        "#{transfer.id} | " \
+                        "#{transfer.sender_account.organization.name} → " \
+                        "#{transfer.receiver_account.organization.name} | " \
+                        "#{transfer.sent_amount} " \
+                        "#{transfer.sender_currency.name} → " \
+                        "#{transfer.receive_amount} " \
+                        "#{transfer.receiver_currency.name}"
+                      },
+                      transfer_id
+                    ),
+                    prompt: "Select transfer",
+                    class: "form-select"
+                  ) %>
+
+                </div>
+
+                <div class="xt-exchange-actions">
+
+                  <button
+                    type="button"
+                    class="btn xt-add-exchange"
+                    data-action="click->exchange#addTransfer"
+                    title="Add transfer"
+                  >
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn xt-remove-exchange"
+                    data-action="click->exchange#removeTransfer"
+                    title="Remove transfer"
+                  >
+                    <i class="bi bi-trash3"></i>
+                  </button>
+
+                </div>
+
+              </div>
+
+            <% end %>
+
+          <% else %>
+
+            <div class="xt-exchange-row">
+
+              <div class="xt-exchange-number">
+                <i class="bi bi-arrow-left-right"></i>
+              </div>
+
+              <div class="flex-grow-1">
+
+                <label class="xt-label">
+                  Related Transfer
+                </label>
+
+                <%= select_tag(
+                  "exchange[xtransfer_ids][]",
+                  options_from_collection_for_select(
+                    @finished_transfers,
+                    :id,
+                    ->(transfer) {
+                      "#{transfer.id} | " \
+                      "#{transfer.sender_account.organization.name} → " \
+                      "#{transfer.receiver_account.organization.name} | " \
+                      "#{transfer.sent_amount} " \
+                      "#{transfer.sender_currency.name} → " \
+                      "#{transfer.receive_amount} " \
+                      "#{transfer.receiver_currency.name}"
+                    }
+                  ),
+                  prompt: "Select transfer",
+                  class: "form-select"
+                ) %>
+
+              </div>
+
+              <div class="xt-exchange-actions">
+
+                <button
+                  type="button"
+                  class="btn xt-add-exchange"
+                  data-action="click->exchange#addTransfer"
+                  title="Add transfer"
+                >
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn xt-remove-exchange"
+                  data-action="click->exchange#removeTransfer"
+                  title="Remove transfer"
+                >
+                  <i class="bi bi-trash3"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+
+        <!-- TRANSFER TEMPLATE -->
+
+        <template data-exchange-target="transferTemplate">
+
+          <div class="xt-exchange-row">
+
+            <div class="xt-exchange-number">
+              <i class="bi bi-arrow-left-right"></i>
+            </div>
+
+            <div class="flex-grow-1">
+
+              <label class="xt-label">
+                Related Transfer
+              </label>
+
+              <%= select_tag(
+                "exchange[xtransfer_ids][]",
+                options_from_collection_for_select(
+                  @finished_transfers,
+                  :id,
+                  ->(transfer) {
+                    "#{transfer.id} | " \
+                    "#{transfer.sender_account.organization.name} → " \
+                    "#{transfer.receiver_account.organization.name} | " \
+                    "#{transfer.sent_amount} " \
+                    "#{transfer.sender_currency.name} → " \
+                    "#{transfer.receive_amount} " \
+                    "#{transfer.receiver_currency.name}"
+                  }
+                ),
+                prompt: "Select transfer",
+                class: "form-select"
+              ) %>
+
+            </div>
+
+            <div class="xt-exchange-actions">
+
+              <button
+                type="button"
+                class="btn xt-add-exchange"
+                data-action="click->exchange#addTransfer"
+                title="Add transfer"
+              >
+                <i class="bi bi-plus-lg"></i>
+              </button>
+
+              <button
+                type="button"
+                class="btn xt-remove-exchange"
+                data-action="click->exchange#removeTransfer"
+                title="Remove transfer"
+              >
+                <i class="bi bi-trash3"></i>
+              </button>
+
+            </div>
+
+          </div>
+
+        </template>
+
+      </div>
+
+
+      <!-- DOCUMENTS -->
+
+
+<div class="xe-form-section">
+
+  <div class="xe-section-title">
+    <i class="bi bi-paperclip"></i>
+    Attachments
+  </div>
+
+  <div data-exchange-target="documentsContainer">
+
+    <!-- EXISTING DOCUMENTS -->
+
+    <% if @exchange.documents.attached? %>
+
+      <% @exchange.documents.each do |document| %>
+
+        <div class="xe-document-row">
+
+          <div class="xe-document-icon">
+            <i class="bi bi-file-earmark"></i>
+          </div>
+
+          <div class="flex-grow-1">
+
+            <label class="xe-label">
+              Attachment
+            </label>
+
+            <div class="d-flex align-items-center gap-2">
+
+              <%= link_to(
+                document.filename.to_s,
+                rails_blob_path(
+                  document,
+                  disposition: "attachment"
+                ),
+                target: "_blank",
+                class: "text-decoration-none"
+              ) %>
+
+            </div>
+
+          </div>
+
+          <div class="xe-document-actions">
+
+            <!-- DOWNLOAD -->
+
+            <%= link_to(
+              rails_blob_path(
+                document,
+                disposition: "attachment"
+              ),
+              class: "btn xe-download-document",
+              title: "Download",
+              target: "_blank"
+            ) do %>
+
+              <i class="bi bi-download"></i>
+
+            <% end %>
+
+
+            <!-- DELETE EXISTING DOCUMENT -->
+
+            <%= button_to(
+              remove_document_exchange_path(
+                @exchange,
+                document_id: document.id
+              ),
+              method: :delete,
+              class: "btn xe-remove-document",
+              title: "Delete attachment",
+              data: {
+                turbo_confirm: "Delete this attachment?"
+              }
+            ) do %>
+
+              <i class="bi bi-trash3"></i>
+
+            <% end %>
+
+          </div>
+
+        </div>
+
+      <% end %>
+
+    <% end %>
+
+
+    <!-- NEW DOCUMENT INPUT -->
+
+    <div class="xe-document-row">
+
+      <div class="xe-document-icon">
+        <i class="bi bi-paperclip"></i>
+      </div>
+
+      <div class="flex-grow-1">
+
+        <label class="xe-label">
+          Add Attachment
+        </label>
+
+        <%= file_field_tag(
+          "exchange[documents][]",
+          class: "form-control",
+          accept: "*/*"
+        ) %>
+
+      </div>
+
+      <div class="xe-document-actions">
+
+        <!-- ADD -->
+
+        <button
+          type="button"
+          class="btn xe-add-document"
+          data-action="click->exchange#addDocument"
+          title="Add attachment"
+        >
+          <i class="bi bi-plus-lg"></i>
+        </button>
+
+
+        <!-- REMOVE NEW INPUT -->
+
+        <button
+          type="button"
+          class="btn xe-remove-document d-none"
+          data-action="click->exchange#removeDocument"
+          title="Remove attachment"
+        >
+          <i class="bi bi-trash3"></i>
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- DYNAMIC DOCUMENT TEMPLATE -->
+
+  <template data-exchange-target="documentTemplate">
+
+    <div class="xe-document-row">
+
+      <div class="xe-document-icon">
+        <i class="bi bi-paperclip"></i>
+      </div>
+
+      <div class="flex-grow-1">
+
+        <label class="xe-label">
+          Add Attachment
+        </label>
+
+        <%= file_field_tag(
+          "exchange[documents][]",
+          class: "form-control",
+          accept: "*/*"
+        ) %>
+
+      </div>
+
+      <div class="xe-document-actions">
+
+        <!-- ADD -->
+
+        <button
+          type="button"
+          class="btn xe-add-document"
+          data-action="click->exchange#addDocument"
+          title="Add attachment"
+        >
+          <i class="bi bi-plus-lg"></i>
+        </button>
+
+
+        <!-- REMOVE -->
+
+        <button
+          type="button"
+          class="btn xe-remove-document"
+          data-action="click->exchange#removeDocument"
+          title="Remove attachment"
+        >
+          <i class="bi bi-trash3"></i>
+        </button>
+
+      </div>
+
+    </div>
+
+  </template>
+
+</div>
+
+
+      <!-- PENDING -->
+
+      <div class="xe-pending">
+
+        <div class="xe-pending-label">
+
+          <div class="xe-pending-icon">
+            <i class="bi bi-clock-history"></i>
+          </div>
+
+          <div>
+
+            <div class="fw-semibold">
+              Mark this exchange as pending
+            </div>
+
+            <small>
+              Pending exchanges can be completed later.
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-check form-switch">
+
+          <%= form.check_box(
+            :pending,
+            class: "form-check-input",
+            id: "exchange_pending",
+            role: "switch"
+          ) %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="modal-footer xe-form-footer px-3 px-md-4 pb-3">
+
+      <button
+        type="button"
+        class="btn btn-light border xe-close"
+        data-bs-dismiss="modal"
+      >
+        Close
+      </button>
+
+      <%= form.submit(
+        @exchange.new_record? ? "Create Exchange" : "Update Exchange",
+        class: "btn btn-success xe-submit",
+        data: {
+          action: "click->bs-modal#submitEnd"
+        }
+      ) %>
+
+    </div>
+
+  <% end %>
+
+</div>
