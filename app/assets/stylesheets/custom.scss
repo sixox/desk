@@ -3339,3 +3339,23 @@
 .xt-remove-all i {
   font-size: 0.85rem;
 }
+
+.exchange-table {
+  --bs-table-striped-bg: #f0f4f8;
+  --bs-table-striped-color: #212529;
+  --bs-table-hover-bg: #e2e8f0;
+}
+
+.exchange-table tbody tr:hover td {
+  background-color: #e2e8f0 !important;
+}
+
+.xtransfer-table {
+  --bs-table-striped-bg: #f0f4f8;
+  --bs-table-striped-color: #212529;
+  --bs-table-hover-bg: #e2e8f0;
+}
+
+.xtransfer-table tbody tr:hover td {
+  background-color: #e2e8f0 !important;
+}

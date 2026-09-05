@@ -4,7 +4,8 @@ class ExchangesController < ApplicationController
     :update,
     :destroy,
     :toggle_pending,
-    :remove_document
+    :remove_document,
+    :remove_all_documents   # <-- added
   ]
 
   def index
@@ -34,7 +35,7 @@ class ExchangesController < ApplicationController
 
     if @exchange.save
       update_transfers
-
+      attach_documents           # <-- added
       redirect_to exchanges_path,
                   notice: "Exchange created successfully."
     else
@@ -57,7 +58,7 @@ class ExchangesController < ApplicationController
   def update
     if @exchange.update(exchange_params)
       update_transfers
-
+      attach_documents           # <-- added
       redirect_to exchanges_path,
                   notice: "Exchange updated successfully."
     else
@@ -110,6 +111,14 @@ class ExchangesController < ApplicationController
 
     redirect_to edit_exchange_path(@exchange),
                 notice: "Attachment removed."
+  end
+
+  # <-- added
+  def remove_all_documents
+    @exchange.documents.purge
+
+    redirect_to edit_exchange_path(@exchange),
+                notice: "All attachments removed."
   end
 
   private
@@ -174,8 +183,16 @@ class ExchangesController < ApplicationController
       :wage,
       :kind,
       :pending,
-      :documents,
+      # :documents removed — handled manually so we append, not replace
       xtransfer_ids: []
     )
+  end
+
+  # <-- added
+  def attach_documents
+    return if params[:exchange].blank?
+    return if params[:exchange][:documents].blank?
+
+    @exchange.documents.attach(params[:exchange][:documents])
   end
 end

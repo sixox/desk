@@ -282,6 +282,8 @@
 
         </div>
 
+        
+
       </div>
 
 
@@ -322,7 +324,89 @@
         </div>
 
       </div>
+<!-- ATTACHMENTS -->
+<div class="xt-attachments-panel">
 
+  <div class="xt-attachments-header">
+    <div class="xt-attachments-title">
+      <i class="bi bi-paperclip"></i>
+      Attachments
+    </div>
+
+    <% if @remittance.documents.attached? %>
+      <%= link_to(
+        remove_all_documents_remittance_path(@remittance),
+        data: {
+          turbo_method: :delete,
+          turbo_confirm: "Delete all attachments?"
+        },
+        class: "xt-remove-all text-decoration-none p-0",
+        style: "font-size: 9px; gap: 0rem !important; border: 0px; margin-top: -5px;"
+      ) do %>
+        Delete All Attachs
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- EXISTING DOCUMENTS -->
+  <% if @remittance.documents.attached? %>
+    <div class="xt-attachments-list">
+
+      <% @remittance.documents.each do |document| %>
+
+        <div class="xt-attachment-item xt-existing-document-row">
+
+          <i class="bi bi-file-earmark-text xt-attachment-file-icon"></i>
+
+          <%= link_to(
+            document.filename.to_s,
+            rails_blob_path(
+              document,
+              disposition: "attachment"
+            ),
+            target: "_blank",
+            class: "xt-attachment-link",
+            title: document.filename.to_s
+          ) %>
+
+          <%= link_to(
+            remove_document_remittance_path(
+              @remittance,
+              document_id: document.id
+            ),
+            data: {
+              turbo_method: :delete,
+              turbo_confirm: "Remove this file?"
+            },
+            class: "xt-attachment-delete",
+            title: "Remove"
+          ) do %>
+            <i class="bi bi-trash3"></i>
+          <% end %>
+
+        </div>
+
+      <% end %>
+
+    </div>
+  <% end %>
+
+  <!-- NEW DOCUMENTS INPUT -->
+  <div class="xt-attachments-list">
+    <div class="xt-attachment-item xt-new-document">
+
+      <i class="bi bi-paperclip xt-attachment-file-icon"></i>
+
+      <%= form.file_field(
+        :documents,
+        multiple: true,
+        class: "xt-attachment-input"
+      ) %>
+
+    </div>
+  </div>
+
+</div>
 
     </div>
 

@@ -1,5 +1,12 @@
 class RemittancesController < ApplicationController
-  before_action :set_remittance, only: [:edit, :update, :destroy]
+  before_action :set_remittance,
+                only: [
+                  :edit,
+                  :update,
+                  :destroy,
+                  :remove_document,
+                  :remove_all_documents
+                ]
 
   def index
     @remittances =
@@ -26,6 +33,7 @@ class RemittancesController < ApplicationController
     @remittance = Remittance.new(remittance_params)
 
     if @remittance.save
+      attach_documents
       redirect_to remittances_path,
                   notice: "Remittance created successfully."
     else
@@ -44,6 +52,7 @@ class RemittancesController < ApplicationController
 
   def update
     if @remittance.update(remittance_params)
+      attach_documents
       redirect_to remittances_path,
                   notice: "Remittance updated successfully."
     else
@@ -74,6 +83,21 @@ class RemittancesController < ApplicationController
         organization_kind: organization.kind
       }
     }
+  end
+
+  def remove_document
+    document = @remittance.documents.find(params[:document_id])
+    document.purge
+
+    redirect_to edit_remittance_path(@remittance),
+                notice: "Attachment removed."
+  end
+
+  def remove_all_documents
+    @remittance.documents.purge
+
+    redirect_to edit_remittance_path(@remittance),
+                notice: "All attachments removed."
   end
 
   private
@@ -108,6 +132,14 @@ class RemittancesController < ApplicationController
       :sent_amount,
       :received_amount,
       :currency_id
+      # :documents removed — handled manually so we append, not replace
     )
+  end
+
+  def attach_documents
+    return if params[:remittance].blank?
+    return if params[:remittance][:documents].blank?
+
+    @remittance.documents.attach(params[:remittance][:documents])
   end
 end

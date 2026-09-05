@@ -1,4 +1,3 @@
-```javascript
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -22,10 +21,7 @@ export default class extends Controller {
     "exchangeRate",
 
     "transfersContainer",
-    "transferTemplate",
-
-    "documentsContainer",
-    "documentTemplate"
+    "transferTemplate"
   ]
 
   connect() {
@@ -35,10 +31,6 @@ export default class extends Controller {
 
     if (this.hasTransfersContainerTarget) {
       this.updateTransferButtons()
-    }
-
-    if (this.hasDocumentsContainerTarget) {
-      this.updateDocumentButtons()
     }
   }
 
@@ -236,93 +228,4 @@ export default class extends Controller {
       }
     })
   }
-
-  // --------------------------------------------------
-  // DOCUMENTS
-  // --------------------------------------------------
-
-  addDocument(event) {
-    event.preventDefault()
-
-    if (!this.hasDocumentTemplateTarget) return
-    if (!this.hasDocumentsContainerTarget) return
-
-    const content =
-      this.documentTemplateTarget.innerHTML
-
-    this.documentsContainerTarget.insertAdjacentHTML(
-      "beforeend",
-      content
-    )
-
-    this.updateDocumentButtons()
-  }
-
-  removeDocument(event) {
-    event.preventDefault()
-
-    const row =
-      event.currentTarget.closest(".xe-document-row")
-
-    if (!row) return
-
-    // This action is only for newly added file inputs.
-    // Existing uploaded documents are deleted by Rails
-    // through the button_to delete action.
-    const fileInput =
-      row.querySelector('input[type="file"]')
-
-    if (!fileInput) return
-
-    const rows =
-      this.documentsContainerTarget.querySelectorAll(
-        ".xe-document-row"
-      )
-
-    if (rows.length === 1) {
-      fileInput.value = ""
-      return
-    }
-
-    row.remove()
-
-    this.updateDocumentButtons()
-  }
-
-  updateDocumentButtons() {
-    if (!this.hasDocumentsContainerTarget) return
-
-    // Only rows containing a file input are dynamic/new
-    // document rows. Existing uploaded documents are ignored.
-    const rows = Array.from(
-      this.documentsContainerTarget.querySelectorAll(
-        ".xe-document-row"
-      )
-    ).filter((row) =>
-      row.querySelector('input[type="file"]')
-    )
-
-    rows.forEach((row, index) => {
-      const addButton =
-        row.querySelector(".xe-add-document")
-
-      const removeButton =
-        row.querySelector(".xe-remove-document")
-
-      if (addButton) {
-        addButton.classList.toggle(
-          "d-none",
-          index !== rows.length - 1
-        )
-      }
-
-      if (removeButton) {
-        removeButton.classList.toggle(
-          "d-none",
-          rows.length === 1
-        )
-      }
-    })
-  }
 }
-```

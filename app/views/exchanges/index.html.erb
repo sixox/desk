@@ -39,7 +39,7 @@
 
         <div class="table-responsive">
 
-          <table class="table exchange-table align-middle mb-0">
+          <table class="table table-striped exchange-table align-middle mb-0">
 
             <thead>
 
@@ -251,7 +251,7 @@
 
                 <%= link_to edit_exchange_path(exchange),
                 data: { controller: "bs-modal-form" },
-                class: "btn btn-sm btn-outline-secondary xe-action" do %>
+                class: "btn btn-sm btn-outline-secondary xt-action" do %>
 
                 <span>Edit</span>
                 <i class="bi bi-pencil ms-1"></i>
@@ -262,7 +262,7 @@
                 <%= button_to(
                   exchange_path(exchange),
                   method: :delete,
-                  class: "btn btn-sm btn-outline-danger xe-action",
+                  class: "btn btn-sm btn-outline-danger xt-action",
                     form: {
                       data: {
                         turbo_confirm: "Delete this exchange?"

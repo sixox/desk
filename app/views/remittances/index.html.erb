@@ -33,7 +33,7 @@
 
       <div class="table-responsive">
 
-        <table class="table table-sm align-middle mb-0 xtransfer-table">
+        <table class="table table-striped exchange-table table-sm align-middle mb-0 xtransfer-table">
 
           <thead>
 
@@ -46,6 +46,7 @@
               <th>Sent</th>
 
               <th>Received</th>
+              <th>Attach</th>
 
 
               <th class="text-end">Actions</th>
@@ -119,7 +120,20 @@
 
               </td>
 
+              <td>
+                <% if remittance.documents.attached? %>
 
+                <span class="badge bg-light text-dark">
+                  <i class="bi bi-paperclip"></i>
+                  <%= remittance.documents.count %>
+                </span>
+
+                <% else %>
+
+                <span class="text-muted">—</span>
+
+                <% end %>
+              </td>
 
 
 
@@ -133,9 +147,9 @@
                   <%= link_to edit_remittance_path(remittance),
                   data: { controller: "bs-modal-form" },
                   class: "btn btn-sm btn-outline-secondary xt-action" do %>
-
-                  <i class="bi bi-pencil"></i>
                   <span>Edit</span>
+                  <i class="bi bi-pencil ms-1"></i>
+                  
 
                   <% end %>
 
@@ -151,8 +165,8 @@
                       }
                       ) do %>
 
-                      <i class="bi bi-trash"></i>
-                      <span>Delete</span>
+                      <i class="bi bi-trash3"></i>
+                      
 
                       <% end %>
 

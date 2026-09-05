@@ -764,207 +764,87 @@
       </div>
 
 
-      <!-- DOCUMENTS -->
+<!-- ATTACHMENTS -->
+<div class="xt-attachments-panel">
 
-
-<div class="xe-form-section">
-
-  <div class="xe-section-title">
-    <i class="bi bi-paperclip"></i>
-    Attachments
-  </div>
-
-  <div data-exchange-target="documentsContainer">
-
-    <!-- EXISTING DOCUMENTS -->
+  <div class="xt-attachments-header">
+    <div class="xt-attachments-title">
+      <i class="bi bi-paperclip"></i>
+      Attachments
+    </div>
 
     <% if @exchange.documents.attached? %>
+      <%= link_to(
+        remove_all_documents_exchange_path(@exchange),
+        data: {
+          turbo_method: :delete,
+          turbo_confirm: "Delete all attachments?"
+        },
+        class: "xt-remove-all text-decoration-none p-0",
+        style: "font-size: 9px; gap: 0rem !important; border: 0px; margin-top: -5px;"
+      ) do %>
+        Delete All Attachs
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- EXISTING DOCUMENTS -->
+  <% if @exchange.documents.attached? %>
+    <div class="xt-attachments-list">
 
       <% @exchange.documents.each do |document| %>
 
-        <div class="xe-document-row">
+        <div class="xt-attachment-item xt-existing-document-row">
 
-          <div class="xe-document-icon">
-            <i class="bi bi-file-earmark"></i>
-          </div>
+          <i class="bi bi-file-earmark-text xt-attachment-file-icon"></i>
 
-          <div class="flex-grow-1">
+          <%= link_to(
+            document.filename.to_s,
+            rails_blob_path(
+              document,
+              disposition: "attachment"
+            ),
+            target: "_blank",
+            class: "xt-attachment-link",
+            title: document.filename.to_s
+          ) %>
 
-            <label class="xe-label">
-              Attachment
-            </label>
-
-            <div class="d-flex align-items-center gap-2">
-
-              <%= link_to(
-                document.filename.to_s,
-                rails_blob_path(
-                  document,
-                  disposition: "attachment"
-                ),
-                target: "_blank",
-                class: "text-decoration-none"
-              ) %>
-
-            </div>
-
-          </div>
-
-          <div class="xe-document-actions">
-
-            <!-- DOWNLOAD -->
-
-            <%= link_to(
-              rails_blob_path(
-                document,
-                disposition: "attachment"
-              ),
-              class: "btn xe-download-document",
-              title: "Download",
-              target: "_blank"
-            ) do %>
-
-              <i class="bi bi-download"></i>
-
-            <% end %>
-
-
-            <!-- DELETE EXISTING DOCUMENT -->
-
-            <%= button_to(
-              remove_document_exchange_path(
-                @exchange,
-                document_id: document.id
-              ),
-              method: :delete,
-              class: "btn xe-remove-document",
-              title: "Delete attachment",
-              data: {
-                turbo_confirm: "Delete this attachment?"
-              }
-            ) do %>
-
-              <i class="bi bi-trash3"></i>
-
-            <% end %>
-
-          </div>
+          <%= link_to(
+            remove_document_exchange_path(
+              @exchange,
+              document_id: document.id
+            ),
+            data: {
+              turbo_method: :delete,
+              turbo_confirm: "Remove this file?"
+            },
+            class: "xt-attachment-delete",
+            title: "Remove"
+          ) do %>
+            <i class="bi bi-trash3"></i>
+          <% end %>
 
         </div>
 
       <% end %>
 
-    <% end %>
+    </div>
+  <% end %>
 
+  <!-- NEW DOCUMENTS INPUT -->
+  <div class="xt-attachments-list">
+    <div class="xt-attachment-item xt-new-document">
 
-    <!-- NEW DOCUMENT INPUT -->
+      <i class="bi bi-paperclip xt-attachment-file-icon"></i>
 
-    <div class="xe-document-row">
-
-      <div class="xe-document-icon">
-        <i class="bi bi-paperclip"></i>
-      </div>
-
-      <div class="flex-grow-1">
-
-        <label class="xe-label">
-          Add Attachment
-        </label>
-
-        <%= file_field_tag(
-          "exchange[documents][]",
-          class: "form-control",
-          accept: "*/*"
-        ) %>
-
-      </div>
-
-      <div class="xe-document-actions">
-
-        <!-- ADD -->
-
-        <button
-          type="button"
-          class="btn xe-add-document"
-          data-action="click->exchange#addDocument"
-          title="Add attachment"
-        >
-          <i class="bi bi-plus-lg"></i>
-        </button>
-
-
-        <!-- REMOVE NEW INPUT -->
-
-        <button
-          type="button"
-          class="btn xe-remove-document d-none"
-          data-action="click->exchange#removeDocument"
-          title="Remove attachment"
-        >
-          <i class="bi bi-trash3"></i>
-        </button>
-
-      </div>
+      <%= form.file_field(
+        :documents,
+        multiple: true,
+        class: "xt-attachment-input"
+      ) %>
 
     </div>
-
   </div>
-
-
-  <!-- DYNAMIC DOCUMENT TEMPLATE -->
-
-  <template data-exchange-target="documentTemplate">
-
-    <div class="xe-document-row">
-
-      <div class="xe-document-icon">
-        <i class="bi bi-paperclip"></i>
-      </div>
-
-      <div class="flex-grow-1">
-
-        <label class="xe-label">
-          Add Attachment
-        </label>
-
-        <%= file_field_tag(
-          "exchange[documents][]",
-          class: "form-control",
-          accept: "*/*"
-        ) %>
-
-      </div>
-
-      <div class="xe-document-actions">
-
-        <!-- ADD -->
-
-        <button
-          type="button"
-          class="btn xe-add-document"
-          data-action="click->exchange#addDocument"
-          title="Add attachment"
-        >
-          <i class="bi bi-plus-lg"></i>
-        </button>
-
-
-        <!-- REMOVE -->
-
-        <button
-          type="button"
-          class="btn xe-remove-document"
-          data-action="click->exchange#removeDocument"
-          title="Remove attachment"
-        >
-          <i class="bi bi-trash3"></i>
-        </button>
-
-      </div>
-
-    </div>
-
-  </template>
 
 </div>
 

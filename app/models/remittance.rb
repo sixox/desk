@@ -6,6 +6,8 @@ class Remittance < ApplicationRecord
              class_name: "Xaccount"
 
   belongs_to :currency
+  has_many_attached :documents
+
 
   validates :sent_amount, presence: true
   validates :received_amount, presence: true

@@ -1,15 +1,22 @@
 class XpaymentsController < ApplicationController
-  before_action :set_xpayment, only: [:edit, :update, :destroy]
+  before_action :set_xpayment,
+                only: [
+                  :edit,
+                  :update,
+                  :destroy,
+                  :remove_document,
+                  :remove_all_documents
+                ]
 
   def index
     @xpayments =
-    Xpayment
-    .includes(
-      :currency,
-      sender_account: :organization,
-      receiver_account: :organization
-      )
-    .order(created_at: :desc)
+      Xpayment
+        .includes(
+          :currency,
+          sender_account: :organization,
+          receiver_account: :organization
+        )
+        .order(created_at: :desc)
   end
 
   def new
@@ -26,8 +33,9 @@ class XpaymentsController < ApplicationController
     @xpayment = Xpayment.new(xpayment_params)
 
     if @xpayment.save
+      attach_documents
       redirect_to xpayments_path,
-      notice: "Payment created successfully."
+                  notice: "Payment created successfully."
     else
       load_form_data
 
@@ -44,8 +52,9 @@ class XpaymentsController < ApplicationController
 
   def update
     if @xpayment.update(xpayment_params)
+      attach_documents
       redirect_to xpayments_path,
-      notice: "Payment updated successfully."
+                  notice: "Payment updated successfully."
     else
       load_form_data
       render :edit, status: :unprocessable_entity
@@ -56,7 +65,7 @@ class XpaymentsController < ApplicationController
     @xpayment.destroy
 
     redirect_to xpayments_path,
-    notice: "Payment deleted successfully."
+                notice: "Payment deleted successfully."
   end
 
   def accounts
@@ -76,6 +85,21 @@ class XpaymentsController < ApplicationController
     }
   end
 
+  def remove_document
+    document = @xpayment.documents.find(params[:document_id])
+    document.purge
+
+    redirect_to edit_xpayment_path(@xpayment),
+                notice: "Attachment removed."
+  end
+
+  def remove_all_documents
+    @xpayment.documents.purge
+
+    redirect_to edit_xpayment_path(@xpayment),
+                notice: "All attachments removed."
+  end
+
   private
 
   def set_xpayment
@@ -87,18 +111,18 @@ class XpaymentsController < ApplicationController
     @currencies = Currency.order(:name)
 
     @sender_accounts =
-    if @xpayment.sender_account.present?
-      @xpayment.sender_account.organization.xaccounts.includes(:currency)
-    else
-      Xaccount.none
-    end
+      if @xpayment.sender_account.present?
+        @xpayment.sender_account.organization.xaccounts.includes(:currency)
+      else
+        Xaccount.none
+      end
 
     @receiver_accounts =
-    if @xpayment.receiver_account.present?
-      @xpayment.receiver_account.organization.xaccounts.includes(:currency)
-    else
-      Xaccount.none
-    end
+      if @xpayment.receiver_account.present?
+        @xpayment.receiver_account.organization.xaccounts.includes(:currency)
+      else
+        Xaccount.none
+      end
   end
 
   def xpayment_params
@@ -109,6 +133,14 @@ class XpaymentsController < ApplicationController
       :received_amount,
       :currency_id,
       :wage
-      )
+      # :documents removed — handled manually so we append, not replace
+    )
+  end
+
+  def attach_documents
+    return if params[:xpayment].blank?
+    return if params[:xpayment][:documents].blank?
+
+    @xpayment.documents.attach(params[:xpayment][:documents])
   end
 end

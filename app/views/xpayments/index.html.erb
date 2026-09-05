@@ -31,7 +31,7 @@
 
     <div class="table-responsive">
 
-      <table class="table exchange-table align-middle mb-0">
+      <table class="table table-striped exchange-table align-middle mb-0">
 
         <thead>
 
@@ -41,6 +41,7 @@
             <th>Sent</th>
             <th>Received</th>
             <th>Wage</th>
+            <th>Attach</th>
             <th class="text-end">Actions</th>
           </tr>
 
@@ -123,6 +124,21 @@
 
               </td>
 
+                      <td>
+          <% if xpayment.documents.attached? %>
+
+          <span class="badge bg-light text-dark">
+            <i class="bi bi-paperclip"></i>
+            <%= xpayment.documents.count %>
+          </span>
+
+          <% else %>
+
+          <span class="text-muted">—</span>
+
+          <% end %>
+        </td>
+
 
               <!-- ACTIONS -->
 
@@ -132,10 +148,10 @@
 
                   <%= link_to edit_xpayment_path(xpayment),
                     data: { controller: "bs-modal-form" },
-                    class: "btn btn-sm btn-outline-secondary xe-action" do %>
+                    class: "btn btn-sm btn-outline-secondary xt-action" do %>
+                    <span>Edit</span>
 
                     <i class="bi bi-pencil"></i>
-                    <span>Edit</span>
 
                   <% end %>
 
@@ -143,7 +159,7 @@
                   <%= button_to(
                     xpayment_path(xpayment),
                     method: :delete,
-                    class: "btn btn-sm btn-outline-danger xe-action",
+                    class: "btn btn-sm btn-outline-danger xt-action",
                     form: {
                       data: {
                         turbo_confirm: "Delete this payment?"
@@ -151,8 +167,7 @@
                     }
                   ) do %>
 
-                    <i class="bi bi-trash"></i>
-                    <span>Delete</span>
+                    <i class="bi bi-trash3"></i>
 
                   <% end %>
 

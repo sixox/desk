@@ -367,6 +367,7 @@ resources :exchanges do
   member do
     patch :toggle_pending
     delete :remove_document
+    delete :remove_all_documents
   end
 
   collection do
@@ -375,17 +376,26 @@ resources :exchanges do
 end
 
 resources :remittances do
+  member do
+    delete :remove_document
+    delete :remove_all_documents
+  end
+
   collection do
     get :accounts
   end
 end
 
 resources :xpayments do
+  member do
+    delete :remove_document
+    delete :remove_all_documents
+  end
+
   collection do
     get :accounts
   end
 end
-
 
 
 
