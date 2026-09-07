@@ -1,0 +1,279 @@
+<div data-controller="organization" class="rm-form">
+
+  <%= form_for @organization do |form| %>
+
+    <div class="modal-body p-3 p-md-4">
+
+      <% if @organization.errors.any? %>
+        <div class="rm-error">
+
+          <div class="rm-error-title">
+            <i class="bi bi-exclamation-circle"></i>
+            <%= pluralize(@organization.errors.count, "error") %>
+            prohibited this organization from being saved.
+          </div>
+
+          <ul>
+            <% @organization.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+
+        </div>
+      <% end %>
+
+
+      <!-- HEADER -->
+
+      <div class="rm-form-header">
+
+        <h4 class="rm-form-title">
+
+          <span class="rm-form-title-icon">
+            <i class="bi bi-building"></i>
+          </span>
+
+          <%= @organization.new_record? ? "Create Organization" : "Edit Organization" %>
+
+        </h4>
+
+      </div>
+
+
+      <!-- BASIC INFORMATION -->
+
+      <div class="rm-form-section">
+
+        <div class="rm-section-title">
+          <i class="bi bi-building"></i>
+          Basic Information
+        </div>
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+
+            <div class="rm-field">
+
+              <label class="rm-label">
+                Name
+                <span class="rm-required">*</span>
+              </label>
+
+              <%= form.text_field :name,
+                class: "form-control",
+                placeholder: "Organization name" %>
+
+            </div>
+
+          </div>
+
+
+          <div class="col-md-6">
+
+            <div class="rm-field">
+
+              <label class="rm-label">
+                Kind
+              </label>
+
+              <%= form.text_field :kind,
+                class: "form-control",
+                placeholder: "e.g. company, bank" %>
+
+            </div>
+
+          </div>
+
+
+
+
+        </div>
+
+      </div>
+
+<!-- ACCOUNTS -->
+<div class="xt-exchanges-panel p-2">
+
+  <div class="rm-section-title">
+    <i class="bi bi-bank"></i>
+    Accounts
+  </div>
+
+  <div
+    class="xt-exchanges-body"
+    data-organization-target="accountsContainer"
+  >
+
+    <%= form.fields_for :xaccounts do |account_form| %>
+
+      <div class="xt-exchange-row">
+
+        <div class="xt-exchange-number">
+          <i class="bi bi-bank"></i>
+        </div>
+
+        <div class="flex-grow-1">
+
+          <%= account_form.hidden_field :_destroy, value: "0" %>
+
+          <div class="row g-2">
+
+            <div class="col-md-4">
+              <label class="xt-label">No.</label>
+              <%= account_form.text_field :number,
+                class: "form-control",
+                placeholder: "Account number" %>
+            </div>
+
+            <div class="col-md-4">
+              <label class="xt-label">Kind</label>
+              <%= account_form.text_field :kind,
+                class: "form-control",
+                placeholder: "Account kind" %>
+            </div>
+
+            <div class="col-md-4">
+              <label class="xt-label">Currency</label>
+              <%= account_form.collection_select :currency_id,
+                @currencies,
+                :id,
+                :name,
+                { prompt: "Select currency" },
+                { class: "form-select" } %>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="xt-exchange-actions">
+
+          <button
+            type="button"
+            class="btn xt-add-exchange"
+            data-action="click->organization#addAccount"
+            title="Add account"
+          >
+            <i class="bi bi-plus-lg"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn xt-remove-exchange"
+            data-action="click->organization#removeAccount"
+            title="Remove account"
+          >
+            <i class="bi bi-trash3"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+
+  <!-- TEMPLATE -->
+  <template data-organization-target="accountTemplate">
+
+    <%= form.fields_for :xaccounts, Xaccount.new, child_index: "NEW_RECORD" do |account_form| %>
+
+      <div class="xt-exchange-row">
+
+        <div class="xt-exchange-number">
+          <i class="bi bi-bank"></i>
+        </div>
+
+        <div class="flex-grow-1">
+
+          <div class="row g-2">
+
+            <div class="col-md-4">
+              <label class="xt-label">No.</label>
+              <%= account_form.text_field :number,
+                class: "form-control",
+                placeholder: "Account number" %>
+            </div>
+
+            <div class="col-md-4">
+              <label class="xt-label">Kind</label>
+              <%= account_form.text_field :kind,
+                class: "form-control",
+                placeholder: "Account kind" %>
+            </div>
+
+            <div class="col-md-4">
+              <label class="xt-label">Currency</label>
+              <%= account_form.collection_select :currency_id,
+                @currencies,
+                :id,
+                :name,
+                { prompt: "Select currency" },
+                { class: "form-select" } %>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="xt-exchange-actions">
+
+          <button
+            type="button"
+            class="btn xt-add-exchange"
+            data-action="click->organization#addAccount"
+            title="Add account"
+          >
+            <i class="bi bi-plus-lg"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn xt-remove-exchange"
+            data-action="click->organization#removeAccount"
+            title="Remove account"
+          >
+            <i class="bi bi-trash3"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </template>
+
+</div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="modal-footer rm-form-footer px-3 px-md-4 pb-3">
+
+      <button
+        type="button"
+        class="btn btn-light border rm-close"
+        data-bs-dismiss="modal"
+      >
+        Close
+      </button>
+
+      <%= form.submit(
+        @organization.new_record? ? "Create Organization" : "Update Organization",
+        class: "btn btn-primary rm-submit",
+        data: {
+          action: "click->bs-modal#submitEnd"
+        }
+      ) %>
+
+    </div>
+
+  <% end %>
+
+</div>

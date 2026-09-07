@@ -112,23 +112,6 @@
 
               <!-- Sender Currency -->
 
-              <div class="xt-field">
-                <label class="xt-label">
-                  Currency
-                  <span class="xt-required">*</span>
-                </label>
-
-                <%= form.collection_select(
-                  :sender_currency_id,
-                  @currencies,
-                  :id,
-                  :name,
-                  { prompt: "Select currency" },
-                  { class: "form-select" }
-                ) %>
-              </div>
-
-
               <!-- Sender Amount -->
 
               <div class="xt-field">
@@ -228,23 +211,7 @@
               </div>
 
 
-              <!-- Receiver Currency -->
 
-              <div class="xt-field">
-                <label class="xt-label">
-                  Currency
-                  <span class="xt-required">*</span>
-                </label>
-
-                <%= form.collection_select(
-                  :receiver_currency_id,
-                  @currencies,
-                  :id,
-                  :name,
-                  { prompt: "Select currency" },
-                  { class: "form-select" }
-                ) %>
-              </div>
 
 
               <!-- Receiver Amount -->

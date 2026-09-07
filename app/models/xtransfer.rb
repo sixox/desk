@@ -13,10 +13,11 @@ class Xtransfer < ApplicationRecord
   belongs_to :receiver_currency,
              class_name: "Currency"
 
+  has_many :xtransactions, as: :transactionable, dependent: :destroy
+
   validates :sent_amount, presence: true
   validates :receive_amount, presence: true
   validates :exchange_rate, presence: true
-  validates :status, presence: true
   validates :sender_currency_id, presence: true
   validates :receiver_currency_id, presence: true
 

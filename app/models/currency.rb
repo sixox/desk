@@ -1,6 +1,5 @@
 class Currency < ApplicationRecord
   has_many :xaccounts, dependent: :restrict_with_error
-  has_many :credits, dependent: :restrict_with_error
 
   has_many :sell_exchanges,
            class_name: "Exchange",
@@ -21,6 +20,8 @@ class Currency < ApplicationRecord
            class_name: "Xtransfer",
            foreign_key: :receiver_currency_id,
            dependent: :restrict_with_error
+
+  has_many :xtransactions
 
   validates :name, presence: true
 end

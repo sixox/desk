@@ -1,0 +1,164 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+  <div class="container-fluid py-3 xtransfer-page">
+
+    <!-- HEADER -->
+
+    <div class="xtransfer-header d-flex justify-content-between align-items-center">
+
+      <div>
+
+        <h5 class="xtransfer-title">
+          Organizations
+        </h5>
+
+        <div class="xtransfer-subtitle">
+          <%= @organizations.count %> records
+        </div>
+
+      </div>
+
+
+      <%= link_to new_organization_path,
+        data: { controller: "bs-modal-form" },
+        class: "btn btn-success xtransfer-create" do %>
+
+        <i class="bi bi-plus"></i>
+        Create Organization
+
+      <% end %>
+
+    </div>
+
+
+    <!-- TABLE CARD -->
+
+    <div class="xtransfer-card">
+
+      <div class="table-responsive">
+
+        <table class="table table-striped exchange-table table-sm align-middle mb-0 xtransfer-table">
+
+          <thead>
+
+            <tr>
+
+              <th>Name</th>
+
+              <th>Kind</th>
+
+
+              <th>Accounts</th>
+
+              <th class="text-end">Actions</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <% @organizations.each do |organization| %>
+
+              <tr>
+
+                <!-- NAME -->
+
+                <td>
+
+                  <div class="account-name">
+                    <%= organization.name %>
+                  </div>
+
+                </td>
+
+
+                <!-- KIND -->
+
+                <td>
+
+                  <span class="account-number">
+                    <%= organization.kind.presence || "—" %>
+                  </span>
+
+                </td>
+
+
+
+
+                <!-- ACCOUNTS -->
+
+                <td>
+
+                  <span class="badge bg-light text-dark">
+                    <% if organization.xaccounts.count >0  %>
+                    <% organization.xaccounts.each do |a|%>
+         <%= link_to edit_xaccount_path(a),
+                  data: { controller: "bs-modal-form" },
+                  class: "btn btn-sm btn-outline-secondary xt-action" do %>
+                  <span>Edit</span>
+                  <i class="bi bi-pencil ms-1"></i>
+                  
+
+                  <% end %>
+                    <% end %>
+                    <% end %>
+                  </span>
+
+                </td>
+
+
+                <!-- ACTIONS -->
+
+                <td>
+
+                  <div class="xt-actions">
+
+                    <%= link_to edit_organization_path(organization),
+                      data: { controller: "bs-modal-form" },
+                      class: "btn btn-sm btn-outline-secondary xt-action" do %>
+
+                      <span>Edit</span>
+                      <i class="bi bi-pencil ms-1"></i>
+
+                    <% end %>
+
+
+                    <%= button_to(
+                      organization_path(organization),
+                      method: :delete,
+                      class: "btn btn-sm btn-outline-danger xt-action",
+                      form: {
+                        data: {
+                          turbo_confirm: "Delete this organization?"
+                        }
+                      }
+                    ) do %>
+
+                      <i class="bi bi-trash3"></i>
+
+                    <% end %>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+
+    <%= turbo_frame_tag "modal" %>
+
+  </div>
+
+</div>

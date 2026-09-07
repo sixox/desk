@@ -406,4 +406,6 @@ puts "Creating payments..."
 end
 
 puts "Created #{Xpayment.count} payments."
+Credit.delete_all
+
 

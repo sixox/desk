@@ -1,0 +1,146 @@
+<div class="xa-form">
+
+  <%= form_for @xaccount do |form| %>
+
+    <div class="modal-body p-3 p-md-4">
+
+      <% if @xaccount.errors.any? %>
+        <div class="xa-error">
+          <div class="xa-error-title">
+            <i class="bi bi-exclamation-circle"></i>
+            <%= pluralize(@xaccount.errors.count, "error") %>
+            prohibited this account from being saved.
+          </div>
+          <ul>
+            <% @xaccount.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+
+      <!-- HEADER -->
+
+      <div class="xa-form-header">
+        <h4 class="xa-form-title">
+          <span class="xa-form-title-icon">
+            <i class="bi bi-bank"></i>
+          </span>
+
+          <%= @xaccount.new_record? ? "Create Account" : "Edit Account" %>
+        </h4>
+      </div>
+
+
+      <!-- BASIC INFO -->
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <div class="xa-field">
+            <label class="xa-label">
+              Organization
+              <span class="xa-required">*</span>
+            </label>
+            <%= form.collection_select :organization_id,
+              @organizations,
+              :id,
+              :name,
+              { prompt: "Select organization" },
+              { class: "form-select" } %>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="xa-field">
+            <label class="xa-label">
+              Currency
+              <span class="xa-required">*</span>
+            </label>
+            <%= form.collection_select :currency_id,
+              @currencies,
+              :id,
+              :name,
+              { prompt: "Select currency" },
+              { class: "form-select" } %>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="xa-field">
+            <label class="xa-label">
+              Number
+              <span class="xa-required">*</span>
+            </label>
+            <%= form.text_field :number,
+              class: "form-control",
+              placeholder: "Account number" %>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="xa-field">
+            <label class="xa-label">Kind</label>
+            <%= form.text_field :kind,
+              class: "form-control",
+              placeholder: "e.g. savings, current" %>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="xa-field">
+            <label class="xa-label">Start Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-cash-stack"></i>
+              </span>
+              <%= form.number_field :start_amount,
+                class: "form-control",
+                placeholder: "0" %>
+            </div>
+          </div>
+        </div>
+
+       
+
+        <div class="col-md-12">
+          <div class="xa-field">
+            <label class="xa-label">Change Details</label>
+            <%= form.text_area :details_of_change_start_amount,
+              class: "form-control",
+              rows: 2,
+              placeholder: "Details..." %>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="modal-footer xa-form-footer px-3 px-md-4 pb-3">
+
+      <button
+        type="button"
+        class="btn btn-light border xa-close"
+        data-bs-dismiss="modal"
+      >
+        Close
+      </button>
+
+      <%= form.submit(
+        @xaccount.new_record? ? "Create Account" : "Update Account",
+        class: "btn btn-primary xa-submit",
+        data: {
+          action: "click->bs-modal#submitEnd"
+        }
+      ) %>
+
+    </div>
+
+  <% end %>
+
+</div>

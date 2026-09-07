@@ -1,12 +1,5 @@
 Rails.application.routes.draw do
-  get 'xtransfers/index'
-  get 'xtransfers/new'
-  get 'xtransfers/create'
-  get 'xtransfers/edit'
-  get 'xtransfers/update'
-  get 'xtransfers/destroy'
-  get 'xtransfers/toggle_pending'
-  get 'xtransfers/accounts'
+
   resources :zahras
   get 'user_manager_mappings/index'
   get 'user_manager_mappings/update'
@@ -397,7 +390,9 @@ resources :xpayments do
   end
 end
 
+resources :organizations
 
+resources :xaccounts
 
 
 
