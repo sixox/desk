@@ -115,297 +115,164 @@
 # end
 
 
-# db/seeds.rb
+# --------------------------------------------------
+# Xtransfer seed
+# --------------------------------------------------
 
-puts "Cleaning accounting test data..."
+# --------------------------------------------------
+# Xtransfer seed
+# --------------------------------------------------
 
-ExchangeTransfer.delete_all
-Exchange.delete_all
-Remittance.delete_all
-Xpayment.delete_all
-Xtransfer.delete_all
-Credit.delete_all
-Xaccount.delete_all
-Organization.delete_all
-Currency.delete_all
+puts "Clearing existing Xtransfer data..."
 
-puts "Creating currencies..."
+ActiveRecord::Base.transaction do
+  ExchangeTransfer.delete_all if defined?(ExchangeTransfer)
+  Xtransfer.delete_all
 
-usd = Currency.create!(name: "USD")
-eur = Currency.create!(name: "EUR")
-irr = Currency.create!(name: "IRR")
-gbp = Currency.create!(name: "GBP")
+  accounts = Xaccount.includes(:currency, :organization).to_a
 
-currencies = [usd, eur, irr, gbp]
-
-puts "Creating organizations..."
-
-organizations = [
-  Organization.create!(
-    name: "Alpha Trading",
-    kind: "Company",
-    start_amount: 50_000_000_000,
-    date_change_start_amount: Date.current - 1.year,
-    details_of_change_start_amount: "Initial company balance"
-    ),
-
-  Organization.create!(
-    name: "Beta Holdings",
-    kind: "Company",
-    start_amount: 30_000_000_000,
-    date_change_start_amount: Date.current - 8.months,
-    details_of_change_start_amount: "Capital increase"
-    ),
-
-  Organization.create!(
-    name: "Gamma Services",
-    kind: "Business",
-    start_amount: 15_000_000_000,
-    date_change_start_amount: Date.current - 6.months,
-    details_of_change_start_amount: "Initial balance"
-    ),
-
-  Organization.create!(
-    name: "Delta International",
-    kind: "Organization",
-    start_amount: 100_000_000_000,
-    date_change_start_amount: Date.current - 2.years,
-    details_of_change_start_amount: "Opening balance"
-    )
-]
-
-puts "Creating accounts..."
-
-accounts = []
-
-organizations.each do |organization|
-  currencies.sample(rand(2..4)).each do |currency|
-    accounts << Xaccount.create!(
-      number: Faker::Bank.account_number(digits: 16),
-      currency: currency,
-      kind: ["Bank", "Cash", "Current", "Savings"].sample,
-      organization: organization
-      )
-  end
-end
-
-puts "Created #{accounts.count} accounts."
-
-puts "Creating credits..."
-
-50.times do
-  account = accounts.sample
-
-  Credit.create!(
-    currency: account.currency,
-    amount: rand(100_000..5_000_000_000),
-    organization: account.organization,
-    xaccount_id: account.id
-    )
-end
-
-puts "Created #{Credit.count} credits."
-
-puts "Creating transfers..."
-
-30.times do
-  sender = accounts.sample
-  receiver = accounts.reject { |account| account.id == sender.id }.sample
-
-  sender_currency = sender.currency
-  receiver_currency = receiver.currency
-
-  sent_amount = rand(100_000..5_000_000_000)
-
-  exchange_rate =
-  if sender_currency.id == receiver_currency.id
-    1.0
-  else
-    rand(0.5..500.0).round(4)
+  if accounts.size < 4
+    raise "Need at least 4 existing Xaccounts to seed Xtransfers."
   end
 
-  receive_amount = (sent_amount * exchange_rate).round
-  pending = [true, false].sample
+  # --------------------------------------------------
+  # Find accounts with different currencies
+  # --------------------------------------------------
 
-  Xtransfer.create!(
-    sender_account: sender,
-    receiver_account: receiver,
-    sender_currency: sender_currency,
-    receiver_currency: receiver_currency,
-    sent_amount: sent_amount,
-    receive_amount: receive_amount,
-    exchange_rate: exchange_rate,
-    wage: rand(0..50_000_000),
-    status: pending ? "pending" : ["completed", "completed", "confirmed"].sample,
-    pending: pending,
-    pending_set_time: pending ? Faker::Time.between(
-      from: 30.days.ago,
-      to: Time.current
-      ) : nil
-    )
-end
+  account_pairs = []
 
-puts "Created #{Xtransfer.count} transfers."
-
-puts
-puts "================================"
-puts "Seed completed"
-puts "================================"
-puts "Currencies:     #{Currency.count}"
-puts "Organizations:  #{Organization.count}"
-puts "Accounts:       #{Xaccount.count}"
-puts "Credits:        #{Credit.count}"
-puts "Transfers:      #{Xtransfer.count}"
-puts "================================"
-
-
-
-puts "Creating exchanges..."
-
-50.times do
-  kind = Exchange.kinds.keys.sample
-
-  case kind
-
-  when "same_currency"
-    # Seller and buyer must have the same currency
-    available_currencies = currencies.select do |currency|
-      accounts.count { |account| account.currency_id == currency.id } >= 2
+  accounts.each do |sender|
+    receiver = accounts.find do |account|
+      account.id != sender.id &&
+        account.currency_id != sender.currency_id
     end
 
-    currency = available_currencies.sample
-
-    same_currency_accounts =
-    accounts.select do |account|
-      account.currency_id == currency.id
-    end
-
-    seller = same_currency_accounts.sample
-
-    buyer =
-    same_currency_accounts
-    .reject { |account| account.id == seller.id }
-    .sample
-
-    sell_currency = currency
-    buy_currency = currency
-    exchange_rate = 1.0
-
-
-  when "cross_currency", "currency_exchange"
-    # Seller account currency must match sell_currency
-    seller = accounts.sample
-    sell_currency = seller.currency
-
-    # Buyer account currency must match buy_currency
-    different_currency_accounts =
-    accounts
-    .reject do |account|
-      account.id == seller.id ||
-      account.currency_id == sell_currency.id
-    end
-
-    buyer = different_currency_accounts.sample
-
-    # Safety fallback
-    next if buyer.nil?
-
-    buy_currency = buyer.currency
-    exchange_rate = rand(0.5..500.0).round(5)
+    account_pairs << [sender, receiver] if receiver
   end
 
+  if account_pairs.empty?
+    raise "Need at least two Xaccounts with different currencies."
+  end
 
-  sell_amount = rand(100_000..5_000_000_000)
-  buy_amount = (sell_amount * exchange_rate).round
+  # Use up to 5 different sender/receiver combinations
+  account_pairs = account_pairs.first(5)
 
-  pending = [true, false].sample
+  # --------------------------------------------------
+  # Conversion examples
+  # --------------------------------------------------
 
+  examples = [
+    {
+      sender_amount: 1000,
+      sender_rate: 3.67,
+      receiver_rate: 3.863157895,
+      sender_charge: 0,
+      receiver_charge: 0,
+      status: "completed",
+      pending: false
+    },
+    {
+      sender_amount: 2500,
+      sender_rate: 1.08,
+      receiver_rate: 1.10,
+      sender_charge: 1.5,
+      receiver_charge: 0,
+      status: "completed",
+      pending: false
+    },
+    {
+      sender_amount: 5000,
+      sender_rate: 0.79,
+      receiver_rate: 0.80,
+      sender_charge: 0,
+      receiver_charge: 1,
+      status: "pending",
+      pending: true
+    },
+    {
+      sender_amount: 1200,
+      sender_rate: 7.15,
+      receiver_rate: 7.20,
+      sender_charge: 0.5,
+      receiver_charge: 0.5,
+      status: "completed",
+      pending: false
+    },
+    {
+      sender_amount: 8000,
+      sender_rate: 3.67,
+      receiver_rate: 3.85,
+      sender_charge: 0,
+      receiver_charge: 0.75,
+      status: "completed",
+      pending: false
+    }
+  ]
 
-  exchange = Exchange.create!(
-    seller_account: seller,
-    buyer_account: buyer,
+  # --------------------------------------------------
+  # Create transfers
+  # --------------------------------------------------
 
-    # Always matches account currencies
-    sell_currency: sell_currency,
-    buy_currency: buy_currency,
+  account_pairs.each_with_index do |(sender_account, receiver_account), index|
 
-    sell_amount: sell_amount,
-    buy_amount: buy_amount,
-    exchange_rate: exchange_rate,
-    wage: rand(0..50_000_000),
-    kind: kind,
-    pending: pending,
-    pending_set_time: pending ? Faker::Time.between(
-      from: 30.days.ago,
-      to: Time.current
-      ) : nil
+    data = examples[index]
+
+    sender_amount = data[:sender_amount].to_d
+    sender_rate = data[:sender_rate].to_d
+    receiver_rate = data[:receiver_rate].to_d
+
+    # Sender:
+    # sender_amount × sender_rate = sender_amount_to
+    sender_amount_to = sender_amount * sender_rate
+
+    # Receiver amount is exactly the sender conversion result
+    receiver_amount = sender_amount_to
+
+    # Receiver:
+    # receiver_amount ÷ receiver_rate = receiver_amount_to
+    receiver_amount_to = receiver_amount / receiver_rate
+
+    sender_charge = data[:sender_charge].to_d
+    receiver_charge = data[:receiver_charge].to_d
+
+    sender_total =
+      sender_amount + (sender_amount * sender_charge / 100)
+
+    receiver_total =
+      receiver_amount + (receiver_amount * receiver_charge / 100)
+
+    Xtransfer.create!(
+      sender_account: sender_account,
+      receiver_account: receiver_account,
+
+      sender_currency: sender_account.currency,
+      receiver_currency: receiver_account.currency,
+
+      # Destination currencies are the opposite account currencies
+      sender_to_currency: receiver_account.currency,
+      receiver_to_currency: sender_account.currency,
+
+      sender_amount: sender_amount,
+      sender_exchange_rate: sender_rate,
+      sender_amount_to: sender_amount_to,
+
+      receiver_amount: receiver_amount,
+      receiver_exchange_rate: receiver_rate,
+      receiver_amount_to: receiver_amount_to,
+
+      sender_charge: sender_charge,
+      receiver_charge: receiver_charge,
+
+      sender_total: sender_total,
+      receiver_total: receiver_total,
+
+      status: data[:status],
+      pending: data[:pending]
     )
-
-
-  Xtransfer
-  .where(status: "finished")
-  .order("RANDOM()")
-  .limit(rand(0..3))
-  .each do |transfer|
-
-    ExchangeTransfer.create!(
-      exchange: exchange,
-      xtransfer: transfer
-      )
   end
 end
 
-puts "Created #{Exchange.count} exchanges."
-puts "Creating remittances..."
-
-30.times do
-  sender_account = accounts.sample
-
-  receiver_account =
-  accounts
-  .reject { |account| account.id == sender_account.id }
-  .sample
-
-  currency = currencies.sample
-
-  sent_amount = rand(100_000..5_000_000_000)
-
-  Remittance.create!(
-    sender_account: sender_account,
-    receiver_account: receiver_account,
-    currency: currency,
-    sent_amount: sent_amount,
-    received_amount: rand(
-      (sent_amount * 0.8).to_i..
-      (sent_amount * 1.2).to_i
-      )
-    )
-end
-
-puts "Created #{Remittance.count} remittances."
-
-
-puts "Creating payments..."
-
-30.times do
-  sender_account = accounts.sample
-
-  receiver_account =
-    accounts
-      .reject { |account| account.id == sender_account.id }
-      .sample
-
-  Xpayment.create!(
-    sender_account: sender_account,
-    receiver_account: receiver_account,
-    currency: currencies.sample,
-    sent_amount: rand(1_000_000..500_000_000),
-    received_amount: rand(1_000_000..500_000_000),
-    wage: rand(0..500_000_000)
-  )
-end
-
-puts "Created #{Xpayment.count} payments."
-Credit.delete_all
-
-
+puts "----------------------------------------"
+puts "Xtransfer seed completed!"
+puts "Xtransfers: #{Xtransfer.count}"
+puts "----------------------------------------"

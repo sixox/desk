@@ -59,6 +59,9 @@ class CommentsController < ApplicationController
     elsif params[:report_id]
       @commentable = Report.find(params[:report_id])
       @check = false
+    elsif params[:xtransfer_id]
+      @commentable = Xtransfer.find(params[:xtransfer_id])
+      @check = false
     elsif params[:message_id]
       @commentable = Message.find(params[:message_id])
       @check = true

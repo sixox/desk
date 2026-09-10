@@ -1,0 +1,843 @@
+ <!-- ================================================== -->
+            <!-- TRANSFER CARD -->
+            <!-- ================================================== -->
+
+            <article
+              id="<%= dom_id(transfer) %>"
+              class="xt-transfer-card <%= 'is-pending' if transfer.pending? %>"
+            >
+
+              <!-- ================================================= -->
+              <!-- CARD HEADER -->
+              <!-- ================================================= -->
+
+              <div class="xt-transfer-card-header">
+
+                <div class="xt-transfer-meta">
+
+                  <div class="xt-transfer-id">
+                    <span class="xt-transfer-id-icon">
+                      <i class="bi bi-receipt"></i>
+                    </span>
+
+                    <strong>
+                      Transfer #<%= transfer.id %>
+                    </strong>
+                  </div>
+
+
+                  <span class="xt-transfer-date">
+                    <i class="bi bi-calendar3"></i>
+
+                    <%= transfer.created_at.strftime("%d %b %Y") %>
+
+                    <span class="xt-date-separator">
+                      •
+                    </span>
+
+                    <%= transfer.created_at.strftime("%H:%M") %>
+                  </span>
+
+                </div>
+
+
+                <div class="xt-transfer-header-right">
+
+                  <!-- STATUS -->
+
+                  <% status = transfer.status.to_s.downcase %>
+
+                  <%
+                  status_class =
+                  case status
+                  when "completed"
+                    "xt-status-completed"
+                  when "cancelled"
+                    "xt-status-cancelled"
+                  else
+                    "xt-status-default"
+                  end
+
+                  status_label =
+                  case status
+                  when "completed"
+                    "Completed"
+                  when "cancelled"
+                    "Cancelled"
+                  when "pending"
+                    "Pending"
+                  when ""
+                    "No status"
+                  else
+                    transfer.status.to_s
+                  end
+                %>
+
+                <span class="xt-status-badge <%= status_class %>">
+                  <span class="xt-status-dot"></span>
+                  <%= status_label %>
+                </span>
+
+
+                <!-- PENDING -->
+
+                <% if transfer.pending? %>
+
+                <span class="xt-pending-badge">
+                  <i class="bi bi-clock"></i>
+                  Pending
+                </span>
+
+                <% end %>
+
+              </div>
+
+              </div>
+
+
+              <!-- ================================================= -->
+              <!-- MAIN TRANSFER -->
+              <!-- ================================================= -->
+
+              <div class="xt-transfer-main">
+
+                <!-- ================================================= -->
+                <!-- SENDER -->
+                <!-- ================================================= -->
+
+                <div class="xt-transfer-party xt-transfer-sender">
+
+                  <div class="xt-party-top">
+
+                    <div class="xt-party-direction xt-direction-sender">
+                      <i class="bi bi-arrow-up-right"></i>
+                    </div>
+
+                    <span class="xt-party-label">
+                      Sender
+                    </span>
+
+                  </div>
+
+
+                  <div
+                    class="xt-party-organization"
+                    title="<%= transfer.sender_account.organization.name %>"
+                  >
+                    <%= transfer.sender_account.organization.name %>
+                  </div>
+
+
+                  <div
+                    class="xt-party-account"
+                    title="<%= transfer.sender_account.number %>"
+                  >
+                    <i class="bi bi-credit-card-2-front"></i>
+
+                    <%= transfer.sender_account.number %>
+                  </div>
+
+
+                  <div class="xt-party-amount xt-amount-sender">
+
+                    <span>
+                      <%= number_with_delimiter(transfer.sender_amount) %>
+                    </span>
+
+                    <small>
+                      <%= transfer.sender_currency&.name || "—" %>
+                    </small>
+
+                  </div>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- TRANSFER FLOW -->
+                <!-- ================================================= -->
+
+                <div class="xt-transfer-flow">
+
+                  <div class="xt-flow-line"></div>
+
+                  <div class="xt-flow-icon">
+                    <i class="bi bi-arrow-right"></i>
+                  </div>
+
+                  <div class="xt-flow-line"></div>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- RECEIVER -->
+                <!-- ================================================= -->
+
+                <div class="xt-transfer-party xt-transfer-receiver">
+
+                  <div class="xt-party-top">
+
+                    <div class="xt-party-direction xt-direction-receiver">
+                      <i class="bi bi-arrow-down-left"></i>
+                    </div>
+
+                    <span class="xt-party-label">
+                      Receiver
+                    </span>
+
+                  </div>
+
+
+                  <div
+                    class="xt-party-organization"
+                    title="<%= transfer.receiver_account.organization.name %>"
+                  >
+                    <%= transfer.receiver_account.organization.name %>
+                  </div>
+
+
+                  <div
+                    class="xt-party-account"
+                    title="<%= transfer.receiver_account.number %>"
+                  >
+                    <i class="bi bi-credit-card-2-front"></i>
+
+                    <%= transfer.receiver_account.number %>
+                  </div>
+
+
+                  <div class="xt-party-amount xt-amount-receiver">
+
+                    <span>
+                      <%= number_with_delimiter(transfer.receiver_amount) %>
+                    </span>
+
+                    <small>
+                      <%= transfer.receiver_currency&.name || "—" %>
+                    </small>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- ================================================= -->
+              <!-- QUICK INFORMATION -->
+              <!-- ================================================= -->
+
+              <div class="xt-transfer-quick-info">
+
+                <!-- SENDER TOTAL -->
+
+                <div class="xt-quick-item">
+
+                  <span class="xt-quick-label">
+                    Sender total
+                  </span>
+
+                  <strong>
+                    <%= number_with_delimiter(transfer.sender_total) %>
+                    <small>
+                      <%= transfer.sender_currency&.name || "" %>
+                    </small>
+                  </strong>
+
+                </div>
+
+
+                <!-- RECEIVER TOTAL -->
+
+                <div class="xt-quick-item">
+
+                  <span class="xt-quick-label">
+                    Receiver total
+                  </span>
+
+                  <strong>
+                    <%= number_with_delimiter(transfer.receiver_total) %>
+                    <small>
+                      <%= transfer.receiver_currency&.name || "" %>
+                    </small>
+                  </strong>
+
+                </div>
+
+
+                <!-- EXCHANGE -->
+
+                <div class="xt-quick-item">
+
+                  <span class="xt-quick-label">
+                    Conversion
+                  </span>
+
+                  <strong class="xt-conversion-summary">
+
+                    <% if transfer.sender_exchange_rate.present? %>
+
+                      <%= transfer.sender_exchange_rate %>
+
+                      <span>
+                        <%= transfer.sender_currency&.name %>
+                        →
+                        <%= transfer.sender_to_currency&.name %>
+                      </span>
+
+                    <% else %>
+
+                      <span class="xt-no-conversion">
+                        No conversion
+                      </span>
+
+                    <% end %>
+
+                  </strong>
+
+                </div>
+
+
+                <!-- EXCHANGES -->
+
+                <div class="xt-quick-item">
+
+                  <span class="xt-quick-label">
+                    Related exchanges
+                  </span>
+
+                  <strong>
+
+                    <% if transfer.exchanges.any? %>
+
+                      <span class="xt-count-badge">
+                        <%= transfer.exchanges.count %>
+                      </span>
+
+                    <% else %>
+
+                      <span class="xt-no-data">
+                        None
+                      </span>
+
+                    <% end %>
+
+                  </strong>
+
+                </div>
+
+
+                <!-- DOCUMENTS -->
+
+                <div class="xt-quick-item">
+
+                  <span class="xt-quick-label">
+                    Documents
+                  </span>
+
+                  <strong>
+
+                    <% if transfer.documents.attached? %>
+
+                      <span class="xt-count-badge xt-count-files">
+                        <i class="bi bi-paperclip"></i>
+                        <%= transfer.documents.count %>
+                      </span>
+
+                    <% else %>
+
+                      <span class="xt-no-data">
+                        None
+                      </span>
+
+                    <% end %>
+
+                  </strong>
+
+                </div>
+
+              </div>
+
+
+              <!-- ================================================= -->
+              <!-- SHOW MORE -->
+              <!-- ================================================= -->
+
+              <details class="xt-transfer-details"    <%= action_name == 'show' ? "open" : "" %> >
+
+                <summary class="xt-details-summary">
+
+                  <span>
+                    <i class="bi bi-sliders2"></i>
+                    Transfer details
+                  </span>
+
+                  <i class="bi bi-chevron-down xt-details-chevron"></i>
+
+                </summary>
+
+
+                <div class="xt-details-content">
+
+                  <!-- ============================================= -->
+                  <!-- CONVERSION DETAILS -->
+                  <!-- ============================================= -->
+
+                  <div class="xt-details-section">
+
+                    <div class="xt-details-section-title">
+                      <i class="bi bi-arrow-repeat"></i>
+                      Currency Conversion
+                    </div>
+
+
+                    <div class="xt-conversion-grid">
+
+                      <!-- SENDER CONVERSION -->
+
+                      <div class="xt-conversion-card">
+
+                        <div class="xt-conversion-card-header">
+                          <span>
+                            Sender
+                          </span>
+
+                          <i class="bi bi-arrow-right"></i>
+                        </div>
+
+
+                        <div class="xt-conversion-values">
+
+                          <div>
+                            <small>
+                              Original
+                            </small>
+
+                            <strong>
+                              <%= number_with_delimiter(transfer.sender_amount) %>
+                              <%= transfer.sender_currency&.name || "—" %>
+                            </strong>
+                          </div>
+
+
+                          <div class="xt-conversion-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                          </div>
+
+
+                          <div>
+                            <small>
+                              Converted
+                            </small>
+
+                            <strong class="text-success">
+                              <%= number_with_delimiter(transfer.sender_amount_to) %>
+                              <%= transfer.sender_to_currency&.name || transfer.sender_currency&.name || "—" %>
+                            </strong>
+                          </div>
+
+                        </div>
+
+
+                        <div class="xt-conversion-rate">
+
+                          <span>
+                            Exchange rate
+                          </span>
+
+                          <strong>
+                            <%= transfer.sender_exchange_rate.presence || "—" %>
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+
+                      <!-- RECEIVER CONVERSION -->
+
+                      <div class="xt-conversion-card">
+
+                        <div class="xt-conversion-card-header">
+                          <span>
+                            Receiver
+                          </span>
+
+                          <i class="bi bi-arrow-right"></i>
+                        </div>
+
+
+                        <div class="xt-conversion-values">
+
+                          <div>
+                            <small>
+                              Original
+                            </small>
+
+                            <strong>
+                              <%= number_with_delimiter(transfer.receiver_amount) %>
+                              <%= transfer.receiver_currency&.name || "—" %>
+                            </strong>
+                          </div>
+
+
+                          <div class="xt-conversion-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                          </div>
+
+
+                          <div>
+                            <small>
+                              Converted
+                            </small>
+
+                            <strong class="text-primary">
+                              <%= number_with_delimiter(transfer.receiver_amount_to) %>
+                              <%= transfer.receiver_to_currency&.name || transfer.receiver_currency&.name || "—" %>
+                            </strong>
+                          </div>
+
+                        </div>
+
+
+                        <div class="xt-conversion-rate">
+
+                          <span>
+                            Exchange rate
+                          </span>
+
+                          <strong>
+                            <%= transfer.receiver_exchange_rate.presence || "—" %>
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- ============================================= -->
+                  <!-- CHARGES -->
+                  <!-- ============================================= -->
+
+                  <div class="xt-details-section">
+
+                    <div class="xt-details-section-title">
+                      <i class="bi bi-receipt"></i>
+                      Charges & Totals
+                    </div>
+
+
+                    <div class="xt-financial-grid">
+
+                      <!-- SENDER -->
+
+                      <div class="xt-financial-card">
+
+                        <div class="xt-financial-title">
+                          Sender
+                        </div>
+
+                        <div class="xt-financial-row">
+                          <span>
+                            Amount
+                          </span>
+
+                          <strong>
+                            <%= number_with_delimiter(transfer.sender_amount) %>
+                            <%= transfer.sender_currency&.name || "" %>
+                          </strong>
+                        </div>
+
+
+                        <div class="xt-financial-row">
+                          <span>
+                            Charge
+                          </span>
+
+                          <strong>
+                            <%= number_with_delimiter(transfer.sender_charge) %>
+                          </strong>
+                        </div>
+
+
+                        <div class="xt-financial-total">
+                          <span>
+                            Total
+                          </span>
+
+                          <strong>
+                            <%= number_with_delimiter(transfer.sender_total) %>
+                            <%= transfer.sender_currency&.name || "" %>
+                          </strong>
+                        </div>
+
+                      </div>
+
+
+                      <!-- RECEIVER -->
+
+                      <div class="xt-financial-card">
+
+                        <div class="xt-financial-title">
+                          Receiver
+                        </div>
+
+                        <div class="xt-financial-row">
+                          <span>
+                            Amount
+                          </span>
+
+                          <strong>
+                            <%= number_with_delimiter(transfer.receiver_amount) %>
+                            <%= transfer.receiver_currency&.name || "" %>
+                          </strong>
+                        </div>
+
+
+                        <div class="xt-financial-row">
+                          <span>
+                            Charge
+                          </span>
+
+                          <strong>
+                            <%= number_with_delimiter(transfer.receiver_charge) %>
+                          </strong>
+                        </div>
+
+
+                        <div class="xt-financial-total">
+                          <span>
+                            Total
+                          </span>
+
+                          <strong>
+                            <%= number_with_delimiter(transfer.receiver_total) %>
+                            <%= transfer.receiver_currency&.name || "" %>
+                          </strong>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- ============================================= -->
+                  <!-- RELATED EXCHANGES -->
+                  <!-- ============================================= -->
+
+                  <div class="xt-details-section">
+
+                    <div class="xt-details-section-title">
+                      <i class="bi bi-link-45deg"></i>
+                      Related Exchanges
+                    </div>
+
+
+                    <% if transfer.exchanges.any? %>
+
+                      <div class="xt-exchange-list">
+
+                        <% transfer.exchanges.each do |exchange| %>
+
+                          <%= link_to exchange_path(exchange),
+                              data: { turbo_stream: true },
+                              class: "xt-exchange-chip" do %>
+
+                            <span class="xt-exchange-chip-id">
+                              #<%= exchange.id %>
+                            </span>
+
+                            <span>
+                              <%= exchange.sell_currency.name %>
+                            </span>
+
+                            <i class="bi bi-arrow-right"></i>
+
+                            <span>
+                              <%= exchange.buy_currency.name %>
+                            </span>
+
+                            <i class="bi bi-chevron-right"></i>
+
+                          <% end %>
+
+                        <% end %>
+
+                      </div>
+
+                    <% else %>
+
+                      <div class="xt-details-empty">
+                        <i class="bi bi-link-45deg"></i>
+                        No related exchanges
+                      </div>
+
+                    <% end %>
+
+                  </div>
+
+
+                  <!-- ============================================= -->
+                  <!-- DOCUMENTS -->
+                  <!-- ============================================= -->
+
+                  <div class="xt-details-section">
+
+                    <div class="xt-details-section-title">
+                      <i class="bi bi-paperclip"></i>
+                      Attachments
+                    </div>
+
+
+                    <% if transfer.documents.attached? %>
+
+                      <div class="xt-document-list">
+
+                        <% transfer.documents.each do |document| %>
+
+                          <%= link_to(
+                                rails_blob_path(
+                                  document,
+                                  disposition: "attachment"
+                                ),
+                                target: "_blank",
+                                class: "xt-document-item"
+                              ) do %>
+
+                            <span class="xt-document-icon">
+                              <i class="bi bi-file-earmark-text"></i>
+                            </span>
+
+                            <span class="xt-document-info">
+
+                              <strong
+                                title="<%= document.filename.to_s %>"
+                              >
+                                <%= document.filename.to_s %>
+                              </strong>
+
+                              <small>
+                                <%= number_to_human_size(document.byte_size) %>
+                              </small>
+
+                            </span>
+
+                            <i class="bi bi-box-arrow-up-right xt-document-open"></i>
+
+                          <% end %>
+
+                        <% end %>
+
+                      </div>
+
+                    <% else %>
+
+                      <div class="xt-details-empty">
+                        <i class="bi bi-paperclip"></i>
+                        No attachments
+                      </div>
+
+                    <% end %>
+
+                  </div>
+
+                </div>
+
+              </details>
+
+
+              <!-- ================================================= -->
+              <!-- CARD FOOTER -->
+              <!-- ================================================= -->
+
+              <div class="xt-transfer-card-footer">
+
+                <div class="xt-footer-left">
+
+                  <% if transfer.pending? %>
+
+                    <%= button_to(
+                      toggle_pending_xtransfer_path(transfer),
+                      method: :patch,
+                      class: "xt-pending-toggle is-pending",
+                      title: "Click to unset pending"
+                    ) do %>
+
+                      <span class="xt-pending-dot"></span>
+
+                      <span>
+                        Pending
+                      </span>
+
+                    <% end %>
+
+                  <% else %>
+
+                    <%= button_to(
+                      toggle_pending_xtransfer_path(transfer),
+                      method: :patch,
+                      class: "xt-pending-toggle is-not-pending",
+                      title: "Click to set pending"
+                    ) do %>
+
+                      <span class="xt-pending-dot"></span>
+
+                      <span>
+                        Mark pending
+                      </span>
+
+                    <% end %>
+
+                  <% end %>
+
+                </div>
+
+
+                <div class="xt-card-actions">
+
+                  <%= link_to edit_xtransfer_path(transfer),
+                      data: { controller: "bs-modal-form" },
+                      class: "xt-card-action xt-card-action-edit",
+                      title: "Edit transfer" do %>
+
+                    <i class="bi bi-pencil"></i>
+
+                    <span>
+                      Edit
+                    </span>
+
+                  <% end %>
+
+
+                  <%= button_to(
+                    xtransfer_path(transfer),
+                    method: :delete,
+                    class: "xt-card-action xt-card-action-delete",
+                    title: "Delete transfer",
+                    form: {
+                      data: {
+                        turbo_confirm: "Delete transfer ##{transfer.id}?"
+                      }
+                    }
+                  ) do %>
+
+                    <i class="bi bi-trash3"></i>
+
+                    <span>
+                      Delete
+                    </span>
+
+                  <% end %>
+
+                </div>
+
+              </div>
+
+            </article>

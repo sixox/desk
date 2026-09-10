@@ -1,587 +1,1027 @@
 <div data-controller="xtransfer" class="xt-form">
 
-  <%= form_for @xtransfer, html: { multipart: true } do |form| %>
+<%= form_for @xtransfer, html: { multipart: true } do |form| %>
 
-    <div class="modal-body p-3 p-md-4">
+<div class="modal-body p-3 p-md-4">
 
-      <% if @xtransfer.errors.any? %>
-        <div class="xt-error">
-          <div class="xt-error-title">
-            <i class="bi bi-exclamation-circle"></i>
-            <%= pluralize(@xtransfer.errors.count, "error") %>
-            prohibited this transfer from being saved.
-          </div>
+  <% if @xtransfer.errors.any? %>
 
-          <ul>
-            <% @xtransfer.errors.each do |error| %>
-              <li><%= error.full_message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+    <div class="xt-error">
+
+      <div class="xt-error-title">
+        <i class="bi bi-exclamation-circle"></i>
+
+        <%= pluralize(@xtransfer.errors.count, "error") %>
+        prohibited this transfer from being saved.
+      </div>
+
+      <ul>
+        <% @xtransfer.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+
+    </div>
+
+  <% end %>
 
 
-      <!-- HEADER -->
+  <!-- ===================================================== -->
+  <!-- HEADER -->
+  <!-- ===================================================== -->
 
-      <div class="xt-form-header">
+  <div class="xt-form-header">
+
+    <div class="xt-form-title-wrap">
+
+      <span class="xt-form-title-icon">
+        <i class="bi bi-arrow-left-right"></i>
+      </span>
+
+      <div>
+
         <h4 class="xt-form-title">
-          <span class="xt-form-title-icon">
-            <i class="bi bi-arrow-left-right"></i>
-          </span>
-
           <%= @xtransfer.new_record? ? "Create Transfer" : "Edit Transfer" %>
         </h4>
+
+        <div class="xt-form-subtitle">
+          Convert currency and calculate the final transfer totals
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="xt-header-right">
+
+      <!-- PENDING SWITCH -->
+
+      <div class="xt-header-pending">
+
+        <span class="xt-header-pending-label">
+          Pending
+        </span>
+
+        <div class="form-check form-switch xt-pending-switch">
+
+          <%= form.check_box(
+            :pending,
+            class: "form-check-input"
+          ) %>
+
+        </div>
+
       </div>
 
 
-      <!-- TRANSFER PARTIES -->
+      <!-- STATUS -->
 
-      <div class="row g-3">
+      <div class="xt-status-selector">
 
-        <!-- SENDER -->
+        <%= form.radio_button(
+          :status,
+          "completed",
+          id: "xtransfer_status_completed",
+          class: "xt-status-radio"
+        ) %>
 
-        <div class="col-lg-6">
-          <div class="xt-party-panel xt-sender-panel">
+        <%= form.label(
+          :status_completed,
+          "Completed",
+          class: "xt-status-option"
+        ) %>
 
-            <div class="xt-party-header">
-              <div class="xt-party-icon">
-                <i class="bi bi-box-arrow-up-right"></i>
-              </div>
 
-              <div>
-                <div class="xt-party-title">
-                  Sender
-                </div>
-              </div>
+        <%= form.radio_button(
+          :status,
+          "cancelled",
+          id: "xtransfer_status_cancelled",
+          class: "xt-status-radio"
+        ) %>
+
+        <%= form.label(
+          :status_cancelled,
+          "Cancelled",
+          class: "xt-status-option"
+        ) %>
+
+      </div>
+
+
+      <!-- ID -->
+
+      <% if @xtransfer.persisted? %>
+
+        <div class="xt-header-id">
+          #<%= @xtransfer.id %>
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- SENDER / RECEIVER -->
+  <!-- ===================================================== -->
+
+  <div class="row g-3">
+
+
+    <!-- =================================================== -->
+    <!-- SENDER -->
+    <!-- =================================================== -->
+
+    <div class="col-12 col-xl-6">
+
+      <div class="xt-party-panel xt-sender-panel">
+
+
+        <!-- SENDER HEADER -->
+
+        <div class="xt-party-header">
+
+          <div class="xt-party-icon">
+            <i class="bi bi-box-arrow-up-right"></i>
+          </div>
+
+          <div>
+
+            <div class="xt-party-title">
+              Sender
             </div>
 
-            <div class="xt-party-body">
 
-              <!-- Sender Organization -->
+
+          </div>
+
+        </div>
+
+
+        <!-- SENDER BODY -->
+
+        <div class="xt-party-body">
+
+
+          <!-- ORGANIZATION -->
+        <div class="row">
+          <div class="col-4">
+          <div class="xt-field">
+
+            <label class="xt-label">
+              Organization
+              <span class="xt-required">*</span>
+            </label>
+
+            <%= select_tag(
+              :sender_organization_id,
+              options_from_collection_for_select(
+                @organizations || Organization.all,
+                :id,
+                :name,
+                @xtransfer.sender_account&.organization_id
+              ),
+              prompt: "Select organization",
+              class: "form-select",
+              data: {
+                xtransfer_target: "senderOrganization",
+                action: "change->xtransfer#loadSenderAccounts"
+              }
+            ) %>
+
+          </div>
+          </div>
+
+
+          <!-- ACCOUNT -->
+          <div class="col-8">
+          <div class="xt-field">
+
+            <label class="xt-label">
+              Account
+              <span class="xt-required">*</span>
+            </label>
+
+            <%= form.collection_select(
+              :sender_account_id,
+              @sender_accounts || [],
+              :id,
+              ->(account) {
+                "#{account.number} - #{account.currency.name}"
+              },
+              { prompt: "Select account" },
+              {
+                class: "form-select",
+                data: {
+                  xtransfer_target: "senderAccount",
+                  action: "change->xtransfer#setSenderCurrency"
+                }
+              }
+            ) %>
+
+          </div>
+          </div>
+        </div>
+
+
+          <!-- AMOUNT / CURRENCY -->
+
+          <div class="row g-2">
+
+            <!-- AMOUNT -->
+
+            <div class="col-7">
 
               <div class="xt-field">
+
                 <label class="xt-label">
-                  Organization
-                  <span class="xt-required">*</span>
-                </label>
-
-                <%= select_tag(
-                  :sender_organization_id,
-                  options_from_collection_for_select(
-                    @organizations,
-                    :id,
-                    :name,
-                    @xtransfer.sender_account&.organization_id
-                  ),
-                  prompt: "Select organization",
-                  class: "form-select",
-                  data: {
-                    xtransfer_target: "senderOrganization",
-                    action: "change->xtransfer#loadSenderAccounts"
-                  }
-                ) %>
-              </div>
-
-
-              <!-- Sender Account -->
-
-              <div class="xt-field">
-                <label class="xt-label">
-                  Account
-                  <span class="xt-required">*</span>
-                </label>
-
-                <%= select_tag(
-                  "xtransfer[sender_account_id]",
-                  options_from_collection_for_select(
-                    @sender_accounts,
-                    :id,
-                    ->(account) {
-                      "#{account.number} - #{account.currency.name}"
-                    },
-                    @xtransfer.sender_account_id
-                  ),
-                  prompt: "Select account",
-                  class: "form-select",
-                  data: {
-                    xtransfer_target: "senderAccount"
-                  }
-                ) %>
-              </div>
-
-
-              <!-- Sender Currency -->
-
-              <!-- Sender Amount -->
-
-              <div class="xt-field">
-                <label class="xt-label">
-                  Sent Amount
+                  Amount
                   <span class="xt-required">*</span>
                 </label>
 
                 <div class="input-group">
+
                   <span class="input-group-text">
                     <i class="bi bi-cash-stack"></i>
                   </span>
 
                   <%= form.number_field(
-                    :sent_amount,
+                    :sender_amount,
                     class: "form-control",
-                    placeholder: "0",
-                    step: "any"
+                    placeholder: "1234",
+                    step: "1",
+                    min: "0",
+                    data: {
+                      xtransfer_target: "senderAmount",
+                      action: "input->xtransfer#updateSenderConversion"
+                    }
                   ) %>
+
                 </div>
+
               </div>
 
             </div>
+
+
+            <!-- CURRENCY -->
+
+            <div class="col-5">
+
+              <div class="xt-field">
+
+                <label class="xt-label">
+                  Currency
+                </label>
+
+                <%= form.collection_select(
+                  :sender_currency_id,
+                  @currencies || Currency.all,
+                  :id,
+                  :name,
+                  { prompt: "Currency" },
+                  {
+                    class: "form-select xt-auto-field",
+                    data: {
+                      xtransfer_target: "senderCurrency",
+                      action: "change->xtransfer#senderCurrencyChanged"
+                    }
+                  }
+                ) %>
+
+              </div>
+
+            </div>
+
           </div>
+
+
+          <!-- ================================================= -->
+          <!-- SENDER CONVERSION -->
+          <!-- ================================================= -->
+
+         <div class="xt-conversion-box">
+
+  <div class="row g-2">
+
+    <!-- RATE -->
+    <div class="col-5">
+
+      <div class="xt-field">
+
+        <label class="xt-label">
+          Exchange Rate
+        </label>
+
+        <div class="input-group">
+
+          <span class="input-group-text">
+            <i class="bi bi-arrow-repeat"></i>
+          </span>
+
+          <%= form.number_field(
+            :sender_exchange_rate,
+            class: "form-control",
+            placeholder: "1",
+            step: "0.001",
+            min: "0",
+            data: {
+              xtransfer_target: "senderExchangeRate",
+              action: "input->xtransfer#updateSenderConversion"
+            }
+          ) %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- TO CURRENCY -->
+    <div class="col-3">
+
+      <div class="xt-field">
+
+        <label class="xt-label">
+          To Currency
+        </label>
+
+        <%= form.collection_select(
+          :sender_to_currency_id,
+          @currencies || Currency.all,
+          :id,
+          :name,
+          { prompt: "Currency" },
+          {
+            class: "form-select xt-auto-field",
+            data: {
+              xtransfer_target: "senderToCurrency",
+              action: "change->xtransfer#senderToCurrencyChanged"
+            }
+          }
+        ) %>
+
+      </div>
+
+    </div>
+
+
+    <!-- RESULT -->
+    <div class="col-4" style="margin-top: 31px;">
+
+      <%= form.number_field(
+        :sender_amount_to,
+        class: "form-control xt-calculated-field",
+        readonly: true,
+        tabindex: "-1",
+        step: "1",
+        data: {
+          xtransfer_target: "senderAmountTo"
+        }
+      ) %>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+          <!-- ================================================= -->
+          <!-- SENDER CHARGE / TOTAL -->
+          <!-- ================================================= -->
+
+         <div class="xt-total-section">
+
+  <div class="xt-total-fields">
+
+    <!-- CHARGE -->
+
+    <div class="xt-field xt-charge-field">
+
+      <label class="xt-label">
+        Charge
+      </label>
+
+      <%= form.number_field(
+        :sender_charge,
+        class: "form-control xt-charge-input",
+        placeholder: "0",
+        step: "1",
+        min: "0",
+        data: {
+          xtransfer_target: "senderCharge",
+          action: "input->xtransfer#updateSenderTotal"
+        }
+      ) %>
+
+    </div>
+
+
+    <!-- TOTAL -->
+
+    <div class="xt-total-display">
+
+      <span class="xt-total-display-label">
+        Sender Total
+      </span>
+
+      <strong
+        class="xt-total-display-value"
+        data-xtransfer-target="senderTotal">
+        <%= @xtransfer.sender_total || 0 %>
+      </strong>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================== -->
+    <!-- RECEIVER -->
+    <!-- =================================================== -->
+
+    <div class="col-12 col-xl-6">
+
+      <div class="xt-party-panel xt-receiver-panel">
+
+
+        <!-- RECEIVER HEADER -->
+
+        <div class="xt-party-header">
+
+          <div class="xt-party-icon">
+            <i class="bi bi-box-arrow-in-down-left"></i>
+          </div>
+
+          <div>
+
+            <div class="xt-party-title">
+              Receiver
+            </div>
+
+
+
+          </div>
+
         </div>
 
 
-        <!-- RECEIVER -->
+        <!-- RECEIVER BODY -->
 
-        <div class="col-lg-6">
-          <div class="xt-party-panel xt-receiver-panel">
+        <div class="xt-party-body">
 
-            <div class="xt-party-header">
-              <div class="xt-party-icon">
-                <i class="bi bi-box-arrow-in-down-left"></i>
-              </div>
 
-              <div>
-                <div class="xt-party-title">
-                  Receiver
-                </div>
-              </div>
-            </div>
+          <!-- ORGANIZATION -->
+          <div class="row">
+            <div class="col-4">
+             <div class="xt-field">
 
-            <div class="xt-party-body">
+              <label class="xt-label">
+                Organization
+                <span class="xt-required">*</span>
+              </label>
 
-              <!-- Receiver Organization -->
-
-              <div class="xt-field">
-                <label class="xt-label">
-                  Organization
-                  <span class="xt-required">*</span>
-                </label>
-
-                <%= select_tag(
-                  :receiver_organization_id,
-                  options_from_collection_for_select(
-                    @organizations,
-                    :id,
-                    :name,
-                    @xtransfer.receiver_account&.organization_id
+              <%= select_tag(
+                :receiver_organization_id,
+                options_from_collection_for_select(
+                  @organizations || Organization.all,
+                  :id,
+                  :name,
+                  @xtransfer.receiver_account&.organization_id
                   ),
-                  prompt: "Select organization",
-                  class: "form-select",
+                prompt: "Select organization",
+                class: "form-select",
                   data: {
                     xtransfer_target: "receiverOrganization",
                     action: "change->xtransfer#loadReceiverAccounts"
                   }
-                ) %>
+                  ) %>
+
+                </div>
               </div>
+              <div class="col-8">
+               <div class="xt-field">
 
-
-              <!-- Receiver Account -->
-
-              <div class="xt-field">
                 <label class="xt-label">
                   Account
                   <span class="xt-required">*</span>
                 </label>
 
-                <%= select_tag(
-                  "xtransfer[receiver_account_id]",
-                  options_from_collection_for_select(
-                    @receiver_accounts,
-                    :id,
-                    ->(account) {
-                      "#{account.number} - #{account.currency.name}"
-                    },
-                    @xtransfer.receiver_account_id
-                  ),
-                  prompt: "Select account",
-                  class: "form-select",
-                  data: {
-                    xtransfer_target: "receiverAccount"
-                  }
-                ) %>
+                <%= form.collection_select(
+                  :receiver_account_id,
+                  @receiver_accounts || [],
+                  :id,
+                  ->(account) {
+                    "#{account.number} - #{account.currency.name}"
+                  },
+                  { prompt: "Select account" },
+                  {
+                    class: "form-select",
+                      data: {
+                        xtransfer_target: "receiverAccount",
+                        action: "change->xtransfer#setReceiverCurrency"
+                      }
+                    }
+                    ) %>
+
+                  </div>
+                </div>
               </div>
 
 
 
+          <!-- AMOUNT / CURRENCY -->
 
+          <div class="row g-2">
 
-              <!-- Receiver Amount -->
+            <!-- AMOUNT -->
+
+            <div class="col-7">
 
               <div class="xt-field">
+
                 <label class="xt-label">
-                  Receive Amount
-                  <span class="xt-required">*</span>
+                  Amount
                 </label>
 
                 <div class="input-group">
+
                   <span class="input-group-text">
-                    <i class="bi bi-cash-coin"></i>
+                    <i class="bi bi-arrow-down-circle"></i>
                   </span>
 
                   <%= form.number_field(
-                    :receive_amount,
-                    class: "form-control",
-                    placeholder: "0",
-                    step: "any"
-                  ) %>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-
-      <!-- RATE & FINANCIAL DETAILS -->
-
-      <div class="xt-form-section">
-
-        <div class="xt-section-title">
-          <i class="bi bi-calculator"></i>
-          Rate & Financial Details
-        </div>
-
-        <div class="row g-3">
-
-          <!-- Exchange Rate -->
-
-          <div class="col-md-4">
-            <div class="xt-field">
-              <label class="xt-label">
-                Exchange Rate
-                <span class="xt-required">*</span>
-              </label>
-
-              <%= form.number_field(
-                :exchange_rate,
-                class: "form-control",
-                step: "any",
-                placeholder: "0.00000"
-              ) %>
-            </div>
-          </div>
-
-
-          <!-- Wage -->
-
-          <div class="col-md-4">
-            <div class="xt-field">
-              <label class="xt-label">
-                Wage
-              </label>
-
-              <%= form.number_field(
-                :wage,
-                class: "form-control",
-                step: "any",
-                placeholder: "0"
-              ) %>
-            </div>
-          </div>
-
-
-          <!-- Status -->
-
-          <div class="col-md-4">
-            <div class="xt-field">
-              <label class="xt-label">
-                Status
-              </label>
-
-              <%= form.text_field(
-                :status,
-                class: "form-control",
-                placeholder: "Status"
-              ) %>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-
-      <!-- RELATED EXCHANGES -->
-
-      <div class="xt-exchanges-panel">
-
-        <div
-          class="xt-exchanges-body"
-          data-xtransfer-target="exchangesContainer"
-        >
-
-          <% selected_exchange_ids = @xtransfer.exchange_ids.reject(&:blank?) %>
-
-          <% if selected_exchange_ids.any? %>
-
-            <% selected_exchange_ids.each do |exchange_id| %>
-
-              <div class="xt-exchange-row">
-
-                <div class="xt-exchange-number">
-                  <i class="bi bi-arrow-left-right"></i>
-                </div>
-
-                <div class="flex-grow-1">
-
-                  <label class="xt-label">
-                    Related Exchange
-                  </label>
-
-                  <%= select_tag(
-                    "xtransfer[exchange_ids][]",
-                    options_from_collection_for_select(
-                      @exchanges,
-                      :id,
-                      ->(exchange) {
-                        "#{exchange.seller_account.organization.name} → " \
-                        "#{exchange.buyer_account.organization.name} | " \
-                        "#{exchange.sell_currency.name} → " \
-                        "#{exchange.buy_currency.name} | " \
-                        "#{number_with_delimiter(exchange.sell_amount)}"
-                      },
-                      exchange_id
-                    ),
-                    prompt: "Select exchange",
-                    class: "form-select"
+                    :receiver_amount,
+                    class: "form-control xt-calculated-field",
+                    readonly: true,
+                    tabindex: "-1",
+                    placeholder: "1234",
+                    step: "1",
+                    min: "0",
+                    data: {
+                      xtransfer_target: "receiverAmount"
+                    }
                   ) %>
 
                 </div>
 
-                <div class="xt-exchange-actions">
-
-                  <button
-                    type="button"
-                    class="btn xt-add-exchange"
-                    data-action="click->xtransfer#addExchange"
-                    title="Add exchange"
-                  >
-                    <i class="bi bi-plus-lg"></i>
-                  </button>
-
-                  <button
-                    type="button"
-                    class="btn xt-remove-exchange"
-                    data-action="click->xtransfer#removeExchange"
-                    title="Remove exchange"
-                  >
-                    <i class="bi bi-trash3"></i>
-                  </button>
-
-                </div>
-
               </div>
 
-            <% end %>
+            </div>
 
-          <% else %>
 
-            <div class="xt-exchange-row">
+            <!-- CURRENCY -->
 
-              <div class="xt-exchange-number">
-                <i class="bi bi-arrow-left-right"></i>
-              </div>
+            <div class="col-5">
 
-              <div class="flex-grow-1">
+              <div class="xt-field">
 
                 <label class="xt-label">
-                  Related Exchange
+                  Currency
                 </label>
 
-                <%= select_tag(
-                  "xtransfer[exchange_ids][]",
-                  options_from_collection_for_select(
-                    @exchanges,
-                    :id,
-                    ->(exchange) {
-                      "#{exchange.seller_account.organization.name} → " \
-                      "#{exchange.buyer_account.organization.name} | " \
-                      "#{exchange.sell_currency.name} → " \
-                      "#{exchange.buy_currency.name} | " \
-                      "#{number_with_delimiter(exchange.sell_amount)}"
+                <%= form.collection_select(
+                  :receiver_currency_id,
+                  @currencies || Currency.all,
+                  :id,
+                  :name,
+                  { prompt: "Currency" },
+                  {
+                    class: "form-select xt-auto-field",
+                    data: {
+                      xtransfer_target: "receiverCurrency"
                     }
-                  ),
-                  prompt: "Select exchange",
-                  class: "form-select"
+                  }
                 ) %>
 
               </div>
 
-              <div class="xt-exchange-actions">
+            </div>
 
-                <button
-                  type="button"
-                  class="btn xt-add-exchange"
-                  data-action="click->xtransfer#addExchange"
-                  title="Add exchange"
-                >
-                  <i class="bi bi-plus-lg"></i>
-                </button>
+          </div>
 
-                <button
-                  type="button"
-                  class="btn xt-remove-exchange"
-                  data-action="click->xtransfer#removeExchange"
-                  title="Remove exchange"
-                >
-                  <i class="bi bi-trash3"></i>
-                </button>
+
+          <!-- ================================================= -->
+          <!-- RECEIVER CONVERSION -->
+          <!-- ================================================= -->
+
+        <div class="xt-conversion-box">
+
+  <div class="row g-2">
+
+    <!-- RATE -->
+    <div class="col-5">
+
+      <div class="xt-field">
+
+        <label class="xt-label">
+          Exchange Rate
+        </label>
+
+        <div class="input-group">
+
+          <span class="input-group-text">
+            <i class="bi bi-arrow-repeat"></i>
+          </span>
+
+          <%= form.number_field(
+            :receiver_exchange_rate,
+            class: "form-control",
+            placeholder: "1",
+            step: "0.001",
+            min: "0",
+            data: {
+              xtransfer_target: "receiverExchangeRate",
+              action: "input->xtransfer#updateReceiverConversion"
+            }
+          ) %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- TO CURRENCY -->
+    <div class="col-3">
+
+      <div class="xt-field">
+
+        <label class="xt-label">
+          To Currency
+        </label>
+
+        <%= form.collection_select(
+          :receiver_to_currency_id,
+          @currencies || Currency.all,
+          :id,
+          :name,
+          { prompt: "Currency" },
+          {
+            class: "form-select xt-auto-field",
+            data: {
+              xtransfer_target: "receiverToCurrency"
+            }
+          }
+        ) %>
+
+      </div>
+
+    </div>
+
+
+    <!-- RESULT -->
+    <div class="col-4" style="margin-top: 31px;">
+
+      <%= form.number_field(
+        :receiver_amount_to,
+        class: "form-control xt-calculated-field",
+        readonly: true,
+        tabindex: "-1",
+        step: "1",
+        data: {
+          xtransfer_target: "receiverAmountTo"
+        }
+      ) %>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+          <!-- ================================================= -->
+          <!-- RECEIVER CHARGE / TOTAL -->
+          <!-- ================================================= -->
+
+         <div class="xt-total-section">
+
+  <div class="xt-total-fields">
+
+    <!-- CHARGE -->
+
+    <div class="xt-field xt-charge-field">
+
+      <label class="xt-label">
+        Charge
+      </label>
+
+      <%= form.number_field(
+        :receiver_charge,
+        class: "form-control xt-charge-input",
+        placeholder: "0",
+        step: "1",
+        min: "0",
+        data: {
+          xtransfer_target: "receiverCharge",
+          action: "input->xtransfer#updateReceiverTotal"
+        }
+      ) %>
+
+    </div>
+
+
+    <!-- TOTAL -->
+
+    <div class="xt-total-display">
+
+      <span class="xt-total-display-label">
+        Receiver Total
+      </span>
+
+      <strong
+        class="xt-total-display-value"
+        data-xtransfer-target="receiverTotal">
+        <%= @xtransfer.receiver_total || 0 %>
+      </strong>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- RELATED EXCHANGES -->
+  <!-- ===================================================== -->
+
+<!-- ===================================================== -->
+<!-- RELATED EXCHANGES + ATTACHMENTS -->
+<!-- ===================================================== -->
+
+<div class="xt-bottom-sections">
+
+  <!-- =================================================== -->
+  <!-- RELATED EXCHANGES -->
+  <!-- =================================================== -->
+
+  <div class="xt-form-section">
+
+    <div class="xt-section-heading-row">
+
+      <div class="xt-section-title">
+
+        <span class="xt-section-title-icon">
+          <i class="bi bi-link-45deg"></i>
+        </span>
+
+        <div>
+          <strong>Related Exchanges</strong>
+
+          <small>
+            Connect exchanges associated with this transfer.
+          </small>
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn xt-add-btn"
+        data-action="click->xtransfer#addExchange">
+
+        <i class="bi bi-plus-lg"></i>
+        Add Exchange
+
+      </button>
+
+    </div>
+
+
+    <div
+      class="xt-exchanges-container"
+      data-xtransfer-target="exchangesContainer">
+
+      <% if @xtransfer.exchange_transfers.any? %>
+
+        <%= form.fields_for :exchange_transfers do |exchange_form| %>
+
+          <div class="xt-exchange-row">
+
+            <div class="xt-exchange-content">
+
+              <div class="xt-field">
+
+                <label class="xt-label">
+                  Exchange
+                </label>
+
+                <%= exchange_form.collection_select(
+                  :exchange_id,
+                  Exchange.all,
+                  :id,
+                  :id,
+                  { prompt: "Select exchange" },
+                  { class: "form-select" }
+                ) %>
 
               </div>
 
             </div>
 
-          <% end %>
+
+            <button
+              type="button"
+              class="xt-remove-btn"
+              data-action="click->xtransfer#removeExchange"
+              title="Remove exchange">
+
+              <i class="bi bi-trash3"></i>
+
+            </button>
+
+          </div>
+
+        <% end %>
+
+      <% end %>
+
+    </div>
+
+
+    <template data-xtransfer-target="exchangeTemplate">
+
+      <div class="xt-exchange-row">
+
+        <div class="xt-exchange-content">
+
+          <div class="xt-field">
+
+            <label class="xt-label">
+              Exchange
+            </label>
+
+            <select
+              name="xtransfer[exchange_transfers_attributes][NEW_RECORD][exchange_id]"
+              class="form-select">
+
+              <option value="">
+                Select exchange
+              </option>
+
+              <% Exchange.all.each do |exchange| %>
+
+                <option value="<%= exchange.id %>">
+                  #<%= exchange.id %>
+                </option>
+
+              <% end %>
+
+            </select>
+
+          </div>
 
         </div>
 
 
-        <!-- EXCHANGE TEMPLATE -->
+        <button
+          type="button"
+          class="xt-remove-btn"
+          data-action="click->xtransfer#removeExchange"
+          title="Remove exchange">
 
-        <template data-xtransfer-target="exchangeTemplate">
+          <i class="bi bi-trash3"></i>
 
-          <div class="xt-exchange-row">
+        </button>
 
-            <div class="xt-exchange-number">
-              <i class="bi bi-arrow-left-right"></i>
+      </div>
+
+    </template>
+
+  </div>
+
+
+  <!-- =================================================== -->
+  <!-- ATTACHMENTS -->
+  <!-- =================================================== -->
+
+  <div class="xt-form-section">
+
+    <div class="xt-section-heading-row">
+
+      <div class="xt-section-title">
+
+        <span class="xt-section-title-icon">
+          <i class="bi bi-paperclip"></i>
+        </span>
+
+        <div>
+          <strong>Attachments</strong>
+
+          <small>
+            Documents related to this transfer.
+          </small>
+        </div>
+
+      </div>
+
+
+      <% if @xtransfer.documents.attached? %>
+
+        <span class="xt-attachment-count">
+
+          <%= @xtransfer.documents.count %>
+
+          <%= @xtransfer.documents.count == 1 ? "file" : "files" %>
+
+        </span>
+
+      <% end %>
+
+    </div>
+
+
+    <!-- EXISTING DOCUMENTS -->
+
+    <% if @xtransfer.documents.attached? %>
+
+      <div class="xt-attachments-list">
+
+        <% @xtransfer.documents.each do |document| %>
+
+          <div class="xt-attachment-item">
+
+            <div class="xt-attachment-icon">
+              <i class="bi bi-file-earmark-text"></i>
             </div>
 
-            <div class="flex-grow-1">
 
-              <label class="xt-label">
-                Related Exchange
-              </label>
+            <div class="xt-attachment-info">
 
-              <%= select_tag(
-                "xtransfer[exchange_ids][]",
-                options_from_collection_for_select(
-                  @exchanges,
-                  :id,
-                  ->(exchange) {
-                    "#{exchange.seller_account.organization.name} → " \
-                    "#{exchange.buyer_account.organization.name} | " \
-                    "#{exchange.sell_currency.name} → " \
-                    "#{exchange.buy_currency.name} | " \
-                    "#{number_with_delimiter(exchange.sell_amount)}"
-                  }
+              <%= link_to(
+                document.filename.to_s,
+                rails_blob_path(
+                  document,
+                  disposition: "attachment"
                 ),
-                prompt: "Select exchange",
-                class: "form-select"
+                target: "_blank",
+                class: "xt-attachment-link",
+                title: document.filename.to_s
               ) %>
 
-            </div>
-
-            <div class="xt-exchange-actions">
-
-              <button
-                type="button"
-                class="btn xt-add-exchange"
-                data-action="click->xtransfer#addExchange"
-                title="Add exchange"
-              >
-                <i class="bi bi-plus-lg"></i>
-              </button>
-
-              <button
-                type="button"
-                class="btn xt-remove-exchange"
-                data-action="click->xtransfer#removeExchange"
-                title="Remove exchange"
-              >
-                <i class="bi bi-trash3"></i>
-              </button>
+              <small>
+                <%= number_to_human_size(document.byte_size) %>
+              </small>
 
             </div>
 
           </div>
 
-        </template>
+        <% end %>
 
       </div>
 
-
-<!-- ATTACHMENTS -->
-<div class="xt-attachments-panel">
-
-  <div class="xt-attachments-header">
-    <div class="xt-attachments-title">
-      <i class="bi bi-paperclip"></i>
-      Attachments
-    </div>
-
-    <% if @xtransfer.documents.attached? %>
-      <%= link_to(
-        remove_all_documents_xtransfer_path(@xtransfer),
-        data: {
-          turbo_method: :delete,
-          turbo_confirm: "Delete all attachments?"
-        },
-        class: "xt-remove-all text-decoration-none p-0",
-        style: "font-size: 9px; gap: 0rem !important; border: 0px; margin-top: -5px;"
-      ) do %>
-        Delete All Attachs
-      <% end %>
     <% end %>
-  </div>
 
-  <!-- EXISTING DOCUMENTS -->
-  <% if @xtransfer.documents.attached? %>
-    <div class="xt-attachments-list">
 
-      <% @xtransfer.documents.each do |document| %>
+    <!-- NEW DOCUMENTS -->
 
-        <div class="xt-attachment-item xt-existing-document-row">
+    <div class="xt-new-attachment">
 
-          <i class="bi bi-file-earmark-text xt-attachment-file-icon"></i>
+      <div class="xt-attachment-icon">
+        <i class="bi bi-cloud-arrow-up"></i>
+      </div>
 
-          <%= link_to(
-            document.filename.to_s,
-            rails_blob_path(
-              document,
-              disposition: "attachment"
-            ),
-            target: "_blank",
-            class: "xt-attachment-link",
-            title: document.filename.to_s
-          ) %>
 
-          <%= link_to(
-            remove_document_xtransfer_path(
-              @xtransfer,
-              document_id: document.id
-            ),
-            data: {
-              turbo_method: :delete,
-              turbo_confirm: "Remove this file?"
-            },
-            class: "xt-attachment-delete",
-            title: "Remove"
-          ) do %>
-            <i class="bi bi-trash3"></i>
-          <% end %>
+      <div class="xt-new-attachment-content">
 
-        </div>
+        <strong>
+          Add documents
+        </strong>
 
-      <% end %>
+        <span>
+          You can select multiple files.
+        </span>
 
-    </div>
-  <% end %>
+      </div>
 
-  <!-- NEW DOCUMENTS INPUT -->
-  <div class="xt-attachments-list">
-    <div class="xt-attachment-item xt-new-document">
-
-      <i class="bi bi-paperclip xt-attachment-file-icon"></i>
 
       <%= form.file_field(
         :documents,
@@ -590,65 +1030,41 @@
       ) %>
 
     </div>
+
   </div>
 
 </div>
 
 
+  <!-- ===================================================== -->
+  <!-- FOOTER -->
+  <!-- ===================================================== -->
 
-      <!-- PENDING -->
+  <div class="modal-footer xt-form-footer">
 
-      <div class="xt-pending">
+    <button
+      type="button"
+      class="btn btn-light border xt-close"
+      data-bs-dismiss="modal">
 
-        <div class="xt-pending-label">
+      <i class="bi bi-x-lg"></i>
+      Close
 
-          <div class="xt-pending-icon">
-            <i class="bi bi-clock-history"></i>
-          </div>
-
-          <div>
-            <div class="fw-semibold">
-              Mark this transaction as pending
-            </div>
-          </div>
-
-        </div>
-
-        <div class="form-check form-switch">
-
-          <%= form.check_box(
-            :pending,
-            class: "form-check-input",
-            id: "xtransfer_pending",
-            role: "switch"
-          ) %>
-
-        </div>
-
-      </div>
-
-    </div>
+    </button>
 
 
-    <!-- FOOTER -->
+    <%= form.submit(
+      @xtransfer.new_record? ? "Create Transfer" : "Update Transfer",
+      class: "btn xt-submit",
+      data: {
+        action: "click->bs-modal#submitEnd"
+      }
+    ) %>
 
-    <div class="modal-footer xt-form-footer px-3 px-md-4 pb-3">
+  </div>
 
-      <button
-        type="button"
-        class="btn btn-light border xt-close"
-        data-bs-dismiss="modal"
-      >
-        Close
-      </button>
+</div>
 
-      <%= form.submit(
-        @xtransfer.new_record? ? "Create Transfer" : "Update Transfer",
-        class: "btn btn-primary xt-submit"
-      ) %>
-
-    </div>
-
-  <% end %>
+<% end %>
 
 </div>

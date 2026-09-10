@@ -353,6 +353,8 @@ resources :xtransfers do
   collection do
     get :accounts
   end
+  resources :comments
+
 end
 
 

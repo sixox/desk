@@ -1,112 +1,215 @@
+# app/controllers/xtransfers_controller.rb
+
 class XtransfersController < ApplicationController
-  before_action :set_xtransfer,
-                only: [
-                  :edit,
-                  :update,
-                  :destroy,
-                  :toggle_pending,
-                  :remove_document,
-                  :remove_all_documents
-                ]
+  before_action :set_xtransfer, only: [
+    :edit,
+    :update,
+    :destroy,
+    :toggle_pending,
+    :remove_document,
+    :remove_all_documents,
+    :show
+  ]
+
+
+  # ==================================================
+  # INDEX
+  # ==================================================
 
   def index
-    @xtransfers = Xtransfer
+    @xtransfers =
+      Xtransfer
       .includes(
+        :sender_currency,
+        :sender_to_currency,
+        :receiver_currency,
+        :receiver_to_currency,
+        :exchanges,
         sender_account: :organization,
-        receiver_account: :organization,
-        exchanges: [
-          :sell_currency,
-          :buy_currency,
-          seller_account: :organization,
-          buyer_account: :organization
-        ]
+        receiver_account: :organization
       )
       .order(created_at: :desc)
   end
 
+  def show
+  end
+
+
+  # ==================================================
+  # NEW
+  # ==================================================
+
   def new
     @xtransfer = Xtransfer.new
+
     load_form_data
   end
+
+
+  # ==================================================
+  # CREATE
+  # ==================================================
 
   def create
-    @xtransfer = Xtransfer.new(xtransfer_params)
+    ActiveRecord::Base.transaction do
+      @xtransfer =
+        Xtransfer.new(xtransfer_params)
 
-    Xtransfer.transaction do
-      set_currencies
+      unless @xtransfer.save
+        raise ActiveRecord::Rollback
+      end
 
-      @xtransfer.save!
-
-      create_xtransactions_for_create
-
-      attach_documents
+      Xtransaction.create_for_transfer!(
+        transfer: @xtransfer
+      )
     end
 
-    redirect_to xtransfers_path, notice: "Transfer created."
-  rescue ActiveRecord::RecordInvalid
+    if @xtransfer.persisted?
+      redirect_to xtransfers_path,
+                  notice: "Transfer created successfully."
+    else
+      load_form_data
+
+      render :new,
+             status: :unprocessable_entity
+    end
+
+  rescue ActiveRecord::RecordInvalid,
+         ArgumentError => e
+
+    @xtransfer ||= Xtransfer.new(xtransfer_params)
+
+    @xtransfer.errors.add(
+      :base,
+      e.message
+    )
+
     load_form_data
-    render :new, status: :unprocessable_entity
+
+    render :new,
+           status: :unprocessable_entity
   end
+
+
+  # ==================================================
+  # EDIT
+  # ==================================================
 
   def edit
     load_form_data
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
+
+  # ==================================================
+  # UPDATE
+  # ==================================================
+
   def update
-    old_sender_account = @xtransfer.sender_account
-    old_receiver_account = @xtransfer.receiver_account
-    old_sent_amount = @xtransfer.sent_amount
-    old_receive_amount = @xtransfer.receive_amount
+    ActiveRecord::Base.transaction do
+      # ------------------------------------------------
+      # Preserve old transactions before changing
+      # the transfer.
+      # ------------------------------------------------
 
-    accounting_changed =
-      old_sender_account.id != xtransfer_params[:sender_account_id].to_i ||
-      old_receiver_account.id != xtransfer_params[:receiver_account_id].to_i ||
-      old_sent_amount != xtransfer_params[:sent_amount].to_i ||
-      old_receive_amount != xtransfer_params[:receive_amount].to_i
+      old_transactions =
+        @xtransfer
+        .xtransactions
+        .lock
+        .to_a
 
-    Xtransfer.transaction do
-      @xtransfer.update!(xtransfer_params)
 
-      # Get currencies from the NEW accounts
-      set_currencies
-      @xtransfer.save!
+      # ------------------------------------------------
+      # Reverse old accounting entries.
+      #
+      # We do not delete old transactions.
+      # ------------------------------------------------
 
-      if accounting_changed
-        update_accounts_and_create_xtransactions(
-          old_sender_account,
-          old_receiver_account,
-          old_sent_amount,
-          old_receive_amount
+      old_transactions.each do |transaction|
+        transaction.reverse!(
+          transactionable: @xtransfer
         )
       end
 
-      attach_documents
+
+      # ------------------------------------------------
+      # Update transfer.
+      # ------------------------------------------------
+
+      unless @xtransfer.update(xtransfer_params)
+        raise ActiveRecord::Rollback
+      end
+
+
+      # ------------------------------------------------
+      # Create new accounting entries.
+      # ------------------------------------------------
+
+      Xtransaction.create_for_transfer!(
+        transfer: @xtransfer
+      )
     end
 
-    redirect_to xtransfers_path, notice: "Transfer updated."
-  rescue ActiveRecord::RecordInvalid
+    redirect_to xtransfers_path,
+                notice: "Transfer updated successfully."
+
+  rescue ActiveRecord::RecordInvalid,
+         ArgumentError => e
+
     load_form_data
-    render :edit, status: :unprocessable_entity
+
+    @xtransfer.errors.add(
+      :base,
+      e.message
+    )
+
+    render :edit,
+           status: :unprocessable_entity
   end
 
-  def remove_document
-    document = @xtransfer.documents.find(params[:document_id])
-    document.purge
 
-    redirect_to xtransfers_path
-  end
-
-  def remove_all_documents
-    @xtransfer.documents.purge
-
-    redirect_to xtransfers_path, notice: "All attachments removed."
-  end
+  # ==================================================
+  # DESTROY
+  # ==================================================
 
   def destroy
-    @xtransfer.destroy
+    ActiveRecord::Base.transaction do
+      # Reverse current accounting entries before
+      # destroying the transfer.
+      #
+      # The reversal transactions use the same transfer
+      # as their transactionable.
+      @xtransfer
+        .xtransactions
+        .lock
+        .to_a
+        .each do |transaction|
 
-    redirect_to xtransfers_path, notice: "Transfer deleted."
+        transaction.reverse!(
+          transactionable: @xtransfer
+        )
+      end
+
+      @xtransfer.destroy!
+    end
+
+    redirect_to xtransfers_path,
+                notice: "Transfer deleted successfully."
+
+  rescue ActiveRecord::RecordNotDestroyed => e
+
+    redirect_to xtransfers_path,
+                alert: e.message
   end
+
+
+  # ==================================================
+  # TOGGLE PENDING
+  # ==================================================
 
   def toggle_pending
     if @xtransfer.pending?
@@ -118,227 +221,210 @@ class XtransfersController < ApplicationController
     redirect_to xtransfers_path
   end
 
+
+  # ==================================================
+  # LOAD ACCOUNTS
+  # ==================================================
+
   def accounts
-    organization = Organization.find(params[:organization_id])
+    organization_id =
+      params[:organization_id]
 
-    @accounts = organization.xaccounts.includes(:currency)
+    accounts =
+      if organization_id.present?
+        Xaccount
+          .where(
+            organization_id: organization_id
+          )
+          .includes(:currency)
+          .order(:number)
+      else
+        Xaccount.none
+      end
 
-    render partial: "accounts", locals: { accounts: @accounts }
+    render html: accounts.map { |account|
+      %(
+        <option
+          value="#{account.id}"
+          data-currency-id="#{account.currency_id}"
+          data-currency-name="#{ERB::Util.html_escape(account.currency.name)}"
+        >
+          #{ERB::Util.html_escape(account.number)}
+          -
+          #{ERB::Util.html_escape(account.currency.name)}
+        </option>
+      )
+    }.join.html_safe
   end
+
+
+  # ==================================================
+  # REMOVE ONE DOCUMENT
+  # ==================================================
+
+  def remove_document
+    document =
+      @xtransfer.documents.find_by(
+        id: params[:document_id]
+      )
+
+    document&.purge
+
+    redirect_to edit_xtransfer_path(@xtransfer)
+  end
+
+
+  # ==================================================
+  # REMOVE ALL DOCUMENTS
+  # ==================================================
+
+  def remove_all_documents
+    @xtransfer.documents.purge
+
+    redirect_to edit_xtransfer_path(@xtransfer)
+  end
+
 
   private
 
-  def set_currencies
-    sender_account = @xtransfer.sender_account
-    receiver_account = @xtransfer.receiver_account
 
-    return if sender_account.blank? || receiver_account.blank?
-
-    @xtransfer.sender_currency = sender_account.currency
-    @xtransfer.receiver_currency = receiver_account.currency
-  end
+  # ==================================================
+  # SET TRANSFER
+  # ==================================================
 
   def set_xtransfer
-    @xtransfer = Xtransfer.find(params[:id])
+    @xtransfer =
+      Xtransfer.find(params[:id])
   end
 
-  def load_form_data
-    @organizations = Organization.order(:name)
 
-    @exchanges = Exchange
+  # ==================================================
+  # FORM DATA
+  # ==================================================
+
+  def load_form_data
+    @organizations =
+      Organization.order(:name)
+
+    @exchanges =
+      Exchange
       .includes(
-        :sell_currency,
-        :buy_currency,
         seller_account: :organization,
-        buyer_account: :organization
+        buyer_account: :organization,
+        sell_currency: {},
+        buy_currency: {}
       )
       .order(created_at: :desc)
 
+
     @sender_accounts =
-      if @xtransfer.sender_account.present?
-        @xtransfer.sender_account
-          .organization
-          .xaccounts
+      if @xtransfer.sender_account&.organization_id.present?
+
+        Xaccount
+          .where(
+            organization_id:
+              @xtransfer.sender_account.organization_id
+          )
           .includes(:currency)
+          .order(:number)
+
       else
+
         Xaccount.none
+
       end
+
 
     @receiver_accounts =
-      if @xtransfer.receiver_account.present?
-        @xtransfer.receiver_account
-          .organization
-          .xaccounts
+      if @xtransfer.receiver_account&.organization_id.present?
+
+        Xaccount
+          .where(
+            organization_id:
+              @xtransfer.receiver_account.organization_id
+          )
           .includes(:currency)
+          .order(:number)
+
       else
+
         Xaccount.none
+
       end
+
+
+    @currencies =
+      Currency.order(:name)
   end
+
+
+  # ==================================================
+  # STRONG PARAMS
+  # ==================================================
 
   def xtransfer_params
-    params.require(:xtransfer).permit(
-      :sent_amount,
-      :receive_amount,
-      :exchange_rate,
-      :wage,
-      :sender_account_id,
-      :receiver_account_id,
-      :status,
-      :pending,
-      exchange_ids: []
-    )
-  end
+    params
+      .require(:xtransfer)
+      .permit(
+        # ----------------------------------------------
+        # Accounts
+        # ----------------------------------------------
 
-  # ==================================================
-  # CREATE ACCOUNTING TRANSACTIONS
-  # ==================================================
+        :sender_account_id,
+        :receiver_account_id,
 
-  def create_xtransactions_for_create
-    sender_account = @xtransfer.sender_account
-    receiver_account = @xtransfer.receiver_account
 
-    sender_before = sender_account.amount
-    receiver_before = receiver_account.amount
+        # ----------------------------------------------
+        # Sender
+        # ----------------------------------------------
 
-    sender_after =
-      sender_before - @xtransfer.sent_amount
+        :sender_currency_id,
+        :sender_to_currency_id,
+        :sender_amount,
+        :sender_exchange_rate,
+        :sender_amount_to,
+        :sender_charge,
+        :sender_total,
 
-    receiver_after =
-      receiver_before + @xtransfer.receive_amount
 
-    # Update account balances
-    sender_account.update!(
-      amount: sender_after
-    )
+        # ----------------------------------------------
+        # Receiver
+        # ----------------------------------------------
 
-    receiver_account.update!(
-      amount: receiver_after
-    )
+        :receiver_currency_id,
+        :receiver_to_currency_id,
+        :receiver_amount,
+        :receiver_exchange_rate,
+        :receiver_amount_to,
+        :receiver_charge,
+        :receiver_total,
 
-    # Sender Xtransaction
-    @xtransfer.xtransactions.create!(
-      xaccount: sender_account,
-      currency: sender_account.currency,
-      withdrawal_amount: @xtransfer.sent_amount,
-      balance_before_transaction: sender_before,
-      balance_after_transaction: sender_after
-    )
 
-    # Receiver Xtransaction
-    @xtransfer.xtransactions.create!(
-      xaccount: receiver_account,
-      currency: receiver_account.currency,
-      deposit_amount: @xtransfer.receive_amount,
-      balance_before_transaction: receiver_before,
-      balance_after_transaction: receiver_after
-    )
-  end
+        # ----------------------------------------------
+        # Other
+        # ----------------------------------------------
 
-  # ==================================================
-  # UPDATE ACCOUNTING TRANSACTIONS
-  # ==================================================
+        :wage,
+        :status,
+        :pending,
 
-  def update_accounts_and_create_xtransactions(
-    old_sender_account,
-    old_receiver_account,
-    old_sent_amount,
-    old_receive_amount
-  )
-    # ----------------------------------------------
-    # 1. Reverse old sender transaction
-    # ----------------------------------------------
 
-    old_sender_before = old_sender_account.amount
+        # ----------------------------------------------
+        # Exchanges
+        # ----------------------------------------------
 
-    old_sender_after =
-      old_sender_before + old_sent_amount
+        exchange_transfers_attributes: [
+          :id,
+          :exchange_id,
+          :_destroy
+        ],
 
-    old_sender_account.update!(
-      amount: old_sender_after
-    )
 
-    @xtransfer.xtransactions.create!(
-      xaccount: old_sender_account,
-      currency: old_sender_account.currency,
-      deposit_amount: old_sent_amount,
-      balance_before_transaction: old_sender_before,
-      balance_after_transaction: old_sender_after
-    )
+        # ----------------------------------------------
+        # Attachments
+        # ----------------------------------------------
 
-    # ----------------------------------------------
-    # 2. Reverse old receiver transaction
-    # ----------------------------------------------
-
-    old_receiver_before = old_receiver_account.amount
-
-    old_receiver_after =
-      old_receiver_before - old_receive_amount
-
-    old_receiver_account.update!(
-      amount: old_receiver_after
-    )
-
-    @xtransfer.xtransactions.create!(
-      xaccount: old_receiver_account,
-      currency: old_receiver_account.currency,
-      withdrawal_amount: old_receive_amount,
-      balance_before_transaction: old_receiver_before,
-      balance_after_transaction: old_receiver_after
-    )
-
-    # ----------------------------------------------
-    # 3. Apply new sender transaction
-    # ----------------------------------------------
-
-    new_sender_account = @xtransfer.sender_account
-
-    new_sender_before = new_sender_account.amount
-
-    new_sender_after =
-      new_sender_before - @xtransfer.sent_amount
-
-    new_sender_account.update!(
-      amount: new_sender_after
-    )
-
-    @xtransfer.xtransactions.create!(
-      xaccount: new_sender_account,
-      currency: new_sender_account.currency,
-      withdrawal_amount: @xtransfer.sent_amount,
-      balance_before_transaction: new_sender_before,
-      balance_after_transaction: new_sender_after
-    )
-
-    # ----------------------------------------------
-    # 4. Apply new receiver transaction
-    # ----------------------------------------------
-
-    new_receiver_account = @xtransfer.receiver_account
-
-    new_receiver_before = new_receiver_account.amount
-
-    new_receiver_after =
-      new_receiver_before + @xtransfer.receive_amount
-
-    new_receiver_account.update!(
-      amount: new_receiver_after
-    )
-
-    @xtransfer.xtransactions.create!(
-      xaccount: new_receiver_account,
-      currency: new_receiver_account.currency,
-      deposit_amount: @xtransfer.receive_amount,
-      balance_before_transaction: new_receiver_before,
-      balance_after_transaction: new_receiver_after
-    )
-  end
-
-  def attach_documents
-    return if params[:xtransfer].blank?
-    return if params[:xtransfer][:documents].blank?
-
-    @xtransfer.documents.attach(
-      params[:xtransfer][:documents]
-    )
+        documents: []
+      )
   end
 end

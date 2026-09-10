@@ -1,0 +1,101 @@
+<div class="col-lg-10 mx-auto mt-5">
+
+<div class="xtransfer-page">
+  <div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- ================================================== -->
+    <!-- HEADER -->
+    <!-- ================================================== -->
+
+    <div class="xt-index-header">
+
+      <div class="xt-index-heading">
+
+        <div class="xt-index-icon">
+          <i class="bi bi-arrow-left-right"></i>
+        </div>
+
+        <div>
+          <h1 class="xt-index-title">
+            Transfer <span><%= @xtransfer.id %></span>
+          </h1>
+
+        </div>
+
+      </div>
+
+
+      <%= link_to xtransfers_path,
+          class: "btn xt-create-transfer" do %>
+
+        <i class="bi bi-arrow-lg"></i>
+
+        <span>
+          All Transfers
+        </span>
+
+      <% end %>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- SUMMARY -->
+    <!-- ================================================== -->
+
+   
+
+
+    <!-- ================================================== -->
+    <!-- TRANSFERS -->
+    <!-- ================================================== -->
+
+    <div class="xt-transfers-container">
+
+
+        <div id="xtransfers" class="xt-transfer-list">
+
+
+           <%= render 'xtransfer', transfer: @xtransfer %>
+
+
+        </div>
+
+     
+
+    </div>
+
+  </div>
+</div>
+<div class="card mb-5 mt-3">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="d-flex justify-content-start">
+              <h5>Comments</h5>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="d-flex justify-content-end">
+              <%= link_to new_xtransfer_comment_path(@xtransfer), data: { controller: "bs-modal-form", xtransfer_id: @xtransfer.id }, class: "btn btn-primary" do %>
+              Add Comment
+              <% end %>
+            </div>
+          </div>
+        </div>
+        
+        <ul class="list-group mt-1" id="comment_items">
+          <% if @xtransfer.comments.present? %>
+          <% @xtransfer.comments.reverse.each do |comment| %>
+          <%= render 'comments/comment', comment: comment %>
+          <% end %>
+          
+          <% else %>
+          <p>no comments</p>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+</div>
+<%= turbo_frame_tag "modal" %>
