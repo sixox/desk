@@ -396,6 +396,8 @@ resources :organizations
 
 resources :xaccounts
 
+resources :xtransactions
+
 
 
 

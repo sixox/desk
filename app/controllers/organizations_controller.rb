@@ -1,10 +1,15 @@
 class OrganizationsController < ApplicationController
-  before_action :set_organization, only: [:edit, :update, :destroy]
+  before_action :authenticate_user!
+  before_action :set_organization, only: [:show, :edit, :update, :destroy]
 
   def index
-    @organizations = Organization
-      .includes(:xaccounts)
-      .order(created_at: :desc)
+    @organizations =
+      Organization
+        .includes(xaccounts: :currency)
+        .order(:name)
+  end
+
+  def show
   end
 
   def new

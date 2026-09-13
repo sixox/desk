@@ -23,18 +23,15 @@
         </div>
 
       </div>
+       <%= link_to xtransfers_path,
+          class: "btn btn-sm btn-outline-secondary xaccount-action" do %>
 
+          <i class="bi bi-arrow-left"></i>
+          <span>Back</span>
 
-      <%= link_to xtransfers_path,
-          class: "btn xt-create-transfer" do %>
+        <% end %>
 
-        <i class="bi bi-arrow-lg"></i>
-
-        <span>
-          All Transfers
-        </span>
-
-      <% end %>
+      
 
     </div>
 
@@ -67,7 +64,42 @@
 
   </div>
 </div>
-<div class="card mb-5 mt-3">
+
+ <div class="xaccount-transactions-section">
+
+      <div class="xaccount-transactions-header">
+
+        <div>
+
+          <div class="xaccount-section-title">
+            Transactions
+          </div>
+
+          <div class="xaccount-section-subtitle">
+            Complete transaction history for this Transfer
+          </div>
+
+        </div>
+
+
+        <div class="xaccount-transaction-count">
+
+          <i class="bi bi-arrow-left-right"></i>
+
+          <%= @xtransfer.xtransactions.count %>
+
+        </div>
+
+      </div>
+
+
+      <%= render "xtransactions/xtransactions",
+        xtransactions: @xtransfer.xtransactions %>
+
+    </div>
+
+<hr>
+<div class="card mb-5 mt-5">
       <div class="card-body">
         <div class="row">
           <div class="col-lg-6">

@@ -1,0 +1,221 @@
+<div class="transaction-card">
+
+  <div class="table-responsive">
+
+    <table class="table table-striped transaction-table align-middle mb-0">
+
+      <thead>
+
+        <tr>
+
+          <th>ID</th>
+          <th>Account</th>
+          <th>Debit</th>
+          <th>Credit</th>
+          <th>Balance Before</th>
+          <th>Balance After</th>
+          <th>Type</th>
+
+          <th>Date</th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <% xtransactions.each do |transaction| %>
+
+        <tr id="<%= dom_id(transaction) %>">
+
+          <!-- ID -->
+
+          <td>
+
+            <span class="transaction-id">
+              #<%= transaction.id %>
+            </span>
+
+          </td>
+
+          <!-- ACCOUNT -->
+
+          <td>
+
+            <% if transaction.xaccount %>
+
+            <div
+            class="transaction-account-name text-truncate"
+            style="max-width: 18ch;"
+            title="<%= transaction.xaccount.number %>"
+            >
+            <%= transaction.xaccount.number %>
+          </div>
+
+          <span class="transaction-account-id">
+            Account #<%= transaction.xaccount_id %>
+          </span>
+
+          <% else %>
+
+          <span class="transaction-empty">
+            —
+          </span>
+
+          <% end %>
+
+        </td>
+
+
+        <!-- DEBIT -->
+
+        <td>
+
+          <% if transaction.debit_amount.present? && transaction.debit_amount != 0 %>
+
+          <span class="transaction-amount transaction-debit">
+            <i class="bi bi-arrow-down-left"></i>
+            <%= number_with_delimiter(transaction.debit_amount) %>
+          </span>
+
+          <% else %>
+
+          <span class="transaction-empty">
+            —
+          </span>
+
+          <% end %>
+
+        </td>
+
+
+        <!-- CREDIT -->
+
+        <td>
+
+          <% if transaction.credit_amount.present? && transaction.credit_amount != 0 %>
+
+          <span class="transaction-amount transaction-credit">
+            <i class="bi bi-arrow-up-right"></i>
+            <%= number_with_delimiter(transaction.credit_amount) %>
+          </span>
+
+          <% else %>
+
+          <span class="transaction-empty">
+            —
+          </span>
+
+          <% end %>
+
+        </td>
+
+
+        <!-- BALANCE BEFORE -->
+
+        <td>
+
+          <span class="transaction-balance">
+            <%= number_with_delimiter(transaction.balance_before_transaction) %>
+          </span>
+
+        </td>
+
+
+        <!-- BALANCE AFTER -->
+
+        <td>
+
+          <span class="transaction-balance transaction-balance-after">
+            <%= number_with_delimiter(transaction.balance_after_transaction) %>
+          </span>
+
+        </td>
+
+
+        <!-- TRANSACTIONABLE -->
+
+       <td>
+        <% if transaction.transactionable %>
+
+          <% if transaction.transactionable_link %>
+            <%= link_to(
+              "#{transaction.transactionable_type} #{transaction.transactionable_id}",
+              transaction.transactionable_link,
+              class: "transaction-type transaction-type-link"
+            ) %>
+          <% else %>
+            <span class="transaction-type">
+              <%= transaction.transactionable_type %>
+            </span>
+          <% end %>
+
+          <% if transaction.note.present? %>
+            <i
+              class="bi bi-info-circle-fill text-muted ms-1"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="<%= transaction.note %>"
+              style="cursor: help;"
+            ></i>
+          <% end %>
+
+        <% else %>
+
+          <span class="transaction-type transaction-type-missing">
+            <%= transaction.transactionable_type %>
+          </span>
+
+          <span class="transaction-reference">
+            #<%= transaction.transactionable_id %>
+          </span>
+
+          <% if transaction.note.present? %>
+            <i
+              class="bi bi-info-circle-fill text-secondary ms-1"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="<%= transaction.note %>"
+              style="font-size: 11px; cursor: pointer;"
+            ></i>
+          <% end %>
+
+        <% end %>
+      </td>
+
+
+
+
+
+
+
+            <!-- CREATED -->
+
+            <td>
+
+              <div class="transaction-date">
+
+                <%= (transaction.created_at + 3.5.hours).strftime("%Y-%m-%d") %>
+
+              </div>
+
+              <span class="transaction-time">
+
+                <%= (transaction.created_at + 3.5.hours).strftime("%H:%M") %>
+
+              </span>
+
+            </td>
+
+          </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>

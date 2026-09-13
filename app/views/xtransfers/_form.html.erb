@@ -777,26 +777,144 @@
 
 <div class="xt-bottom-sections">
 
-  <!-- =================================================== -->
-  <!-- RELATED EXCHANGES -->
-  <!-- =================================================== -->
 
-  <div class="xt-form-section">
+<!-- ===================================================== -->
+<!-- RELATED EXCHANGES -->
+<!-- ===================================================== -->
 
-    <div class="xt-section-heading-row">
+<div class="xt-form-section">
 
-      <div class="xt-section-title">
+  <div class="xt-section-heading-row">
 
-        <span class="xt-section-title-icon">
-          <i class="bi bi-link-45deg"></i>
-        </span>
+    <div class="xt-section-title">
 
-        <div>
-          <strong>Related Exchanges</strong>
+      <span class="xt-section-title-icon">
+        <i class="bi bi-link-45deg"></i>
+      </span>
 
-          <small>
-            Connect exchanges associated with this transfer.
-          </small>
+      <div>
+        <strong>Related Exchanges</strong>
+
+        <small>
+          Connect exchanges associated with this transfer.
+        </small>
+      </div>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="btn xt-add-btn"
+      data-action="click->xtransfer#addExchange">
+
+      <i class="bi bi-plus-lg"></i>
+      Add Exchange
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="xt-exchanges-container"
+    data-xtransfer-target="exchangesContainer">
+
+    <% if @xtransfer.exchange_transfers.any? %>
+
+      <%= form.fields_for :exchange_transfers do |exchange_form| %>
+
+        <div class="xt-exchange-row">
+
+          <%= exchange_form.hidden_field :id %>
+
+          <%= exchange_form.hidden_field(
+            :_destroy,
+            value: "0"
+          ) %>
+
+
+          <div class="xt-exchange-content">
+
+            <div class="xt-field">
+
+              <label class="xt-label">
+                Exchange
+              </label>
+
+              <%= exchange_form.collection_select(
+                :exchange_id,
+                @exchanges,
+                :id,
+                ->(exchange) {
+                  "##{exchange.id} — #{exchange.sell_currency.name} → #{exchange.buy_currency.name}"
+                },
+                { prompt: "Select exchange" },
+                { class: "form-select" }
+              ) %>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="xt-remove-btn"
+            data-action="click->xtransfer#removeExchange"
+            title="Remove exchange">
+
+            <i class="bi bi-trash3"></i>
+
+          </button>
+
+        </div>
+
+      <% end %>
+
+    <% end %>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- NEW EXCHANGE TEMPLATE -->
+  <!-- ================================================= -->
+
+  <template data-xtransfer-target="exchangeTemplate">
+
+    <div class="xt-exchange-row">
+
+      <div class="xt-exchange-content">
+
+        <div class="xt-field">
+
+          <label class="xt-label">
+            Exchange
+          </label>
+
+          <select
+            name="xtransfer[exchange_transfers_attributes][NEW_RECORD][exchange_id]"
+            class="form-select">
+
+            <option value="">
+              Select exchange
+            </option>
+
+            <% @exchanges.each do |exchange| %>
+
+              <option value="<%= exchange.id %>">
+                #<%= exchange.id %>
+                —
+                <%= exchange.sell_currency.name %>
+                →
+                <%= exchange.buy_currency.name %>
+              </option>
+
+            <% end %>
+
+          </select>
+
         </div>
 
       </div>
@@ -804,118 +922,19 @@
 
       <button
         type="button"
-        class="btn xt-add-btn"
-        data-action="click->xtransfer#addExchange">
+        class="xt-remove-btn"
+        data-action="click->xtransfer#removeExchange"
+        title="Remove exchange">
 
-        <i class="bi bi-plus-lg"></i>
-        Add Exchange
+        <i class="bi bi-trash3"></i>
 
       </button>
 
     </div>
 
+  </template>
 
-    <div
-      class="xt-exchanges-container"
-      data-xtransfer-target="exchangesContainer">
-
-      <% if @xtransfer.exchange_transfers.any? %>
-
-        <%= form.fields_for :exchange_transfers do |exchange_form| %>
-
-          <div class="xt-exchange-row">
-
-            <div class="xt-exchange-content">
-
-              <div class="xt-field">
-
-                <label class="xt-label">
-                  Exchange
-                </label>
-
-                <%= exchange_form.collection_select(
-                  :exchange_id,
-                  Exchange.all,
-                  :id,
-                  :id,
-                  { prompt: "Select exchange" },
-                  { class: "form-select" }
-                ) %>
-
-              </div>
-
-            </div>
-
-
-            <button
-              type="button"
-              class="xt-remove-btn"
-              data-action="click->xtransfer#removeExchange"
-              title="Remove exchange">
-
-              <i class="bi bi-trash3"></i>
-
-            </button>
-
-          </div>
-
-        <% end %>
-
-      <% end %>
-
-    </div>
-
-
-    <template data-xtransfer-target="exchangeTemplate">
-
-      <div class="xt-exchange-row">
-
-        <div class="xt-exchange-content">
-
-          <div class="xt-field">
-
-            <label class="xt-label">
-              Exchange
-            </label>
-
-            <select
-              name="xtransfer[exchange_transfers_attributes][NEW_RECORD][exchange_id]"
-              class="form-select">
-
-              <option value="">
-                Select exchange
-              </option>
-
-              <% Exchange.all.each do |exchange| %>
-
-                <option value="<%= exchange.id %>">
-                  #<%= exchange.id %>
-                </option>
-
-              <% end %>
-
-            </select>
-
-          </div>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="xt-remove-btn"
-          data-action="click->xtransfer#removeExchange"
-          title="Remove exchange">
-
-          <i class="bi bi-trash3"></i>
-
-        </button>
-
-      </div>
-
-    </template>
-
-  </div>
+</div>
 
 
   <!-- =================================================== -->
@@ -943,17 +962,20 @@
       </div>
 
 
-      <% if @xtransfer.documents.attached? %>
-
-        <span class="xt-attachment-count">
-
-          <%= @xtransfer.documents.count %>
-
-          <%= @xtransfer.documents.count == 1 ? "file" : "files" %>
-
-        </span>
-
-      <% end %>
+          <% if @xtransfer.documents.attached? %>
+            <%= link_to(
+              remove_all_documents_xtransfer_path(@xtransfer),
+              class: "btn btn-sm btn-light border text-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-sm",
+              style: "width: 28px; height: 28px;",
+              title: "Remove all documents",
+              data: {
+                turbo_method: :delete,
+                turbo_confirm: "Are you sure you want to remove all documents?"
+              }
+            ) do %>
+              <i class="bi bi-trash3-fill" style="font-size: 12px;"></i>
+            <% end %>
+          <% end %>
 
     </div>
 
@@ -962,43 +984,55 @@
 
     <% if @xtransfer.documents.attached? %>
 
-      <div class="xt-attachments-list">
+  <div class="xt-attachments-list">
 
-        <% @xtransfer.documents.each do |document| %>
+    <% @xtransfer.documents.each do |document| %>
 
-          <div class="xt-attachment-item">
+      <div class="xt-attachment-item">
 
-            <div class="xt-attachment-icon">
-              <i class="bi bi-file-earmark-text"></i>
-            </div>
+        <div class="xt-attachment-icon">
+          <i class="bi bi-file-earmark-text"></i>
+        </div>
 
+        <div class="xt-attachment-info">
 
-            <div class="xt-attachment-info">
+          <%= link_to(
+            document.filename.to_s,
+            rails_blob_path(
+              document,
+              disposition: "attachment"
+            ),
+            target: "_blank",
+            class: "xt-attachment-link",
+            title: document.filename.to_s
+          ) %>
 
-              <%= link_to(
-                document.filename.to_s,
-                rails_blob_path(
-                  document,
-                  disposition: "attachment"
-                ),
-                target: "_blank",
-                class: "xt-attachment-link",
-                title: document.filename.to_s
-              ) %>
+          <small>
+            <%= number_to_human_size(document.byte_size) %>
+          </small>
 
-              <small>
-                <%= number_to_human_size(document.byte_size) %>
-              </small>
+        </div>
 
-            </div>
-
-          </div>
-
+        <%= link_to(
+          remove_document_xtransfer_path(@xtransfer, document),
+          class: "btn btn-sm btn-light border text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm ms-2",
+          style: "width: 27px; height: 27px; flex-shrink: 0;",
+          title: "Remove document",
+          data: {
+            turbo_method: :delete,
+            turbo_confirm: "Are you sure you want to remove this document?"
+          }
+        ) do %>
+          <i class="bi bi-trash3-fill" style="font-size: 11px;"></i>
         <% end %>
 
       </div>
 
     <% end %>
+
+  </div>
+
+<% end %>
 
 
     <!-- NEW DOCUMENTS -->

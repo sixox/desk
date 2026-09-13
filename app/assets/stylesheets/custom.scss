@@ -6050,3 +6050,2213 @@
   }
 
 }
+
+/* ============================================================
+   ORGANIZATIONS PAGE
+   ============================================================ */
+
+.organization-page {
+  --org-primary: #4f46e5;
+  --org-primary-soft: #eef2ff;
+  --org-success: #16a34a;
+  --org-success-soft: #ecfdf3;
+  --org-danger: #dc2626;
+  --org-danger-soft: #fef2f2;
+  --org-border: #e9eaf0;
+  --org-muted: #8b90a0;
+  --org-bg: #f7f8fc;
+  --org-text: #252936;
+
+  min-height: 100vh;
+  background: var(--org-bg);
+  color: var(--org-text);
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.organization-header {
+  margin-bottom: 1.25rem;
+}
+
+.organization-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.organization-heading-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--org-primary-soft);
+  color: var(--org-primary);
+  font-size: 1.15rem;
+}
+
+.organization-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.organization-subtitle {
+  margin-top: 0.15rem;
+  color: var(--org-muted);
+  font-size: 0.78rem;
+}
+
+.organization-create {
+  border: 0;
+  border-radius: 9px;
+  padding: 0.52rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.14);
+}
+
+.organization-create:hover {
+  transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   TOP SUMMARY
+   ============================================================ */
+
+.organization-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.organization-summary-card {
+  background: #fff;
+  border: 1px solid var(--org-border);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 2px 10px rgba(20, 25, 40, 0.025);
+}
+
+.organization-summary-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 1rem;
+}
+
+.organization-summary-icon-primary {
+  background: var(--org-primary-soft);
+  color: var(--org-primary);
+}
+
+.organization-summary-icon-success {
+  background: var(--org-success-soft);
+  color: var(--org-success);
+}
+
+.organization-summary-label {
+  color: var(--org-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.organization-summary-value {
+  margin-top: 0.05rem;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+
+/* ============================================================
+   ORGANIZATION LIST
+   ============================================================ */
+
+.organization-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+
+/* ============================================================
+   ORGANIZATION CARD
+   ============================================================ */
+
+.organization-card {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--org-border);
+  border-radius: 16px;
+  box-shadow: 0 3px 14px rgba(20, 25, 40, 0.035);
+}
+
+.organization-card-header {
+  padding: 1rem 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #f0f1f5;
+}
+
+.organization-card-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.organization-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    var(--org-primary-soft),
+    #e0e7ff
+  );
+
+  color: var(--org-primary);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.organization-card-heading {
+  min-width: 0;
+}
+
+.organization-card-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.organization-card-title {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.2;
+  font-weight: 750;
+  color: var(--org-text);
+}
+
+.organization-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: #f3f4f7;
+  color: #686d7b;
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+
+.organization-card-subtitle {
+  margin-top: 0.28rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+
+  color: var(--org-muted);
+  font-size: 0.68rem;
+}
+
+.organization-card-subtitle i {
+  margin-right: 0.14rem;
+  font-size: 0.64rem;
+}
+
+.organization-subtitle-divider {
+  color: #c7cad3;
+}
+
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.organization-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.organization-action {
+  border-radius: 8px;
+  min-height: 31px;
+  padding: 0.35rem 0.55rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.organization-action-edit {
+  color: #5f6472;
+  background: #fff;
+  border: 1px solid var(--org-border);
+}
+
+.organization-action-edit:hover {
+  background: #f8f8fa;
+  color: var(--org-primary);
+  border-color: #dfe1ea;
+}
+
+.organization-action-delete {
+  width: 32px;
+  color: var(--org-danger);
+  background: #fff;
+  border: 1px solid #f1dada;
+}
+
+.organization-action-delete:hover {
+  background: var(--org-danger-soft);
+  color: var(--org-danger);
+}
+
+
+/* ============================================================
+   FINANCIAL SECTION
+   ============================================================ */
+
+.organization-financial-section {
+  padding: 0.9rem 1.05rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  border-bottom: 1px solid #f0f1f5;
+}
+
+.organization-financial-card {
+  min-width: 0;
+  padding: 0.9rem 0.95rem;
+  border-radius: 13px;
+  border: 1px solid var(--org-border);
+  background: #fcfcfd;
+}
+
+.organization-financial-debit {
+  border-color: #e7e3f9;
+  background: linear-gradient(
+    180deg,
+    #ffdfdf 0%,
+    #faf9ff 100%
+  );
+}
+
+.organization-financial-credit {
+  border-color: #dcefe4;
+  background: linear-gradient(
+    180deg,
+    #b8f9c485 0%,
+    #f9fdfb 100%
+  );
+}
+
+.organization-financial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.organization-financial-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.organization-financial-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+  font-size: 0.9rem;
+}
+
+.organization-financial-debit .organization-financial-icon {
+  background: var(--org-primary-soft);
+  color: var(--org-primary);
+}
+
+.organization-financial-credit .organization-financial-icon {
+  background: var(--org-success-soft);
+  color: var(--org-success);
+}
+
+.organization-financial-title {
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.organization-financial-subtitle {
+  margin-top: 0.12rem;
+  color: var(--org-muted);
+  font-size: 0.63rem;
+}
+
+.organization-financial-badge {
+  white-space: nowrap;
+  padding: 0.25rem 0.48rem;
+  border-radius: 999px;
+  background: #f2f3f6;
+  color: #777c89;
+  font-size: 0.58rem;
+  font-weight: 650;
+}
+
+
+/* ============================================================
+   CURRENCY FINANCIAL ROWS
+   ============================================================ */
+
+.organization-currency-financial-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.organization-currency-financial-row {
+  min-height: 42px;
+  padding: 0.48rem 0.6rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(230, 231, 237, 0.8);
+}
+
+.organization-currency-financial-name {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  min-width: 0;
+
+  font-size: 0.7rem;
+  font-weight: 650;
+  color: #515665;
+}
+
+.organization-currency-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.organization-currency-dot-debit {
+  background: var(--org-primary);
+}
+
+.organization-currency-dot-credit {
+  background: var(--org-success);
+}
+
+.organization-financial-amount {
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.organization-financial-debit .organization-financial-amount {
+  color: var(--org-primary);
+}
+
+.organization-financial-credit .organization-financial-amount {
+  color: var(--org-success);
+}
+
+.organization-financial-empty {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+
+  color: var(--org-muted);
+  font-size: 0.68rem;
+}
+
+
+/* ============================================================
+   ACCOUNTS DETAILS
+   ============================================================ */
+
+.organization-accounts-details {
+  border-bottom: 1px solid #f0f1f5;
+}
+
+.organization-accounts-summary {
+  list-style: none;
+  cursor: pointer;
+
+  padding: 0.85rem 1.05rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  transition: background 0.15s ease;
+}
+
+.organization-accounts-summary::-webkit-details-marker {
+  display: none;
+}
+
+.organization-accounts-summary:hover {
+  background: #fafafd;
+}
+
+.organization-accounts-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.organization-accounts-summary-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f3f4f7;
+  color: #646977;
+  font-size: 0.82rem;
+}
+
+.organization-accounts-summary-title {
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.organization-accounts-summary-subtitle {
+  margin-top: 0.08rem;
+  color: var(--org-muted);
+  font-size: 0.62rem;
+}
+
+.organization-accounts-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.organization-expand-label {
+  color: var(--org-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.organization-chevron {
+  color: #989cab;
+  font-size: 0.7rem;
+  transition: transform 0.18s ease;
+}
+
+.organization-accounts-details[open]
+.organization-chevron {
+  transform: rotate(180deg);
+}
+
+
+/* ============================================================
+   ACCOUNT CONTENT
+   ============================================================ */
+
+.organization-accounts-content {
+  padding: 0 1.05rem 1rem;
+}
+
+.organization-account-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+
+  padding: 0.7rem 0;
+
+  border-top: 1px solid #f1f2f5;
+}
+
+.organization-account-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.organization-account-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+  background: #ededed00;
+  color: #747887;
+  font-size: 0.8rem;
+}
+
+.organization-account-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.organization-account-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--org-text);
+}
+
+.organization-account-kind {
+  padding: 0.15rem 0.38rem;
+  border-radius: 999px;
+  background: #f2f3f6;
+  color: #777b88;
+  font-size: 0.56rem;
+  font-weight: 650;
+}
+
+.organization-account-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+
+  margin-top: 0.18rem;
+
+  color: var(--org-muted);
+  font-size: 0.6rem;
+}
+
+.organization-account-meta i {
+  margin-right: 0.15rem;
+}
+
+
+/* ============================================================
+   ACCOUNT FINANCIALS
+   ============================================================ */
+
+.organization-account-financials {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.organization-account-financial {
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.organization-account-financial-label {
+  color: var(--org-muted);
+  font-size: 0.56rem;
+  font-weight: 600;
+}
+
+.organization-account-financial-value {
+  margin-top: 0.1rem;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.organization-account-start
+.organization-account-financial-value {
+  color: #626775;
+}
+
+.organization-account-debit
+.organization-account-financial-value {
+  color: var(--org-primary);
+}
+
+.organization-account-credit
+.organization-account-financial-value {
+  color: var(--org-success);
+}
+
+
+/* ============================================================
+   ACCOUNT EDIT
+   ============================================================ */
+
+.organization-account-edit {
+  min-height: 30px;
+  padding: 0.3rem 0.5rem;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  border: 1px solid var(--org-border);
+  border-radius: 8px;
+
+  background: #fff;
+  color: #666b78;
+
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+
+.organization-account-edit:hover {
+  background: #f8f8fa;
+  color: var(--org-primary);
+  border-color: #dfe1ea;
+}
+
+
+/* ============================================================
+   EMPTY ACCOUNTS
+   ============================================================ */
+
+.organization-accounts-empty {
+  min-height: 90px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.65rem;
+
+  color: var(--org-muted);
+}
+
+.organization-accounts-empty-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f5f5f8;
+  color: #9a9eaa;
+}
+
+.organization-accounts-empty-title {
+  color: #5c6170;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.organization-accounts-empty-text {
+  margin-top: 0.12rem;
+  font-size: 0.6rem;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.organization-card-footer {
+  min-height: 46px;
+  padding: 0.65rem 1.05rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  background: #fcfcfd;
+}
+
+.organization-footer-info {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  color: var(--org-muted);
+  font-size: 0.6rem;
+}
+
+.organization-manage-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  color: var(--org-primary);
+  text-decoration: none;
+
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.organization-manage-link:hover {
+  color: #3730a3;
+}
+
+.organization-manage-link i {
+  font-size: 0.65rem;
+  transition: transform 0.15s ease;
+}
+
+.organization-manage-link:hover i {
+  transform: translateX(2px);
+}
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.organization-empty-state {
+  padding: 4rem 1.5rem;
+  background: #fff;
+  border: 1px solid var(--org-border);
+  border-radius: 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  box-shadow: 0 3px 14px rgba(20, 25, 40, 0.035);
+}
+
+.organization-empty-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--org-primary-soft);
+  color: var(--org-primary);
+
+  font-size: 1.35rem;
+}
+
+.organization-empty-state h5 {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.organization-empty-state p {
+  max-width: 420px;
+  margin: 0 0 1.15rem;
+
+  color: var(--org-muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+  .organization-financial-section {
+    grid-template-columns: 1fr;
+  }
+
+  .organization-account-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .organization-account-financials {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-left: 2.65rem;
+  }
+
+  .organization-account-edit {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .organization-page {
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  .organization-header {
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .organization-create span {
+    display: none;
+  }
+
+  .organization-create {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .organization-summary-grid {
+    gap: 0.55rem;
+  }
+
+  .organization-summary-card {
+    padding: 0.7rem;
+  }
+
+  .organization-summary-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .organization-card-header {
+    align-items: flex-start;
+  }
+
+  .organization-card-actions .organization-action-edit span {
+    display: none;
+  }
+
+  .organization-action-edit {
+    width: 32px;
+    padding: 0.35rem;
+  }
+
+  .organization-financial-section {
+    padding: 0.7rem;
+  }
+
+  .organization-financial-card {
+    padding: 0.75rem;
+  }
+
+  .organization-accounts-summary {
+    padding: 0.75rem;
+  }
+
+  .organization-expand-label {
+    display: none;
+  }
+
+  .organization-accounts-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .organization-account-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .organization-account-financials {
+    padding-left: 0;
+    gap: 0.65rem;
+  }
+
+  .organization-account-financial {
+    min-width: 60px;
+  }
+
+  .organization-account-edit span {
+    display: none;
+  }
+
+  .organization-card-footer {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+
+@media (max-width: 430px) {
+
+  .organization-summary-card {
+    gap: 0.5rem;
+  }
+
+  .organization-summary-icon {
+    width: 31px;
+    height: 31px;
+    font-size: 0.85rem;
+  }
+
+  .organization-summary-label {
+    font-size: 0.62rem;
+  }
+
+  .organization-summary-value {
+    font-size: 1rem;
+  }
+
+  .organization-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .organization-card-title {
+    font-size: 0.86rem;
+  }
+
+  .organization-card-subtitle {
+    font-size: 0.6rem;
+  }
+
+  .organization-financial-header {
+    align-items: flex-start;
+  }
+
+  .organization-financial-badge {
+    display: none;
+  }
+
+  .organization-account-financials {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .organization-account-financial {
+    align-items: flex-start;
+  }
+}
+
+.banafsh-h {
+  color: #710e69;
+}
+
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
+
+.transaction-page {
+  --transaction-border: #e9ecef;
+  --transaction-muted: #8a94a6;
+  --transaction-dark: #263238;
+  --transaction-soft: #f8f9fb;
+}
+
+
+/* HEADER */
+
+.transaction-header {
+  margin-bottom: 18px;
+}
+
+.transaction-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--transaction-dark);
+  letter-spacing: -0.2px;
+}
+
+.transaction-subtitle {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--transaction-muted);
+}
+
+
+/* CARD */
+
+.transaction-card {
+  background: #fff;
+  border: 1px solid var(--transaction-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.035);
+}
+
+
+/* TABLE */
+
+.transaction-table {
+  font-size: 13px;
+}
+
+.transaction-table thead th {
+  padding: 13px 14px;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--transaction-border);
+  color: #6c757d;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .45px;
+  white-space: nowrap;
+}
+
+.transaction-table tbody td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #f0f1f3;
+  vertical-align: middle;
+}
+
+.transaction-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.transaction-table tbody tr {
+  transition: background-color .15s ease;
+}
+
+.transaction-table tbody tr:hover {
+  background-color: #fafbfc;
+}
+
+
+/* ID */
+
+.transaction-id {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #697386;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* AMOUNTS */
+
+.transaction-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.transaction-debit {
+  color: #dc3545;
+}
+
+.transaction-credit {
+  color: #198754;
+}
+
+.transaction-amount i {
+  font-size: 11px;
+}
+
+
+/* EMPTY */
+
+.transaction-empty {
+  color: #adb5bd;
+  font-size: 13px;
+}
+
+
+/* BALANCE */
+
+.transaction-balance {
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.transaction-balance-after {
+  color: #212529;
+}
+
+
+/* TRANSACTIONABLE */
+
+.transactionable-name {
+  display: flex;
+  align-items: center;
+}
+
+.transaction-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #f1f3f5;
+  color: #495057;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.transaction-reference {
+  display: block;
+  margin-top: 3px;
+  color: #9aa1ac;
+  font-size: 10px;
+}
+
+
+/* ACCOUNT */
+
+.transaction-account-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.transaction-account-id {
+  display: block;
+  margin-top: 3px;
+  color: #9aa1ac;
+  font-size: 10px;
+}
+
+
+/* CURRENCY */
+
+.transaction-currency {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #f5f7fa;
+  color: #495057;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transaction-currency i {
+  font-size: 11px;
+}
+
+
+/* DATE */
+
+.transaction-date {
+  color: #495057;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transaction-time {
+  display: block;
+  margin-top: 2px;
+  color: #9aa1ac;
+  font-size: 10px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+  .transaction-card {
+    border-radius: 10px;
+  }
+
+  .transaction-table {
+    min-width: 1050px;
+  }
+
+  .transaction-header {
+    margin-bottom: 12px;
+  }
+
+}
+
+/* =========================================================
+   XACCOUNT SHOW
+   ========================================================= */
+
+.xaccount-page {
+  --xaccount-border: #e8ebef;
+  --xaccount-muted: #8b95a5;
+  --xaccount-dark: #263238;
+  --xaccount-soft: #f8f9fb;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.xaccount-header {
+  margin-bottom: 20px;
+}
+
+.xaccount-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.xaccount-heading-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #f0ecff;
+  color: #6854c8;
+  font-size: 19px;
+}
+
+.xaccount-title {
+  margin: 0;
+  color: var(--xaccount-dark);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.xaccount-subtitle {
+  margin-top: 3px;
+  color: var(--xaccount-muted);
+  font-size: 12px;
+}
+
+.xaccount-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.xaccount-action {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   ACCOUNT INFORMATION
+   ========================================================= */
+
+.xaccount-info-card,
+.xaccount-detail-card {
+  margin-bottom: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--xaccount-border);
+  border-radius: 14px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, .025);
+}
+
+.xaccount-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.xaccount-info-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  min-height: 82px;
+  padding: 15px 18px;
+  border-right: 1px solid var(--xaccount-border);
+}
+
+.xaccount-info-item:last-child {
+  border-right: 0;
+}
+
+.xaccount-info-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #f5f6f8;
+  color: #697386;
+  font-size: 14px;
+}
+
+.xaccount-info-label {
+  margin-bottom: 3px;
+  color: var(--xaccount-muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .35px;
+}
+
+.xaccount-info-value {
+  overflow: hidden;
+  color: #343a40;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xaccount-organization-link {
+  color: #5946b2;
+  text-decoration: none;
+}
+
+.xaccount-organization-link:hover {
+  text-decoration: underline;
+}
+
+.xaccount-currency-badge,
+.xaccount-kind {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 4px 8px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f5f6f8;
+  color: #495057;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
+
+.xaccount-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.xaccount-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 105px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--xaccount-border);
+  border-radius: 13px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, .025);
+}
+
+.xaccount-summary-icon {
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.xaccount-summary-icon-danger {
+  background: #fff0f1;
+  color: #dc3545;
+}
+
+.xaccount-summary-icon-success {
+  background: #edf9f2;
+  color: #198754;
+}
+
+.xaccount-summary-icon-primary {
+  background: #f0ecff;
+  color: #6854c8;
+}
+
+.xaccount-summary-icon-secondary {
+  background: #eef5ff;
+  color: #4674c8;
+}
+
+.xaccount-summary-content {
+  min-width: 0;
+}
+
+.xaccount-summary-label {
+  color: var(--xaccount-muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+.xaccount-summary-value {
+  margin-top: 2px;
+  overflow: hidden;
+  color: #343a40;
+  font-size: 19px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xaccount-summary-currency {
+  margin-top: 2px;
+  color: #a0a6af;
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   OPENING BALANCE
+   ========================================================= */
+
+.xaccount-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+}
+
+.xaccount-detail-item {
+  min-width: 0;
+  padding: 16px 18px;
+  border-right: 1px solid var(--xaccount-border);
+}
+
+.xaccount-detail-item:last-child {
+  border-right: 0;
+}
+
+.xaccount-detail-label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--xaccount-muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .35px;
+}
+
+.xaccount-detail-value {
+  color: #343a40;
+  font-size: 13px;
+}
+
+.xaccount-detail-text {
+  color: #495057;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   RELATED ACTIVITY GRID
+   ========================================================= */
+
+.xaccount-related-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   RELATED ACTIVITY CARD
+   ========================================================= */
+
+.xaccount-related-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--xaccount-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .018);
+}
+
+.xaccount-related-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px 14px;
+}
+
+.xaccount-related-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xaccount-related-icon {
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #f5f6f8;
+  color: #697386;
+  font-size: 14px;
+}
+
+.xaccount-related-title {
+  color: #343a40;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.xaccount-related-text {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--xaccount-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xaccount-coming-soon {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #f5f6f8;
+  color: #9aa1ac;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.xaccount-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #f5f6f8;
+  color: #697386;
+  font-size: 9px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .15s ease, color .15s ease;
+}
+
+.xaccount-view-all:hover {
+  background: #eceef1;
+  color: #343a40;
+  text-decoration: none;
+}
+
+.xaccount-view-all i {
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   RELATED COUNT
+   ========================================================= */
+
+.xaccount-transaction-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #f5f6f8;
+  color: #697386;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.xaccount-transaction-count i {
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   MINI TABLE
+   ========================================================= */
+
+.xaccount-mini-table-wrapper {
+  width: 100%;
+  overflow: hidden;
+  border-top: 1px solid var(--xaccount-border);
+}
+
+.xaccount-mini-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.xaccount-mini-table thead th {
+  padding: 7px 10px;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--xaccount-border);
+  color: #9aa1ac;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+.xaccount-mini-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f1f3;
+  color: #697386;
+  font-size: 9px;
+  vertical-align: middle;
+}
+
+.xaccount-mini-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.xaccount-mini-table tbody tr {
+  transition: background .12s ease;
+}
+
+.xaccount-mini-table tbody tr:hover {
+  background: #fafbfc;
+}
+
+
+/* =========================================================
+   GENERIC MINI TABLE CONTENT
+   ========================================================= */
+
+.xaccount-mini-link {
+  color: #343a40;
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.xaccount-mini-link:hover {
+  color: #495057;
+  text-decoration: underline;
+}
+
+.xaccount-mini-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #697386;
+  white-space: nowrap;
+}
+
+.xaccount-mini-party i {
+  font-size: 9px;
+}
+
+.xaccount-mini-amount {
+  color: #343a40;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.xaccount-mini-date {
+  color: #9aa1ac;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.xaccount-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: #f5f6f8;
+  color: #697386;
+  font-size: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   TRANSFER TABLE
+   ========================================================= */
+
+.xaccount-transfer-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+/*
+ * Four equal columns.
+ * No fixed pixel widths.
+ * No horizontal scrolling.
+ */
+
+.xaccount-transfer-table th:nth-child(1),
+.xaccount-transfer-table td:nth-child(1),
+.xaccount-transfer-table th:nth-child(4),
+.xaccount-transfer-table td:nth-child(4) {
+  width: 29%;
+}
+
+.xaccount-transfer-table th:nth-child(2),
+.xaccount-transfer-table td:nth-child(2),
+.xaccount-transfer-table th:nth-child(3),
+.xaccount-transfer-table td:nth-child(3) {
+  width: 21%;
+}
+
+
+/* =========================================================
+   TRANSFER ACCOUNTS
+   ========================================================= */
+
+.xaccount-transfer-account {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.xaccount-transfer-account > i {
+  flex: 0 0 auto;
+  font-size: 9px;
+}
+
+.xaccount-transfer-sender .xaccount-transfer-account > i {
+  color: #dc3545;
+}
+
+.xaccount-transfer-receiver .xaccount-transfer-account > i {
+  color: #198754;
+}
+
+.xaccount-mini-account-link {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: #343a40;
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xaccount-mini-account-link:hover {
+  text-decoration: underline;
+}
+
+.xaccount-transfer-sender .xaccount-mini-account-link:hover {
+  color: #dc3545;
+}
+
+.xaccount-transfer-receiver .xaccount-mini-account-link:hover {
+  color: #198754;
+}
+
+.xaccount-mini-organization {
+  max-width: 100%;
+  margin-top: 2px;
+  overflow: hidden;
+  color: #9aa1ac;
+  font-size: 7px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xaccount-mini-current {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 2px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: #f0f1f3;
+  color: #697386;
+  font-size: 6px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+
+/* =========================================================
+   TRANSFER AMOUNTS
+   ========================================================= */
+
+.xaccount-transfer-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.xaccount-transfer-amount-value {
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.xaccount-transfer-currency {
+  font-size: 7px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+
+/* SENDER = RED */
+
+.xaccount-transfer-sent {
+  position: relative;
+  color: #dc3545 !important;
+}
+
+.xaccount-transfer-sent .xaccount-transfer-amount-value {
+  color: #dc3545;
+}
+
+.xaccount-transfer-sent .xaccount-transfer-currency {
+  color: #e17b85;
+}
+
+
+/* RECEIVER = GREEN */
+
+.xaccount-transfer-received {
+  position: relative;
+  color: #198754 !important;
+}
+
+.xaccount-transfer-received .xaccount-transfer-amount-value {
+  color: #198754;
+}
+
+.xaccount-transfer-received .xaccount-transfer-currency {
+  color: #63a98a;
+}
+
+
+/* =========================================================
+   TRANSFER FLOW
+   ========================================================= */
+
+/*
+ * Arrow sits between Sent and Received.
+ */
+
+.xaccount-transfer-sent::after {
+  content: "\F138";
+  position: absolute;
+  top: 50%;
+  right: -7px;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  border: 1px solid #e8ebef;
+  border-radius: 50%;
+  background: #fff;
+  color: #9aa1ac;
+  font-family: "bootstrap-icons";
+  font-size: 8px;
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.xaccount-mini-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  color: #9aa1ac;
+  font-size: 9px;
+}
+
+.xaccount-mini-empty i {
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   TRANSACTIONS SECTION
+   ========================================================= */
+
+.xaccount-transactions-section {
+  margin-top: 22px;
+}
+
+.xaccount-transactions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+
+/* =========================================================
+   TRANSACTION TYPE LINKS
+   ========================================================= */
+
+.transaction-type-link {
+  text-decoration: none;
+  transition: all .15s ease;
+}
+
+.transaction-type-link:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+  filter: brightness(.95);
+}
+
+.transaction-type-missing {
+  opacity: .55;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+   ========================================================= */
+
+@media (max-width: 992px) {
+
+  .xaccount-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .xaccount-info-item {
+    border-right: 1px solid var(--xaccount-border);
+  }
+
+  .xaccount-info-item:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .xaccount-info-item:nth-child(-n+2) {
+    border-bottom: 1px solid var(--xaccount-border);
+  }
+
+  .xaccount-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .xaccount-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .xaccount-detail-item:nth-child(2) {
+    border-right: 0;
+  }
+
+  .xaccount-detail-item:last-child {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--xaccount-border);
+    border-right: 0;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .xaccount-header {
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
+  .xaccount-header-actions span {
+    display: none;
+  }
+
+  .xaccount-info-grid,
+  .xaccount-summary-grid,
+  .xaccount-related-grid,
+  .xaccount-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .xaccount-info-item {
+    border-right: 0;
+    border-bottom: 1px solid var(--xaccount-border);
+  }
+
+  .xaccount-info-item:last-child {
+    border-bottom: 0;
+  }
+
+  .xaccount-detail-item {
+    border-right: 0;
+    border-bottom: 1px solid var(--xaccount-border);
+  }
+
+  .xaccount-detail-item:last-child {
+    border-bottom: 0;
+  }
+
+  .xaccount-related-card-header {
+    align-items: flex-start;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 576px) {
+
+  .xaccount-heading-icon {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    font-size: 17px;
+  }
+
+  .xaccount-title {
+    font-size: 17px;
+  }
+
+  .xaccount-subtitle {
+    font-size: 10px;
+  }
+
+  .xaccount-related-card-header {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .xaccount-related-heading {
+    gap: 8px;
+  }
+
+  .xaccount-related-icon {
+    width: 31px;
+    height: 31px;
+    flex-basis: 31px;
+    font-size: 12px;
+  }
+
+  .xaccount-related-title {
+    font-size: 11px;
+  }
+
+  .xaccount-related-text {
+    font-size: 8px;
+  }
+
+  .xaccount-view-all {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .xaccount-transaction-count {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .xaccount-mini-table thead th {
+    padding: 6px 7px;
+    font-size: 7px;
+  }
+
+  .xaccount-mini-table tbody td {
+    padding: 7px;
+  }
+
+  .xaccount-transfer-account > i {
+    display: none;
+  }
+
+  .xaccount-mini-account-link {
+    font-size: 8px;
+  }
+
+  .xaccount-mini-organization {
+    font-size: 6px;
+  }
+
+  .xaccount-transfer-amount-value {
+    font-size: 8px;
+  }
+
+  .xaccount-transfer-currency {
+    font-size: 6px;
+  }
+
+  .xaccount-mini-current {
+    font-size: 5px;
+  }
+
+}

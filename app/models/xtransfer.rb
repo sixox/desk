@@ -41,14 +41,18 @@ class Xtransfer < ApplicationRecord
   has_many :exchanges,
            through: :exchange_transfers
 
+  accepts_nested_attributes_for :exchange_transfers,
+                                allow_destroy: true
+
 
   # ==================================================
   # TRANSACTIONS
   # ==================================================
 
   has_many :xtransactions,
-           as: :transactionable,
-           dependent: :restrict_with_error
+         -> { order(id: :desc) },
+         as: :transactionable,
+         dependent: :restrict_with_error
 
 
   # ==================================================
@@ -57,8 +61,14 @@ class Xtransfer < ApplicationRecord
 
   has_many_attached :documents
 
-  has_many :comments, as: :commentable, dependent: :destroy
 
+  # ==================================================
+  # COMMENTS
+  # ==================================================
+
+  has_many :comments,
+           as: :commentable,
+           dependent: :destroy
 
 
   # ==================================================
@@ -131,10 +141,6 @@ class Xtransfer < ApplicationRecord
 
   # --------------------------------------------------
   # EXCHANGE RATES
-  #
-  # Rate is optional.
-  #
-  # If supplied, it must be greater than zero.
   # --------------------------------------------------
 
   validates :sender_exchange_rate,
@@ -151,7 +157,7 @@ class Xtransfer < ApplicationRecord
 
 
   # --------------------------------------------------
-  # EXCHANGE RATE / TO CURRENCY RELATION
+  # EXCHANGE RATE / TO CURRENCY
   # --------------------------------------------------
 
   validate :sender_rate_requires_to_currency
@@ -159,7 +165,7 @@ class Xtransfer < ApplicationRecord
 
 
   # --------------------------------------------------
-  # RECEIVER CURRENCY RELATION
+  # RECEIVER CURRENCY
   # --------------------------------------------------
 
   validate :receiver_currency_matches_sender_conversion
@@ -180,20 +186,35 @@ class Xtransfer < ApplicationRecord
 
   before_validation :calculate_conversion_amounts
 
+  def accounting_entries
+    [
+      {
+        xaccount_id: sender_account_id,
+        currency_id: sender_account&.currency_id,
+        debit_amount: sender_total.to_i,
+        credit_amount: 0
+      },
+      {
+        xaccount_id: receiver_account_id,
+        currency_id: receiver_account&.currency_id,
+        debit_amount: 0,
+        credit_amount: receiver_total.to_i
+      }
+    ]
+  end
+
+  
+  # ==================================================
+  # CALCULATE CONVERSION AMOUNTS
+  # ==================================================
 
   def calculate_conversion_amounts
 
-    # --------------------------------------------------
+    # ------------------------------------------------
     # SENDER
     #
-    # If sender exchange rate exists:
-    #
-    #   amount × rate
-    #
-    # Otherwise:
-    #
-    #   amount
-    # --------------------------------------------------
+    # sender amount × sender rate
+    # ------------------------------------------------
 
     if sender_amount.present?
 
@@ -215,17 +236,30 @@ class Xtransfer < ApplicationRecord
     end
 
 
-    # --------------------------------------------------
-    # RECEIVER
+    # ------------------------------------------------
+    # SENDER TOTAL
+    # ------------------------------------------------
+
+    if sender_amount.present?
+
+      self.sender_total =
+        sender_amount_to.to_i +
+        sender_charge.to_i
+
+    end
+
+
+    # ------------------------------------------------
+    # RECEIVER AMOUNT
     #
-    # If receiver exchange rate exists:
+    # Receiver amount is supplied/calculated by the
+    # sender side.
     #
-    #   amount ÷ rate
+    # receiver amount × receiver rate
     #
-    # Otherwise:
-    #
-    #   amount
-    # --------------------------------------------------
+    # IMPORTANT:
+    # BOTH exchange rates multiply.
+    # ------------------------------------------------
 
     if receiver_amount.present?
 
@@ -234,7 +268,7 @@ class Xtransfer < ApplicationRecord
 
         self.receiver_amount_to =
           (
-            receiver_amount.to_f /
+            receiver_amount.to_f *
             receiver_exchange_rate.to_f
           ).round
 
@@ -247,28 +281,18 @@ class Xtransfer < ApplicationRecord
     end
 
 
-    # --------------------------------------------------
-    # SENDER TOTAL
-    # --------------------------------------------------
-
-    if sender_amount.present?
-
-      self.sender_total =
-        sender_amount_to.to_i +
-        sender_charge.to_i
-    end
-
-
-    # --------------------------------------------------
+    # ------------------------------------------------
     # RECEIVER TOTAL
-    # --------------------------------------------------
+    # ------------------------------------------------
 
     if receiver_amount.present?
 
       self.receiver_total =
         receiver_amount_to.to_i +
         receiver_charge.to_i
+
     end
+
   end
 
 
@@ -300,26 +324,34 @@ class Xtransfer < ApplicationRecord
   # ==================================================
 
   def sender_account_belongs_to_organization
+
     return if sender_account.blank?
 
     unless sender_account.organization_id.present?
+
       errors.add(
         :sender_account_id,
         "must belong to an organization"
       )
+
     end
+
   end
 
 
   def receiver_account_belongs_to_organization
+
     return if receiver_account.blank?
 
     unless receiver_account.organization_id.present?
+
       errors.add(
         :receiver_account_id,
         "must belong to an organization"
       )
+
     end
+
   end
 
 
@@ -328,36 +360,45 @@ class Xtransfer < ApplicationRecord
   # ==================================================
 
   def sender_currency_matches_account
+
     return if sender_account.blank?
     return if sender_currency.blank?
 
     unless sender_currency_id == sender_account.currency_id
+
       errors.add(
         :sender_currency_id,
         "must match the sender account currency"
       )
+
     end
+
   end
 
 
   def receiver_currency_matches_account
+
     return if receiver_account.blank?
     return if receiver_currency.blank?
 
     unless receiver_currency_id == receiver_account.currency_id
+
       errors.add(
         :receiver_currency_id,
         "must match the receiver account currency"
       )
+
     end
+
   end
 
 
   # ==================================================
-  # EXCHANGE RATE / TO CURRENCY VALIDATIONS
+  # EXCHANGE RATE / TO CURRENCY
   # ==================================================
 
   def sender_rate_requires_to_currency
+
     rate_exists =
       sender_exchange_rate.present?
 
@@ -366,23 +407,29 @@ class Xtransfer < ApplicationRecord
 
 
     if rate_exists && !currency_exists
+
       errors.add(
         :sender_to_currency_id,
         "must be selected when sender exchange rate is provided"
       )
+
     end
 
 
     if currency_exists && !rate_exists
+
       errors.add(
         :sender_exchange_rate,
         "must be provided when sender To Currency is selected"
       )
+
     end
+
   end
 
 
   def receiver_rate_requires_to_currency
+
     rate_exists =
       receiver_exchange_rate.present?
 
@@ -391,19 +438,24 @@ class Xtransfer < ApplicationRecord
 
 
     if rate_exists && !currency_exists
+
       errors.add(
         :receiver_to_currency_id,
         "must be selected when receiver exchange rate is provided"
       )
+
     end
 
 
     if currency_exists && !rate_exists
+
       errors.add(
         :receiver_exchange_rate,
         "must be provided when receiver To Currency is selected"
       )
+
     end
+
   end
 
 
@@ -417,16 +469,10 @@ class Xtransfer < ApplicationRecord
     return if receiver_currency.blank?
 
 
-    # --------------------------------------------------
-    # If sender exchange rate exists:
-    #
-    # Receiver currency MUST equal
-    # Sender To Currency.
-    # --------------------------------------------------
-
     if sender_exchange_rate.present?
 
       return if sender_to_currency_id.blank?
+
 
       unless receiver_currency_id == sender_to_currency_id
 
@@ -438,15 +484,9 @@ class Xtransfer < ApplicationRecord
       end
 
       return
+
     end
 
-
-    # --------------------------------------------------
-    # If sender exchange rate does NOT exist:
-    #
-    # Receiver currency MUST equal
-    # Sender currency.
-    # --------------------------------------------------
 
     unless receiver_currency_id == sender_currency_id
 
@@ -456,5 +496,6 @@ class Xtransfer < ApplicationRecord
       )
 
     end
+
   end
 end

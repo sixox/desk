@@ -1,0 +1,401 @@
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<div class="xaccount-header d-flex justify-content-between align-items-center">
+
+<div class="xaccount-heading">
+
+<div class="xaccount-heading-icon">
+  <i class="bi bi-wallet2"></i>
+</div>
+
+<div>
+
+  <h5 class="xaccount-title">
+    <%= @xaccount.number %>
+  </h5>
+
+  <div class="xaccount-subtitle">
+
+    <% if @xaccount.organization %>
+    <i class="bi bi-buildings me-1"></i>
+    <%= @xaccount.organization.name %>
+    <% else %>
+    Account
+    <% end %>
+
+  </div>
+
+</div>
+
+</div>
+
+
+<!-- ACTIONS -->
+
+<div class="xaccount-header-actions">
+
+
+
+
+<%= link_to edit_xaccount_path(@xaccount),
+data: { controller: "bs-modal-form" },
+class: "btn btn-sm btn-outline-secondary xaccount-action" do %>
+
+<i class="bi bi-pencil"></i>
+<span>Edit</span>
+
+<% end %>
+
+</div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- ACCOUNT INFORMATION -->
+<!-- ========================================================= -->
+
+<div class="xaccount-info-card">
+
+
+
+
+<div class="xaccount-info-grid">
+
+
+<!-- ACCOUNT NUMBER -->
+
+<div class="xaccount-info-item">
+
+  <div class="xaccount-info-icon">
+    <i class="bi bi-wallet2"></i>
+  </div>
+
+  <div>
+
+    <div class="xaccount-info-label">
+      Account Number
+    </div>
+
+    <div class="xaccount-info-value">
+      <%= @xaccount.number %>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ORGANIZATION -->
+
+<div class="xaccount-info-item">
+
+  <div class="xaccount-info-icon">
+    <i class="bi bi-buildings"></i>
+  </div>
+
+  <div>
+
+    <div class="xaccount-info-label">
+      Organization
+    </div>
+
+    <div class="xaccount-info-value">
+
+      <% if @xaccount.organization %>
+
+      <%= link_to(
+        @xaccount.organization.name,
+        organization_path(@xaccount.organization),
+        class: "xaccount-organization-link"
+          ) %>
+
+          <% else %>
+
+          <span class="text-muted">
+            —
+          </span>
+
+          <% end %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- CURRENCY -->
+
+    <div class="xaccount-info-item">
+
+      <div class="xaccount-info-icon">
+        <i class="bi bi-currency-exchange"></i>
+      </div>
+
+      <div>
+
+        <div class="xaccount-info-label">
+          Currency
+        </div>
+
+        <div class="xaccount-info-value">
+
+          <% if @xaccount.currency %>
+
+          <span class="xaccount-currency-badge">
+            <%= @xaccount.currency.name %>
+          </span>
+
+          <% else %>
+
+          <span class="text-muted">
+            —
+          </span>
+
+          <% end %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- KIND -->
+
+    <div class="xaccount-info-item">
+
+      <div class="xaccount-info-icon">
+        <i class="bi bi-tag"></i>
+      </div>
+
+      <div>
+
+        <div class="xaccount-info-label">
+          Account Type
+        </div>
+
+        <div class="xaccount-info-value">
+
+          <span class="xaccount-kind">
+            <%= @xaccount.kind.presence || "—" %>
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- BALANCE SUMMARY -->
+<!-- ========================================================= -->
+
+<div class="xaccount-summary-grid">
+
+
+  <!-- DEBIT -->
+
+  <div class="xaccount-summary-card">
+
+    <div class="xaccount-summary-icon xaccount-summary-icon-danger">
+      <i class="bi bi-arrow-down-left"></i>
+    </div>
+
+    <div class="xaccount-summary-content">
+
+      <div class="xaccount-summary-label">
+        Total Debit
+      </div>
+
+      <div class="xaccount-summary-value text-danger">
+
+        <%= number_with_delimiter(@xaccount.debit_total) %>
+
+      </div>
+
+      <% if @xaccount.currency %>
+
+      <div class="xaccount-summary-currency">
+        <%= @xaccount.currency.name %>
+      </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- CREDIT -->
+
+  <div class="xaccount-summary-card">
+
+    <div class="xaccount-summary-icon xaccount-summary-icon-success">
+      <i class="bi bi-arrow-up-right"></i>
+    </div>
+
+    <div class="xaccount-summary-content">
+
+      <div class="xaccount-summary-label">
+        Total Credit
+      </div>
+
+      <div class="xaccount-summary-value text-success">
+
+        <%= number_with_delimiter(@xaccount.credit_total) %>
+
+      </div>
+
+      <% if @xaccount.currency %>
+
+      <div class="xaccount-summary-currency">
+        <%= @xaccount.currency.name %>
+      </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- BALANCE -->
+
+  <div class="xaccount-summary-card xaccount-summary-card-balance">
+
+    <div class="xaccount-summary-icon xaccount-summary-icon-primary">
+      <i class="bi bi-wallet2"></i>
+    </div>
+
+    <div class="xaccount-summary-content">
+
+      <div class="xaccount-summary-label">
+        Current Balance
+      </div>
+
+      <div class="xaccount-summary-value">
+
+        <%= number_with_delimiter(@xaccount.balance) %>
+
+      </div>
+
+      <% if @xaccount.currency %>
+
+      <div class="xaccount-summary-currency">
+        <%= @xaccount.currency.name %>
+      </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- TRANSACTIONS -->
+
+  <div class="xaccount-summary-card">
+
+    <div class="xaccount-summary-icon xaccount-summary-icon-secondary">
+      <i class="bi bi-arrow-left-right"></i>
+    </div>
+
+    <div class="xaccount-summary-content">
+
+      <div class="xaccount-summary-label">
+        Transactions
+      </div>
+
+      <div class="xaccount-summary-value">
+
+        <%= @xtransactions.count %>
+
+      </div>
+
+      <div class="xaccount-summary-currency">
+        Recorded transactions
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- OPENING BALANCE -->
+<!-- ========================================================= -->
+
+<div class="xaccount-detail-card">
+
+
+
+
+  <div class="xaccount-detail-grid">
+
+    <div class="xaccount-detail-item">
+
+      <span class="xaccount-detail-label">
+        Initial account balance
+      </span>
+
+      <strong class="xaccount-detail-value">
+        <%= number_with_delimiter(@xaccount.start_amount) %>
+      </strong>
+
+    </div>
+
+
+    <div class="xaccount-detail-item">
+
+      <span class="xaccount-detail-label">
+        Date
+      </span>
+
+      <strong class="xaccount-detail-value">
+
+        <% if @xaccount.date_change_start_amount %>
+        <%= @xaccount.date_change_start_amount.strftime("%Y-%m-%d") %>
+        <% else %>
+        —
+        <% end %>
+
+      </strong>
+
+    </div>
+
+
+    <div class="xaccount-detail-item xaccount-detail-item-wide">
+
+      <span class="xaccount-detail-label">
+        Details
+      </span>
+
+      <div class="xaccount-detail-text">
+
+        <%= @xaccount.details_of_change_start_amount.presence || "No details provided." %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- ACTIVITY -->
+<!-- ========================================================= -->
+
+<div class="xaccount-related-grid">

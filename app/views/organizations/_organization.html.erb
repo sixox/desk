@@ -1,0 +1,449 @@
+<% accounts = organization.xaccounts %>
+
+<% accounts_by_currency = accounts.group_by(&:currency_id) %>
+
+<% currency_lookup =
+     accounts
+       .filter_map(&:currency)
+       .index_by(&:id)
+%>
+
+<% debit_by_currency =
+     accounts_by_currency.transform_values do |currency_accounts|
+       currency_accounts.sum do |account|
+         account.debit_amount.to_i
+       end
+     end
+%>
+
+<% credit_by_currency =
+     accounts_by_currency.transform_values do |currency_accounts|
+       currency_accounts.sum do |account|
+         account.credit_amount.to_i
+       end
+     end
+%>
+
+
+<!-- =================================================== -->
+<!-- ORGANIZATION CARD -->
+<!-- =================================================== -->
+
+<div class="organization-card">
+
+  <!-- ORGANIZATION HEADER -->
+
+  <div class="organization-card-header">
+
+    <div class="organization-card-identity">
+
+      <div class="organization-avatar">
+        <%= organization.name.to_s.first&.upcase || "O" %>
+      </div>
+
+      <div class="organization-card-heading">
+
+        <div class="organization-card-title-row">
+
+          <h5 class="organization-card-title banafsh-h">
+            <%= organization.name %>
+          </h5>
+
+          <% if organization.kind.present? %>
+            <span class="organization-kind">
+              <%= organization.kind %>
+            </span>
+          <% end %>
+          <span class="organization-card-subtitle">
+
+          <span>
+            <i class="bi bi-wallet2"></i>
+            <%= accounts.size %>
+            <%= accounts.size == 1 ? "account" : "accounts" %>
+          </span>
+
+          <span class="organization-subtitle-divider">•</span>
+
+          <span>
+            <i class="bi bi-currency-exchange"></i>
+            <%= currency_lookup.size %>
+            <%= currency_lookup.size == 1 ? "currency" : "currencies" %>
+          </span>
+        </span>
+
+        </div>
+
+        
+
+      </div>
+
+    </div>
+
+
+    <!-- ACTIONS -->
+
+    <div class="organization-card-actions">
+
+      <%= link_to edit_organization_path(organization),
+        data: { controller: "bs-modal-form" },
+        class: "btn btn-sm organization-action organization-action-edit" do %>
+        <i class="bi bi-pencil"></i>
+        <span>Edit</span>
+      <% end %>
+
+      <%= button_to organization_path(organization),
+        method: :delete,
+        class: "btn btn-sm organization-action organization-action-delete",
+        form: {
+          data: {
+            turbo_confirm: "Delete this organization?"
+          }
+        } do %>
+        <i class="bi bi-trash3"></i>
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- FINANCIAL SUMMARY -->
+  <!-- ================================================= -->
+
+  <div class="organization-financial-section">
+
+    <!-- DEBIT -->
+
+    <div class="organization-financial-card organization-financial-debit">
+
+      <div class="organization-financial-header">
+
+        <div class="organization-financial-title-wrap">
+
+          <div class="organization-financial-icon">
+            <i class="bi bi-arrow-down-left"></i>
+          </div>
+
+          <div>
+            <div class="organization-financial-title banafsh-h">
+              Debit
+            </div>
+
+            
+          </div>
+
+        </div>
+
+        <span class="organization-financial-badge">
+          <%= debit_by_currency.size %>
+          <%= debit_by_currency.size == 1 ? "currency" : "currencies" %>
+        </span>
+
+      </div>
+
+
+      <% debit_rows =
+           debit_by_currency
+             .sort_by { |currency_id, _amount| currency_lookup[currency_id]&.name.to_s }
+      %>
+
+      <% if debit_rows.any? %>
+
+        <div class="organization-currency-financial-list">
+
+          <% debit_rows.each do |currency_id, amount| %>
+
+            <% currency = currency_lookup[currency_id] %>
+
+            <div class="organization-currency-financial-row">
+
+              <div class="organization-currency-financial-name">
+                <span class="organization-currency-dot organization-currency-dot-debit"></span>
+
+                <span>
+                  <%= currency&.name || "Unknown currency" %>
+                </span>
+              </div>
+
+              <div class="organization-financial-amount text-danger">
+                <%= number_with_delimiter(amount) %>
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% else %>
+
+        <div class="organization-financial-empty">
+          <i class="bi bi-dash-circle"></i>
+          No debit transactions
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+    <!-- CREDIT -->
+
+    <div class="organization-financial-card organization-financial-credit">
+
+      <div class="organization-financial-header">
+
+        <div class="organization-financial-title-wrap">
+
+          <div class="organization-financial-icon">
+            <i class="bi bi-arrow-up-right"></i>
+          </div>
+
+          <div>
+            <div class="organization-financial-title banafsh-h">
+              Credit
+            </div>
+
+           
+          </div>
+
+        </div>
+
+        <span class="organization-financial-badge">
+          <%= credit_by_currency.size %>
+          <%= credit_by_currency.size == 1 ? "currency" : "currencies" %>
+        </span>
+
+      </div>
+
+
+      <% credit_rows =
+           credit_by_currency
+             .sort_by { |currency_id, _amount| currency_lookup[currency_id]&.name.to_s }
+      %>
+
+      <% if credit_rows.any? %>
+
+        <div class="organization-currency-financial-list">
+
+          <% credit_rows.each do |currency_id, amount| %>
+
+            <% currency = currency_lookup[currency_id] %>
+
+            <div class="organization-currency-financial-row">
+
+              <div class="organization-currency-financial-name">
+                <span class="organization-currency-dot organization-currency-dot-credit"></span>
+
+                <span>
+                  <%= currency&.name || "Unknown currency" %>
+                </span>
+              </div>
+
+              <div class="organization-financial-amount">
+                <%= number_with_delimiter(amount) %>
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% else %>
+
+        <div class="organization-financial-empty">
+          <i class="bi bi-dash-circle"></i>
+          No credit transactions
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- ACCOUNTS -->
+  <!-- ================================================= -->
+
+  <details class="organization-accounts-details" <%= action_name == 'show' ? "open" : "" %> >
+
+    <summary class="organization-accounts-summary">
+
+      <div class="organization-accounts-summary-left">
+
+        <div class="organization-accounts-summary-icon">
+          <i class="bi bi-wallet2"></i>
+        </div>
+
+        <div>
+
+          <div class="organization-accounts-summary-title banafsh-h">
+            Accounts 
+            <span style="font-size: 9px; color: red; margin-left: -2px;">
+              (<%= accounts.size %>)
+                
+            </span>
+          </div>
+
+         
+
+        </div>
+
+      </div>
+
+      <div class="organization-accounts-summary-right">
+        <span class="organization-expand-label">
+          View accounts
+        </span>
+
+        <i class="bi bi-chevron-down organization-chevron"></i>
+      </div>
+
+    </summary>
+
+
+    <div class="organization-accounts-content">
+
+      <% if accounts.any? %>
+
+        <% accounts.each do |account| %>
+
+          <div class="organization-account-row">
+
+            <!-- ACCOUNT IDENTITY -->
+
+            <div class="organization-account-main">
+
+              <div class="organization-account-icon">
+                <span>.</span>
+                </div>
+
+              <div>
+
+                <%= link_to xaccount_path(account), class: "text-decoration-none text-reset" do %>
+                  <div class="organization-account-top">
+
+                    <span class="organization-account-number">
+                      <%= account.number.presence || "Unnamed account" %>
+                    </span>
+
+                    <% if account.kind.present? %>
+                      <span class="organization-account-kind">
+                        <%= account.kind %>
+                      </span>
+                    <% end %>
+
+                  </div>
+                <% end %>
+
+                <div class="organization-account-meta">
+
+                  <span>
+                    <i class="bi bi-currency-exchange"></i>
+                    <%= account.currency&.name || "Unknown currency" %>
+                  </span>
+
+                  <% if account.date_change_start_amount.present? %>
+                    <span>
+                      <i class="bi bi-calendar3"></i>
+                      <%= account.date_change_start_amount.strftime("%d %b %Y") %>
+                    </span>
+                  <% end %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- ACCOUNT FINANCIALS -->
+
+            <div class="organization-account-financials">
+
+              <div class="organization-account-financial organization-account-start">
+
+                <span class="organization-account-financial-label">
+                  Start
+                </span>
+
+                <span class="organization-account-financial-value">
+                  <%= number_with_delimiter(account.start_amount.to_i) %>
+                </span>
+
+              </div>
+
+
+              <div class="organization-account-financial organization-account-debit">
+
+                <span class="organization-account-financial-label">
+                  Debit
+                </span>
+
+                <span class="organization-account-financial-value">
+                  <%= number_with_delimiter(account.debit_amount.to_i) %>
+                </span>
+
+              </div>
+
+
+              <div class="organization-account-financial organization-account-credit">
+
+                <span class="organization-account-financial-label">
+                  Credit
+                </span>
+
+                <span class="organization-account-financial-value">
+                  <%= number_with_delimiter(account.credit_amount.to_i) %>
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- EDIT -->
+
+            <%= link_to edit_xaccount_path(account),
+              data: { controller: "bs-modal-form" },
+              class: "btn btn-sm organization-account-edit" do %>
+              <i class="bi bi-pencil"></i>
+              <span>Edit</span>
+            <% end %>
+
+          </div>
+
+        <% end %>
+
+      <% else %>
+
+        <div class="organization-accounts-empty">
+
+          <div class="organization-accounts-empty-icon">
+            <i class="bi bi-wallet2"></i>
+          </div>
+
+          <div>
+            <div class="organization-accounts-empty-title">
+              No accounts
+            </div>
+
+            <div class="organization-accounts-empty-text">
+              This organization does not have any accounts yet.
+            </div>
+          </div>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </details>
+
+</div>
+

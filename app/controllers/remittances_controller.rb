@@ -1,4 +1,5 @@
 class RemittancesController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_remittance,
                 only: [
                   :edit,

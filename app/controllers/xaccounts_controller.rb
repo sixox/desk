@@ -1,4 +1,5 @@
 class XaccountsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_xaccount, only: [:show, :edit, :update, :destroy]
 
   def index
@@ -7,8 +8,32 @@ class XaccountsController < ApplicationController
       .order(created_at: :desc)
   end
 
-  def show; end
+  def show
+    @xtransactions = @xaccount.xtransactions
+                              .includes(
+                                :currency,
+                                :xaccount
+                              )
+                              .order(created_at: :desc)
 
+    @xtransfers =
+      Xtransfer
+        .where(
+          "sender_account_id = :id OR receiver_account_id = :id",
+          id: @xaccount.id
+        )
+        .includes(
+          :sender_currency,
+          :sender_to_currency,
+          :receiver_currency,
+          :receiver_to_currency,
+          sender_account: :organization,
+          receiver_account: :organization
+        )
+        .order(created_at: :desc)
+        .limit(6)
+  end
+  
   def new
     @xaccount = Xaccount.new
     load_form_data
@@ -87,9 +112,12 @@ class XaccountsController < ApplicationController
 
   private
 
-  def set_xaccount
-    @xaccount = Xaccount.find(params[:id])
-  end
+    def set_xaccount
+      @xaccount = Xaccount.includes(
+        :currency,
+        :organization
+      ).find(params[:id])
+    end
 
   def load_form_data
     @organizations = Organization.order(:name)

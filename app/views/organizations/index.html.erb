@@ -1,164 +1,118 @@
-<div class="col-lg-10 mx-auto mt-5">
+<div class="col-lg-10 mx-auto mt-4">
+  <div class="container-fluid py-3 organization-page">
 
-  <div class="container-fluid py-3 xtransfer-page">
-
+    <!-- ========================================================= -->
     <!-- HEADER -->
+    <!-- ========================================================= -->
 
-    <div class="xtransfer-header d-flex justify-content-between align-items-center">
-
-      <div>
-
-        <h5 class="xtransfer-title">
-          Organizations
-        </h5>
-
-        <div class="xtransfer-subtitle">
-          <%= @organizations.count %> records
+    <div class="organization-header d-flex justify-content-between align-items-center">
+      <div class="organization-heading">
+        <div class="organization-heading-icon">
+          <i class="bi bi-buildings"></i>
         </div>
 
+        <div>
+          <h5 class="organization-title banafsh-h">Organizations</h5>
+          
+        </div>
       </div>
-
 
       <%= link_to new_organization_path,
         data: { controller: "bs-modal-form" },
-        class: "btn btn-success xtransfer-create" do %>
-
-        <i class="bi bi-plus"></i>
-        Create Organization
-
+        class: "btn btn-success organization-create" do %>
+        <i class="bi bi-plus-lg"></i>
+        <span>Create Organization</span>
       <% end %>
-
     </div>
 
 
-    <!-- TABLE CARD -->
+    <!-- ========================================================= -->
+    <!-- SUMMARY -->
+    <!-- ========================================================= -->
 
-    <div class="xtransfer-card">
+    <div class="organization-summary-grid">
 
-      <div class="table-responsive">
+      <div class="organization-summary-card">
+        <div class="organization-summary-icon organization-summary-icon-primary">
+          <i class="bi bi-buildings"></i>
+        </div>
 
-        <table class="table table-striped exchange-table table-sm align-middle mb-0 xtransfer-table">
+        <div class="organization-summary-content">
+          <div class="organization-summary-label">
+            Organizations
+          </div>
 
-          <thead>
-
-            <tr>
-
-              <th>Name</th>
-
-              <th>Kind</th>
-
-
-              <th>Accounts</th>
-
-              <th class="text-end">Actions</th>
-
-            </tr>
-
-          </thead>
+          <div class="organization-summary-value">
+            <%= @organizations.count %>
+          </div>
+        </div>
+      </div>
 
 
-          <tbody>
+      <div class="organization-summary-card">
+        <div class="organization-summary-icon organization-summary-icon-success">
+          <i class="bi bi-wallet2"></i>
+        </div>
 
-            <% @organizations.each do |organization| %>
+        <div class="organization-summary-content">
+          <div class="organization-summary-label">
+            Accounts
+          </div>
 
-              <tr>
-
-                <!-- NAME -->
-
-                <td>
-
-                  <div class="account-name">
-                    <%= organization.name %>
-                  </div>
-
-                </td>
-
-
-                <!-- KIND -->
-
-                <td>
-
-                  <span class="account-number">
-                    <%= organization.kind.presence || "—" %>
-                  </span>
-
-                </td>
-
-
-
-
-                <!-- ACCOUNTS -->
-
-                <td>
-
-                  <span class="badge bg-light text-dark">
-                    <% if organization.xaccounts.count >0  %>
-                    <% organization.xaccounts.each do |a|%>
-         <%= link_to edit_xaccount_path(a),
-                  data: { controller: "bs-modal-form" },
-                  class: "btn btn-sm btn-outline-secondary xt-action" do %>
-                  <span>Edit</span>
-                  <i class="bi bi-pencil ms-1"></i>
-                  
-
-                  <% end %>
-                    <% end %>
-                    <% end %>
-                  </span>
-
-                </td>
-
-
-                <!-- ACTIONS -->
-
-                <td>
-
-                  <div class="xt-actions">
-
-                    <%= link_to edit_organization_path(organization),
-                      data: { controller: "bs-modal-form" },
-                      class: "btn btn-sm btn-outline-secondary xt-action" do %>
-
-                      <span>Edit</span>
-                      <i class="bi bi-pencil ms-1"></i>
-
-                    <% end %>
-
-
-                    <%= button_to(
-                      organization_path(organization),
-                      method: :delete,
-                      class: "btn btn-sm btn-outline-danger xt-action",
-                      form: {
-                        data: {
-                          turbo_confirm: "Delete this organization?"
-                        }
-                      }
-                    ) do %>
-
-                      <i class="bi bi-trash3"></i>
-
-                    <% end %>
-
-                  </div>
-
-                </td>
-
-              </tr>
-
-            <% end %>
-
-          </tbody>
-
-        </table>
-
+          <div class="organization-summary-value">
+            <%= @organizations.sum { |organization| organization.xaccounts.size } %>
+          </div>
+        </div>
       </div>
 
     </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ORGANIZATIONS -->
+    <!-- ========================================================= -->
+
+    <% if @organizations.any? %>
+
+      <div class="organization-list">
+        <% @organizations.each do |organization| %>
+          <%= render 'organization', organization: organization %>
+        <% end %>
+
+      </div>
+
+    <% else %>
+
+      <!-- ======================================================= -->
+      <!-- EMPTY STATE -->
+      <!-- ======================================================= -->
+
+      <div class="organization-empty-state">
+
+        <div class="organization-empty-icon">
+          <i class="bi bi-buildings"></i>
+        </div>
+
+        <h5>No organizations yet</h5>
+
+        <p>
+          Create your first organization to start managing accounts
+          and financial activity.
+        </p>
+
+        <%= link_to new_organization_path,
+          data: { controller: "bs-modal-form" },
+          class: "btn btn-success organization-create" do %>
+          <i class="bi bi-plus-lg"></i>
+          Create Organization
+        <% end %>
+
+      </div>
+
+    <% end %>
 
 
     <%= turbo_frame_tag "modal" %>
 
   </div>
-
 </div>

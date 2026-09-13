@@ -1,0 +1,188 @@
+<div class="xaccount-related-card">
+
+<div class="xaccount-related-card-header">
+
+<div class="xaccount-related-heading">
+
+<div class="xaccount-related-icon">
+<i class="bi bi-arrow-left-right"></i>
+</div>
+
+<div>
+<div class="xaccount-related-title">
+Transfers
+</div>
+
+<div class="xaccount-related-text">
+Recent transfer activity for this account.
+</div>
+</div>
+
+</div>
+
+<div class="d-flex align-items-center gap-1">
+
+<span class="xaccount-transaction-count">
+<i class="bi bi-arrow-left-right"></i>
+<%= @xtransfers.count %>
+</span>
+
+<%= link_to(
+xtransfers_path(account_id: @xaccount.id),
+class: "xaccount-view-all"
+) do %>
+View all
+<i class="bi bi-arrow-right"></i>
+<% end %>
+
+</div>
+
+</div>
+
+<div class="xaccount-mini-table-wrapper">
+
+<table class="xaccount-mini-table xaccount-transfer-table">
+
+<thead>
+<tr>
+  <th>Sender</th>
+  <th>Sent</th>
+  <th>Received</th>
+  <th>Receiver</th>
+</tr>
+</thead>
+
+<tbody>
+
+<% if @xtransfers.present? %>
+
+<% @xtransfers.each do |transfer| %>
+
+<tr>
+
+  <!-- SENDER -->
+  <td class="xaccount-transfer-sender">
+
+    <div class="xaccount-transfer-account">
+
+      <i class="bi bi-wallet2"></i>
+
+      <%= link_to(
+        transfer.sender_account.organization.name,
+        xaccount_path(transfer.sender_account),
+        class: "xaccount-mini-account-link",
+          title: "Account #{transfer.sender_account.number}"
+          ) %>
+
+          <% if transfer.sender_account_id == @xaccount.id %>
+          <span class="xaccount-mini-current">
+            You
+          </span>
+          <% end %>
+
+        </div>
+
+        <div class="xaccount-mini-organization">
+          <%= transfer.sender_account.number %>
+        </div>
+
+      </td>
+
+
+      <!-- SENT -->
+      <td class="xaccount-transfer-sent">
+
+        <div class="xaccount-transfer-amount">
+
+          <span class="xaccount-transfer-amount-value">
+            <%= number_with_delimiter(transfer.sender_amount) %>
+          </span>
+
+          <span class="xaccount-transfer-currency">
+            <%= transfer.sender_currency.name %>
+          </span>
+
+        </div>
+
+      </td>
+
+
+      <!-- RECEIVED -->
+      <td class="xaccount-transfer-received">
+
+        <div class="xaccount-transfer-amount">
+
+          <span class="xaccount-transfer-amount-value">
+            <%= number_with_delimiter(transfer.receiver_amount) %>
+          </span>
+
+          <span class="xaccount-transfer-currency">
+            <%= transfer.receiver_currency.name %>
+          </span>
+
+        </div>
+
+      </td>
+
+
+      <!-- RECEIVER -->
+      <td class="xaccount-transfer-receiver">
+
+        <div class="xaccount-transfer-account">
+
+          <i class="bi bi-wallet2"></i>
+
+          <%= link_to(
+            transfer.receiver_account.organization.name,
+            xaccount_path(transfer.receiver_account),
+            class: "xaccount-mini-account-link",
+              title: "Account #{transfer.receiver_account.number}"
+              ) %>
+
+              <% if transfer.receiver_account_id == @xaccount.id %>
+              <span class="xaccount-mini-current">
+                You
+              </span>
+              <% end %>
+
+            </div>
+
+            <div class="xaccount-mini-organization">
+              <%= transfer.receiver_account.number %>
+            </div>
+
+          </td>
+
+        </tr>
+
+        <% end %>
+
+        <% else %>
+
+        <tr>
+
+          <td colspan="4">
+
+            <div class="xaccount-mini-empty">
+
+              <i class="bi bi-arrow-left-right"></i>
+
+              <span>
+                No transfers yet
+              </span>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>

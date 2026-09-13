@@ -17,12 +17,19 @@
 
         <div>
           <h1 class="xt-index-title">
-            Transfers
+            Transfers 
+           
           </h1>
+           <% if @account.present? %>
+           <p>
+            <span style="font-size: 17px; color: #59090;">
+              <%= @account.organization.name %>
+            </span>
+            <span style="font-size: 12px; color: #674e4e73;"><%= @account.number %></span>
+             </p>
+              <% end %>
 
-          <p class="xt-index-subtitle">
-            Manage currency transfers and their accounting details
-          </p>
+          
         </div>
 
       </div>

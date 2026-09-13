@@ -1,0 +1,33 @@
+<div class="xaccount-transactions-section">
+
+<div class="xaccount-related-card-header">
+
+<div class="xaccount-related-heading">
+
+  
+
+  <div>
+    <div class="xaccount-related-title">
+      Transactions
+    </div>
+  </div>
+
+</div>
+
+<span class="xaccount-coming-soon">
+  <%= link_to(
+    xtransactions_path(account_id: @xaccount.id),
+    class: "xaccount-view-all"
+      ) do %>
+      View all
+      <i class="bi bi-arrow-right"></i>
+      <% end %>
+    </span>
+
+  </div>
+
+
+  <%= render "xtransactions/xtransactions",
+  xtransactions: @xtransactions %>
+
+</div>

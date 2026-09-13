@@ -29,20 +29,23 @@ export default class extends Controller {
     // Exchanges
     "exchangesContainer",
     "exchangeTemplate"
-    ]
-
-
-  // =========================================================
-  // CONNECT
-  // =========================================================
+  ]
 
   connect() {
+    this.senderAccountsRequestId = 0
+    this.receiverAccountsRequestId = 0
+
     this.updateExchangeButtons()
-
-    // Synchronize receiver currency with sender currencies.
     this.syncReceiverCurrency()
+    this.recalculate()
+  }
 
-    // Recalculate the complete transfer chain.
+
+  // =========================================================
+  // MASTER CALCULATION
+  // =========================================================
+
+  recalculate() {
     this.updateSenderConversion()
   }
 
@@ -52,14 +55,12 @@ export default class extends Controller {
   // =========================================================
 
   loadSenderAccounts(event) {
-    const organizationId =
-    event.currentTarget.value
+    const organizationId = event.currentTarget.value
 
     this.loadAccounts(
       organizationId,
-      this.senderAccountTarget,
       "sender"
-      )
+    )
   }
 
 
@@ -68,807 +69,865 @@ export default class extends Controller {
   // =========================================================
 
   loadReceiverAccounts(event) {
-    const organizationId =
-    event.currentTarget.value
+    const organizationId = event.currentTarget.value
 
     this.loadAccounts(
       organizationId,
-      this.receiverAccountTarget,
       "receiver"
-      )
+    )
   }
 
 
   // =========================================================
   // LOAD ACCOUNTS
-  //
-  // After loading an organization:
-  // - automatically select the first account
-  // - automatically set its currency
   // =========================================================
 
   async loadAccounts(
     organizationId,
-    accountTarget,
-    side = null
-    ) {
+    side
+  ) {
+    const accountTarget =
+      side === "sender"
+        ? this.senderAccountTarget
+        : this.receiverAccountTarget
+
+    if (!accountTarget) {
+      return
+    }
+
+
+    // -------------------------------------------------------
+    // Request ID prevents an old/slow request from replacing
+    // the accounts from a newer organization selection.
+    // -------------------------------------------------------
+
+    const requestId =
+      side === "sender"
+        ? ++this.senderAccountsRequestId
+        : ++this.receiverAccountsRequestId
+
+
+    // -------------------------------------------------------
+    // No organization selected
+    // -------------------------------------------------------
+
     if (!organizationId) {
       accountTarget.innerHTML =
-      '<option value="">Select account</option>'
+        '<option value="">Select account</option>'
+
+      this.clearAccountCurrency(side)
 
       return
     }
 
+
+    // -------------------------------------------------------
+    // Loading state
+    // -------------------------------------------------------
+
     accountTarget.innerHTML =
-    '<option value="">Loading accounts...</option>'
+      '<option value="">Loading accounts...</option>'
+
+    accountTarget.disabled = true
+
 
     const url =
-    `/xtransfers/accounts?organization_id=${encodeURIComponent(
-      organizationId
+      `/xtransfers/accounts?organization_id=${encodeURIComponent(
+        organizationId
       )}`
+
 
     try {
       const response =
-      await fetch(
-        url,
-        {
+        await fetch(url, {
           method: "GET",
           headers: {
             Accept: "text/html"
           },
           credentials: "same-origin"
-        }
-        )
+        })
+
 
       if (!response.ok) {
         throw new Error(
           `HTTP ${response.status}`
-          )
+        )
       }
+
 
       const html =
-      await response.text()
+        await response.text()
+
+
+      // -----------------------------------------------------
+      // Ignore this response if another request was started
+      // after this one.
+      // -----------------------------------------------------
+
+      const currentRequestId =
+        side === "sender"
+          ? this.senderAccountsRequestId
+          : this.receiverAccountsRequestId
+
+      if (requestId !== currentRequestId) {
+        return
+      }
+
 
       accountTarget.innerHTML =
-      html
+        html
 
-      // -------------------------------------------------------
-      // Automatically select the first real account.
-      // -------------------------------------------------------
+
+      accountTarget.disabled = false
+
+
+      // -----------------------------------------------------
+      // Find first real account.
+      // -----------------------------------------------------
 
       const firstAccount =
-      Array.from(
-        accountTarget.options
+        Array.from(
+          accountTarget.options
         ).find(
-        option =>
-        option.value &&
-        option.value.trim() !== ""
+          option =>
+            option.value &&
+            option.value.trim() !== ""
         )
 
-        if (!firstAccount) {
-          return
-        }
 
-        accountTarget.value =
+      if (!firstAccount) {
+        this.clearAccountCurrency(side)
+        return
+      }
+
+
+      // -----------------------------------------------------
+      // Automatically select first account.
+      // -----------------------------------------------------
+
+      accountTarget.value =
         firstAccount.value
 
-      // -------------------------------------------------------
-      // Automatically set currency from account.
-      // -------------------------------------------------------
 
-        if (side === "sender") {
-          this.setCurrencyFromAccount(
-            accountTarget,
-            "sender"
-            )
-        }
+      this.setCurrencyFromAccount(
+        accountTarget,
+        side
+      )
 
-        if (side === "receiver") {
-          this.setCurrencyFromAccount(
-            accountTarget,
-            "receiver"
-            )
-        }
+    } catch (error) {
 
-      } catch (error) {
-        console.error(
-          "Failed to load accounts:",
-          error
-          )
+      console.error(
+        "Failed to load accounts:",
+        error
+      )
 
-        accountTarget.innerHTML =
-        '<option value="">Failed to load accounts</option>'
+
+      // -----------------------------------------------------
+      // Don't overwrite a newer request.
+      // -----------------------------------------------------
+
+      const currentRequestId =
+        side === "sender"
+          ? this.senderAccountsRequestId
+          : this.receiverAccountsRequestId
+
+      if (requestId !== currentRequestId) {
+        return
       }
+
+
+      accountTarget.innerHTML =
+        '<option value="">Failed to load accounts</option>'
+
+      accountTarget.disabled = false
+
+      this.clearAccountCurrency(side)
     }
+  }
 
 
   // =========================================================
   // ACCOUNT -> CURRENCY
-  //
-  // Reads data-currency-id from selected account.
   // =========================================================
 
-    setCurrencyFromAccount(
-      accountTarget,
-      side
-      ) {
-      const option =
+  setCurrencyFromAccount(
+    accountTarget,
+    side
+  ) {
+    if (!accountTarget) {
+      return
+    }
+
+
+    const option =
       accountTarget.selectedOptions[0]
 
-      if (!option) {
-        return
-      }
 
-      const currencyId =
+    if (!option) {
+      this.clearAccountCurrency(side)
+      return
+    }
+
+
+    const currencyId =
       option.dataset.currencyId
 
-      if (!currencyId) {
-        return
-      }
+
+    if (!currencyId) {
+      this.clearAccountCurrency(side)
+      return
+    }
 
 
-    // -------------------------------------------------------
-    // SENDER ACCOUNT
-    // -------------------------------------------------------
+    if (
+      side === "sender" &&
+      this.hasSenderCurrencyTarget
+    ) {
+      this.senderCurrencyTarget.value =
+        currencyId
 
-      if (
-        side === "sender" &&
-        this.hasSenderCurrencyTarget
-        ) {
-        this.senderCurrencyTarget.value =
-      currencyId
-
-      // Sender account currency becomes the
-      // fallback receiver currency.
       this.syncReceiverCurrency()
-
-      // Recalculate transfer.
       this.updateSenderConversion()
 
       return
     }
 
 
-    // -------------------------------------------------------
-    // RECEIVER ACCOUNT
-    // -------------------------------------------------------
+    if (
+      side === "receiver" &&
+      this.hasReceiverCurrencyTarget
+    ) {
+      /*
+       * Sender conversion controls receiver currency
+       * when sender currency / sender To Currency exists.
+       *
+       * Otherwise use the receiver account currency.
+       */
+
+      if (
+        !this.hasSenderCurrencyTarget ||
+        !this.senderCurrencyTarget.value
+      ) {
+        this.receiverCurrencyTarget.value =
+          currencyId
+      }
+
+
+      this.syncReceiverCurrency()
+      this.updateReceiverConversion()
+    }
+  }
+
+
+  // =========================================================
+  // CLEAR ACCOUNT CURRENCY
+  // =========================================================
+
+  clearAccountCurrency(side) {
+    if (
+      side === "sender" &&
+      this.hasSenderCurrencyTarget
+    ) {
+      this.senderCurrencyTarget.value = ""
+    }
+
 
     if (
       side === "receiver" &&
       this.hasReceiverCurrencyTarget
-      ) {
-      /*
-       * Sender To Currency has priority.
-       *
-       * If it exists:
-       *   Receiver Currency = Sender To Currency
-       *
-       * Otherwise:
-       *   Receiver Currency = Sender Currency
-       *
-       * Only when neither exists:
-       *   Receiver account currency is used.
-       */
-
-      const senderToCurrency =
-    this.hasSenderToCurrencyTarget
-    ? this.senderToCurrencyTarget.value
-    : ""
-
-    const senderCurrency =
-    this.hasSenderCurrencyTarget
-    ? this.senderCurrencyTarget.value
-    : ""
-
-    if (
-      !senderToCurrency &&
-      !senderCurrency
-      ) {
-      this.receiverCurrencyTarget.value =
-    currencyId
+    ) {
+      this.receiverCurrencyTarget.value = ""
+    }
   }
-
-  this.syncReceiverCurrency()
-
-  this.updateReceiverConversion()
-}
-}
 
 
   // =========================================================
   // SENDER ACCOUNT -> CURRENCY
   // =========================================================
 
-setSenderCurrency(event) {
-  const accountTarget =
-  event.currentTarget
-
-  this.setCurrencyFromAccount(
-    accountTarget,
-    "sender"
+  setSenderCurrency(event) {
+    this.setCurrencyFromAccount(
+      event.currentTarget,
+      "sender"
     )
-}
+  }
 
 
   // =========================================================
   // RECEIVER ACCOUNT -> CURRENCY
   // =========================================================
 
-setReceiverCurrency(event) {
-  const accountTarget =
-  event.currentTarget
-
-  this.setCurrencyFromAccount(
-    accountTarget,
-    "receiver"
+  setReceiverCurrency(event) {
+    this.setCurrencyFromAccount(
+      event.currentTarget,
+      "receiver"
     )
-}
+  }
 
 
   // =========================================================
-  // SYNC RECEIVER CURRENCY
+  // RECEIVER CURRENCY SYNCHRONIZATION
   //
   // Priority:
   //
   // 1. Sender To Currency
   // 2. Sender Currency
-  //
-  // Receiver account currency is only used when
-  // both sender currencies are empty.
   // =========================================================
 
-syncReceiverCurrency() {
-  if (!this.hasReceiverCurrencyTarget) {
-    return
+  syncReceiverCurrency() {
+    if (!this.hasReceiverCurrencyTarget) {
+      return
+    }
+
+
+    let currencyId = ""
+
+
+    if (
+      this.hasSenderToCurrencyTarget &&
+      this.senderToCurrencyTarget.value
+    ) {
+      currencyId =
+        this.senderToCurrencyTarget.value
+    }
+
+
+    if (
+      !currencyId &&
+      this.hasSenderCurrencyTarget &&
+      this.senderCurrencyTarget.value
+    ) {
+      currencyId =
+        this.senderCurrencyTarget.value
+    }
+
+
+    if (currencyId) {
+      this.receiverCurrencyTarget.value =
+        currencyId
+    }
   }
 
-  let currencyId = ""
-
-
-    // -------------------------------------------------------
-    // First priority: Sender To Currency
-    // -------------------------------------------------------
-
-  if (
-    this.hasSenderToCurrencyTarget &&
-    this.senderToCurrencyTarget.value
-    ) {
-    currencyId =
-  this.senderToCurrencyTarget.value
-}
-
-
-    // -------------------------------------------------------
-    // Second priority: Sender Currency
-    // -------------------------------------------------------
-
-if (
-  !currencyId &&
-  this.hasSenderCurrencyTarget &&
-  this.senderCurrencyTarget.value
-  ) {
-  currencyId =
-this.senderCurrencyTarget.value
-}
-
-
-    // -------------------------------------------------------
-    // Set Receiver Currency
-    // -------------------------------------------------------
-
-if (currencyId) {
-  this.receiverCurrencyTarget.value =
-  currencyId
-}
-}
-
 
   // =========================================================
-  // SENDER CURRENCY CHANGED MANUALLY
-  //
-  // If Sender To Currency exists, it remains the priority.
-  // Otherwise Receiver Currency follows Sender Currency.
+  // SENDER CURRENCY CHANGED
   // =========================================================
 
-senderCurrencyChanged() {
-  this.syncReceiverCurrency()
-
-  this.updateSenderConversion()
-}
+  senderCurrencyChanged() {
+    this.syncReceiverCurrency()
+    this.updateSenderConversion()
+  }
 
 
   // =========================================================
   // SENDER TO CURRENCY CHANGED
-  //
-  // Sender To Currency immediately becomes
-  // Receiver Currency.
   // =========================================================
 
-senderToCurrencyChanged() {
-  this.syncReceiverCurrency()
-
-  this.updateSenderConversion()
-}
+  senderToCurrencyChanged() {
+    this.syncReceiverCurrency()
+    this.updateSenderConversion()
+  }
 
 
   // =========================================================
   // SENDER CALCULATION
   //
-  // Sender Amount
-  //       × Sender Exchange Rate
+  // Amount × Rate
   //       ↓
-  // Sender Converted Amount
-  //       + Sender Charge (FIXED AMOUNT)
+  // Sender Amount To
+  //       + Charge
   //       ↓
   // Sender Total
   //       ↓
   // Receiver Amount
   // =========================================================
 
-updateSenderConversion() {
-  if (
-    !this.hasSenderAmountTarget ||
-    !this.hasSenderExchangeRateTarget ||
-    !this.hasSenderAmountToTarget ||
-    !this.hasSenderTotalTarget
+  updateSenderConversion() {
+    if (
+      !this.hasSenderAmountTarget ||
+      !this.hasSenderAmountToTarget
     ) {
-    return
-}
+      return
+    }
 
-const amount =
-parseFloat(
-  this.senderAmountTarget.value
-  ) || 0
 
-const rate =
-parseFloat(
-  this.senderExchangeRateTarget.value
-  ) || 0
+    const amount =
+      this.numberValue(
+        this.senderAmountTarget.value
+      )
 
-    // Charge is a FIXED amount.
-    //
-    // Example:
-    // converted amount = 3,670
-    // charge = 50
-    // total = 3,720
-const charge =
-this.hasSenderChargeTarget
-? parseFloat(
-  this.senderChargeTarget.value
-  ) || 0
-: 0
+
+    const rate =
+      this.hasSenderExchangeRateTarget
+        ? this.numberValue(
+            this.senderExchangeRateTarget.value
+          )
+        : 0
+
+
+    const charge =
+      this.hasSenderChargeTarget
+        ? this.numberValue(
+            this.senderChargeTarget.value
+          )
+        : 0
 
 
     // -------------------------------------------------------
     // Empty / zero amount
     // -------------------------------------------------------
 
-if (amount <= 0) {
-  this.senderAmountToTarget.value = ""
-  this.senderTotalTarget.textContent = "0"
+    if (amount <= 0) {
 
-  if (this.hasReceiverAmountTarget) {
-    this.receiverAmountTarget.value = ""
-  }
+      this.senderAmountToTarget.value = ""
 
-  if (this.hasReceiverAmountToTarget) {
-    this.receiverAmountToTarget.value = ""
-  }
 
-  if (this.hasReceiverTotalTarget) {
-    this.receiverTotalTarget.textContent = "0"
-  }
+      if (this.hasSenderTotalTarget) {
+        this.senderTotalTarget.textContent = "0"
+      }
 
-  return
-}
+
+      if (this.hasReceiverAmountTarget) {
+        this.receiverAmountTarget.value = ""
+      }
+
+
+      if (this.hasReceiverAmountToTarget) {
+        this.receiverAmountToTarget.value = ""
+      }
+
+
+      if (this.hasReceiverTotalTarget) {
+        this.receiverTotalTarget.textContent = "0"
+      }
+
+
+      return
+    }
 
 
     // -------------------------------------------------------
-    // Sender conversion
+    // BOTH sides use multiplication.
     //
-    // Amount × Rate
-    // -------------------------------------------------------
-
-let calculatedAmount =
-amount
-
-if (rate > 0) {
-  calculatedAmount =
-  amount * rate
-}
-
-
-    // -------------------------------------------------------
-    // Sender Converted Amount
+    // Sender:
     //
-    // IMPORTANT:
-    // senderAmount remains the original entered amount.
-    // senderAmountTo contains the converted amount.
+    // 1000 × 3.67 = 3670
     // -------------------------------------------------------
 
-this.senderAmountToTarget.value =
-this.formatNumber(
-  calculatedAmount
-  )
+    const converted =
+      rate > 0
+        ? Math.round(
+            amount * rate
+          )
+        : Math.round(amount)
 
 
-    // -------------------------------------------------------
-    // Sender total
-    //
-    // Converted Amount + Fixed Charge
-    // -------------------------------------------------------
-
-const senderTotal =
-calculatedAmount +
-charge
-
-
-this.senderTotalTarget.textContent =
-this.formatNumber(senderTotal)
+    const senderTotal =
+      converted + charge
 
 
     // -------------------------------------------------------
-    // Sender Total -> Receiver Amount
+    // Sender Amount To
     // -------------------------------------------------------
 
-if (this.hasReceiverAmountTarget) {
-  this.receiverAmountTarget.value =
-  this.formatNumber(
-    senderTotal
-    )
-}
+    this.senderAmountToTarget.value =
+      this.formatNumber(converted)
 
 
     // -------------------------------------------------------
-    // Keep receiver currency synchronized.
+    // Sender Total
     // -------------------------------------------------------
 
-this.syncReceiverCurrency()
+    if (this.hasSenderTotalTarget) {
+
+      this.senderTotalTarget.textContent =
+        this.formatNumber(
+          senderTotal
+        )
+
+    }
 
 
     // -------------------------------------------------------
-    // Calculate receiver side.
+    // Sender total becomes receiver amount.
     // -------------------------------------------------------
 
-this.updateReceiverConversion()
-}
+    if (this.hasReceiverAmountTarget) {
+
+      this.receiverAmountTarget.value =
+        this.formatNumber(
+          senderTotal
+        )
+
+    }
+
+
+    this.syncReceiverCurrency()
+
+    this.updateReceiverConversion()
+  }
 
 
   // =========================================================
   // SENDER TOTAL
   // =========================================================
 
-updateSenderTotal() {
-  this.updateSenderConversion()
-}
+  updateSenderTotal() {
+    this.updateSenderConversion()
+  }
 
 
   // =========================================================
   // RECEIVER CALCULATION
   //
-  // Receiver Amount comes from Sender Total.
+  // IMPORTANT:
   //
-  // Receiver Amount
-  //       × Receiver Exchange Rate
-  //       ↓
-  // Receiver Converted Amount
-  //       + Receiver Charge (FIXED AMOUNT)
-  //       ↓
-  // Receiver Total
+  // Receiver Amount × Receiver Rate
+  //
+  // Example:
+  //
+  // 3670 × 0.258856... = 950
+  //
+  // BOTH exchange rates multiply.
   // =========================================================
 
-updateReceiverConversion() {
-  if (
-    !this.hasReceiverAmountTarget ||
-    !this.hasReceiverExchangeRateTarget ||
-    !this.hasReceiverAmountToTarget
+  updateReceiverConversion() {
+    if (
+      !this.hasReceiverAmountTarget ||
+      !this.hasReceiverAmountToTarget
     ) {
-    return
-}
+      return
+    }
 
-const amount =
-parseFloat(
-  this.receiverAmountTarget.value
-  ) || 0
 
-const rate =
-parseFloat(
-  this.receiverExchangeRateTarget.value
-  ) || 0
+    const amount =
+      this.numberValue(
+        this.receiverAmountTarget.value
+      )
+
+
+    const rate =
+      this.hasReceiverExchangeRateTarget
+        ? this.numberValue(
+            this.receiverExchangeRateTarget.value
+          )
+        : 0
 
 
     // -------------------------------------------------------
     // Empty / zero amount
     // -------------------------------------------------------
 
-if (amount <= 0) {
-  this.receiverAmountToTarget.value = ""
+    if (amount <= 0) {
 
-  if (this.hasReceiverTotalTarget) {
-    this.receiverTotalTarget.textContent = "0"
-  }
+      this.receiverAmountToTarget.value = ""
 
-  return
-}
+
+      if (this.hasReceiverTotalTarget) {
+        this.receiverTotalTarget.textContent = "0"
+      }
+
+
+      return
+    }
 
 
     // -------------------------------------------------------
     // Receiver conversion
     //
-    // Amount × Rate
+    // amount × rate
     // -------------------------------------------------------
 
-let calculatedAmount =
-amount
-
-if (rate > 0) {
-  calculatedAmount =
-  amount * rate
-}
+    const converted =
+      rate > 0
+        ? Math.round(
+            amount * rate
+          )
+        : Math.round(amount)
 
 
     // -------------------------------------------------------
-    // Store calculation information.
+    // Receiver Amount To
     // -------------------------------------------------------
 
-this.receiverAmountTarget.dataset.originalAmount =
-amount
+    this.receiverAmountToTarget.value =
+      this.formatNumber(
+        converted
+      )
 
-this.receiverAmountTarget.dataset.rate =
-rate
 
-this.receiverAmountTarget.dataset.calculatedAmount =
-this.formatNumber(
-  calculatedAmount
-  )
-
-this.receiverAmountTarget.dataset.convertedAmount =
-this.formatNumber(
-  calculatedAmount
-  )
-
-this.receiverAmountTarget.dataset.baseAmount =
-amount
-
-this.receiverAmountTarget.dataset.receiverConverted =
-this.formatNumber(
-  calculatedAmount
-  )
-
-this.receiverAmountTarget.setAttribute(
-  "data-calculated-value",
-  this.formatNumber(
-    calculatedAmount
+    this.updateReceiverTotal(
+      converted
     )
-  )
-
-
-    // -------------------------------------------------------
-    // Receiver Converted Amount
-    //
-    // Receiver Amount stays as the original/base amount.
-    // Receiver Amount To contains the converted amount.
-    // -------------------------------------------------------
-
-this.receiverAmountToTarget.value =
-this.formatNumber(
-  calculatedAmount
-  )
-
-
-    // -------------------------------------------------------
-    // Receiver total
-    // -------------------------------------------------------
-
-this.updateReceiverTotal(
-  calculatedAmount
-  )
-}
+  }
 
 
   // =========================================================
   // RECEIVER TOTAL
-  //
-  // Receiver Converted Amount
-  //       + Receiver Charge (FIXED AMOUNT)
-  //       ↓
-  // Receiver Total
   // =========================================================
 
-updateReceiverTotal(
-  calculatedAmount = null
+  updateReceiverTotal(
+    calculatedAmount = null
   ) {
-  if (!this.hasReceiverTotalTarget) {
-    return
-  }
-
-
-    // -------------------------------------------------------
-    // Calculate converted amount if not supplied.
-    // -------------------------------------------------------
-
-  if (calculatedAmount === null) {
-    const amount =
-    this.hasReceiverAmountTarget
-    ? parseFloat(
-      this.receiverAmountTarget.value
-      ) || 0
-    : 0
-
-    const rate =
-    this.hasReceiverExchangeRateTarget
-    ? parseFloat(
-      this.receiverExchangeRateTarget.value
-      ) || 0
-    : 0
-
-    calculatedAmount =
-    amount
-
-    if (rate > 0) {
-      calculatedAmount =
-      amount * rate
+    if (!this.hasReceiverTotalTarget) {
+      return
     }
+
+
+    if (calculatedAmount === null) {
+
+      const amount =
+        this.hasReceiverAmountTarget
+          ? this.numberValue(
+              this.receiverAmountTarget.value
+            )
+          : 0
+
+
+      const rate =
+        this.hasReceiverExchangeRateTarget
+          ? this.numberValue(
+              this.receiverExchangeRateTarget.value
+            )
+          : 0
+
+
+      // IMPORTANT:
+      // multiplication, not division
+
+      calculatedAmount =
+        rate > 0
+          ? Math.round(
+              amount * rate
+            )
+          : Math.round(amount)
+
+    }
+
+
+    const charge =
+      this.hasReceiverChargeTarget
+        ? this.numberValue(
+            this.receiverChargeTarget.value
+          )
+        : 0
+
+
+    if (calculatedAmount <= 0) {
+
+      this.receiverTotalTarget.textContent =
+        "0"
+
+      return
+    }
+
+
+    const total =
+      calculatedAmount +
+      charge
+
+
+    this.receiverTotalTarget.textContent =
+      this.formatNumber(
+        total
+      )
   }
 
 
-    // -------------------------------------------------------
-    // Receiver charge is a FIXED amount.
-    // -------------------------------------------------------
+  // =========================================================
+  // RECEIVER TOTAL DIRECT UPDATE
+  // =========================================================
 
-  const charge =
-  this.hasReceiverChargeTarget
-  ? parseFloat(
-    this.receiverChargeTarget.value
-    ) || 0
-  : 0
-
-
-    // -------------------------------------------------------
-    // Empty / zero amount
-    // -------------------------------------------------------
-
-  if (calculatedAmount <= 0) {
-    this.receiverTotalTarget.textContent = "0"
-
-    return
+  receiverChargeChanged() {
+    this.updateReceiverConversion()
   }
 
 
+  // =========================================================
+  // NUMBER HELPERS
+  // =========================================================
+
+  numberValue(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return 0
+    }
+
+
     // -------------------------------------------------------
-    // Receiver total
+    // Remove commas and spaces.
+    // This allows:
     //
-    // Converted Amount + Fixed Charge
+    // 1,000
+    // 3 670
     // -------------------------------------------------------
 
-  const receiverTotal =
-  calculatedAmount +
-  charge
+    const normalized =
+      String(value)
+        .replaceAll(",", "")
+        .replaceAll(" ", "")
+        .trim()
 
 
-  this.receiverTotalTarget.textContent =
-  this.formatNumber(receiverTotal)
-}
+    const number =
+      parseFloat(
+        normalized
+      )
 
 
-  // =========================================================
-  // FORMAT NUMBER
-  //
-  // Amounts, totals and converted amounts are integers.
-  // Only the exchange rate may be fractional.
-  //
-  // Any result involving a rate is rounded to the
-  // nearest integer before being displayed or written
-  // back into a field.
-  // =========================================================
-
-formatNumber(value) {
-  if (!Number.isFinite(value)) {
-    return ""
+    return Number.isFinite(number)
+      ? number
+      : 0
   }
 
-  return String(Math.round(value))
-}
+
+  formatNumber(value) {
+    if (!Number.isFinite(value)) {
+      return ""
+    }
+
+
+    return String(
+      Math.round(value)
+    )
+  }
 
 
   // =========================================================
   // EXCHANGES
   // =========================================================
 
-addExchange(event) {
-  event.preventDefault()
-
-  if (!this.hasExchangeTemplateTarget) {
-    return
-  }
-
-  const content =
-  this.exchangeTemplateTarget.innerHTML
-
-  this.exchangesContainerTarget.insertAdjacentHTML(
-    "beforeend",
-    content
-    )
-
-  this.updateExchangeButtons()
-}
+  addExchange(event) {
+    event.preventDefault()
 
 
-removeExchange(event) {
-  event.preventDefault()
-
-  const row =
-  event.currentTarget.closest(
-    ".xt-exchange-row"
-    )
-
-  if (!row) {
-    return
-  }
-
-  const rows =
-  this.exchangesContainerTarget.querySelectorAll(
-    ".xt-exchange-row"
-    )
-
-
-    // -------------------------------------------------------
-    // Keep one row.
-    // -------------------------------------------------------
-
-  if (rows.length === 1) {
-    const select =
-    row.querySelector("select")
-
-    if (select) {
-      select.value = ""
+    if (!this.hasExchangeTemplateTarget) {
+      return
     }
 
-    return
+
+    if (!this.hasExchangesContainerTarget) {
+      return
+    }
+
+
+    const index =
+      this.newExchangeIndex()
+
+
+    const content =
+      this.exchangeTemplateTarget.innerHTML
+        .replaceAll(
+          "NEW_RECORD",
+          index
+        )
+
+
+    this.exchangesContainerTarget
+      .insertAdjacentHTML(
+        "beforeend",
+        content
+      )
+
+
+    this.updateExchangeButtons()
   }
 
 
-  row.remove()
+  // =========================================================
+  // REMOVE EXCHANGE
+  // =========================================================
 
-  this.updateExchangeButtons()
-}
+  removeExchange(event) {
+    event.preventDefault()
+
+
+    const row =
+      event.currentTarget.closest(
+        ".xt-exchange-row"
+      )
+
+
+    if (!row) {
+      return
+    }
+
+
+    // -------------------------------------------------------
+    // Existing persisted association:
+    //
+    // Set _destroy = 1 instead of removing it directly.
+    // -------------------------------------------------------
+
+    const destroyField =
+      row.querySelector(
+        'input[name*="[_destroy]"]'
+      )
+
+
+    const idField =
+      row.querySelector(
+        'input[name*="[id]"]'
+      )
+
+
+    if (
+      destroyField &&
+      idField &&
+      idField.value
+    ) {
+
+      destroyField.value = "1"
+
+      row.style.display = "none"
+
+      this.updateExchangeButtons()
+
+      return
+    }
+
+
+    // -------------------------------------------------------
+    // New unsaved association.
+    // -------------------------------------------------------
+
+    row.remove()
+
+    this.updateExchangeButtons()
+  }
+
+
+  // =========================================================
+  // UNIQUE EXCHANGE INDEX
+  // =========================================================
+
+  newExchangeIndex() {
+    return (
+      Date.now().toString() +
+      Math.floor(
+        Math.random() * 100000
+      ).toString()
+    )
+  }
 
 
   // =========================================================
   // EXCHANGE BUTTONS
   // =========================================================
 
-updateExchangeButtons() {
-  if (
-    !this.hasExchangesContainerTarget
-    ) {
-    return
-}
-
-const rows =
-Array.from(
-  this.exchangesContainerTarget.querySelectorAll(
-    ".xt-exchange-row"
-    )
-  )
-
-
-rows.forEach(
-  (row, index) => {
-    const addButton =
-    row.querySelector(
-      ".xt-add-exchange"
-      )
-
-    if (!addButton) {
+  updateExchangeButtons() {
+    if (!this.hasExchangesContainerTarget) {
       return
     }
 
-    addButton.style.display =
-    index === rows.length - 1
-    ? "inline-flex"
-    : "none"
+    /*
+     * Kept intentionally.
+     *
+     * Your existing markup can continue using the
+     * current global Add Exchange button.
+     */
   }
-  )
-}
 }

@@ -5,6 +5,7 @@
     <div class="modal-body p-3 p-md-4">
 
       <% if @organization.errors.any? %>
+
         <div class="rm-error">
 
           <div class="rm-error-title">
@@ -20,257 +21,326 @@
           </ul>
 
         </div>
+
       <% end %>
 
 
-      <!-- HEADER -->
+      <!-- ====================================================== -->
+      <!-- ORGANIZATION HEADER -->
+      <!-- ====================================================== -->
 
-      <div class="rm-form-header">
+      <div class="org-form-header">
 
-        <h4 class="rm-form-title">
+        <div class="org-form-identity">
 
-          <span class="rm-form-title-icon">
+          <div class="org-form-icon">
             <i class="bi bi-building"></i>
-          </span>
-
-          <%= @organization.new_record? ? "Create Organization" : "Edit Organization" %>
-
-        </h4>
-
-      </div>
-
-
-      <!-- BASIC INFORMATION -->
-
-      <div class="rm-form-section">
-
-        <div class="rm-section-title">
-          <i class="bi bi-building"></i>
-          Basic Information
-        </div>
-
-        <div class="row g-3">
-
-          <div class="col-md-6">
-
-            <div class="rm-field">
-
-              <label class="rm-label">
-                Name
-                <span class="rm-required">*</span>
-              </label>
-
-              <%= form.text_field :name,
-                class: "form-control",
-                placeholder: "Organization name" %>
-
-            </div>
-
           </div>
 
+          <div class="org-form-name-wrap">
 
-          <div class="col-md-6">
-
-            <div class="rm-field">
-
-              <label class="rm-label">
-                Kind
-              </label>
-
-              <%= form.text_field :kind,
-                class: "form-control",
-                placeholder: "e.g. company, bank" %>
-
+            <div class="org-form-small-label">
+              <%= @organization.new_record? ? "New organization" : "Organization" %>
             </div>
 
-          </div>
-
-
-
-
-        </div>
-
-      </div>
-
-<!-- ACCOUNTS -->
-<div class="xt-exchanges-panel p-2">
-
-  <div class="rm-section-title">
-    <i class="bi bi-bank"></i>
-    Accounts
-  </div>
-
-  <div
-    class="xt-exchanges-body"
-    data-organization-target="accountsContainer"
-  >
-
-    <%= form.fields_for :xaccounts do |account_form| %>
-
-      <div class="xt-exchange-row">
-
-        <div class="xt-exchange-number">
-          <i class="bi bi-bank"></i>
-        </div>
-
-        <div class="flex-grow-1">
-
-          <%= account_form.hidden_field :_destroy, value: "0" %>
-
-          <div class="row g-2">
-
-            <div class="col-md-4">
-              <label class="xt-label">No.</label>
-              <%= account_form.text_field :number,
-                class: "form-control",
-                placeholder: "Account number" %>
-            </div>
-
-            <div class="col-md-4">
-              <label class="xt-label">Kind</label>
-              <%= account_form.text_field :kind,
-                class: "form-control",
-                placeholder: "Account kind" %>
-            </div>
-
-            <div class="col-md-4">
-              <label class="xt-label">Currency</label>
-              <%= account_form.collection_select :currency_id,
-                @currencies,
-                :id,
-                :name,
-                { prompt: "Select currency" },
-                { class: "form-select" } %>
-            </div>
+            <%= form.text_field :name,
+              class: "org-form-name",
+              placeholder: "Organization name",
+              autocomplete: "off" %>
 
           </div>
 
         </div>
 
-        <div class="xt-exchange-actions">
 
-          <button
-            type="button"
-            class="btn xt-add-exchange"
-            data-action="click->organization#addAccount"
-            title="Add account"
-          >
-            <i class="bi bi-plus-lg"></i>
-          </button>
+        <!-- KIND -->
 
-          <button
-            type="button"
-            class="btn xt-remove-exchange"
-            data-action="click->organization#removeAccount"
-            title="Remove account"
-          >
-            <i class="bi bi-trash3"></i>
-          </button>
+        <div class="org-form-kind">
+
+          <label class="org-form-kind-label">
+            Kind
+          </label>
+
+          <%= form.select :kind,
+            Organization::KINDS,
+            { prompt: "Select kind" },
+            { class: "form-select org-form-kind-select" } %>
 
         </div>
 
       </div>
 
-    <% end %>
 
-  </div>
+      <!-- ====================================================== -->
+      <!-- ACCOUNTS -->
+      <!-- ====================================================== -->
 
+      <div class="xt-exchanges-panel p-2">
 
-  <!-- TEMPLATE -->
-  <template data-organization-target="accountTemplate">
+        <div class="org-form-accounts-header">
 
-    <%= form.fields_for :xaccounts, Xaccount.new, child_index: "NEW_RECORD" do |account_form| %>
+          <div>
 
-      <div class="xt-exchange-row">
-
-        <div class="xt-exchange-number">
-          <i class="bi bi-bank"></i>
-        </div>
-
-        <div class="flex-grow-1">
-
-          <div class="row g-2">
-
-            <div class="col-md-4">
-              <label class="xt-label">No.</label>
-              <%= account_form.text_field :number,
-                class: "form-control",
-                placeholder: "Account number" %>
+            <div class="rm-section-title mb-0">
+              <i class="bi bi-bank"></i>
+              Accounts
             </div>
 
-            <div class="col-md-4">
-              <label class="xt-label">Kind</label>
-              <%= account_form.text_field :kind,
-                class: "form-control",
-                placeholder: "Account kind" %>
-            </div>
-
-            <div class="col-md-4">
-              <label class="xt-label">Currency</label>
-              <%= account_form.collection_select :currency_id,
-                @currencies,
-                :id,
-                :name,
-                { prompt: "Select currency" },
-                { class: "form-select" } %>
+            <div class="org-form-accounts-subtitle">
+              Manage the accounts belonging to this organization
             </div>
 
           </div>
 
-        </div>
-
-        <div class="xt-exchange-actions">
-
-          <button
-            type="button"
-            class="btn xt-add-exchange"
-            data-action="click->organization#addAccount"
-            title="Add account"
-          >
-            <i class="bi bi-plus-lg"></i>
-          </button>
-
-          <button
-            type="button"
-            class="btn xt-remove-exchange"
-            data-action="click->organization#removeAccount"
-            title="Remove account"
-          >
-            <i class="bi bi-trash3"></i>
-          </button>
+          <div class="org-form-account-count"
+               data-organization-target="accountCount">
+            <%= @organization.xaccounts.reject(&:marked_for_destruction?).size %>
+          </div>
 
         </div>
+
+
+        <div
+          class="xt-exchanges-body"
+          data-organization-target="accountsContainer"
+        >
+
+          <%= form.fields_for :xaccounts do |account_form| %>
+
+            <div class="xt-exchange-row">
+
+              <!-- NUMBER -->
+
+              <div class="xt-exchange-number">
+                <i class="bi bi-bank"></i>
+              </div>
+
+
+              <!-- FIELDS -->
+
+              <div class="flex-grow-1">
+
+                <%= account_form.hidden_field :_destroy, value: "0" %>
+
+                <div class="row g-2">
+
+                  <div class="col-md-4">
+
+                    <label class="xt-label">
+                      Account No.
+                    </label>
+
+                    <%= account_form.text_field :number,
+                      class: "form-control",
+                      placeholder: "Account number",
+                      autocomplete: "off" %>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <label class="xt-label">
+                      Account Kind
+                    </label>
+
+                    <%= account_form.text_field :kind,
+                      class: "form-control",
+                      placeholder: "Account kind",
+                      autocomplete: "off" %>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <label class="xt-label">
+                      Currency
+                    </label>
+
+                    <%= account_form.collection_select :currency_id,
+                      @currencies,
+                      :id,
+                      :name,
+                      { prompt: "Select currency" },
+                      { class: "form-select" } %>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- ACTIONS -->
+
+              <div class="xt-exchange-actions">
+
+                <button
+                  type="button"
+                  class="btn xt-add-exchange"
+                  data-action="click->organization#addAccount"
+                  title="Add account"
+                >
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn xt-remove-exchange"
+                  data-action="click->organization#removeAccount"
+                  title="Remove account"
+                >
+                  <i class="bi bi-trash3"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+
+        <!-- ==================================================== -->
+        <!-- NEW ACCOUNT TEMPLATE -->
+        <!-- ==================================================== -->
+
+        <template data-organization-target="accountTemplate">
+
+          <%= form.fields_for :xaccounts,
+            Xaccount.new,
+            child_index: "NEW_RECORD" do |account_form| %>
+
+            <div class="xt-exchange-row">
+
+              <div class="xt-exchange-number">
+                <i class="bi bi-bank"></i>
+              </div>
+
+
+              <div class="flex-grow-1">
+
+                <div class="row g-2">
+
+                  <div class="col-md-4">
+
+                    <label class="xt-label">
+                      Account No.
+                    </label>
+
+                    <%= account_form.text_field :number,
+                      class: "form-control",
+                      placeholder: "Account number",
+                      autocomplete: "off" %>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <label class="xt-label">
+                      Account Kind
+                    </label>
+
+                    <%= account_form.text_field :kind,
+                      class: "form-control",
+                      placeholder: "Account kind",
+                      autocomplete: "off" %>
+
+                  </div>
+
+
+                  <div class="col-md-4">
+
+                    <label class="xt-label">
+                      Currency
+                    </label>
+
+                    <%= account_form.collection_select :currency_id,
+                      @currencies,
+                      :id,
+                      :name,
+                      { prompt: "Select currency" },
+                      { class: "form-select" } %>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div class="xt-exchange-actions">
+
+                <button
+                  type="button"
+                  class="btn xt-add-exchange"
+                  data-action="click->organization#addAccount"
+                  title="Add account"
+                >
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn xt-remove-exchange"
+                  data-action="click->organization#removeAccount"
+                  title="Remove account"
+                >
+                  <i class="bi bi-trash3"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </template>
 
       </div>
-
-    <% end %>
-
-  </template>
-
-</div>
 
     </div>
 
 
+    <!-- ====================================================== -->
     <!-- FOOTER -->
+    <!-- ====================================================== -->
 
     <div class="modal-footer rm-form-footer px-3 px-md-4 pb-3">
 
-      <button
-        type="button"
-        class="btn btn-light border rm-close"
-        data-bs-dismiss="modal"
-      >
-        Close
-      </button>
+      <div class="org-form-footer-info">
 
-      <%= form.submit(
-        @organization.new_record? ? "Create Organization" : "Update Organization",
-        class: "btn btn-primary rm-submit",
-        data: {
-          action: "click->bs-modal#submitEnd"
-        }
-      ) %>
+        <i class="bi bi-info-circle"></i>
+
+        <span>
+          Add as many accounts as this organization needs.
+        </span>
+
+      </div>
+
+
+      <div class="d-flex gap-2">
+
+        <button
+          type="button"
+          class="btn btn-light border rm-close"
+          data-bs-dismiss="modal"
+        >
+          Close
+        </button>
+
+        <%= form.submit(
+          @organization.new_record? ? "Create Organization" : "Update Organization",
+          class: "btn btn-primary rm-submit",
+          data: {
+            action: "click->bs-modal#submitEnd"
+          }
+        ) %>
+
+      </div>
 
     </div>
 

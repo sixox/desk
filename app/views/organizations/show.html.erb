@@ -1,0 +1,11 @@
+<div class="col-lg-10 mx-auto mt-4">
+  <div class="container-fluid py-3 organization-page">
+
+      <div class="organization-list">
+          <%= render 'organization', organization: @organization %>
+      </div>
+   
+    <%= turbo_frame_tag "modal" %>
+
+  </div>
+</div>
