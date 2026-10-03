@@ -430,10 +430,12 @@ class XtransfersController < ApplicationController
       .reload
       .each do |movement|
 
-        movement.create_xtransaction!(
-          user: current_user
-        )
-      end
+      Xtransaction.sync_movement!(
+        movement: movement,
+        user: current_user
+      )
+
+    end
   end
 
 
@@ -651,6 +653,7 @@ class XtransfersController < ApplicationController
       .permit(
         :status,
         :pending,
+        :documents,
 
         money_movements_attributes: [
           :id,

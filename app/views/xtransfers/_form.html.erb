@@ -146,190 +146,124 @@
       </div>
 
 
-      <!-- ================================================= -->
-      <!-- SEND MOVEMENTS -->
-      <!-- ================================================= -->
+    <%# ==================================================
+    SEND MOVEMENTS
+    ================================================== %>
 
-      <div class="xt-form-section">
+<div data-money-movements-target="sendContainer">
 
-        <div class="xt-section-heading-row">
+  <% @xtransfer.money_movements.each do |movement| %>
+    <% next unless movement.direction.to_s == "send" %>
 
-          <div class="xt-section-title">
+    <%= form.fields_for(
+          :money_movements,
+          movement,
+          child_index: (
+            movement.persisted? ?
+              movement.id :
+              movement.object_id
+          )
+        ) do |movement_form| %>
 
-            <span class="xt-section-title-icon">
-              <i class="bi bi-box-arrow-up-right"></i>
-            </span>
+      <%= render(
+            "shared/movement_fields",
+            movement_form: movement_form
+          ) %>
 
-            <div>
+    <% end %>
+  <% end %>
 
-              <strong>
-                Send
-              </strong>
+</div>
 
-              <small>
-                Money leaving accounts.
-              </small>
 
-            </div>
+  <!-- SEND TEMPLATE -->
 
-          </div>
+  <template
+    data-money-movements-target="sendTemplate"
+  >
 
+    <%
+      prototype = MoneyMovement.new(
+        direction: "send"
+      )
+    %>
 
-          <button
-            type="button"
-            class="btn xt-add-btn"
-            data-action="click->money-movements#addSend"
-          >
+    <%= form.fields_for(
+      :money_movements,
+      prototype,
+      child_index: "NEW_RECORD"
+    ) do |movement_form| %>
 
-            <i class="bi bi-plus-lg"></i>
-            Add Send
+      <%= render(
+        "shared/movement_fields",
+        movement_form: movement_form
+      ) %>
 
-          </button>
+    <% end %>
 
-        </div>
+  </template>
 
+</div>
 
-        <div
-          data-money-movements-target="sendContainer"
-        >
 
-          <%= form.fields_for :money_movements do |movement_form| %>
+<%# ==================================================
+    RECEIVE MOVEMENTS
+    ================================================== %>
 
-            <% if movement_form.object.direction.to_s == "send" %>
+<div data-money-movements-target="receiveContainer">
 
-              <%= render(
-                "shared/movement_fields",
-                movement_form: movement_form
-              ) %>
+  <% @xtransfer.money_movements.each do |movement| %>
+    <% next unless movement.direction.to_s == "receive" %>
 
-            <% end %>
+    <%= form.fields_for(
+          :money_movements,
+          movement,
+          child_index: (
+            movement.persisted? ?
+              movement.id :
+              movement.object_id
+          )
+        ) do |movement_form| %>
 
-          <% end %>
+      <%= render(
+            "shared/movement_fields",
+            movement_form: movement_form
+          ) %>
 
-        </div>
+    <% end %>
+  <% end %>
 
+</div>
 
-        <!-- SEND TEMPLATE -->
 
-        <template
-          data-money-movements-target="sendTemplate"
-        >
+  <!-- RECEIVE TEMPLATE -->
 
-          <%
-            prototype = MoneyMovement.new(
-              direction: "send"
-            )
-          %>
+  <template
+    data-money-movements-target="receiveTemplate"
+  >
 
-          <%= form.fields_for(
-            :money_movements,
-            prototype,
-            child_index: "NEW_RECORD"
-          ) do |movement_form| %>
+    <%
+      prototype = MoneyMovement.new(
+        direction: "receive"
+      )
+    %>
 
-            <%= render(
-              "shared/movement_fields",
-              movement_form: movement_form
-            ) %>
+    <%= form.fields_for(
+      :money_movements,
+      prototype,
+      child_index: "NEW_RECORD"
+    ) do |movement_form| %>
 
-          <% end %>
+      <%= render(
+        "shared/movement_fields",
+        movement_form: movement_form
+      ) %>
 
-        </template>
+    <% end %>
 
-      </div>
+  </template>
 
-
-      <!-- ================================================= -->
-      <!-- RECEIVE MOVEMENTS -->
-      <!-- ================================================= -->
-
-      <div class="xt-form-section">
-
-        <div class="xt-section-heading-row">
-
-          <div class="xt-section-title">
-
-            <span class="xt-section-title-icon">
-              <i class="bi bi-box-arrow-in-down-left"></i>
-            </span>
-
-            <div>
-
-              <strong>
-                Receive
-              </strong>
-
-              <small>
-                Money entering accounts.
-              </small>
-
-            </div>
-
-          </div>
-
-
-          <button
-            type="button"
-            class="btn xt-add-btn"
-            data-action="click->money-movements#addReceive"
-          >
-
-            <i class="bi bi-plus-lg"></i>
-            Add Receive
-
-          </button>
-
-        </div>
-
-
-        <div
-          data-money-movements-target="receiveContainer"
-        >
-
-          <%= form.fields_for :money_movements do |movement_form| %>
-
-            <% if movement_form.object.direction.to_s == "receive" %>
-
-              <%= render(
-                "shared/movement_fields",
-                movement_form: movement_form
-              ) %>
-
-            <% end %>
-
-          <% end %>
-
-        </div>
-
-
-        <!-- RECEIVE TEMPLATE -->
-
-        <template
-          data-money-movements-target="receiveTemplate"
-        >
-
-          <%
-            prototype = MoneyMovement.new(
-              direction: "receive"
-            )
-          %>
-
-          <%= form.fields_for(
-            :money_movements,
-            prototype,
-            child_index: "NEW_RECORD"
-          ) do |movement_form| %>
-
-            <%= render(
-              "shared/movement_fields",
-              movement_form: movement_form
-            ) %>
-
-          <% end %>
-
-        </template>
-
-      </div>
+</div>
 
 
       <!-- ================================================= -->

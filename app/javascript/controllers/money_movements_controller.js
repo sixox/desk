@@ -6,7 +6,7 @@ export default class extends Controller {
     "receiveContainer",
     "sendTemplate",
     "receiveTemplate"
-  ]
+    ]
 
   connect() {
     this.recalculateAll()
@@ -22,7 +22,7 @@ export default class extends Controller {
 
     this.addMovement(
       "send"
-    )
+      )
   }
 
 
@@ -35,48 +35,43 @@ export default class extends Controller {
 
     this.addMovement(
       "receive"
-    )
+      )
   }
 
-
-  // ==================================================
-  // ADD MOVEMENT
-  // ==================================================
+// ==================================================
+// ADD MOVEMENT
+// ==================================================
 
   addMovement(direction) {
     const template =
-      direction === "send"
-        ? this.sendTemplateTarget
-        : this.receiveTemplateTarget
+    direction === "send"
+    ? this.sendTemplateTarget
+    : this.receiveTemplateTarget
 
     const container =
-      direction === "send"
-        ? this.sendContainerTarget
-        : this.receiveContainerTarget
-
+    direction === "send"
+    ? this.sendContainerTarget
+    : this.receiveContainerTarget
 
     const index =
-      `new_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2, 8)}`
-
+    Date.now().toString() +
+    Math.floor(
+      Math.random() * 1000
+      ).toString()
 
     const html =
-      template.innerHTML.replace(
-        /NEW_RECORD/g,
-        index
+    template.innerHTML.replace(
+      /NEW_RECORD/g,
+      index
       )
-
 
     container.insertAdjacentHTML(
       "beforeend",
       html
-    )
-
+      )
 
     this.recalculateAll()
   }
-
 
   // ==================================================
   // REMOVE
@@ -87,8 +82,8 @@ export default class extends Controller {
 
 
     const row =
-      event.currentTarget.closest(
-        "[data-movement-row]"
+    event.currentTarget.closest(
+      "[data-movement-row]"
       )
 
 
@@ -98,21 +93,21 @@ export default class extends Controller {
 
 
     const idField =
-      row.querySelector(
-        'input[name*="[id]"]'
+    row.querySelector(
+      'input[name*="[id]"]'
       )
 
 
     const destroyField =
-      row.querySelector(
-        'input[name*="_destroy"]'
+    row.querySelector(
+      'input[name*="_destroy"]'
       )
 
 
     if (
       idField &&
       idField.value
-    ) {
+      ) {
 
       if (destroyField) {
         destroyField.value = "1"
@@ -120,7 +115,7 @@ export default class extends Controller {
 
       row.classList.add(
         "d-none"
-      )
+        )
 
     } else {
 
@@ -130,11 +125,11 @@ export default class extends Controller {
 
     this.ensureAtLeastOneMovement(
       "send"
-    )
+      )
 
     this.ensureAtLeastOneMovement(
       "receive"
-    )
+      )
 
     this.recalculateAll()
   }
@@ -146,12 +141,12 @@ export default class extends Controller {
 
   async loadAccounts(event) {
     const organizationId =
-      event.currentTarget.value
+    event.currentTarget.value
 
 
     const row =
-      event.currentTarget.closest(
-        "[data-movement-row]"
+    event.currentTarget.closest(
+      "[data-movement-row]"
       )
 
 
@@ -161,8 +156,8 @@ export default class extends Controller {
 
 
     const accountSelect =
-      row.querySelector(
-        "[data-account-select]"
+    row.querySelector(
+      "[data-account-select]"
       )
 
 
@@ -172,7 +167,7 @@ export default class extends Controller {
 
 
     accountSelect.innerHTML =
-      '<option value="">Loading...</option>'
+    '<option value="">Loading...</option>'
 
     accountSelect.disabled = true
 
@@ -180,7 +175,7 @@ export default class extends Controller {
     if (!organizationId) {
 
       accountSelect.innerHTML =
-        '<option value="">Select account</option>'
+      '<option value="">Select account</option>'
 
       accountSelect.disabled = false
 
@@ -189,75 +184,75 @@ export default class extends Controller {
 
 
     const url =
-      new URL(
-        this.element.dataset.accountsUrl,
-        window.location.origin
+    new URL(
+      this.element.dataset.accountsUrl,
+      window.location.origin
       )
 
 
     url.searchParams.set(
       "organization_id",
       organizationId
-    )
+      )
 
 
     try {
 
       const response =
-        await fetch(
-          url,
-          {
-            headers: {
-              Accept: "application/json"
-            }
+      await fetch(
+        url,
+        {
+          headers: {
+            Accept: "application/json"
           }
+        }
         )
 
 
       if (!response.ok) {
         throw new Error(
           `HTTP ${response.status}`
-        )
+          )
       }
 
 
       const accounts =
-        await response.json()
+      await response.json()
 
 
       accountSelect.innerHTML =
-        '<option value="">Select account</option>'
+      '<option value="">Select account</option>'
 
 
       accounts.forEach(account => {
 
         const option =
-          document.createElement(
-            "option"
+        document.createElement(
+          "option"
           )
 
 
         option.value =
-          account.id
+        account.id
 
 
         option.textContent =
-          `${account.number} - ${
-            account.currency_name || "—"
-          }`
+        `${account.number} - ${
+          account.currency_name || "—"
+        }`
 
 
         option.dataset.currencyId =
-          account.currency_id
+        account.currency_id
 
 
         option.dataset.currencyName =
-          account.currency_name || ""
+        account.currency_name || ""
 
 
         accountSelect.appendChild(
           option
-        )
+          )
       })
 
 
@@ -266,323 +261,323 @@ export default class extends Controller {
 
       if (
         accounts.length === 1
-      ) {
+        ) {
 
         accountSelect.value =
-          accounts[0].id
+      accounts[0].id
 
 
-        this.setAccountCurrency({
-          currentTarget: accountSelect
-        })
-      }
+      this.setAccountCurrency({
+        currentTarget: accountSelect
+      })
+    }
 
-    } catch (error) {
+  } catch (error) {
 
-      console.error(
-        "Unable to load accounts:",
-        error
+    console.error(
+      "Unable to load accounts:",
+      error
       )
 
 
-      accountSelect.innerHTML =
-        '<option value="">Unable to load accounts</option>'
+    accountSelect.innerHTML =
+    '<option value="">Unable to load accounts</option>'
 
 
-      accountSelect.disabled = false
-    }
+    accountSelect.disabled = false
   }
+}
 
 
   // ==================================================
   // ACCOUNT -> CURRENCY
   // ==================================================
 
-  setAccountCurrency(event) {
-    const accountSelect =
-      event.currentTarget
+setAccountCurrency(event) {
+  const accountSelect =
+  event.currentTarget
 
 
-    const row =
-      accountSelect.closest(
-        "[data-movement-row]"
-      )
+  const row =
+  accountSelect.closest(
+    "[data-movement-row]"
+    )
 
 
-    if (!row) {
-      return
-    }
+  if (!row) {
+    return
+  }
 
 
-    const option =
-      accountSelect.options[
-        accountSelect.selectedIndex
-      ]
+  const option =
+  accountSelect.options[
+    accountSelect.selectedIndex
+    ]
 
 
-    if (!option) {
-      return
-    }
+  if (!option) {
+    return
+  }
 
 
-    const currencySelect =
-      row.querySelector(
-        "[data-currency-select]"
-      )
+  const currencySelect =
+  row.querySelector(
+    "[data-currency-select]"
+    )
 
 
-    if (
-      currencySelect &&
-      option.dataset.currencyId
+  if (
+    currencySelect &&
+    option.dataset.currencyId
     ) {
 
-      currencySelect.value =
-        option.dataset.currencyId
-    }
+    currencySelect.value =
+  option.dataset.currencyId
+}
 
 
-    this.recalculateRow(
-      row
-    )
-  }
+this.recalculateRow(
+  row
+  )
+}
 
 
   // ==================================================
   // RECALCULATE ALL
   // ==================================================
 
-  recalculateAll() {
-    this.element
-      .querySelectorAll(
-        "[data-movement-row]"
-      )
-      .forEach(row => {
+recalculateAll() {
+  this.element
+  .querySelectorAll(
+    "[data-movement-row]"
+    )
+  .forEach(row => {
 
-        this.recalculateRow(
-          row
-        )
-      })
-  }
+    this.recalculateRow(
+      row
+      )
+  })
+}
 
 
   // ==================================================
   // RECALCULATE ROW
   // ==================================================
 
-  recalculateRow(eventOrRow) {
+recalculateRow(eventOrRow) {
 
-    const row =
-      eventOrRow instanceof Element
-        ? eventOrRow
-        : eventOrRow.currentTarget?.closest(
-            "[data-movement-row]"
-          )
-
-
-    if (!row) {
-      return
-    }
+  const row =
+  eventOrRow instanceof Element
+  ? eventOrRow
+  : eventOrRow.currentTarget?.closest(
+    "[data-movement-row]"
+    )
 
 
-    const amountInput =
-      row.querySelector(
-        "[data-amount]"
-      )
-
-
-    const rateInput =
-      row.querySelector(
-        "[data-exchange-rate]"
-      )
-
-
-    const amountToInput =
-      row.querySelector(
-        "[data-amount-to]"
-      )
-
-
-    const chargeInput =
-      row.querySelector(
-        "[data-charge]"
-      )
-
-
-    const totalInput =
-      row.querySelector(
-        "[data-total]"
-      )
-
-
-    const totalDisplay =
-      row.querySelector(
-        "[data-total-display]"
-      )
-
-
-    if (
-      !amountInput ||
-      !amountToInput
-    ) {
-      return
-    }
-
-
-    const amount =
-      this.numberValue(
-        amountInput.value
-      )
-
-
-    const rate =
-      rateInput
-        ? this.numberValue(
-            rateInput.value
-          )
-        : 0
-
-
-    const charge =
-      chargeInput
-        ? this.numberValue(
-            chargeInput.value
-          )
-        : 0
-
-
-    const amountTo =
-      rate > 0
-        ? amount * rate
-        : amount
-
-
-    const roundedAmountTo =
-      this.round(
-        amountTo,
-        5
-      )
-
-
-    const total =
-      this.round(
-        roundedAmountTo + charge,
-        5
-      )
-
-
-    amountToInput.value =
-      this.format(
-        roundedAmountTo
-      )
-
-
-    if (totalInput) {
-
-      totalInput.value =
-        this.format(
-          total
-        )
-    }
-
-
-    if (totalDisplay) {
-
-      totalDisplay.textContent =
-        this.format(
-          total
-        )
-    }
+  if (!row) {
+    return
   }
+
+
+  const amountInput =
+  row.querySelector(
+    "[data-amount]"
+    )
+
+
+  const rateInput =
+  row.querySelector(
+    "[data-exchange-rate]"
+    )
+
+
+  const amountToInput =
+  row.querySelector(
+    "[data-amount-to]"
+    )
+
+
+  const chargeInput =
+  row.querySelector(
+    "[data-charge]"
+    )
+
+
+  const totalInput =
+  row.querySelector(
+    "[data-total]"
+    )
+
+
+  const totalDisplay =
+  row.querySelector(
+    "[data-total-display]"
+    )
+
+
+  if (
+    !amountInput ||
+    !amountToInput
+    ) {
+    return
+}
+
+
+const amount =
+this.numberValue(
+  amountInput.value
+  )
+
+
+const rate =
+rateInput
+? this.numberValue(
+  rateInput.value
+  )
+: 0
+
+
+const charge =
+chargeInput
+? this.numberValue(
+  chargeInput.value
+  )
+: 0
+
+
+const amountTo =
+rate > 0
+? amount * rate
+: amount
+
+
+const roundedAmountTo =
+this.round(
+  amountTo,
+  5
+  )
+
+
+const total =
+this.round(
+  roundedAmountTo + charge,
+  5
+  )
+
+
+amountToInput.value =
+this.format(
+  roundedAmountTo
+  )
+
+
+if (totalInput) {
+
+  totalInput.value =
+  this.format(
+    total
+    )
+}
+
+
+if (totalDisplay) {
+
+  totalDisplay.textContent =
+  this.format(
+    total
+    )
+}
+}
 
 
   // ==================================================
   // ENSURE AT LEAST ONE
   // ==================================================
 
-  ensureAtLeastOneMovement(
-    direction
+ensureAtLeastOneMovement(
+  direction
   ) {
 
-    const container =
-      direction === "send"
-        ? this.sendContainerTarget
-        : this.receiveContainerTarget
+  const container =
+  direction === "send"
+  ? this.sendContainerTarget
+  : this.receiveContainerTarget
 
 
-    const visibleRows =
-      Array.from(
-        container.querySelectorAll(
-          "[data-movement-row]"
-        )
-      ).filter(
-        row =>
-          !row.classList.contains(
-            "d-none"
-          )
+  const visibleRows =
+  Array.from(
+    container.querySelectorAll(
+      "[data-movement-row]"
       )
+    ).filter(
+    row =>
+    !row.classList.contains(
+      "d-none"
+      )
+    )
 
 
     if (
       visibleRows.length === 0
-    ) {
+      ) {
 
       this.addMovement(
         direction
-      )
-    }
+        )
   }
+}
 
 
   // ==================================================
   // NUMBER
   // ==================================================
 
-  numberValue(value) {
-    const number =
-      parseFloat(
-        value
-      )
-
-
-    return Number.isFinite(
-      number
+numberValue(value) {
+  const number =
+  parseFloat(
+    value
     )
-      ? number
-      : 0
-  }
+
+
+  return Number.isFinite(
+    number
+    )
+  ? number
+  : 0
+}
 
 
   // ==================================================
   // ROUND
   // ==================================================
 
-  round(
-    value,
-    decimals = 5
+round(
+  value,
+  decimals = 5
   ) {
 
-    const factor =
-      Math.pow(
-        10,
-        decimals
-      )
+  const factor =
+  Math.pow(
+    10,
+    decimals
+    )
 
 
-    return Math.round(
-      value * factor
+  return Math.round(
+    value * factor
     ) / factor
-  }
+}
 
 
   // ==================================================
   // FORMAT
   // ==================================================
 
-  format(value) {
+format(value) {
 
-    return this.round(
-      value,
-      5
+  return this.round(
+    value,
+    5
     ).toString()
-  }
+}
 }
