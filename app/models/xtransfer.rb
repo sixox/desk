@@ -33,7 +33,10 @@ class Xtransfer < ApplicationRecord
            through: :exchange_transfers
 
   accepts_nested_attributes_for :exchange_transfers,
-                                allow_destroy: true
+                              allow_destroy: true,
+                              reject_if: proc { |attributes|
+                                attributes["exchange_id"].blank?
+                              }
 
 
   # ==================================================
@@ -69,8 +72,6 @@ class Xtransfer < ApplicationRecord
   validates :status,
             presence: true
 
-  validate :must_have_send_movement
-  validate :must_have_receive_movement
 
 
   # ==================================================
@@ -177,26 +178,5 @@ class Xtransfer < ApplicationRecord
   # REQUIRE SEND
   # ==================================================
 
-  def must_have_send_movement
-    return if sends.any?
-
-    errors.add(
-      :money_movements,
-      "must contain at least one send"
-    )
-  end
-
-
-  # ==================================================
-  # REQUIRE RECEIVE
-  # ==================================================
-
-  def must_have_receive_movement
-    return if receives.any?
-
-    errors.add(
-      :money_movements,
-      "must contain at least one receive"
-    )
-  end
+ 
 end
