@@ -141,10 +141,10 @@
 
           <% if transaction.transactionable_link %>
             <%= link_to(
-              "#{transaction.transactionable_type} #{transaction.transactionable_id}",
-              transaction.transactionable_link,
-              class: "transaction-type transaction-type-link"
-            ) %>
+                      "#{transaction.transactionable_name} ##{transaction.transactionable_display_id}",
+                      transaction.transactionable_link,
+                      class: "transaction-type transaction-type-link"
+                    ) %>
           <% else %>
             <span class="transaction-type">
               <%= transaction.transactionable_type %>

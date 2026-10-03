@@ -90,9 +90,9 @@ class Xaccount < ApplicationRecord
   #
   # balance = 7,000
   #
-  def balance
-    debit_amount.to_i - credit_amount.to_i
-  end
+   def balance
+      credit_amount.to_i - debit_amount.to_i
+   end
 
 
   # ==================================================

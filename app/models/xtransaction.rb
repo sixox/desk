@@ -52,13 +52,21 @@ class Xtransaction < ApplicationRecord
   # ==================================================
 
   def movement?
-    transactionable.is_a?(
-      MoneyMovement
-    ) ||
-      transactionable.is_a?(
-        ExchangeMovement
-      )
+    transactionable.is_a?(MoneyMovement) ||
+      transactionable.is_a?(ExchangeMovement)
   end
+
+
+  def movement
+    return unless movement?
+
+    transactionable
+  end
+
+
+  # ==================================================
+  # MOVEMENT SYNC
+  # ==================================================
 
   def self.sync_movement!(
     movement:,
@@ -67,7 +75,8 @@ class Xtransaction < ApplicationRecord
     note: nil
   )
     if old_entry.blank?
-      movement.create_xtransaction!(
+      create_for_movement!(
+        movement: movement,
         user: user,
         note: note
       )
@@ -79,12 +88,6 @@ class Xtransaction < ApplicationRecord
         note: note
       )
     end
-  end
-
-  def movement
-    return unless movement?
-
-    transactionable
   end
 
 
@@ -111,8 +114,7 @@ class Xtransaction < ApplicationRecord
 
     movement.reload
 
-    entry =
-      movement.accounting_entry
+    entry = movement.accounting_entry
 
     return if
       entry[:debit_amount].to_i.zero? &&
@@ -138,13 +140,16 @@ class Xtransaction < ApplicationRecord
   # ==================================================
   # RECONCILE ONE MOVEMENT
   #
-  # This compares the OLD movement state with the NEW
-  # movement state.
+  # The original Xtransaction is never modified.
   #
-  # It does NOT modify historical Xtransactions.
+  # Instead:
   #
-  # Instead it creates one adjustment transaction
-  # containing the required debit / credit difference.
+  #   old debit   -> credit adjustment
+  #   old credit  -> debit adjustment
+  #   new debit   -> debit adjustment
+  #   new credit  -> credit adjustment
+  #
+  # This also handles changing the Xaccount.
   # ==================================================
 
   def self.reconcile_movement!(
@@ -160,9 +165,6 @@ class Xtransaction < ApplicationRecord
             "movement must be MoneyMovement or ExchangeMovement"
     end
 
-    new_entry =
-      movement.accounting_entry
-
     old_entry =
       normalize_entry(
         old_entry
@@ -170,67 +172,30 @@ class Xtransaction < ApplicationRecord
 
     new_entry =
       normalize_entry(
-        new_entry
+        movement.accounting_entry
       )
-
-    old_debit =
-      old_entry[:debit_amount]
-
-    old_credit =
-      old_entry[:credit_amount]
-
-    new_debit =
-      new_entry[:debit_amount]
-
-    new_credit =
-      new_entry[:credit_amount]
 
 
     # ------------------------------------------------
     # No change
     # ------------------------------------------------
 
-    if old_entry == new_entry
-      return
-    end
+    return if old_entry == new_entry
 
 
     # ------------------------------------------------
-    # The old accounting effect has to be cancelled,
-    # then the new effect has to be applied.
-    #
-    # We express the complete adjustment as:
-    #
-    # old debit:
-    #   credit
-    #
-    # old credit:
-    #   debit
-    #
-    # new debit:
-    #   debit
-    #
-    # new credit:
-    #   credit
-    #
-    # This also works if the account itself changed.
+    # Build accounting effects
     # ------------------------------------------------
 
-    changes =
-      []
+    old_key = [
+      old_entry[:xaccount_id],
+      old_entry[:currency_id]
+    ]
 
-
-    old_key =
-      [
-        old_entry[:xaccount_id],
-        old_entry[:currency_id]
-      ]
-
-    new_key =
-      [
-        new_entry[:xaccount_id],
-        new_entry[:currency_id]
-      ]
+    new_key = [
+      new_entry[:xaccount_id],
+      new_entry[:currency_id]
+    ]
 
 
     effects =
@@ -247,10 +212,10 @@ class Xtransaction < ApplicationRecord
     # ------------------------------------------------
 
     effects[old_key][:debit] +=
-      old_credit
+      old_entry[:credit_amount]
 
     effects[old_key][:credit] +=
-      old_debit
+      old_entry[:debit_amount]
 
 
     # ------------------------------------------------
@@ -258,18 +223,23 @@ class Xtransaction < ApplicationRecord
     # ------------------------------------------------
 
     effects[new_key][:debit] +=
-      new_debit
+      new_entry[:debit_amount]
 
     effects[new_key][:credit] +=
-      new_credit
+      new_entry[:credit_amount]
 
+
+    # ------------------------------------------------
+    # Convert effects to changes
+    # ------------------------------------------------
+
+    changes = []
 
     effects.each do |key, effect|
 
       next if
         effect[:debit].zero? &&
         effect[:credit].zero?
-
 
       changes << {
         xaccount_id: key[0],
@@ -283,12 +253,20 @@ class Xtransaction < ApplicationRecord
     return if changes.empty?
 
 
+    # ------------------------------------------------
+    # Note
+    # ------------------------------------------------
+
     note ||=
       movement_update_note(
         movement: movement,
         user: user
       )
 
+
+    # ------------------------------------------------
+    # Create adjustment transactions
+    # ------------------------------------------------
 
     changes.each do |change|
 
@@ -323,6 +301,21 @@ class Xtransaction < ApplicationRecord
   # ==================================================
   # LEDGER ENTRY
   # ==================================================
+  #
+  # SEND:
+  #
+  #   debit
+  #   balance decreases
+  #
+  # RECEIVE:
+  #
+  #   credit
+  #   balance increases
+  #
+  # The account is locked before calculating the
+  # balance so concurrent transactions cannot use
+  # the same previous balance.
+  # ==================================================
 
   def self.create_ledger_entry!(
     xaccount:,
@@ -347,7 +340,7 @@ class Xtransaction < ApplicationRecord
     Xaccount.transaction(requires_new: true) do
 
       # ------------------------------------------------
-      # Lock account before calculating balance.
+      # Lock account before calculating balance
       # ------------------------------------------------
 
       locked_account =
@@ -359,15 +352,15 @@ class Xtransaction < ApplicationRecord
 
 
       # ------------------------------------------------
-      # Latest transaction belonging to THIS account.
+      # Latest transaction belonging to THIS account
       # ------------------------------------------------
 
       previous_transaction =
         where(
           xaccount_id: locked_account.id
         )
-        .order(id: :desc)
-        .first
+          .order(id: :desc)
+          .first
 
 
       balance_before =
@@ -377,8 +370,10 @@ class Xtransaction < ApplicationRecord
 
 
       # ------------------------------------------------
-      # Debit reduces balance.
-      # Credit increases balance.
+      # Accounting rule
+      #
+      # Debit  = money leaving account
+      # Credit = money entering account
       # ------------------------------------------------
 
       balance_after =
@@ -386,6 +381,10 @@ class Xtransaction < ApplicationRecord
         debit_amount +
         credit_amount
 
+
+      # ------------------------------------------------
+      # Create transaction
+      # ------------------------------------------------
 
       create!(
         xaccount: locked_account,
@@ -414,7 +413,6 @@ class Xtransaction < ApplicationRecord
   def self.normalize_entry(entry)
     entry =
       entry.symbolize_keys
-
 
     {
       xaccount_id:
@@ -531,21 +529,55 @@ class Xtransaction < ApplicationRecord
   def transactionable_link
     return nil unless transactionable
 
+    record =
+      if transactionable.respond_to?(:movable) &&
+         transactionable.movable.present?
+
+        transactionable.movable
+      else
+        transactionable
+      end
+
     Rails
       .application
       .routes
       .url_helpers
-      .polymorphic_path(
-        transactionable
-      )
-  rescue ActionController::UrlGenerationError
+      .polymorphic_path(record)
+
+  rescue ActionController::UrlGenerationError,
+         NoMethodError
+
     nil
   end
 
 
   def transactionable_name
-    transactionable_type
+    return nil unless transactionable
+
+    record =
+      if transactionable.respond_to?(:movable) &&
+         transactionable.movable.present?
+
+        transactionable.movable
+      else
+        transactionable
+      end
+
+    record.class.name
       .underscore
       .humanize
+  end
+
+
+  def transactionable_display_id
+    return nil unless transactionable
+
+    if transactionable.respond_to?(:movable) &&
+       transactionable.movable.present?
+
+      transactionable.movable.id
+    else
+      transactionable.id
+    end
   end
 end
