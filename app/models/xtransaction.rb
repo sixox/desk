@@ -1,892 +1,551 @@
 class Xtransaction < ApplicationRecord
+  # ==================================================
+  # ASSOCIATIONS
+  # ==================================================
 
-    # ==================================================
-    # ASSOCIATIONS
-    # ==================================================
+  belongs_to :xaccount
 
-    belongs_to :xaccount
+  belongs_to :currency
 
-    belongs_to :currency
-
-    belongs_to :transactionable,
-    polymorphic: true
-
-
-    # ==================================================
-    # VALIDATIONS
-    # ==================================================
-
-    validates :xaccount,
-    presence: true
-
-    validates :currency,
-    presence: true
-
-    validates :transactionable,
-    presence: true
-
-    validates :debit_amount,
-    numericality: {
-      greater_than_or_equal_to: 0,
-      only_integer: true
-    }
-
-    validates :credit_amount,
-    numericality: {
-      greater_than_or_equal_to: 0,
-      only_integer: true
-    }
-
-    validates :balance_before_transaction,
-    numericality: {
-      only_integer: true
-    }
-
-    validates :balance_after_transaction,
-    numericality: {
-      only_integer: true
-    }
+  belongs_to :transactionable,
+             polymorphic: true
 
 
-    # ==================================================
-    # GENERIC CREATE
-    #
-    # Any model can use:
-    #
-    # Xtransaction.create_for!(
-    #   transactionable: object,
-    #   user: current_user,
-    #   entries: [
-    #     {
-    #       xaccount: account,
-    #       currency: currency,
-    #       debit_amount: 1000,
-    #       credit_amount: 0
-    #     }
-    #   ]
-    # )
-    #
-    # Also supports:
-    #
-    # {
-    #   xaccount_id: 10,
-    #   currency_id: 2,
-    #   debit_amount: 1000,
-    #   credit_amount: 0
-    # }
-    #
-    # ==================================================
+  # ==================================================
+  # VALIDATIONS
+  # ==================================================
 
-    def self.create_for!(
-      transactionable:,
-      entries:,
-      user: nil,
-      note: nil
+  validates :xaccount,
+            presence: true
+
+  validates :currency,
+            presence: true
+
+  validates :transactionable,
+            presence: true
+
+  validates :debit_amount,
+            numericality: {
+              greater_than_or_equal_to: 0,
+              only_integer: true
+            }
+
+  validates :credit_amount,
+            numericality: {
+              greater_than_or_equal_to: 0,
+              only_integer: true
+            }
+
+  validates :balance_before_transaction,
+            numericality: {
+              only_integer: true
+            }
+
+  validates :balance_after_transaction,
+            numericality: {
+              only_integer: true
+            }
+
+
+  # ==================================================
+  # MOVEMENT
+  # ==================================================
+
+  def movement?
+    transactionable.is_a?(
+      MoneyMovement
+    ) ||
+      transactionable.is_a?(
+        ExchangeMovement
       )
+  end
 
-    timestamp =
-    Time.current
+  def self.sync_movement!(
+    movement:,
+    old_entry: nil,
+    user: nil,
+    note: nil
+  )
+    if old_entry.blank?
+      movement.create_xtransaction!(
+        user: user,
+        note: note
+      )
+    else
+      reconcile_movement!(
+        movement: movement,
+        old_entry: old_entry,
+        user: user,
+        note: note
+      )
+    end
+  end
 
-    username =
-    transaction_username(user)
+  def movement
+    return unless movement?
 
-    entries =
-    normalize_entries(entries)
+    transactionable
+  end
 
-    return if entries.empty?
 
+  # ==================================================
+  # CREATE ONE MOVEMENT TRANSACTION
+  #
+  # One movement -> one base Xtransaction.
+  #
+  # Additional Xtransactions can later be used for
+  # corrections/reconciliations.
+  # ==================================================
+
+  def self.create_for_movement!(
+    movement:,
+    user: nil,
+    note: nil
+  )
+    unless movement.is_a?(MoneyMovement) ||
+           movement.is_a?(ExchangeMovement)
+
+      raise ArgumentError,
+            "movement must be MoneyMovement or ExchangeMovement"
+    end
+
+    movement.reload
+
+    entry =
+      movement.accounting_entry
+
+    return if
+      entry[:debit_amount].to_i.zero? &&
+      entry[:credit_amount].to_i.zero?
 
     note ||=
-    generic_creation_note(
-      transactionable: transactionable,
-      entries: entries,
-      username: username,
-      timestamp: timestamp
+      movement_creation_note(
+        movement: movement,
+        user: user
       )
 
-
-      # ------------------------------------------------
-      # Aggregate entries first.
-      #
-      # If a future model sends multiple entries for the
-      # same account/currency, they are handled together.
-      #
-      # ------------------------------------------------
-
-      effects =
-      aggregate_effects(entries)
+    create_ledger_entry!(
+      xaccount: movement.xaccount,
+      currency: movement.currency,
+      transactionable: movement,
+      debit_amount: entry[:debit_amount],
+      credit_amount: entry[:credit_amount],
+      note: note
+    )
+  end
 
 
-      effects
-      .sort_by { |key, _effect| key.to_s }
-      .each do |key, effect|
+  # ==================================================
+  # RECONCILE ONE MOVEMENT
+  #
+  # This compares the OLD movement state with the NEW
+  # movement state.
+  #
+  # It does NOT modify historical Xtransactions.
+  #
+  # Instead it creates one adjustment transaction
+  # containing the required debit / credit difference.
+  # ==================================================
 
-        xaccount_id,
-        currency_id =
-        key
+  def self.reconcile_movement!(
+    movement:,
+    old_entry:,
+    user: nil,
+    note: nil
+  )
+    unless movement.is_a?(MoneyMovement) ||
+           movement.is_a?(ExchangeMovement)
 
-        xaccount =
-        xaccount_map(
-          [xaccount_id]
-          )[xaccount_id]
+      raise ArgumentError,
+            "movement must be MoneyMovement or ExchangeMovement"
+    end
 
-        currency =
-        currency_map(
-          [currency_id]
-          )[currency_id]
+    new_entry =
+      movement.accounting_entry
+
+    old_entry =
+      normalize_entry(
+        old_entry
+      )
+
+    new_entry =
+      normalize_entry(
+        new_entry
+      )
+
+    old_debit =
+      old_entry[:debit_amount]
+
+    old_credit =
+      old_entry[:credit_amount]
+
+    new_debit =
+      new_entry[:debit_amount]
+
+    new_credit =
+      new_entry[:credit_amount]
 
 
-        create_ledger_entry!(
-          xaccount: xaccount,
-          currency: currency,
-          transactionable: transactionable,
-          debit_amount: effect[:debit],
-          credit_amount: effect[:credit],
-          note: note
-          )
+    # ------------------------------------------------
+    # No change
+    # ------------------------------------------------
 
-      end
-
+    if old_entry == new_entry
+      return
     end
 
 
-    # ==================================================
-    # GENERIC UPDATE / RECONCILIATION
+    # ------------------------------------------------
+    # The old accounting effect has to be cancelled,
+    # then the new effect has to be applied.
     #
-    # OLD entries describe the accounting effect that
-    # already exists in the ledger.
+    # We express the complete adjustment as:
     #
-    # NEW entries describe what the accounting effect
-    # should be after the model was updated.
+    # old debit:
+    #   credit
     #
-    # The method calculates:
+    # old credit:
+    #   debit
     #
-    #     new effect - old effect
+    # new debit:
+    #   debit
     #
-    # per account and currency.
+    # new credit:
+    #   credit
     #
-    # Only the difference is recorded.
-    #
-    # ==================================================
+    # This also works if the account itself changed.
+    # ------------------------------------------------
 
-    def self.reconcile!(
-      transactionable:,
-      old_entries:,
-      new_entries:,
-      user: nil,
-      note: nil
-      )
-
-    old_entries =
-    normalize_entries(old_entries)
-
-    new_entries =
-    normalize_entries(new_entries)
+    changes =
+      []
 
 
-      # ------------------------------------------------
-      # Combine all old/new effects by:
-      #
-      # account + currency
-      #
-      # ------------------------------------------------
+    old_key =
+      [
+        old_entry[:xaccount_id],
+        old_entry[:currency_id]
+      ]
 
-      old_effects =
-      aggregate_effects(old_entries)
-
-      new_effects =
-      aggregate_effects(new_entries)
-
-
-      keys =
-      old_effects.keys |
-      new_effects.keys
+    new_key =
+      [
+        new_entry[:xaccount_id],
+        new_entry[:currency_id]
+      ]
 
 
-      changes = []
-
-
-      keys
-      .sort_by { |key| key.to_s }
-      .each do |key|
-
-        old_effect =
-        old_effects[key] ||
-        zero_effect
-
-        new_effect =
-        new_effects[key] ||
-        zero_effect
-
-
-        debit_difference =
-        new_effect[:debit] -
-        old_effect[:debit]
-
-        credit_difference =
-        new_effect[:credit] -
-        old_effect[:credit]
-
-
-        next if
-        debit_difference.zero? &&
-        credit_difference.zero?
-
-
-        changes << {
-          key: key,
-          debit_difference: debit_difference,
-          credit_difference: credit_difference,
-          old_debit: old_effect[:debit],
-          new_debit: new_effect[:debit],
-          old_credit: old_effect[:credit],
-          new_credit: new_effect[:credit]
+    effects =
+      Hash.new do |hash, key|
+        hash[key] = {
+          debit: 0,
+          credit: 0
         }
-
       end
 
 
-      # ------------------------------------------------
-      # Absolutely no accounting change.
-      #
-      # Do NOT create an Xtransaction.
-      # ------------------------------------------------
+    # ------------------------------------------------
+    # Reverse old effect
+    # ------------------------------------------------
 
-      return if changes.empty?
+    effects[old_key][:debit] +=
+      old_credit
 
-
-      timestamp =
-      Time.current
-
-      username =
-      transaction_username(user)
+    effects[old_key][:credit] +=
+      old_debit
 
 
-      note ||=
-      generic_update_note(
-        transactionable: transactionable,
-        changes: changes,
-        username: username,
-        timestamp: timestamp
+    # ------------------------------------------------
+    # Apply new effect
+    # ------------------------------------------------
+
+    effects[new_key][:debit] +=
+      new_debit
+
+    effects[new_key][:credit] +=
+      new_credit
+
+
+    effects.each do |key, effect|
+
+      next if
+        effect[:debit].zero? &&
+        effect[:credit].zero?
+
+
+      changes << {
+        xaccount_id: key[0],
+        currency_id: key[1],
+        debit_amount: effect[:debit],
+        credit_amount: effect[:credit]
+      }
+    end
+
+
+    return if changes.empty?
+
+
+    note ||=
+      movement_update_note(
+        movement: movement,
+        user: user
+      )
+
+
+    changes.each do |change|
+
+      xaccount =
+        Xaccount
+          .includes(:currency)
+          .find(
+            change[:xaccount_id]
+          )
+
+      currency =
+        Currency.find(
+          change[:currency_id]
         )
 
 
-      # ------------------------------------------------
-      # Bulk-load all required accounts and currencies.
-      #
-      # This replaces repeated Xaccount.find and
-      # Currency.find calls.
-      # ------------------------------------------------
-
-      account_ids =
-      changes.map do |change|
-        change[:key][0]
-      end.uniq
-
-
-      currency_ids =
-      changes.map do |change|
-        change[:key][1]
-      end.uniq
-
-
-      accounts =
-      xaccount_map(account_ids)
-
-      currencies =
-      currency_map(currency_ids)
-
-
-      # ------------------------------------------------
-      # Create only the required ledger differences.
-      #
-      # IMPORTANT:
-      #
-      # We keep the same accounting behavior as before,
-      # but combine debit/credit differences for the
-      # same account/currency into one ledger row.
-      #
-      # ------------------------------------------------
-
-      changes
-      .sort_by { |change| change[:key].to_s }
-      .each do |change|
-
-        xaccount_id,
-        currency_id =
-        change[:key]
-
-
-        xaccount =
-        accounts.fetch(
-          xaccount_id
-          )
-
-
-        currency =
-        currencies.fetch(
-          currency_id
-          )
-
-
-        debit_difference =
-        change[:debit_difference]
-
-        credit_difference =
-        change[:credit_difference]
-
-
-          # ------------------------------------------------
-          # Calculate the actual delta to the ledger.
-          #
-          # A positive debit difference means debit.
-          # A negative debit difference means credit.
-          #
-          # A positive credit difference means credit.
-          # A negative credit difference means debit.
-          #
-          # ------------------------------------------------
-
-          debit_amount =
-          debit_difference > 0 ?
-          debit_difference :
-          0
-
-          credit_amount =
-          debit_difference < 0 ?
-          debit_difference.abs :
-          0
-
-
-          if credit_difference > 0
-
-            credit_amount +=
-            credit_difference
-
-          elsif credit_difference < 0
-
-            debit_amount +=
-            credit_difference.abs
-
-          end
-
-
-          next if
-          debit_amount.zero? &&
-          credit_amount.zero?
-
-
-          create_ledger_entry!(
-            xaccount: xaccount,
-            currency: currency,
-            transactionable: transactionable,
-            debit_amount: debit_amount,
-            credit_amount: credit_amount,
-            note: note
-            )
-
-        end
-
-      end
-
-
-    # ==================================================
-    # INITIAL LEDGER ENTRY
-    #
-    # Generic helper used by create_for! and reconcile!.
-    #
-    # The Xaccount row is locked before calculating the
-    # balance. This is safer than locking only the latest
-    # Xtransaction because an account with no transactions
-    # yet would otherwise have nothing to lock.
-    #
-    # ==================================================
-
-    def self.create_ledger_entry!(
-      xaccount:,
-      currency:,
-      transactionable:,
-      debit_amount:,
-      credit_amount:,
-      note:
+      create_ledger_entry!(
+        xaccount: xaccount,
+        currency: currency,
+        transactionable: movement,
+        debit_amount: change[:debit_amount],
+        credit_amount: change[:credit_amount],
+        note: note
       )
+    end
 
+
+    changes
+  end
+
+
+  # ==================================================
+  # LEDGER ENTRY
+  # ==================================================
+
+  def self.create_ledger_entry!(
+    xaccount:,
+    currency:,
+    transactionable:,
+    debit_amount:,
+    credit_amount:,
+    note:
+  )
     debit_amount =
-    debit_amount.to_i
+      debit_amount.to_i
 
     credit_amount =
-    credit_amount.to_i
+      credit_amount.to_i
 
 
     return if
-    debit_amount.zero? &&
-    credit_amount.zero?
+      debit_amount.zero? &&
+      credit_amount.zero?
 
+
+    Xaccount.transaction(requires_new: true) do
 
       # ------------------------------------------------
-      # Lock the account itself.
-      #
-      # This serializes balance calculation for this
-      # account inside the current database transaction.
+      # Lock account before calculating balance.
       # ------------------------------------------------
 
       locked_account =
-      Xaccount
-      .lock
-      .find(
-        xaccount.id
-        )
+        Xaccount
+          .lock
+          .find(
+            xaccount.id
+          )
 
 
       # ------------------------------------------------
-      # Find the latest transaction after the account
-      # has been locked.
+      # Latest transaction belonging to THIS account.
       # ------------------------------------------------
 
       previous_transaction =
-      where(
-        xaccount_id: locked_account.id
+        where(
+          xaccount_id: locked_account.id
         )
-      .order(id: :desc)
-      .first
+        .order(id: :desc)
+        .first
 
 
       balance_before =
-      previous_transaction
-      &.balance_after_transaction
-      .to_i
+        previous_transaction
+          &.balance_after_transaction
+          .to_i
 
+
+      # ------------------------------------------------
+      # Debit reduces balance.
+      # Credit increases balance.
+      # ------------------------------------------------
 
       balance_after =
-      balance_before -
-      debit_amount +
-      credit_amount
+        balance_before -
+        debit_amount +
+        credit_amount
 
 
       create!(
         xaccount: locked_account,
         currency: currency,
         transactionable: transactionable,
+
         debit_amount: debit_amount,
         credit_amount: credit_amount,
-        balance_before_transaction: balance_before,
-        balance_after_transaction: balance_after,
+
+        balance_before_transaction:
+          balance_before,
+
+        balance_after_transaction:
+          balance_after,
+
         note: note
-        )
-
+      )
     end
+  end
 
 
-    # ==================================================
-    # NORMALIZE ENTRIES
-    #
-    # Supported:
-    #
-    # {
-    #   xaccount: account,
-    #   currency: currency,
-    #   debit_amount: 1000,
-    #   credit_amount: 0
-    # }
-    #
-    # Also:
-    #
-    # {
-    #   xaccount_id: 10,
-    #   currency_id: 2,
-    #   debit_amount: 1000,
-    #   credit_amount: 0
-    # }
-    #
-    # IMPORTANT:
-    #
-    # If objects are already supplied, no query is made.
-    #
-    # If IDs are supplied, accounts/currencies are loaded
-    # in bulk instead of doing find inside every iteration.
-    #
-    # ==================================================
+  # ==================================================
+  # ENTRY HELPERS
+  # ==================================================
 
-    def self.normalize_entries(entries)
-
-      raw_entries =
-      Array(entries)
-      .filter_map do |entry|
-
-        next if entry.blank?
-
-        entry.symbolize_keys
-
-      end
+  def self.normalize_entry(entry)
+    entry =
+      entry.symbolize_keys
 
 
-      return [] if raw_entries.empty?
+    {
+      xaccount_id:
+        entry[:xaccount_id].to_i,
 
+      currency_id:
+        entry[:currency_id].to_i,
 
-      # ------------------------------------------------
-      # Collect IDs that need loading.
-      # ------------------------------------------------
+      debit_amount:
+        entry[:debit_amount].to_i,
 
-      xaccount_ids =
-      raw_entries
-      .filter_map do |entry|
-
-        next if entry[:xaccount].present?
-
-        entry[:xaccount_id].presence
-
-      end
-      .map(&:to_i)
-      .uniq
-
-
-      currency_ids =
-      raw_entries
-      .filter_map do |entry|
-
-        next if entry[:currency].present?
-
-        entry[:currency_id].presence
-
-      end
-      .map(&:to_i)
-      .uniq
-
-
-      accounts =
-      xaccount_map(
-        xaccount_ids
-        )
-
-
-      currencies =
-      currency_map(
-        currency_ids
-        )
-
-
-      raw_entries.filter_map do |entry|
-
-        xaccount =
-        entry[:xaccount]
-
-
-        if xaccount.blank? &&
-         entry[:xaccount_id].present?
-
-         xaccount =
-         accounts[
-          entry[:xaccount_id].to_i
-        ]
-
-      end
-
-
-      next if xaccount.blank?
-
-
-      currency =
-      entry[:currency]
-
-
-      if currency.blank? &&
-       entry[:currency_id].present?
-
-       currency =
-       currencies[
-        entry[:currency_id].to_i
-      ]
-
-    end
-
-
-        # ------------------------------------------------
-        # If currency was not explicitly supplied, use
-        # the currency belonging to the account.
-        #
-        # The account is expected to already have currency
-        # loaded when possible.
-        # ------------------------------------------------
-
-        currency ||=
-        if xaccount.association(:currency).loaded?
-
-          xaccount.currency
-
-        else
-
-          currency_id =
-          xaccount.currency_id
-
-          currency_map(
-            [currency_id]
-            )[currency_id]
-
-        end
-
-
-        next if currency.blank?
-
-
-        debit_amount =
-        entry[:debit_amount].to_i
-
-        credit_amount =
+      credit_amount:
         entry[:credit_amount].to_i
+    }
+  end
 
 
-        next if
-        debit_amount.zero? &&
-        credit_amount.zero?
+  # ==================================================
+  # MOVEMENT CREATION NOTE
+  # ==================================================
 
-
-        {
-          xaccount: xaccount,
-          currency: currency,
-          debit_amount: debit_amount,
-          credit_amount: credit_amount
-        }
-
-      end
-
-    end
-
-
-    # ==================================================
-    # BULK ACCOUNT LOAD
-    # ==================================================
-
-    def self.xaccount_map(ids)
-
-      ids =
-      Array(ids)
-      .compact
-      .map(&:to_i)
-      .uniq
-
-
-      return {} if ids.empty?
-
-
-      Xaccount
-      .where(id: ids)
-      .includes(:currency)
-      .index_by(&:id)
-
-    end
-
-
-    # ==================================================
-    # BULK CURRENCY LOAD
-    # ==================================================
-
-    def self.currency_map(ids)
-
-      ids =
-      Array(ids)
-      .compact
-      .map(&:to_i)
-      .uniq
-
-
-      return {} if ids.empty?
-
-
-      Currency
-      .where(id: ids)
-      .index_by(&:id)
-
-    end
-
-
-    # ==================================================
-    # AGGREGATE EFFECTS
-    #
-    # Multiple entries for the same account/currency
-    # are combined before comparison.
-    #
-    # ==================================================
-
-    def self.aggregate_effects(entries)
-
-      entries.each_with_object(
-        Hash.new do |hash, key|
-          hash[key] = zero_effect
-        end
-        ) do |entry, result|
-
-        key =
-        [
-          entry[:xaccount].id,
-          entry[:currency].id
-        ]
-
-
-        result[key][:debit] +=
-        entry[:debit_amount].to_i
-
-
-        result[key][:credit] +=
-        entry[:credit_amount].to_i
-
-      end
-
-    end
-
-
-    # ==================================================
-    # ZERO EFFECT
-    # ==================================================
-
-    def self.zero_effect
-
-      {
-        debit: 0,
-        credit: 0
-      }
-
-    end
-
-
-    # ==================================================
-    # USER NAME
-    # ==================================================
-
-    def self.transaction_username(user)
-
-      return "System" if user.blank?
-
-
-      user.try(:name).presence ||
-      user.try(:full_name).presence ||
-      user.try(:email).presence ||
-      "User ##{user.id}"
-
-    end
-
-
-    # ==================================================
-    # GENERIC CREATE NOTE
-    # ==================================================
-
-    def self.generic_creation_note(
-      transactionable:,
-      entries:,
-      username:,
-      timestamp:
+  def self.movement_creation_note(
+    movement:,
+    user:
+  )
+    username =
+      transaction_username(
+        user
       )
 
-    transaction_name =
-    transactionable.class.name
+
+    movement_name =
+      movement.class.name
 
 
-    transaction_id =
-    transactionable.id
+    side =
+      movement.respond_to?(:accounting_side) ?
+        movement.accounting_side :
+        "unknown"
 
 
-    details =
-    entries.map do |entry|
-
-      account =
-      entry[:xaccount]
-
-      currency =
-      entry[:currency]
-
-
-      "Account #{account.id} " \
-      "(#{account.number}) " \
-      "#{currency&.name}: " \
-      "debit #{entry[:debit_amount].to_i}, " \
-      "credit #{entry[:credit_amount].to_i}"
-
-    end.join("; ")
+    direction =
+      movement.respond_to?(:direction) ?
+        movement.direction :
+        "unknown"
 
 
     "User: #{username} created " \
-    "#{transaction_name} ##{transaction_id} " \
-    "at #{timestamp.strftime('%Y-%m-%d %H:%M:%S')}. " \
-    "#{details}."
-
+    "#{movement_name} ##{movement.id} " \
+    "(#{direction} / #{side}) " \
+    "at #{Time.current.strftime('%Y-%m-%d %H:%M:%S')}. " \
+    "Debit: #{movement.debit_amount}. " \
+    "Credit: #{movement.credit_amount}."
   end
 
 
-    # ==================================================
-    # GENERIC UPDATE NOTE
-    # ==================================================
+  # ==================================================
+  # MOVEMENT UPDATE NOTE
+  # ==================================================
 
-    def self.generic_update_note(
-      transactionable:,
-      changes:,
-      username:,
-      timestamp:
+  def self.movement_update_note(
+    movement:,
+    user:
+  )
+    username =
+      transaction_username(
+        user
       )
 
-    transaction_name =
-    transactionable.class.name
+
+    movement_name =
+      movement.class.name
 
 
-    transaction_id =
-    transactionable.id
+    side =
+      movement.respond_to?(:accounting_side) ?
+        movement.accounting_side :
+        "unknown"
 
 
-    details =
-    changes.map do |change|
-
-      xaccount_id,
-      currency_id =
-      change[:key]
+    direction =
+      movement.respond_to?(:direction) ?
+        movement.direction :
+        "unknown"
 
 
-      parts = []
-
-
-      if change[:old_debit] !=
-       change[:new_debit]
-
-       parts <<
-       "debit from " \
-       "#{change[:old_debit]} " \
-       "to #{change[:new_debit]}"
-
-     end
-
-
-     if change[:old_credit] !=
-       change[:new_credit]
-
-       parts <<
-       "credit from " \
-       "#{change[:old_credit]} " \
-       "to #{change[:new_credit]}"
-
-     end
-
-
-     "Account #{xaccount_id}, " \
-     "Currency #{currency_id}: " \
-     "#{parts.join(', ')}"
-
-   end.join("; ")
-
-
-   "User: #{username} edited " \
-   "#{transaction_name} ##{transaction_id} " \
-   "at #{timestamp.strftime('%Y-%m-%d %H:%M:%S')}: " \
-   "#{details}."
-
+    "User: #{username} updated " \
+    "#{movement_name} ##{movement.id} " \
+    "(#{direction} / #{side}) " \
+    "at #{Time.current.strftime('%Y-%m-%d %H:%M:%S')}. " \
+    "Adjustment - Debit: #{movement.debit_amount}. " \
+    "Credit: #{movement.credit_amount}."
   end
+
+
+  # ==================================================
+  # USER
+  # ==================================================
+
+  def self.transaction_username(user)
+    return "System" if user.blank?
+
+    user.try(:name).presence ||
+      user.try(:full_name).presence ||
+      user.try(:email).presence ||
+      "User ##{user.id}"
+  end
+
+
+  # ==================================================
+  # DISPLAY HELPERS
+  # ==================================================
 
   def transactionable_link
     return nil unless transactionable
 
-    Rails.application.routes.url_helpers.polymorphic_path(transactionable)
+    Rails
+      .application
+      .routes
+      .url_helpers
+      .polymorphic_path(
+        transactionable
+      )
   rescue ActionController::UrlGenerationError
     nil
   end
 
-  def transactionable_name
-    transactionable_type.underscore.humanize
-  end
 
+  def transactionable_name
+    transactionable_type
+      .underscore
+      .humanize
+  end
 end

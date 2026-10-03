@@ -1,20 +1,57 @@
 class Exchange < ApplicationRecord
-  belongs_to :seller_account,
-             class_name: "Xaccount"
+  # ==================================================
+  # MOVEMENTS
+  # ==================================================
 
-  belongs_to :buyer_account,
-             class_name: "Xaccount"
+  has_many :exchange_movements,
+           dependent: :destroy
 
-  belongs_to :sell_currency,
-             class_name: "Currency"
+  has_many :sells,
+           -> { where(direction: "sell") },
+           class_name: "ExchangeMovement",
+           inverse_of: :exchange
 
-  belongs_to :buy_currency,
-             class_name: "Currency"
+  has_many :buys,
+           -> { where(direction: "buy") },
+           class_name: "ExchangeMovement",
+           inverse_of: :exchange
 
-  has_many :exchange_transfers, dependent: :destroy
-  has_many :xtransfers, through: :exchange_transfers
+  accepts_nested_attributes_for :exchange_movements,
+                                allow_destroy: true,
+                                reject_if: :all_blank
+
+
+  # ==================================================
+  # RELATED TRANSFERS
+  # ==================================================
+
+  has_many :exchange_transfers,
+           dependent: :destroy
+
+  has_many :xtransfers,
+           through: :exchange_transfers
+
+
+  # ==================================================
+  # TRANSACTIONS
+  # ==================================================
+
+  has_many :xtransactions,
+           -> { order(id: :desc) },
+           as: :transactionable,
+           dependent: :restrict_with_error
+
+
+  # ==================================================
+  # ATTACHMENTS
+  # ==================================================
 
   has_many_attached :documents
+
+
+  # ==================================================
+  # KIND
+  # ==================================================
 
   enum kind: {
     cross_currency: 0,
@@ -22,13 +59,59 @@ class Exchange < ApplicationRecord
     currency_exchange: 2
   }
 
-  validates :sell_amount, presence: true
-  validates :buy_amount, presence: true
-  validates :exchange_rate, presence: true
-  validates :kind, presence: true
 
-  validate :seller_account_currency_matches
-  validate :buyer_account_currency_matches
+  # ==================================================
+  # VALIDATIONS
+  # ==================================================
+
+  validates :kind,
+            presence: true
+
+  validate :must_have_sell_movement
+  validate :must_have_buy_movement
+
+
+  # ==================================================
+  # MOVEMENT HELPERS
+  # ==================================================
+
+  def sells
+    active_exchange_movements.select(&:sell?)
+  end
+
+
+  def buys
+    active_exchange_movements.select(&:buy?)
+  end
+
+
+  def total_sold
+    sells.sum do |movement|
+      movement.total.to_i
+    end
+  end
+
+
+  def total_bought
+    buys.sum do |movement|
+      movement.total.to_i
+    end
+  end
+
+
+  def sell_count
+    sells.size
+  end
+
+
+  def buy_count
+    buys.size
+  end
+
+
+  # ==================================================
+  # PENDING
+  # ==================================================
 
   def set_pending!
     update!(
@@ -37,6 +120,7 @@ class Exchange < ApplicationRecord
     )
   end
 
+
   def unset_pending!
     update!(
       pending: false,
@@ -44,27 +128,43 @@ class Exchange < ApplicationRecord
     )
   end
 
+
   private
 
-  def seller_account_currency_matches
-    return if seller_account.blank? || sell_currency.blank?
 
-    return if seller_account.currency_id == sell_currency_id
+  # ==================================================
+  # ACTIVE MOVEMENTS
+  # ==================================================
+
+  def active_exchange_movements
+    exchange_movements.reject(&:marked_for_destruction?)
+  end
+
+
+  # ==================================================
+  # REQUIRE SELL
+  # ==================================================
+
+  def must_have_sell_movement
+    return if sells.any?
 
     errors.add(
-      :sell_currency,
-      "must match the Seller Account currency (#{seller_account.currency.name})"
+      :exchange_movements,
+      "must contain at least one sell"
     )
   end
 
-  def buyer_account_currency_matches
-    return if buyer_account.blank? || buy_currency.blank?
 
-    return if buyer_account.currency_id == buy_currency_id
+  # ==================================================
+  # REQUIRE BUY
+  # ==================================================
+
+  def must_have_buy_movement
+    return if buys.any?
 
     errors.add(
-      :buy_currency,
-      "must match the Buyer Account currency (#{buyer_account.currency.name})"
+      :exchange_movements,
+      "must contain at least one buy"
     )
   end
 end

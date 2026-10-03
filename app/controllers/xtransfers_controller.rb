@@ -12,6 +12,7 @@ class XtransfersController < ApplicationController
                   :remove_all_documents
                 ]
 
+
   # ==================================================
   # INDEX
   # ==================================================
@@ -20,58 +21,91 @@ class XtransfersController < ApplicationController
     scope = Xtransfer.all
 
     if params[:account_id].present?
-      scope = scope.where(
-        "sender_account_id = :account_id OR receiver_account_id = :account_id",
-        account_id: params[:account_id]
-      )
-      @account = Xaccount.find(params[:account_id])
+      scope =
+        scope
+          .joins(:money_movements)
+          .where(
+            money_movements: {
+              xaccount_id: params[:account_id]
+            }
+          )
+          .distinct
+
+      @account =
+        Xaccount.find(
+          params[:account_id]
+        )
     end
 
     @xtransfers =
       scope
         .includes(
-          :sender_currency,
-          :sender_to_currency,
-          :receiver_currency,
-          :receiver_to_currency,
           :documents_attachments,
-          sender_account: [:organization, :currency],
-          receiver_account: [:organization, :currency],
+
+          money_movements: [
+            :currency,
+            :to_currency,
+            {
+              xaccount: [
+                :organization,
+                :currency
+              ]
+            }
+          ],
+
           exchange_transfers: {
-            exchange: [
-              :sell_currency,
-              :buy_currency,
-              { seller_account: :organization },
-              { buyer_account: :organization }
-            ]
+            exchange: {
+              exchange_movements: [
+                :currency,
+                :to_currency,
+                :xaccount
+              ]
+            }
           }
         )
-        .order(created_at: :desc)
+        .order(
+          created_at: :desc
+        )
   end
+
+
+  # ==================================================
+  # SHOW
+  # ==================================================
 
   def show
     @xtransfer =
       Xtransfer
         .includes(
-          :sender_currency,
-          :sender_to_currency,
-          :receiver_currency,
-          :receiver_to_currency,
           :documents_attachments,
-          :xtransactions,
-          sender_account: [:currency, :organization],
-          receiver_account: [:currency, :organization],
+
+          money_movements: [
+            :currency,
+            :to_currency,
+            :xtransactions,
+            {
+              xaccount: [
+                :currency,
+                :organization
+              ]
+            }
+          ],
+
           exchange_transfers: {
-            exchange: [
-              :sell_currency,
-              :buy_currency,
-              { seller_account: :organization },
-              { buyer_account: :organization }
-            ]
+            exchange: {
+              exchange_movements: [
+                :currency,
+                :to_currency,
+                :xaccount
+              ]
+            }
           }
         )
-        .find(params[:id])
+        .find(
+          params[:id]
+        )
   end
+
 
   # ==================================================
   # NEW
@@ -84,103 +118,14 @@ class XtransfersController < ApplicationController
         pending: false
       )
 
-    load_form_data
-
-    @return_to =
-      request.referer.presence ||
-      xtransfers_path
-  end
-
-  # ==================================================
-  # CREATE
-  # ==================================================
-
-  def create
-    ActiveRecord::Base.transaction do
-      @xtransfer =
-        Xtransfer.new(
-          xtransfer_params
-        )
-
-      # ------------------------------------------------
-      # Save transfer first.
-      # ------------------------------------------------
-
-      @xtransfer.save!
-
-      # ------------------------------------------------
-      # Attach documents separately.
-      #
-      # IMPORTANT:
-      # Documents are intentionally NOT part of
-      # xtransfer_params.
-      #
-      # This prevents Active Storage from replacing
-      # existing attachments.
-      # ------------------------------------------------
-
-      attach_documents
-
-      # ------------------------------------------------
-      # Preload the accounts used by accounting_entries.
-      #
-      # This prevents Xtransfer#accounting_entries from
-      # issuing separate account queries when the
-      # associations are accessed.
-      # ------------------------------------------------
-
-      preload_accounting_accounts(
-        @xtransfer
-      )
-
-      # ------------------------------------------------
-      # Create initial accounting entries.
-      #
-      # Xtransfer describes its own accounting through
-      # accounting_entries.
-      #
-      # Xtransaction remains generic.
-      # ------------------------------------------------
-
-      Xtransaction.create_for!(
-        transactionable: @xtransfer,
-        entries: @xtransfer.accounting_entries,
-        user: current_user
-      )
-    end
-
-    redirect_after_save(
-      notice: "Transfer created successfully."
+    @xtransfer.money_movements.build(
+      direction: "send"
     )
 
-  rescue ActiveRecord::RecordInvalid,
-         ArgumentError => e
-
-    @xtransfer ||=
-      Xtransfer.new(
-        xtransfer_params
-      )
-
-    @xtransfer.errors.add(
-      :base,
-      e.message
+    @xtransfer.money_movements.build(
+      direction: "receive"
     )
 
-    load_form_data
-
-    @return_to =
-      params[:return_to].presence ||
-      xtransfers_path
-
-    render :new,
-           status: :unprocessable_entity
-  end
-
-  # ==================================================
-  # EDIT
-  # ==================================================
-
-  def edit
     load_form_data
 
     @return_to =
@@ -193,6 +138,84 @@ class XtransfersController < ApplicationController
     end
   end
 
+
+  # ==================================================
+  # CREATE
+  # ==================================================
+
+  def create
+    ActiveRecord::Base.transaction do
+
+      @xtransfer =
+        Xtransfer.new(
+          xtransfer_params
+        )
+
+      @xtransfer.save!
+
+      attach_documents
+
+      create_movement_transactions!(
+        @xtransfer
+      )
+    end
+
+    redirect_after_save(
+      notice: "Transfer created successfully."
+    )
+
+  rescue ActiveRecord::RecordInvalid,
+         ActiveRecord::RecordNotDestroyed,
+         ActiveRecord::DeleteRestrictionError,
+         ArgumentError => e
+
+    @xtransfer ||=
+      Xtransfer.new(
+        xtransfer_params
+      )
+
+    add_base_error(
+      @xtransfer,
+      e
+    )
+
+    ensure_default_money_movements(
+      @xtransfer
+    )
+
+    load_form_data
+
+    @return_to =
+      params[:return_to].presence ||
+      xtransfers_path
+
+    render :new,
+           status: :unprocessable_entity
+  end
+
+
+  # ==================================================
+  # EDIT
+  # ==================================================
+
+  def edit
+    ensure_default_money_movements(
+      @xtransfer
+    )
+
+    load_form_data
+
+    @return_to =
+      request.referer.presence ||
+      xtransfers_path
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
+  end
+
+
   # ==================================================
   # UPDATE
   # ==================================================
@@ -200,97 +223,26 @@ class XtransfersController < ApplicationController
   def update
     ActiveRecord::Base.transaction do
 
-      # ------------------------------------------------
-      # Preload both accounts before capturing the OLD
-      # accounting state.
-      #
-      # This prevents repeated association queries.
-      # ------------------------------------------------
+      old_entries =
+        capture_movement_entries(
+          @xtransfer
+        )
 
-      preload_accounting_accounts(
-        @xtransfer
-      )
+      old_movement_ids =
+        old_entries.keys
 
-      # ------------------------------------------------
-      # Capture OLD accounting effect before changing
-      # the Xtransfer.
-      #
-      # Plain hashes are duplicated so the old state
-      # remains independent of the updated object.
-      # ------------------------------------------------
-
-      old_accounting_entries =
-        @xtransfer
-          .accounting_entries
-          .map(&:dup)
-
-      # ------------------------------------------------
-      # Update Xtransfer.
-      #
-      # Documents are NOT passed to update!.
-      # Existing attachments therefore remain untouched.
-      # ------------------------------------------------
 
       @xtransfer.update!(
         xtransfer_params
       )
 
-      # ------------------------------------------------
-      # Attach ONLY newly uploaded documents.
-      #
-      # Existing documents are preserved.
-      # ------------------------------------------------
-
       attach_documents
 
-      # ------------------------------------------------
-      # The account associations may have changed.
-      #
-      # Reset/reload them before calculating the NEW
-      # accounting effect.
-      # ------------------------------------------------
 
-      @xtransfer.association(
-        :sender_account
-      ).reset
-
-      @xtransfer.association(
-        :receiver_account
-      ).reset
-
-      preload_accounting_accounts(
-        @xtransfer
-      )
-
-      # ------------------------------------------------
-      # Get NEW accounting effect.
-      # ------------------------------------------------
-
-      new_accounting_entries =
-        @xtransfer.accounting_entries
-
-      # ------------------------------------------------
-      # Reconcile OLD vs NEW.
-      #
-      # This:
-      #
-      # - detects account changes
-      # - detects amount changes
-      # - detects total changes
-      # - detects conversion changes
-      # - detects charge effects
-      # - applies old-account corrections
-      # - applies new-account effects
-      # - creates no transaction when accounting
-      #   is unchanged
-      #
-      # ------------------------------------------------
-
-      Xtransaction.reconcile!(
-        transactionable: @xtransfer,
-        old_entries: old_accounting_entries,
-        new_entries: new_accounting_entries,
-        user: current_user
+      reconcile_movement_transactions!(
+        @xtransfer,
+        old_entries,
+        old_movement_ids
       )
     end
 
@@ -299,23 +251,32 @@ class XtransfersController < ApplicationController
     )
 
   rescue ActiveRecord::RecordInvalid,
+         ActiveRecord::RecordNotDestroyed,
+         ActiveRecord::DeleteRestrictionError,
          ArgumentError => e
+
+    add_base_error(
+      @xtransfer,
+      e
+    )
+
+    ensure_default_money_movements(
+      @xtransfer
+    )
 
     load_form_data
 
     @return_to =
       params[:return_to].presence ||
       request.referer.presence ||
-      xtransfer_path(@xtransfer)
-
-    @xtransfer.errors.add(
-      :base,
-      e.message
-    )
+      xtransfer_path(
+        @xtransfer
+      )
 
     render :edit,
            status: :unprocessable_entity
   end
+
 
   # ==================================================
   # DESTROY
@@ -323,29 +284,25 @@ class XtransfersController < ApplicationController
 
   def destroy
     ActiveRecord::Base.transaction do
-
-      # ------------------------------------------------
-      # IMPORTANT:
-      #
-      # Historical accounting transactions are NOT
-      # reversed or deleted here.
-      #
-      # Xtransaction records remain accounting history.
-      # ------------------------------------------------
-
       @xtransfer.destroy!
     end
 
-    redirect_to xtransfers_path,
-                notice: "Transfer deleted successfully."
+    redirect_to(
+      xtransfers_path,
+      notice: "Transfer deleted successfully."
+    )
 
   rescue ActiveRecord::RecordNotDestroyed,
+         ActiveRecord::DeleteRestrictionError,
          ActiveRecord::RecordInvalid,
          ArgumentError => e
 
-    redirect_to xtransfers_path,
-                alert: e.message
+    redirect_to(
+      xtransfers_path,
+      alert: e.message
+    )
   end
+
 
   # ==================================================
   # TOGGLE PENDING
@@ -361,72 +318,40 @@ class XtransfersController < ApplicationController
     redirect_to xtransfers_path
   end
 
+
   # ==================================================
   # LOAD ACCOUNTS
   # ==================================================
 
   def accounts
-    organization_id =
-      params[:organization_id]
+    organization =
+      Organization.find(
+        params[:organization_id]
+      )
 
     accounts =
-      if organization_id.present?
+      organization
+        .xaccounts
+        .includes(:currency)
+        .order(:number)
 
-        Xaccount
-          .where(
-            organization_id: organization_id
-          )
-          .includes(:currency)
-          .order(:number)
-
-      else
-
-        Xaccount.none
-
-      end
-
-    html =
+    render json:
       accounts.map do |account|
-
-        currency_name =
-          account.currency&.name ||
-          "No currency"
-
-        %(
-          <option
-            value="#{
-              ERB::Util.html_escape(
-                account.id
-              )
-            }"
-            data-currency-id="#{
-              ERB::Util.html_escape(
-                account.currency_id
-              )
-            }"
-            data-currency-name="#{
-              ERB::Util.html_escape(
-                currency_name
-              )
-            }"
-          >#{
-            ERB::Util.html_escape(
-              account.number
-            )
-          } - #{
-            ERB::Util.html_escape(
-              currency_name
-            )
-          }</option>
-        )
-      end.join
-
-    render html:
-      html.html_safe
+        {
+          id: account.id,
+          number: account.number,
+          kind: account.kind,
+          currency_id: account.currency_id,
+          currency_name: account.currency&.name,
+          organization_name: organization.name,
+          organization_kind: organization.kind
+        }
+      end
   end
 
+
   # ==================================================
-  # REMOVE ONE DOCUMENT
+  # REMOVE DOCUMENT
   # ==================================================
 
   def remove_document
@@ -442,6 +367,7 @@ class XtransfersController < ApplicationController
     )
   end
 
+
   # ==================================================
   # REMOVE ALL DOCUMENTS
   # ==================================================
@@ -454,10 +380,12 @@ class XtransfersController < ApplicationController
     )
   end
 
+
   private
 
+
   # ==================================================
-  # SET TRANSFER
+  # SET
   # ==================================================
 
   def set_xtransfer
@@ -467,16 +395,9 @@ class XtransfersController < ApplicationController
       )
   end
 
+
   # ==================================================
   # ATTACH DOCUMENTS
-  #
-  # IMPORTANT:
-  #
-  # This method ONLY adds newly uploaded documents.
-  #
-  # It never replaces the existing Active Storage
-  # attachments.
-  #
   # ==================================================
 
   def attach_documents
@@ -498,53 +419,161 @@ class XtransfersController < ApplicationController
     )
   end
 
+
   # ==================================================
-  # PRELOAD ACCOUNTING ACCOUNTS
-  #
-  # Prevents Xtransfer#accounting_entries from
-  # repeatedly loading sender/receiver accounts.
-  #
+  # CREATE MOVEMENT TRANSACTIONS
   # ==================================================
 
-  def preload_accounting_accounts(xtransfer)
-    account_ids =
-      [
-        xtransfer.sender_account_id,
-        xtransfer.receiver_account_id
-      ]
-        .compact
-        .uniq
+  def create_movement_transactions!(xtransfer)
+    xtransfer
+      .money_movements
+      .reload
+      .each do |movement|
 
-    return if account_ids.empty?
-
-    accounts =
-      Xaccount
-        .where(
-          id: account_ids
+        movement.create_xtransaction!(
+          user: current_user
         )
-        .includes(:currency)
-        .index_by(&:id)
+      end
+  end
 
-    if xtransfer.sender_account_id.present?
 
-      xtransfer.association(
-        :sender_account
-      ).target =
-        accounts[
-          xtransfer.sender_account_id
+  # ==================================================
+  # CAPTURE OLD MOVEMENT ACCOUNTING
+  # ==================================================
+
+  def capture_movement_entries(xtransfer)
+    xtransfer
+      .money_movements
+      .reload
+      .each_with_object({}) do |movement, entries|
+
+        entries[movement.id] = {
+          xaccount_id:
+            movement.xaccount_id,
+
+          currency_id:
+            movement.currency_id,
+
+          debit_amount:
+            movement.debit_amount,
+
+          credit_amount:
+            movement.credit_amount
+        }
+
+      end
+  end
+
+
+  # ==================================================
+  # RECONCILE MOVEMENTS
+  # ==================================================
+
+  def reconcile_movement_transactions!(
+    xtransfer,
+    old_entries,
+    old_movement_ids
+  )
+    current_movements =
+      xtransfer
+        .money_movements
+        .reload
+
+
+    current_movements.each do |movement|
+
+      old_entry =
+        old_entries[
+          movement.id
         ]
+
+
+      # ------------------------------------------------
+      # NEW MOVEMENT
+      # ------------------------------------------------
+
+      if old_entry.blank?
+
+        Xtransaction.sync_movement!(
+          movement: movement,
+          user: current_user
+        )
+
+        next
+      end
+
+
+      # ------------------------------------------------
+      # EXISTING MOVEMENT
+      # ------------------------------------------------
+
+      Xtransaction.sync_movement!(
+        movement: movement,
+        old_entry: old_entry,
+        user: current_user
+      )
     end
 
-    if xtransfer.receiver_account_id.present?
 
-      xtransfer.association(
-        :receiver_account
-      ).target =
-        accounts[
-          xtransfer.receiver_account_id
-        ]
+    # ------------------------------------------------
+    # REMOVED MOVEMENTS
+    #
+    # We do not silently remove accounting history.
+    # The surrounding transaction rolls everything back.
+    # ------------------------------------------------
+
+    current_movement_ids =
+      current_movements.map(&:id)
+
+
+    removed_ids =
+      old_movement_ids -
+      current_movement_ids
+
+
+    return if removed_ids.empty?
+
+
+    raise ActiveRecord::RecordNotDestroyed,
+          "A movement with accounting history cannot be removed."
+  end
+
+
+  # ==================================================
+  # DEFAULT MOVEMENTS
+  # ==================================================
+
+  def ensure_default_money_movements(xtransfer)
+    movements =
+      xtransfer.money_movements
+
+
+    has_send =
+      movements.any? do |movement|
+        movement.direction == "send"
+      end
+
+
+    has_receive =
+      movements.any? do |movement|
+        movement.direction == "receive"
+      end
+
+
+    unless has_send
+      movements.build(
+        direction: "send"
+      )
+    end
+
+
+    unless has_receive
+      movements.build(
+        direction: "receive"
+      )
     end
   end
+
 
   # ==================================================
   # FORM DATA
@@ -552,85 +581,65 @@ class XtransfersController < ApplicationController
 
   def load_form_data
     @organizations =
-      Organization
-        .order(:name)
+      Organization.order(:name)
 
     @currencies =
-      Currency
-        .order(:name)
+      Currency.order(:name)
 
     @exchanges =
       Exchange
         .includes(
-          :sell_currency,
-          :buy_currency,
-          :seller_account,
-          :buyer_account
+          exchange_movements: [
+            :currency,
+            :to_currency,
+            :xaccount
+          ]
         )
         .order(
           id: :desc
         )
-
-    @sender_accounts =
-      if @xtransfer.sender_account&.organization_id.present?
-
-        Xaccount
-          .where(
-            organization_id:
-              @xtransfer
-                .sender_account
-                .organization_id
-          )
-          .includes(:currency)
-          .order(:number)
-
-      else
-
-        Xaccount.none
-
-      end
-
-    @receiver_accounts =
-      if @xtransfer.receiver_account&.organization_id.present?
-
-        Xaccount
-          .where(
-            organization_id:
-              @xtransfer
-                .receiver_account
-                .organization_id
-          )
-          .includes(:currency)
-          .order(:number)
-
-      else
-
-        Xaccount.none
-
-      end
   end
 
+
   # ==================================================
-  # REDIRECT AFTER SAVE
+  # REDIRECT
   # ==================================================
 
   def redirect_after_save(notice:)
     return_to =
       params[:return_to].presence
 
+
     if return_to.present? &&
        return_to.start_with?("/")
 
-      redirect_to return_to,
-                  notice: notice
+      redirect_to(
+        return_to,
+        notice: notice
+      )
 
     else
 
-      redirect_to xtransfers_path,
-                  notice: notice
+      redirect_to(
+        xtransfers_path,
+        notice: notice
+      )
 
     end
   end
+
+
+  # ==================================================
+  # ERROR
+  # ==================================================
+
+  def add_base_error(record, exception)
+    record.errors.add(
+      :base,
+      exception.message
+    )
+  end
+
 
   # ==================================================
   # STRONG PARAMS
@@ -640,68 +649,28 @@ class XtransfersController < ApplicationController
     params
       .require(:xtransfer)
       .permit(
-
-        # ----------------------------------------------
-        # Accounts
-        # ----------------------------------------------
-
-        :sender_account_id,
-        :receiver_account_id,
-
-        # ----------------------------------------------
-        # Sender
-        # ----------------------------------------------
-
-        :sender_currency_id,
-        :sender_to_currency_id,
-        :sender_amount,
-        :sender_exchange_rate,
-        :sender_amount_to,
-        :sender_charge,
-        :sender_total,
-
-        # ----------------------------------------------
-        # Receiver
-        # ----------------------------------------------
-
-        :receiver_currency_id,
-        :receiver_to_currency_id,
-        :receiver_amount,
-        :receiver_exchange_rate,
-        :receiver_amount_to,
-        :receiver_charge,
-        :receiver_total,
-
-        # ----------------------------------------------
-        # Other
-        # ----------------------------------------------
-
-        :wage,
         :status,
         :pending,
 
-        # ----------------------------------------------
-        # Exchanges
-        # ----------------------------------------------
+        money_movements_attributes: [
+          :id,
+          :direction,
+          :xaccount_id,
+          :currency_id,
+          :amount,
+          :exchange_rate,
+          :to_currency_id,
+          :amount_to,
+          :charge,
+          :total,
+          :_destroy
+        ],
 
         exchange_transfers_attributes: [
           :id,
           :exchange_id,
           :_destroy
         ]
-
-        # ----------------------------------------------
-        # IMPORTANT:
-        #
-        # DO NOT add:
-        #
-        # documents: []
-        #
-        # Documents are attached separately through
-        # attach_documents so existing attachments are
-        # never replaced.
-        # ----------------------------------------------
-
       )
   end
 end

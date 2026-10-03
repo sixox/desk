@@ -8260,3 +8260,187 @@
   }
 
 }
+
+/* ==========================================================
+   COMMON ACCOUNTING MOVEMENT FORM
+   Used by:
+   Xtransfer
+   Xpayment
+   Remittance
+   Exchange
+   ========================================================== */
+
+.xt-form .xt-exchange-row {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+
+  padding: 11px;
+  margin-bottom: 8px;
+
+  border: 1px solid #edf0f4;
+  border-radius: 9px;
+
+  background: #fff;
+
+  transition:
+    border-color .15s ease,
+    box-shadow .15s ease;
+}
+
+.xt-form .xt-exchange-row:hover {
+  border-color: #cbd5e1;
+
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, .05);
+}
+
+.xt-form .xt-exchange-row:last-child {
+  margin-bottom: 0;
+}
+
+.xt-form .xt-exchange-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.xt-form .xt-exchange-number {
+  width: 34px;
+  height: 40px;
+
+  flex: 0 0 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: #f1f5f9;
+  color: #64748b;
+
+  font-size: .78rem;
+}
+
+.xt-form .xt-exchange-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+}
+
+.xt-form .xt-remove-btn {
+  width: 40px;
+  height: 40px;
+
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #fee2e2;
+  border-radius: 7px;
+
+  background: #fff;
+  color: #dc2626;
+}
+
+.xt-form .xt-remove-btn:hover {
+  background: #fff1f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.xt-form .xt-conversion-box {
+  padding: 11px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+
+  background: #f8fafc;
+}
+
+.xt-form .xt-total-section {
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.xt-form .xt-total-fields {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.xt-form .xt-charge-field {
+  flex: 1 1 auto;
+  max-width: 260px;
+}
+
+.xt-form .xt-total-display {
+  min-width: 180px;
+
+  padding: 9px 12px;
+
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+
+  background: #eff6ff;
+}
+
+.xt-form .xt-total-display-label {
+  display: block;
+
+  color: #64748b;
+  font-size: .66rem;
+  font-weight: 700;
+}
+
+.xt-form .xt-total-display-value {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #1e40af;
+  font-size: .9rem;
+  font-weight: 750;
+}
+
+.xt-form .xt-calculated-field {
+  background: #f8fafc !important;
+}
+
+@media (max-width: 768px) {
+  .xt-form .xt-exchange-row {
+    align-items: stretch;
+  }
+
+  .xt-form .xt-exchange-number {
+    display: none;
+  }
+
+  .xt-form .xt-total-fields {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .xt-form .xt-charge-field {
+    max-width: none;
+  }
+
+  .xt-form .xt-total-display {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .xt-form .xt-exchange-row {
+    gap: 7px;
+    padding: 8px;
+  }
+}

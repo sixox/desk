@@ -1,43 +1,127 @@
 class Xpayment < ApplicationRecord
-  belongs_to :sender_account,
-             class_name: "Xaccount"
+  # ==================================================
+  # MOVEMENTS
+  # ==================================================
 
-  belongs_to :receiver_account,
-             class_name: "Xaccount"
+  has_many :money_movements,
+           as: :movable,
+           dependent: :destroy
 
-  belongs_to :currency
+  has_many :sends,
+           -> { where(direction: "send") },
+           as: :movable,
+           class_name: "MoneyMovement"
+
+  has_many :receives,
+           -> { where(direction: "receive") },
+           as: :movable,
+           class_name: "MoneyMovement"
+
+  accepts_nested_attributes_for :money_movements,
+                                allow_destroy: true,
+                                reject_if: :all_blank
+
+
+  # ==================================================
+  # TRANSACTIONS
+  # ==================================================
 
   has_many :xtransactions,
+           -> { order(id: :desc) },
            as: :transactionable,
-           dependent: :destroy
+           dependent: :restrict_with_error
+
+
+  # ==================================================
+  # ATTACHMENTS
+  # ==================================================
 
   has_many_attached :documents
 
-  validates :sent_amount, presence: true
-  validates :received_amount, presence: true
 
-  validate :sender_account_currency_matches
-  validate :receiver_account_currency_matches
+  # ==================================================
+  # VALIDATIONS
+  # ==================================================
+
+  validate :must_have_send_movement
+  validate :must_have_receive_movement
+
+
+
+  # ==================================================
+  # MOVEMENT HELPERS
+  # ==================================================
+
+  def sends
+    active_money_movements.select(&:send?)
+  end
+
+
+  def receives
+    active_money_movements.select(&:receive?)
+  end
+
+
+  def total_sent
+    sends.sum do |movement|
+      movement.total.to_i
+    end
+  end
+
+
+  def total_received
+    receives.sum do |movement|
+      movement.total.to_i
+    end
+  end
+
+
+  def send_count
+    sends.size
+  end
+
+
+  def receive_count
+    receives.size
+  end
+
 
   private
 
-  def sender_account_currency_matches
-    return if sender_account.blank? || currency.blank?
-    return if sender_account.currency_id == currency_id
+
+  # ==================================================
+  # ACTIVE MOVEMENTS
+  # ==================================================
+
+  def active_money_movements
+    money_movements.reject(&:marked_for_destruction?)
+  end
+
+
+  # ==================================================
+  # REQUIRE SEND
+  # ==================================================
+
+  def must_have_send_movement
+    return if sends.any?
 
     errors.add(
-      :sender_account,
-      "currency must match payment currency (#{currency.name})"
+      :money_movements,
+      "must contain at least one send"
     )
   end
 
-  def receiver_account_currency_matches
-    return if receiver_account.blank? || currency.blank?
-    return if receiver_account.currency_id == currency_id
+
+  # ==================================================
+  # REQUIRE RECEIVE
+  # ==================================================
+
+  def must_have_receive_movement
+    return if receives.any?
 
     errors.add(
-      :receiver_account,
-      "currency must match payment currency (#{currency.name})"
+      :money_movements,
+      "must contain at least one receive"
     )
   end
 end

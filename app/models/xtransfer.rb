@@ -1,34 +1,25 @@
 class Xtransfer < ApplicationRecord
   # ==================================================
-  # ACCOUNTS
+  # MOVEMENTS
   # ==================================================
 
-  belongs_to :sender_account,
-             class_name: "Xaccount"
+  has_many :money_movements,
+           as: :movable,
+           dependent: :destroy
 
-  belongs_to :receiver_account,
-             class_name: "Xaccount"
+  has_many :sends,
+           -> { where(direction: "send") },
+           as: :movable,
+           class_name: "MoneyMovement"
 
+  has_many :receives,
+           -> { where(direction: "receive") },
+           as: :movable,
+           class_name: "MoneyMovement"
 
-  # ==================================================
-  # CURRENCIES
-  # ==================================================
-
-  belongs_to :sender_currency,
-             class_name: "Currency",
-             optional: true
-
-  belongs_to :sender_to_currency,
-             class_name: "Currency",
-             optional: true
-
-  belongs_to :receiver_currency,
-             class_name: "Currency",
-             optional: true
-
-  belongs_to :receiver_to_currency,
-             class_name: "Currency",
-             optional: true
+  accepts_nested_attributes_for :money_movements,
+                                allow_destroy: true,
+                                reject_if: :all_blank
 
 
   # ==================================================
@@ -50,9 +41,9 @@ class Xtransfer < ApplicationRecord
   # ==================================================
 
   has_many :xtransactions,
-         -> { order(id: :desc) },
-         as: :transactionable,
-         dependent: :restrict_with_error
+           -> { order(id: :desc) },
+           as: :transactionable,
+           dependent: :restrict_with_error
 
 
   # ==================================================
@@ -75,100 +66,11 @@ class Xtransfer < ApplicationRecord
   # VALIDATIONS
   # ==================================================
 
-  # --------------------------------------------------
-  # ACCOUNTS
-  # --------------------------------------------------
-
-  validates :sender_account_id,
+  validates :status,
             presence: true
 
-  validates :receiver_account_id,
-            presence: true
-
-  validate :sender_account_belongs_to_organization
-  validate :receiver_account_belongs_to_organization
-
-
-  # --------------------------------------------------
-  # AMOUNTS
-  # --------------------------------------------------
-
-  validates :sender_amount,
-            presence: true,
-            numericality: {
-              greater_than_or_equal_to: 0,
-              only_integer: true
-            }
-
-  validates :receiver_amount,
-            presence: true,
-            numericality: {
-              greater_than_or_equal_to: 0,
-              only_integer: true
-            }
-
-
-  # --------------------------------------------------
-  # CURRENCIES
-  # --------------------------------------------------
-
-  validates :sender_currency,
-            presence: true
-
-  validates :receiver_currency,
-            presence: true
-
-  validate :sender_currency_matches_account
-  validate :receiver_currency_matches_account
-
-
-  # --------------------------------------------------
-  # CHARGES
-  # --------------------------------------------------
-
-  validates :sender_charge,
-            numericality: {
-              greater_than_or_equal_to: 0,
-              only_integer: true
-            }
-
-  validates :receiver_charge,
-            numericality: {
-              greater_than_or_equal_to: 0,
-              only_integer: true
-            }
-
-
-  # --------------------------------------------------
-  # EXCHANGE RATES
-  # --------------------------------------------------
-
-  validates :sender_exchange_rate,
-            numericality: {
-              greater_than: 0
-            },
-            allow_blank: true
-
-  validates :receiver_exchange_rate,
-            numericality: {
-              greater_than: 0
-            },
-            allow_blank: true
-
-
-  # --------------------------------------------------
-  # EXCHANGE RATE / TO CURRENCY
-  # --------------------------------------------------
-
-  validate :sender_rate_requires_to_currency
-  validate :receiver_rate_requires_to_currency
-
-
-  # --------------------------------------------------
-  # RECEIVER CURRENCY
-  # --------------------------------------------------
-
-  validate :receiver_currency_matches_sender_conversion
+  validate :must_have_send_movement
+  validate :must_have_receive_movement
 
 
   # ==================================================
@@ -181,118 +83,47 @@ class Xtransfer < ApplicationRecord
 
 
   # ==================================================
-  # CALCULATIONS
+  # ACCOUNTING
   # ==================================================
 
-  before_validation :calculate_conversion_amounts
+  # Xtransfer accounting is entirely defined by its
+  # MoneyMovement records.
+  #
+  # Every SEND:
+  #
+  #   debit
+  #
+  # Every RECEIVE:
+  #
+  #   credit
+  #
 
-  def accounting_entries
-    [
-      {
-        xaccount_id: sender_account_id,
-        currency_id: sender_account&.currency_id,
-        debit_amount: sender_total.to_i,
-        credit_amount: 0
-      },
-      {
-        xaccount_id: receiver_account_id,
-        currency_id: receiver_account&.currency_id,
-        debit_amount: 0,
-        credit_amount: receiver_total.to_i
-      }
-    ]
+
+  # ==================================================
+  # MOVEMENT HELPERS
+  # ==================================================
+
+  def sends
+    active_money_movements.select(&:send?)
   end
 
-  
-  # ==================================================
-  # CALCULATE CONVERSION AMOUNTS
-  # ==================================================
 
-  def calculate_conversion_amounts
+  def receives
+    active_money_movements.select(&:receive?)
+  end
 
-    # ------------------------------------------------
-    # SENDER
-    #
-    # sender amount × sender rate
-    # ------------------------------------------------
 
-    if sender_amount.present?
-
-      if sender_exchange_rate.present? &&
-         sender_exchange_rate.to_f > 0
-
-        self.sender_amount_to =
-          (
-            sender_amount.to_f *
-            sender_exchange_rate.to_f
-          ).round
-
-      else
-
-        self.sender_amount_to =
-          sender_amount.to_i
-
-      end
+  def total_sent
+    sends.sum do |movement|
+      movement.total.to_i
     end
+  end
 
 
-    # ------------------------------------------------
-    # SENDER TOTAL
-    # ------------------------------------------------
-
-    if sender_amount.present?
-
-      self.sender_total =
-        sender_amount_to.to_i +
-        sender_charge.to_i
-
+  def total_received
+    receives.sum do |movement|
+      movement.total.to_i
     end
-
-
-    # ------------------------------------------------
-    # RECEIVER AMOUNT
-    #
-    # Receiver amount is supplied/calculated by the
-    # sender side.
-    #
-    # receiver amount × receiver rate
-    #
-    # IMPORTANT:
-    # BOTH exchange rates multiply.
-    # ------------------------------------------------
-
-    if receiver_amount.present?
-
-      if receiver_exchange_rate.present? &&
-         receiver_exchange_rate.to_f > 0
-
-        self.receiver_amount_to =
-          (
-            receiver_amount.to_f *
-            receiver_exchange_rate.to_f
-          ).round
-
-      else
-
-        self.receiver_amount_to =
-          receiver_amount.to_i
-
-      end
-    end
-
-
-    # ------------------------------------------------
-    # RECEIVER TOTAL
-    # ------------------------------------------------
-
-    if receiver_amount.present?
-
-      self.receiver_total =
-        receiver_amount_to.to_i +
-        receiver_charge.to_i
-
-    end
-
   end
 
 
@@ -316,186 +147,56 @@ class Xtransfer < ApplicationRecord
   end
 
 
+  # ==================================================
+  # DISPLAY HELPERS
+  # ==================================================
+
+  def send_count
+    sends.size
+  end
+
+
+  def receive_count
+    receives.size
+  end
+
+
   private
 
 
   # ==================================================
-  # ACCOUNT VALIDATIONS
+  # ACTIVE MOVEMENTS
   # ==================================================
 
-  def sender_account_belongs_to_organization
-
-    return if sender_account.blank?
-
-    unless sender_account.organization_id.present?
-
-      errors.add(
-        :sender_account_id,
-        "must belong to an organization"
-      )
-
-    end
-
-  end
-
-
-  def receiver_account_belongs_to_organization
-
-    return if receiver_account.blank?
-
-    unless receiver_account.organization_id.present?
-
-      errors.add(
-        :receiver_account_id,
-        "must belong to an organization"
-      )
-
-    end
-
+  def active_money_movements
+    money_movements.reject(&:marked_for_destruction?)
   end
 
 
   # ==================================================
-  # CURRENCY / ACCOUNT VALIDATIONS
+  # REQUIRE SEND
   # ==================================================
 
-  def sender_currency_matches_account
+  def must_have_send_movement
+    return if sends.any?
 
-    return if sender_account.blank?
-    return if sender_currency.blank?
-
-    unless sender_currency_id == sender_account.currency_id
-
-      errors.add(
-        :sender_currency_id,
-        "must match the sender account currency"
-      )
-
-    end
-
-  end
-
-
-  def receiver_currency_matches_account
-
-    return if receiver_account.blank?
-    return if receiver_currency.blank?
-
-    unless receiver_currency_id == receiver_account.currency_id
-
-      errors.add(
-        :receiver_currency_id,
-        "must match the receiver account currency"
-      )
-
-    end
-
+    errors.add(
+      :money_movements,
+      "must contain at least one send"
+    )
   end
 
 
   # ==================================================
-  # EXCHANGE RATE / TO CURRENCY
+  # REQUIRE RECEIVE
   # ==================================================
 
-  def sender_rate_requires_to_currency
+  def must_have_receive_movement
+    return if receives.any?
 
-    rate_exists =
-      sender_exchange_rate.present?
-
-    currency_exists =
-      sender_to_currency_id.present?
-
-
-    if rate_exists && !currency_exists
-
-      errors.add(
-        :sender_to_currency_id,
-        "must be selected when sender exchange rate is provided"
-      )
-
-    end
-
-
-    if currency_exists && !rate_exists
-
-      errors.add(
-        :sender_exchange_rate,
-        "must be provided when sender To Currency is selected"
-      )
-
-    end
-
-  end
-
-
-  def receiver_rate_requires_to_currency
-
-    rate_exists =
-      receiver_exchange_rate.present?
-
-    currency_exists =
-      receiver_to_currency_id.present?
-
-
-    if rate_exists && !currency_exists
-
-      errors.add(
-        :receiver_to_currency_id,
-        "must be selected when receiver exchange rate is provided"
-      )
-
-    end
-
-
-    if currency_exists && !rate_exists
-
-      errors.add(
-        :receiver_exchange_rate,
-        "must be provided when receiver To Currency is selected"
-      )
-
-    end
-
-  end
-
-
-  # ==================================================
-  # RECEIVER CURRENCY VALIDATION
-  # ==================================================
-
-  def receiver_currency_matches_sender_conversion
-
-    return if sender_currency.blank?
-    return if receiver_currency.blank?
-
-
-    if sender_exchange_rate.present?
-
-      return if sender_to_currency_id.blank?
-
-
-      unless receiver_currency_id == sender_to_currency_id
-
-        errors.add(
-          :receiver_currency_id,
-          "must match the sender To Currency"
-        )
-
-      end
-
-      return
-
-    end
-
-
-    unless receiver_currency_id == sender_currency_id
-
-      errors.add(
-        :receiver_currency_id,
-        "must match the sender currency when no sender exchange rate is provided"
-      )
-
-    end
-
+    errors.add(
+      :money_movements,
+      "must contain at least one receive"
+    )
   end
 end

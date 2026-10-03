@@ -1,214 +1,243 @@
 <div class="col-lg-10 mx-auto mt-5">
 
-<div class="xtransfer-page">
-  <div class="container-fluid px-3 px-lg-4 py-4">
+  <div class="xtransfer-page">
 
-    <!-- ================================================== -->
-    <!-- HEADER -->
-    <!-- ================================================== -->
+    <div class="container-fluid px-3 px-lg-4 py-4">
 
-    <div class="xt-index-header">
+      <!-- ================================================== -->
+      <!-- HEADER -->
+      <!-- ================================================== -->
 
-      <div class="xt-index-heading">
+      <div class="xt-index-header">
 
-        <div class="xt-index-icon">
-          <i class="bi bi-arrow-left-right"></i>
-        </div>
+        <div class="xt-index-heading">
 
-        <div>
-          <h1 class="xt-index-title">
-            Transfers 
-           
-          </h1>
-           <% if @account.present? %>
-           <p>
-            <span style="font-size: 17px; color: #59090;">
-              <%= @account.organization.name %>
-            </span>
-            <span style="font-size: 12px; color: #674e4e73;"><%= @account.number %></span>
-             </p>
-              <% end %>
-
-          
-        </div>
-
-      </div>
-
-
-      <%= link_to new_xtransfer_path,
-          data: { controller: "bs-modal-form" },
-          class: "btn xt-create-transfer" do %>
-
-        <i class="bi bi-plus-lg"></i>
-
-        <span>
-          Create Transfer
-        </span>
-
-      <% end %>
-
-    </div>
-
-
-    <!-- ================================================== -->
-    <!-- SUMMARY -->
-    <!-- ================================================== -->
-
-    <div class="xt-summary-grid">
-
-      <!-- TOTAL -->
-
-      <div class="xt-summary-card">
-
-        <div class="xt-summary-icon xt-summary-icon-total">
-          <i class="bi bi-arrow-left-right"></i>
-        </div>
-
-        <div class="xt-summary-content">
-
-          <span class="xt-summary-label">
-            Total Transfers
-          </span>
-
-          <strong class="xt-summary-value">
-            <%= @xtransfers.size %>
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <!-- PENDING -->
-
-      <div class="xt-summary-card">
-
-        <div class="xt-summary-icon xt-summary-icon-pending">
-          <i class="bi bi-clock-history"></i>
-        </div>
-
-        <div class="xt-summary-content">
-
-          <span class="xt-summary-label">
-            Pending
-          </span>
-
-          <strong class="xt-summary-value">
-            <%= @xtransfers.count(&:pending?) %>
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <!-- COMPLETED -->
-
-      <div class="xt-summary-card">
-
-        <div class="xt-summary-icon xt-summary-icon-completed">
-          <i class="bi bi-check2-circle"></i>
-        </div>
-
-        <div class="xt-summary-content">
-
-          <span class="xt-summary-label">
-            Completed
-          </span>
-
-          <strong class="xt-summary-value">
-            <%= @xtransfers.count { |transfer| transfer.status == "completed" } %>
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <!-- ATTACHMENTS -->
-
-      <div class="xt-summary-card">
-
-        <div class="xt-summary-icon xt-summary-icon-files">
-          <i class="bi bi-paperclip"></i>
-        </div>
-
-        <div class="xt-summary-content">
-
-          <span class="xt-summary-label">
-            Documents
-          </span>
-
-          <strong class="xt-summary-value">
-            <%= @xtransfers.sum { |transfer| transfer.documents.count } %>
-          </strong>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- ================================================== -->
-    <!-- TRANSFERS -->
-    <!-- ================================================== -->
-
-    <div class="xt-transfers-container">
-
-      <% if @xtransfers.any? %>
-
-        <div id="xtransfers" class="xt-transfer-list">
-
-          <% @xtransfers.each do |transfer| %>
-
-           <%= render 'xtransfer', transfer: transfer %>
-
-          <% end %>
-
-        </div>
-
-      <% else %>
-
-        <!-- ================================================== -->
-        <!-- EMPTY STATE -->
-        <!-- ================================================== -->
-
-        <div class="xt-empty-state">
-
-          <div class="xt-empty-icon">
+          <div class="xt-index-icon">
             <i class="bi bi-arrow-left-right"></i>
           </div>
 
 
-          <h2>
-            No transfers yet
-          </h2>
+          <div>
+
+            <h1 class="xt-index-title">
+              Transfers
+            </h1>
 
 
-          <p>
-            Create your first transfer to start managing
-            currency movements between your accounts.
-          </p>
+            <% if @account.present? %>
 
+              <p>
 
-          <%= link_to new_xtransfer_path,
-              data: { controller: "bs-modal-form" },
-              class: "btn xt-create-transfer xt-empty-create" do %>
+                <span style="font-size: 17px; color: #59090;">
+                  <%= @account.organization.name %>
+                </span>
 
-            <i class="bi bi-plus-lg"></i>
-            Create your first transfer
+                <span style="font-size: 12px; color: #674e4e73;">
+                  <%= @account.number %>
+                </span>
 
-          <% end %>
+              </p>
+
+            <% end %>
+
+          </div>
 
         </div>
 
-      <% end %>
+
+        <%= link_to(
+          new_xtransfer_path,
+          data: { controller: "bs-modal-form" },
+          class: "btn xt-create-transfer"
+        ) do %>
+
+          <i class="bi bi-plus-lg"></i>
+
+          <span>
+            Create Transfer
+          </span>
+
+        <% end %>
+
+      </div>
+
+
+      <!-- ================================================== -->
+      <!-- SUMMARY -->
+      <!-- ================================================== -->
+
+      <div class="xt-summary-grid">
+
+        <!-- TOTAL -->
+
+        <div class="xt-summary-card">
+
+          <div class="xt-summary-icon xt-summary-icon-total">
+            <i class="bi bi-arrow-left-right"></i>
+          </div>
+
+
+          <div class="xt-summary-content">
+
+            <span class="xt-summary-label">
+              Total Transfers
+            </span>
+
+            <strong class="xt-summary-value">
+              <%= @xtransfers.size %>
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- PENDING -->
+
+        <div class="xt-summary-card">
+
+          <div class="xt-summary-icon xt-summary-icon-pending">
+            <i class="bi bi-clock-history"></i>
+          </div>
+
+
+          <div class="xt-summary-content">
+
+            <span class="xt-summary-label">
+              Pending
+            </span>
+
+            <strong class="xt-summary-value">
+              <%= @xtransfers.count(&:pending?) %>
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="xt-summary-card">
+
+          <div class="xt-summary-icon xt-summary-icon-completed">
+            <i class="bi bi-check2-circle"></i>
+          </div>
+
+
+          <div class="xt-summary-content">
+
+            <span class="xt-summary-label">
+              Completed
+            </span>
+
+            <strong class="xt-summary-value">
+
+              <%= @xtransfers.count { |transfer| transfer.status == "completed" } %>
+
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- ATTACHMENTS -->
+
+        <div class="xt-summary-card">
+
+          <div class="xt-summary-icon xt-summary-icon-files">
+            <i class="bi bi-paperclip"></i>
+          </div>
+
+
+          <div class="xt-summary-content">
+
+            <span class="xt-summary-label">
+              Documents
+            </span>
+
+            <strong class="xt-summary-value">
+
+              <%= @xtransfers.sum { |transfer| transfer.documents.count } %>
+
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================== -->
+      <!-- TRANSFERS -->
+      <!-- ================================================== -->
+
+      <div class="xt-transfers-container">
+
+        <% if @xtransfers.any? %>
+
+          <div
+            id="xtransfers"
+            class="xt-transfer-list"
+          >
+
+            <% @xtransfers.each do |transfer| %>
+
+              <%= render "xtransfer", transfer: transfer %>
+
+            <% end %>
+
+          </div>
+
+        <% else %>
+
+          <!-- ================================================== -->
+          <!-- EMPTY STATE -->
+          <!-- ================================================== -->
+
+          <div class="xt-empty-state">
+
+            <div class="xt-empty-icon">
+              <i class="bi bi-arrow-left-right"></i>
+            </div>
+
+
+            <h2>
+              No transfers yet
+            </h2>
+
+
+            <p>
+              Create your first transfer to start managing
+              currency movements between your accounts.
+            </p>
+
+
+            <%= link_to(
+              new_xtransfer_path,
+              data: { controller: "bs-modal-form" },
+              class: "btn xt-create-transfer xt-empty-create"
+            ) do %>
+
+              <i class="bi bi-plus-lg"></i>
+
+              Create your first transfer
+
+            <% end %>
+
+          </div>
+
+        <% end %>
+
+      </div>
 
     </div>
 
   </div>
-</div>
 
 </div>
+
+
 <%= turbo_frame_tag "modal" %>

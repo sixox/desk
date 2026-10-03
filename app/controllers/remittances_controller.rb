@@ -1,5 +1,6 @@
 class RemittancesController < ApplicationController
   before_action :authenticate_user!
+
   before_action :set_remittance,
                 only: [
                   :edit,
@@ -9,19 +10,44 @@ class RemittancesController < ApplicationController
                   :remove_all_documents
                 ]
 
+
+  # ==================================================
+  # INDEX
+  # ==================================================
+
   def index
     @remittances =
       Remittance
         .includes(
-          :currency,
-          sender_account: :organization,
-          receiver_account: :organization
+          :documents_attachments,
+          money_movements: [
+            :currency,
+            :to_currency,
+            :xtransactions,
+            {
+              xaccount: [
+                :organization,
+                :currency
+              ]
+            }
+          ]
         )
-        .order(created_at: :desc)
+        .order(
+          created_at: :desc
+        )
   end
 
+
+  # ==================================================
+  # NEW
+  # ==================================================
+
   def new
-    @remittance = Remittance.new
+    @remittance =
+      Remittance.new
+
+    build_default_movements
+
     load_form_data
 
     respond_to do |format|
@@ -30,253 +56,438 @@ class RemittancesController < ApplicationController
     end
   end
 
-  def create
-    @remittance = Remittance.new(remittance_params)
 
-    Remittance.transaction do
+  # ==================================================
+  # CREATE
+  # ==================================================
+
+  def create
+    ActiveRecord::Base.transaction do
+      @remittance =
+        Remittance.new(
+          remittance_params
+        )
+
       @remittance.save!
-      create_xtransactions_for_create
+
       attach_documents
+
+      create_movement_transactions!(
+        @remittance
+      )
     end
 
-    redirect_to remittances_path,
-                notice: "Remittance created successfully."
-  rescue ActiveRecord::RecordInvalid
+    redirect_to(
+      remittances_path,
+      notice: "Remittance created successfully."
+    )
+
+  rescue ActiveRecord::RecordInvalid,
+         ActiveRecord::RecordNotDestroyed,
+         ActiveRecord::DeleteRestrictionError,
+         ArgumentError => e
+
+    @remittance ||=
+      Remittance.new(
+        remittance_params
+      )
+
+    add_base_error(
+      @remittance,
+      e
+    )
+
+    ensure_default_movements(
+      @remittance
+    )
+
     load_form_data
 
-    respond_to do |format|
-      format.html { render :new, status: :unprocessable_entity }
-      format.turbo_stream { render :new, status: :unprocessable_entity }
-    end
+    render(
+      :new,
+      status: :unprocessable_entity
+    )
   end
+
+
+  # ==================================================
+  # EDIT
+  # ==================================================
 
   def edit
+    ensure_default_movements(
+      @remittance
+    )
+
     load_form_data
   end
+
+
+  # ==================================================
+  # UPDATE
+  # ==================================================
 
   def update
-    old_sender_account = @remittance.sender_account
-    old_receiver_account = @remittance.receiver_account
-    old_sent_amount      = @remittance.sent_amount
-    old_received_amount  = @remittance.received_amount
+    ActiveRecord::Base.transaction do
 
-    accounting_changed =
-      old_sender_account.id != remittance_params[:sender_account_id].to_i ||
-      old_receiver_account.id != remittance_params[:receiver_account_id].to_i ||
-      old_sent_amount != remittance_params[:sent_amount].to_i ||
-      old_received_amount != remittance_params[:received_amount].to_i
-
-    Remittance.transaction do
-      @remittance.update!(remittance_params)
-
-      if accounting_changed
-        update_accounts_and_create_xtransactions(
-          old_sender_account,
-          old_receiver_account,
-          old_sent_amount,
-          old_received_amount
+      old_entries =
+        capture_movement_entries(
+          @remittance
         )
-      end
+
+      old_movement_ids =
+        old_entries.keys
+
+
+      @remittance.update!(
+        remittance_params
+      )
 
       attach_documents
+
+      reconcile_movement_transactions!(
+        @remittance,
+        old_entries,
+        old_movement_ids
+      )
     end
 
-    redirect_to remittances_path,
-                notice: "Remittance updated successfully."
-  rescue ActiveRecord::RecordInvalid
+    redirect_to(
+      remittances_path,
+      notice: "Remittance updated successfully."
+    )
+
+  rescue ActiveRecord::RecordInvalid,
+         ActiveRecord::RecordNotDestroyed,
+         ActiveRecord::DeleteRestrictionError,
+         ArgumentError => e
+
+    add_base_error(
+      @remittance,
+      e
+    )
+
+    ensure_default_movements(
+      @remittance
+    )
+
     load_form_data
-    render :edit, status: :unprocessable_entity
+
+    render(
+      :edit,
+      status: :unprocessable_entity
+    )
   end
+
+
+  # ==================================================
+  # DESTROY
+  # ==================================================
 
   def destroy
-    @remittance.destroy
+    ActiveRecord::Base.transaction do
+      @remittance.destroy!
+    end
 
-    redirect_to remittances_path,
-                notice: "Remittance deleted successfully."
+    redirect_to(
+      remittances_path,
+      notice: "Remittance deleted successfully."
+    )
+
+  rescue ActiveRecord::RecordNotDestroyed,
+         ActiveRecord::DeleteRestrictionError,
+         ActiveRecord::RecordInvalid,
+         ArgumentError => e
+
+    redirect_to(
+      remittances_path,
+      alert: e.message
+    )
   end
+
+
+  # ==================================================
+  # ACCOUNTS
+  # ==================================================
 
   def accounts
-    organization = Organization.find(params[:organization_id])
+    organization =
+      Organization.find(
+        params[:organization_id]
+      )
 
-    accounts = organization.xaccounts.includes(:currency)
+    accounts =
+      organization
+        .xaccounts
+        .includes(:currency)
+        .order(:number)
 
-    render json: accounts.map { |account|
-      {
-        id: account.id,
-        number: account.number,
-        kind: account.kind,
-        currency_name: account.currency.name,
-        organization_name: organization.name,
-        organization_kind: organization.kind
-      }
-    }
+    render json:
+      accounts.map do |account|
+        {
+          id: account.id,
+          number: account.number,
+          kind: account.kind,
+          currency_id: account.currency_id,
+          currency_name: account.currency&.name,
+          organization_name: organization.name,
+          organization_kind: organization.kind
+        }
+      end
   end
+
+
+  # ==================================================
+  # REMOVE DOCUMENT
+  # ==================================================
 
   def remove_document
-    document = @remittance.documents.find(params[:document_id])
+    document =
+      @remittance.documents.find(
+        params[:document_id]
+      )
+
     document.purge
 
-    redirect_to edit_remittance_path(@remittance),
-                notice: "Attachment removed."
+    redirect_to(
+      edit_remittance_path(@remittance),
+      notice: "Attachment removed."
+    )
   end
+
+
+  # ==================================================
+  # REMOVE ALL DOCUMENTS
+  # ==================================================
 
   def remove_all_documents
     @remittance.documents.purge
 
-    redirect_to edit_remittance_path(@remittance),
-                notice: "All attachments removed."
+    redirect_to(
+      edit_remittance_path(@remittance),
+      notice: "All attachments removed."
+    )
   end
+
 
   private
 
+
+  # ==================================================
+  # SET
+  # ==================================================
+
   def set_remittance
-    @remittance = Remittance.find(params[:id])
+    @remittance =
+      Remittance.find(
+        params[:id]
+      )
   end
 
-  def load_form_data
-    @organizations = Organization.order(:name)
-    @currencies = Currency.order(:name)
 
-    @sender_accounts =
-      if @remittance.sender_account.present?
-        @remittance.sender_account.organization.xaccounts.includes(:currency)
-      else
-        Xaccount.none
+  # ==================================================
+  # CREATE MOVEMENT TRANSACTIONS
+  # ==================================================
+
+  def create_movement_transactions!(remittance)
+    remittance
+      .money_movements
+      .reload
+      .each do |movement|
+
+        movement.create_xtransaction!(
+          user: current_user
+        )
       end
+  end
 
-    @receiver_accounts =
-      if @remittance.receiver_account.present?
-        @remittance.receiver_account.organization.xaccounts.includes(:currency)
-      else
-        Xaccount.none
+
+  # ==================================================
+  # CAPTURE OLD MOVEMENT ACCOUNTING
+  # ==================================================
+
+  def capture_movement_entries(remittance)
+    remittance
+      .money_movements
+      .reload
+      .each_with_object({}) do |movement, entries|
+
+        entries[movement.id] = {
+          xaccount_id: movement.xaccount_id,
+          currency_id: movement.currency_id,
+          debit_amount: movement.debit_amount,
+          credit_amount: movement.credit_amount
+        }
+
       end
   end
 
-  def remittance_params
-    params.require(:remittance).permit(
-      :sender_account_id,
-      :receiver_account_id,
-      :sent_amount,
-      :received_amount,
-      :currency_id
-    )
+
+  # ==================================================
+  # RECONCILE MOVEMENTS
+  # ==================================================
+
+  def reconcile_movement_transactions!(
+    remittance,
+    old_entries,
+    old_movement_ids
+  )
+    current_movements =
+      remittance
+        .money_movements
+        .reload
+
+
+    current_movements.each do |movement|
+
+      old_entry =
+        old_entries[
+          movement.id
+        ]
+
+
+      Xtransaction.sync_movement!(
+        movement: movement,
+        old_entry: old_entry,
+        user: current_user
+      )
+    end
+
+
+    current_movement_ids =
+      current_movements.map(&:id)
+
+
+    removed_ids =
+      old_movement_ids -
+      current_movement_ids
+
+
+    return if removed_ids.empty?
+
+
+    raise ActiveRecord::RecordNotDestroyed,
+          "A movement with accounting history cannot be removed."
   end
+
+
+  # ==================================================
+  # ATTACHMENTS
+  # ==================================================
 
   def attach_documents
-    return if params[:remittance].blank?
-    return if params[:remittance][:documents].blank?
+    documents =
+      params.dig(
+        :remittance,
+        :documents
+      )
 
-    @remittance.documents.attach(params[:remittance][:documents])
-  end
+    return if documents.blank?
 
-  # ==================================================
-  # CREATE ACCOUNTING TRANSACTIONS
-  # ==================================================
+    documents =
+      Array(documents).reject(&:blank?)
 
-  def create_xtransactions_for_create
-    sender_account   = @remittance.sender_account
-    receiver_account = @remittance.receiver_account
+    return if documents.empty?
 
-    sender_before   = sender_account.amount
-    receiver_before = receiver_account.amount
-
-    sender_after   = sender_before - @remittance.sent_amount
-    receiver_after = receiver_before + @remittance.received_amount
-
-    sender_account.update!(amount: sender_after)
-    receiver_account.update!(amount: receiver_after)
-
-    @remittance.xtransactions.create!(
-      xaccount: sender_account,
-      currency: sender_account.currency,
-      withdrawal_amount: @remittance.sent_amount,
-      balance_before_transaction: sender_before,
-      balance_after_transaction: sender_after
-    )
-
-    @remittance.xtransactions.create!(
-      xaccount: receiver_account,
-      currency: receiver_account.currency,
-      deposit_amount: @remittance.received_amount,
-      balance_before_transaction: receiver_before,
-      balance_after_transaction: receiver_after
+    @remittance.documents.attach(
+      documents
     )
   end
 
+
   # ==================================================
-  # UPDATE ACCOUNTING TRANSACTIONS
+  # DEFAULT MOVEMENTS
   # ==================================================
 
-  def update_accounts_and_create_xtransactions(
-    old_sender_account,
-    old_receiver_account,
-    old_sent_amount,
-    old_received_amount
-  )
-    # ----------------------------------------------
-    # 1. Reverse old sender
-    # ----------------------------------------------
-    old_sender_before = old_sender_account.amount
-    old_sender_after  = old_sender_before + old_sent_amount
-
-    old_sender_account.update!(amount: old_sender_after)
-
-    @remittance.xtransactions.create!(
-      xaccount: old_sender_account,
-      currency: old_sender_account.currency,
-      deposit_amount: old_sent_amount,
-      balance_before_transaction: old_sender_before,
-      balance_after_transaction: old_sender_after
+  def build_default_movements
+    @remittance.money_movements.build(
+      direction: "send"
     )
 
-    # ----------------------------------------------
-    # 2. Reverse old receiver
-    # ----------------------------------------------
-    old_receiver_before = old_receiver_account.amount
-    old_receiver_after  = old_receiver_before - old_received_amount
-
-    old_receiver_account.update!(amount: old_receiver_after)
-
-    @remittance.xtransactions.create!(
-      xaccount: old_receiver_account,
-      currency: old_receiver_account.currency,
-      withdrawal_amount: old_received_amount,
-      balance_before_transaction: old_receiver_before,
-      balance_after_transaction: old_receiver_after
+    @remittance.money_movements.build(
+      direction: "receive"
     )
+  end
 
-    # ----------------------------------------------
-    # 3. Apply new sender
-    # ----------------------------------------------
-    new_sender_account = @remittance.sender_account
-    new_sender_before  = new_sender_account.amount
-    new_sender_after   = new_sender_before - @remittance.sent_amount
 
-    new_sender_account.update!(amount: new_sender_after)
+  def ensure_default_movements(remittance)
+    movements =
+      remittance.money_movements
 
-    @remittance.xtransactions.create!(
-      xaccount: new_sender_account,
-      currency: new_sender_account.currency,
-      withdrawal_amount: @remittance.sent_amount,
-      balance_before_transaction: new_sender_before,
-      balance_after_transaction: new_sender_after
+
+    has_send =
+      movements.any? do |movement|
+        movement.direction == "send"
+      end
+
+
+    has_receive =
+      movements.any? do |movement|
+        movement.direction == "receive"
+      end
+
+
+    unless has_send
+      movements.build(
+        direction: "send"
+      )
+    end
+
+
+    unless has_receive
+      movements.build(
+        direction: "receive"
+      )
+    end
+  end
+
+
+  # ==================================================
+  # FORM DATA
+  # ==================================================
+
+  def load_form_data
+    @organizations =
+      Organization.order(:name)
+
+    @currencies =
+      Currency.order(:name)
+  end
+
+
+  # ==================================================
+  # ERROR
+  # ==================================================
+
+  def add_base_error(record, exception)
+    record.errors.add(
+      :base,
+      exception.message
     )
+  end
 
-    # ----------------------------------------------
-    # 4. Apply new receiver
-    # ----------------------------------------------
-    new_receiver_account = @remittance.receiver_account
-    new_receiver_before  = new_receiver_account.amount
-    new_receiver_after   = new_receiver_before + @remittance.received_amount
 
-    new_receiver_account.update!(amount: new_receiver_after)
+  # ==================================================
+  # STRONG PARAMS
+  # ==================================================
 
-    @remittance.xtransactions.create!(
-      xaccount: new_receiver_account,
-      currency: new_receiver_account.currency,
-      deposit_amount: @remittance.received_amount,
-      balance_before_transaction: new_receiver_before,
-      balance_after_transaction: new_receiver_after
-    )
+  def remittance_params
+    params
+      .require(:remittance)
+      .permit(
+        money_movements_attributes: [
+          :id,
+          :direction,
+          :xaccount_id,
+          :currency_id,
+          :amount,
+          :exchange_rate,
+          :to_currency_id,
+          :amount_to,
+          :charge,
+          :total,
+          :_destroy
+        ]
+      )
   end
 end

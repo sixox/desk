@@ -1,7 +1,11 @@
 <option value="">Select Account</option>
 
 <% accounts.each do |account| %>
-  <option value="<%= account.id %>">
-    <%= account.number %> - <%= account.currency.name %>
+  <option
+    value="<%= account.id %>"
+    data-currency-id="<%= account.currency_id %>"
+    data-currency-name="<%= account.currency&.name %>"
+  >
+    <%= account.number %> - <%= account.currency&.name || "—" %>
   </option>
 <% end %>

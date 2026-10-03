@@ -1,433 +1,390 @@
-<div data-controller="remittance" class="rm-form">
+<div
+  data-controller="money-movements"
+  data-accounts-url="<%= accounts_xtransfers_path %>"
+  class="xt-form"
+>
 
-  <%= form_for @remittance do |form| %>
+  <%= form_for @remittance,
+               html: {
+                 multipart: true
+               } do |form| %>
 
     <div class="modal-body p-3 p-md-4">
 
       <% if @remittance.errors.any? %>
-        <div class="rm-error">
 
-          <div class="rm-error-title">
+        <div class="xt-error">
+
+          <div class="xt-error-title">
+
             <i class="bi bi-exclamation-circle"></i>
-            <%= pluralize(@remittance.errors.count, "error") %>
+
+            <%= pluralize(
+              @remittance.errors.count,
+              "error"
+            ) %>
+
             prohibited this remittance from being saved.
+
           </div>
 
+
           <ul>
+
             <% @remittance.errors.each do |error| %>
-              <li><%= error.full_message %></li>
+
+              <li>
+                <%= error.full_message %>
+              </li>
+
             <% end %>
+
           </ul>
 
         </div>
+
       <% end %>
 
 
+      <!-- ================================================= -->
       <!-- HEADER -->
+      <!-- ================================================= -->
 
-      <div class="rm-form-header">
+      <div class="xt-form-header">
 
-        <h4 class="rm-form-title">
+        <h4 class="xt-form-title">
 
-          <span class="rm-form-title-icon">
+          <span class="xt-form-title-icon">
             <i class="bi bi-send"></i>
           </span>
 
-          <%= @remittance.new_record? ? "Create Remittance" : "Edit Remittance" %>
+          <%= @remittance.new_record? ?
+                "Create Remittance" :
+                "Edit Remittance" %>
 
         </h4>
 
       </div>
 
 
-      <!-- SENDER / RECEIVER -->
+      <!-- ================================================= -->
+      <!-- SEND -->
+      <!-- ================================================= -->
 
-      <div class="row g-3">
+      <div class="xt-form-section">
 
+        <div class="xt-section-heading-row">
 
-        <!-- SENDER -->
+          <div class="xt-section-title">
 
-        <div class="col-lg-6">
+            <span class="xt-section-title-icon">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </span>
 
-          <div class="rm-party-panel rm-sender-panel">
+            <div>
 
+              <strong>
+                Send
+              </strong>
 
-            <!-- HEADER -->
-
-            <div class="rm-party-header">
-
-              <div class="rm-party-icon">
-                <i class="bi bi-box-arrow-up-right"></i>
-              </div>
-
-              <div>
-                <div class="rm-party-title">
-                  Sender
-                </div>
-              </div>
-
-            </div>
-
-
-            <!-- BODY -->
-
-            <div class="rm-party-body">
-
-
-              <!-- ORGANIZATION -->
-
-              <div class="rm-field">
-
-                <label class="rm-label">
-                  Organization
-                  <span class="rm-required">*</span>
-                </label>
-
-                <%= select_tag(
-                  :sender_organization_id,
-                  options_from_collection_for_select(
-                    @organizations,
-                    :id,
-                    :name,
-                    @remittance.sender_account&.organization_id
-                  ),
-                  prompt: "Select organization",
-                  class: "form-select",
-                  data: {
-                    remittance_target: "senderOrganization",
-                    action: "change->remittance#loadSenderAccounts"
-                  }
-                ) %>
-
-                <div data-remittance-target="senderInfo"></div>
-
-              </div>
-
-
-              <!-- ACCOUNT -->
-
-              <div class="rm-field">
-
-                <label class="rm-label">
-                  Account
-                  <span class="rm-required">*</span>
-                </label>
-
-                <%= form.collection_select(
-                  :sender_account_id,
-                  @sender_accounts,
-                  :id,
-                  ->(account) {
-                    "#{account.number} - #{account.currency.name}"
-                  },
-                  { prompt: "Select account" },
-                  {
-                    class: "form-select",
-                    data: {
-                      remittance_target: "senderAccount"
-                    }
-                  }
-                ) %>
-
-              </div>
-
-
-              <!-- SENT AMOUNT -->
-
-              <div class="rm-field">
-
-                <label class="rm-label">
-                  Sent Amount
-                  <span class="rm-required">*</span>
-                </label>
-
-                <div class="input-group">
-
-                  <span class="input-group-text">
-                    <i class="bi bi-cash-stack"></i>
-                  </span>
-
-                  <%= form.number_field(
-                    :sent_amount,
-                    class: "form-control",
-                    placeholder: "0"
-                  ) %>
-
-                </div>
-
-              </div>
+              <small>
+                Money leaving accounts.
+              </small>
 
             </div>
 
           </div>
 
-        </div>
 
+          <button
+            type="button"
+            class="btn xt-add-btn"
+            data-action="click->money-movements#addSend"
+          >
 
-        <!-- RECEIVER -->
+            <i class="bi bi-plus-lg"></i>
+            Add Send
 
-        <div class="col-lg-6">
-
-          <div class="rm-party-panel rm-receiver-panel">
-
-
-            <!-- HEADER -->
-
-            <div class="rm-party-header">
-
-              <div class="rm-party-icon">
-                <i class="bi bi-box-arrow-in-down-left"></i>
-              </div>
-
-              <div>
-                <div class="rm-party-title">
-                  Receiver
-                </div>
-              </div>
-
-            </div>
-
-
-            <!-- BODY -->
-
-            <div class="rm-party-body">
-
-
-              <!-- ORGANIZATION -->
-
-              <div class="rm-field">
-
-                <label class="rm-label">
-                  Organization
-                  <span class="rm-required">*</span>
-                </label>
-
-                <%= select_tag(
-                  :receiver_organization_id,
-                  options_from_collection_for_select(
-                    @organizations,
-                    :id,
-                    :name,
-                    @remittance.receiver_account&.organization_id
-                  ),
-                  prompt: "Select organization",
-                  class: "form-select",
-                  data: {
-                    remittance_target: "receiverOrganization",
-                    action: "change->remittance#loadReceiverAccounts"
-                  }
-                ) %>
-
-                <div data-remittance-target="receiverInfo"></div>
-
-              </div>
-
-
-              <!-- ACCOUNT -->
-
-              <div class="rm-field">
-
-                <label class="rm-label">
-                  Account
-                  <span class="rm-required">*</span>
-                </label>
-
-                <%= form.collection_select(
-                  :receiver_account_id,
-                  @receiver_accounts,
-                  :id,
-                  ->(account) {
-                    "#{account.number} - #{account.currency.name}"
-                  },
-                  { prompt: "Select account" },
-                  {
-                    class: "form-select",
-                    data: {
-                      remittance_target: "receiverAccount"
-                    }
-                  }
-                ) %>
-
-              </div>
-
-
-              <!-- RECEIVED AMOUNT -->
-
-              <div class="rm-field">
-
-                <label class="rm-label">
-                  Received Amount
-                  <span class="rm-required">*</span>
-                </label>
-
-                <div class="input-group">
-
-                  <span class="input-group-text">
-                    <i class="bi bi-cash-coin"></i>
-                  </span>
-
-                  <%= form.number_field(
-                    :received_amount,
-                    class: "form-control",
-                    placeholder: "0"
-                  ) %>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
+          </button>
 
         </div>
 
-        
 
-      </div>
+        <div
+          data-money-movements-target="sendContainer"
+        >
 
+          <%= form.fields_for :money_movements do |movement_form| %>
 
-      <!-- CURRENCY -->
+            <% if movement_form.object.direction == "send" %>
 
-      <div class="rm-form-section">
-
-        <div class="rm-section-title">
-          <i class="bi bi-currency-exchange"></i>
-          Currency Details
-        </div>
-
-
-        <div class="row g-3">
-
-          <div class="col-md-12">
-
-            <div class="rm-field">
-
-              <label class="rm-label">
-                Currency
-                <span class="rm-required">*</span>
-              </label>
-
-              <%= form.collection_select(
-                :currency_id,
-                @currencies,
-                :id,
-                :name,
-                { prompt: "Select currency" },
-                { class: "form-select" }
+              <%= render(
+                "shared/movement_fields",
+                movement_form: movement_form
               ) %>
 
-            </div>
+            <% end %>
 
-          </div>
-
-        </div>
-
-      </div>
-<!-- ATTACHMENTS -->
-<div class="xt-attachments-panel">
-
-  <div class="xt-attachments-header">
-    <div class="xt-attachments-title">
-      <i class="bi bi-paperclip"></i>
-      Attachments
-    </div>
-
-    <% if @remittance.documents.attached? %>
-      <%= link_to(
-        remove_all_documents_remittance_path(@remittance),
-        data: {
-          turbo_method: :delete,
-          turbo_confirm: "Delete all attachments?"
-        },
-        class: "xt-remove-all text-decoration-none p-0",
-        style: "font-size: 9px; gap: 0rem !important; border: 0px; margin-top: -5px;"
-      ) do %>
-        Delete All Attachs
-      <% end %>
-    <% end %>
-  </div>
-
-  <!-- EXISTING DOCUMENTS -->
-  <% if @remittance.documents.attached? %>
-    <div class="xt-attachments-list">
-
-      <% @remittance.documents.each do |document| %>
-
-        <div class="xt-attachment-item xt-existing-document-row">
-
-          <i class="bi bi-file-earmark-text xt-attachment-file-icon"></i>
-
-          <%= link_to(
-            document.filename.to_s,
-            rails_blob_path(
-              document,
-              disposition: "attachment"
-            ),
-            target: "_blank",
-            class: "xt-attachment-link",
-            title: document.filename.to_s
-          ) %>
-
-          <%= link_to(
-            remove_document_remittance_path(
-              @remittance,
-              document_id: document.id
-            ),
-            data: {
-              turbo_method: :delete,
-              turbo_confirm: "Remove this file?"
-            },
-            class: "xt-attachment-delete",
-            title: "Remove"
-          ) do %>
-            <i class="bi bi-trash3"></i>
           <% end %>
 
         </div>
 
-      <% end %>
+
+        <template
+          data-money-movements-target="sendTemplate"
+        >
+
+          <%
+            prototype =
+              MoneyMovement.new(
+                direction: "send"
+              )
+          %>
+
+          <%= form.fields_for(
+            :money_movements,
+            prototype,
+            child_index: "NEW_RECORD"
+          ) do |movement_form| %>
+
+            <%= render(
+              "shared/movement_fields",
+              movement_form: movement_form
+            ) %>
+
+          <% end %>
+
+        </template>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- RECEIVE -->
+      <!-- ================================================= -->
+
+      <div class="xt-form-section">
+
+        <div class="xt-section-heading-row">
+
+          <div class="xt-section-title">
+
+            <span class="xt-section-title-icon">
+              <i class="bi bi-box-arrow-in-down-left"></i>
+            </span>
+
+            <div>
+
+              <strong>
+                Receive
+              </strong>
+
+              <small>
+                Money entering accounts.
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="btn xt-add-btn"
+            data-action="click->money-movements#addReceive"
+          >
+
+            <i class="bi bi-plus-lg"></i>
+            Add Receive
+
+          </button>
+
+        </div>
+
+
+        <div
+          data-money-movements-target="receiveContainer"
+        >
+
+          <%= form.fields_for :money_movements do |movement_form| %>
+
+            <% if movement_form.object.direction == "receive" %>
+
+              <%= render(
+                "shared/movement_fields",
+                movement_form: movement_form
+              ) %>
+
+            <% end %>
+
+          <% end %>
+
+        </div>
+
+
+        <template
+          data-money-movements-target="receiveTemplate"
+        >
+
+          <%
+            prototype =
+              MoneyMovement.new(
+                direction: "receive"
+              )
+          %>
+
+          <%= form.fields_for(
+            :money_movements,
+            prototype,
+            child_index: "NEW_RECORD"
+          ) do |movement_form| %>
+
+            <%= render(
+              "shared/movement_fields",
+              movement_form: movement_form
+            ) %>
+
+          <% end %>
+
+        </template>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- ATTACHMENTS -->
+      <!-- ================================================= -->
+
+      <div class="xt-attachments-panel">
+
+        <div class="xt-attachments-header">
+
+          <div class="xt-attachments-title">
+
+            <i class="bi bi-paperclip"></i>
+
+            Attachments
+
+          </div>
+
+
+          <% if @remittance.documents.attached? %>
+
+            <%= link_to(
+              remove_all_documents_remittance_path(
+                @remittance
+              ),
+              data: {
+                turbo_method: :delete,
+                turbo_confirm:
+                  "Delete all attachments?"
+              },
+              class:
+                "xt-remove-all text-decoration-none p-0",
+              style:
+                "font-size: 9px; gap: 0rem !important; border: 0; margin-top: -5px;"
+            ) do %>
+
+              Delete All Attachs
+
+            <% end %>
+
+          <% end %>
+
+        </div>
+
+
+        <% if @remittance.documents.attached? %>
+
+          <div class="xt-attachments-list">
+
+            <% @remittance.documents.each do |document| %>
+
+              <div class="xt-attachment-item">
+
+                <i class="bi bi-file-earmark-text xt-attachment-file-icon"></i>
+
+                <%= link_to(
+                  document.filename.to_s,
+                  rails_blob_path(
+                    document,
+                    disposition: "attachment"
+                  ),
+                  target: "_blank",
+                  class: "xt-attachment-link"
+                ) %>
+
+
+                <%= link_to(
+                  remove_document_remittance_path(
+                    @remittance,
+                    document_id: document.id
+                  ),
+                  data: {
+                    turbo_method: :delete,
+                    turbo_confirm:
+                      "Remove this file?"
+                  },
+                  class: "xt-attachment-delete"
+                ) do %>
+
+                  <i class="bi bi-trash3"></i>
+
+                <% end %>
+
+              </div>
+
+            <% end %>
+
+          </div>
+
+        <% end %>
+
+
+        <div class="xt-attachments-list">
+
+          <div class="xt-attachment-item xt-new-document">
+
+            <i class="bi bi-paperclip xt-attachment-file-icon"></i>
+
+            <%= form.file_field(
+              :documents,
+              multiple: true,
+              class: "xt-attachment-input"
+            ) %>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
-  <% end %>
-
-  <!-- NEW DOCUMENTS INPUT -->
-  <div class="xt-attachments-list">
-    <div class="xt-attachment-item xt-new-document">
-
-      <i class="bi bi-paperclip xt-attachment-file-icon"></i>
-
-      <%= form.file_field(
-        :documents,
-        multiple: true,
-        class: "xt-attachment-input"
-      ) %>
-
-    </div>
-  </div>
-
-</div>
-
-    </div>
 
 
+    <!-- ================================================= -->
     <!-- FOOTER -->
+    <!-- ================================================= -->
 
-    <div class="modal-footer rm-form-footer px-3 px-md-4 pb-3">
+    <div class="modal-footer xt-form-footer px-3 px-md-4 pb-3">
 
       <button
         type="button"
-        class="btn btn-light border rm-close"
+        class="btn btn-light border xt-close"
         data-bs-dismiss="modal"
       >
         Close
       </button>
 
+
       <%= form.submit(
-        @remittance.new_record? ? "Create Remittance" : "Update Remittance",
-        class: "btn btn-primary rm-submit",
+        @remittance.new_record? ?
+          "Create Remittance" :
+          "Update Remittance",
+        class: "btn btn-success xt-submit",
         data: {
-          action: "click->bs-modal#submitEnd"
+          action:
+            "click->bs-modal#submitEnd"
         }
       ) %>
 

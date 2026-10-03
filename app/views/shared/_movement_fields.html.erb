@@ -1,0 +1,454 @@
+<%
+  movement = movement_form.object
+  direction = movement.direction.to_s
+  persisted = movement.persisted?
+
+  direction_label =
+    case direction
+    when "send"
+      "Send"
+    when "receive"
+      "Receive"
+    when "sell"
+      "Sell"
+    when "buy"
+      "Buy"
+    else
+      direction.humanize
+    end
+
+  direction_icon =
+    case direction
+    when "send"
+      "bi-box-arrow-up-right"
+    when "receive"
+      "bi-box-arrow-down-left"
+    when "sell"
+      "bi-arrow-up-right"
+    when "buy"
+      "bi-arrow-down-left"
+    else
+      "bi-arrow-left-right"
+    end
+%>
+
+
+<div
+  data-movement-row
+  class="xt-exchange-row"
+>
+
+  <%= movement_form.hidden_field :id if persisted %>
+
+  <%= movement_form.hidden_field(
+    :direction,
+    value: direction
+  ) %>
+
+  <%= movement_form.hidden_field :_destroy %>
+
+
+  <!-- ================================================= -->
+  <!-- MOVEMENT ICON -->
+  <!-- ================================================= -->
+
+  <div class="xt-exchange-number">
+    <i class="bi <%= direction_icon %>"></i>
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- MOVEMENT CONTENT -->
+  <!-- ================================================= -->
+
+  <div class="xt-exchange-content flex-grow-1">
+
+    <!-- =============================================== -->
+    <!-- MOVEMENT HEADER -->
+    <!-- =============================================== -->
+
+    <div class="xt-section-title mb-3">
+
+      <span class="xt-section-title-icon">
+        <i class="bi <%= direction_icon %>"></i>
+      </span>
+
+      <div>
+        <strong>
+          <%= direction_label %>
+        </strong>
+
+        <small>
+          <%= direction == "send" || direction == "sell" ?
+                "Debit movement" :
+                "Credit movement" %>
+        </small>
+      </div>
+
+    </div>
+
+
+    <!-- =============================================== -->
+    <!-- ORGANIZATION / ACCOUNT -->
+    <!-- =============================================== -->
+
+    <div class="row g-2">
+
+      <!-- ORGANIZATION -->
+
+      <div class="col-12 col-md-5">
+
+        <div class="xt-field">
+
+          <label
+            class="xt-label"
+            for="movement_organization_<%= movement_form.index %>"
+          >
+            Organization
+            <span class="xt-required">*</span>
+          </label>
+
+
+          <%= select_tag(
+            "movement_organizations[#{movement_form.index}]",
+            options_from_collection_for_select(
+              @organizations,
+              :id,
+              :name,
+              movement.xaccount&.organization_id
+            ),
+            {
+              include_blank: "Select organization",
+              class: "form-select",
+              id: "movement_organization_#{movement_form.index}",
+              data: {
+                action: "change->money-movements#loadAccounts"
+              }
+            }
+          ) %>
+
+        </div>
+
+      </div>
+
+
+      <!-- ACCOUNT -->
+
+      <div class="col-12 col-md-7">
+
+        <div class="xt-field">
+
+          <%= movement_form.label(
+            :xaccount_id,
+            "Account",
+            class: "xt-label"
+          ) %>
+
+
+          <%= movement_form.select(
+            :xaccount_id,
+
+            movement.xaccount&.organization&.xaccounts&.map do |account|
+
+              [
+                "#{account.number} - #{account.currency&.name || '—'}",
+                account.id,
+                {
+                  "data-currency-id" => account.currency_id,
+                  "data-currency-name" => account.currency&.name
+                }
+              ]
+
+            end || [],
+
+            {
+              include_blank: "Select account"
+            },
+
+            {
+              class: "form-select",
+              data: {
+                account_select: true,
+                action:
+                  "change->money-movements#setAccountCurrency"
+              }
+            }
+          ) %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =============================================== -->
+    <!-- AMOUNT / CURRENCY -->
+    <!-- =============================================== -->
+
+    <div class="row g-2 mt-1">
+
+      <!-- AMOUNT -->
+
+      <div class="col-12 col-md-7">
+
+        <div class="xt-field">
+
+          <%= movement_form.label(
+            :amount,
+            "Amount",
+            class: "xt-label"
+          ) %>
+
+
+          <div class="input-group">
+
+            <span class="input-group-text">
+              <i class="bi bi-cash-stack"></i>
+            </span>
+
+
+            <%= movement_form.number_field(
+              :amount,
+              class: "form-control",
+              placeholder: "0",
+              min: 0,
+              step: 1,
+              data: {
+                amount: true,
+                action:
+                  "input->money-movements#recalculateRow"
+              }
+            ) %>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- CURRENCY -->
+
+      <div class="col-12 col-md-5">
+
+        <div class="xt-field">
+
+          <%= movement_form.label(
+            :currency_id,
+            "Currency",
+            class: "xt-label"
+          ) %>
+
+
+          <%= movement_form.collection_select(
+            :currency_id,
+            @currencies,
+            :id,
+            :name,
+            {
+              include_blank: "Select currency"
+            },
+            {
+              class: "form-select",
+              data: {
+                currency_select: true
+              }
+            }
+          ) %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =============================================== -->
+    <!-- CONVERSION -->
+    <!-- =============================================== -->
+
+    <div class="xt-conversion-box mt-3">
+
+      <div class="row g-2">
+
+        <!-- RATE -->
+
+        <div class="col-12 col-md-5">
+
+          <div class="xt-field">
+
+            <%= movement_form.label(
+              :exchange_rate,
+              "Exchange Rate",
+              class: "xt-label"
+            ) %>
+
+
+            <div class="input-group">
+
+              <span class="input-group-text">
+                <i class="bi bi-arrow-repeat"></i>
+              </span>
+
+
+              <%= movement_form.number_field(
+                :exchange_rate,
+                class: "form-control",
+                placeholder: "1",
+                min: 0,
+                step: "0.000000001",
+                data: {
+                  exchange_rate: true,
+                  action:
+                    "input->money-movements#recalculateRow"
+                }
+              ) %>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- TO CURRENCY -->
+
+        <div class="col-12 col-md-3">
+
+          <div class="xt-field">
+
+            <%= movement_form.label(
+              :to_currency_id,
+              "To Currency",
+              class: "xt-label"
+            ) %>
+
+
+            <%= movement_form.collection_select(
+              :to_currency_id,
+              @currencies,
+              :id,
+              :name,
+              {
+                include_blank: "Currency"
+              },
+              {
+                class: "form-select"
+              }
+            ) %>
+
+          </div>
+
+        </div>
+
+
+        <!-- CONVERTED -->
+
+        <div class="col-12 col-md-4">
+
+          <div
+            class="xt-field"
+            style="margin-top: 31px;"
+          >
+
+            <%= movement_form.number_field(
+              :amount_to,
+              class: "form-control xt-calculated-field",
+              readonly: true,
+              tabindex: "-1",
+              step: "0.00001",
+              data: {
+                amount_to: true
+              }
+            ) %>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =============================================== -->
+    <!-- CHARGE / TOTAL -->
+    <!-- =============================================== -->
+
+    <div class="xt-total-section mt-3">
+
+      <div class="xt-total-fields">
+
+        <!-- CHARGE -->
+
+        <div class="xt-field xt-charge-field">
+
+          <%= movement_form.label(
+            :charge,
+            "Charge",
+            class: "xt-label"
+          ) %>
+
+
+          <%= movement_form.number_field(
+            :charge,
+            class: "form-control xt-charge-input",
+            placeholder: "0",
+            min: 0,
+            step: 1,
+            data: {
+              charge: true,
+              action:
+                "input->money-movements#recalculateRow"
+            }
+          ) %>
+
+        </div>
+
+
+        <!-- TOTAL -->
+
+        <div class="xt-total-display">
+
+          <span class="xt-total-display-label">
+            <%= direction_label %> Total
+          </span>
+
+
+          <strong
+            class="xt-total-display-value"
+            data-total-display
+          >
+            <%= movement.total || 0 %>
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- REMOVE -->
+  <!-- ================================================= -->
+
+  <div class="xt-exchange-actions">
+
+    <button
+      type="button"
+      class="btn xt-remove-btn"
+      data-action="click->money-movements#removeMovement"
+      title="Remove <%= direction_label.downcase %> movement"
+    >
+
+      <i class="bi bi-trash3"></i>
+
+    </button>
+
+  </div>
+
+</div>
