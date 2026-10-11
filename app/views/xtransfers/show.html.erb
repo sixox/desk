@@ -1,294 +1,63 @@
 <%
-  transfer_transactions =
-    @xtransfer.money_movements
-      .includes(:xtransactions)
-      .flat_map(&:xtransactions)
-      .sort_by(&:created_at)
-      .reverse
-
-  sends =
-    @xtransfer.money_movements
-      .select { |movement| movement.send? && !movement.marked_for_destruction? }
-
-  receives =
-    @xtransfer.money_movements
-      .select { |movement| movement.receive? && !movement.marked_for_destruction? }
+transfer_transactions =
+@xtransfer.money_movements
+.includes(:xtransactions)
+.flat_map(&:xtransactions)
+.sort_by(&:created_at)
+.reverse
 %>
 
 <div class="col-lg-10 mx-auto mt-5">
 
   <div class="xtransfer-page">
 
-    <div class="container-fluid px-3 px-lg-4 py-4">
 
-      <!-- ================================================== -->
-      <!-- HEADER -->
-      <!-- ================================================== -->
+<div class="container-fluid px-3 px-lg-4 py-4">
 
-      <div class="xt-index-header">
+  <!-- ================================================== -->
+  <!-- HEADER -->
+  <!-- ================================================== -->
 
-        <div class="xt-index-heading">
+  <div class="xt-index-header m-1">
 
-          <div class="xt-index-icon">
-            <i class="bi bi-arrow-left-right"></i>
-          </div>
+    <div class="xt-index-heading">
 
-          <div>
-            <h1 class="xt-index-title">
-              Transfer
-              <span>
-                <%= @xtransfer.id %>
-              </span>
-            </h1>
+     
 
-            <div class="text-muted small mt-1">
-              <%= @xtransfer.created_at.strftime("%Y-%m-%d %H:%M") %>
-            </div>
-          </div>
+    </div>
 
-        </div>
 
-        <%= link_to(
-          xtransfers_path,
-          class: "btn btn-sm btn-outline-secondary xaccount-action"
-        ) do %>
+    <%= link_to(
+      xtransfers_path,
+      class: "btn btn-sm btn-outline-secondary xaccount-action"
+    ) do %>
 
-          <i class="bi bi-arrow-left"></i>
+      <i class="bi bi-arrow-left"></i>
 
-          <span>
-            Back
-          </span>
+      <span>
+        Back
+      </span>
 
-        <% end %>
+    <% end %>
 
-      </div>
+  </div>
 
 
-      <!-- ================================================== -->
-      <!-- TRANSFER -->
-      <!-- ================================================== -->
+  <!-- ================================================== -->
+  <!-- TRANSFER -->
+  <!-- ================================================== -->
 
-      <div class="xt-transfers-container">
+  <div class="xt-transfers-container">
 
-        <div
-          id="xtransfers"
-          class="xt-transfer-list"
-        >
+    <div
+      id="xtransfers"
+      class="xt-transfer-list"
+    >
 
-          <%= render(
-            "xtransfer",
-            transfer: @xtransfer
-          ) %>
-
-        </div>
-
-      </div>
-
-
-      <!-- ================================================== -->
-      <!-- MOVEMENT SUMMARY -->
-      <!-- ================================================== -->
-
-      <div class="row g-3 mt-3">
-
-        <!-- SENDS -->
-
-        <div class="col-md-6">
-
-          <div class="card h-100 border-0 shadow-sm">
-
-            <div class="card-body">
-
-              <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <div class="d-flex align-items-center gap-2">
-
-                  <div class="text-danger">
-                    <i class="bi bi-arrow-up-circle fs-4"></i>
-                  </div>
-
-                  <div>
-                    <div class="fw-semibold">
-                      Sends
-                    </div>
-
-                    <div class="text-muted small">
-                      Money leaving accounts
-                    </div>
-                  </div>
-
-                </div>
-
-                <span class="badge text-bg-danger">
-                  <%= sends.size %>
-                </span>
-
-              </div>
-
-
-              <% if sends.any? %>
-
-                <div class="list-group list-group-flush">
-
-                  <% sends.each do |movement| %>
-
-                    <div class="list-group-item px-0">
-
-                      <div class="d-flex justify-content-between align-items-start gap-3">
-
-                        <div>
-
-                          <div class="fw-semibold">
-                            <%= movement.xaccount&.organization&.name || "-" %>
-                          </div>
-
-                          <div class="text-muted small">
-                            <%= movement.xaccount&.number || "-" %>
-                          </div>
-
-                        </div>
-
-
-                        <div class="text-end">
-
-                          <div class="fw-semibold">
-                            <%= number_with_delimiter(movement.amount) %>
-                            <%= movement.currency&.name %>
-                          </div>
-
-                          <% if movement.total.present? %>
-
-                            <div class="text-muted small">
-                              Total:
-                              <%= number_with_delimiter(movement.total) %>
-                            </div>
-
-                          <% end %>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  <% end %>
-
-                </div>
-
-              <% else %>
-
-                <div class="text-muted text-center py-3">
-                  No sends
-                </div>
-
-              <% end %>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- RECEIVES -->
-
-        <div class="col-md-6">
-
-          <div class="card h-100 border-0 shadow-sm">
-
-            <div class="card-body">
-
-              <div class="d-flex justify-content-between align-items-center mb-3">
-
-                <div class="d-flex align-items-center gap-2">
-
-                  <div class="text-success">
-                    <i class="bi bi-arrow-down-circle fs-4"></i>
-                  </div>
-
-                  <div>
-                    <div class="fw-semibold">
-                      Receives
-                    </div>
-
-                    <div class="text-muted small">
-                      Money entering accounts
-                    </div>
-                  </div>
-
-                </div>
-
-                <span class="badge text-bg-success">
-                  <%= receives.size %>
-                </span>
-
-              </div>
-
-
-              <% if receives.any? %>
-
-                <div class="list-group list-group-flush">
-
-                  <% receives.each do |movement| %>
-
-                    <div class="list-group-item px-0">
-
-                      <div class="d-flex justify-content-between align-items-start gap-3">
-
-                        <div>
-
-                          <div class="fw-semibold">
-                            <%= movement.xaccount&.organization&.name || "-" %>
-                          </div>
-
-                          <div class="text-muted small">
-                            <%= movement.xaccount&.number || "-" %>
-                          </div>
-
-                        </div>
-
-
-                        <div class="text-end">
-
-                          <div class="fw-semibold">
-                            <%= number_with_delimiter(movement.amount) %>
-                            <%= movement.currency&.name %>
-                          </div>
-
-                          <% if movement.total.present? %>
-
-                            <div class="text-muted small">
-                              Total:
-                              <%= number_with_delimiter(movement.total) %>
-                            </div>
-
-                          <% end %>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  <% end %>
-
-                </div>
-
-              <% else %>
-
-                <div class="text-muted text-center py-3">
-                  No receives
-                </div>
-
-              <% end %>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
+      <%= render(
+        "xtransfer",
+        transfer: @xtransfer
+      ) %>
 
     </div>
 
@@ -305,13 +74,11 @@
 
       <div>
 
-        <div class="xaccount-section-title">
+        <div class="xaccount-section-title sixox-subtitle">
           Transactions
         </div>
 
-        <div class="xaccount-section-subtitle">
-          Complete transaction history for this Transfer
-        </div>
+       
 
       </div>
 
@@ -353,31 +120,24 @@
   <!-- COMMENTS -->
   <!-- ================================================== -->
 
-  <hr>
-
-
-  <div class="card mb-5 mt-5">
+  <div class="card mb-5 mt-4 cm-card">
 
     <div class="card-body">
 
-      <div class="row">
+      <div class="row align-items-center">
 
         <div class="col-lg-6">
 
-          <div class="d-flex justify-content-start">
-
-            <h5>
-              Comments
-            </h5>
-
-          </div>
+          <h5 class="mb-0 cm-h5">
+            Comments
+          </h5>
 
         </div>
 
 
-        <div class="col-lg-6">
+        <div class="col-lg-6 mt-3 mt-lg-0">
 
-          <div class="d-flex justify-content-end">
+          <div class="d-flex justify-content-lg-end">
 
             <%= link_to(
               new_xtransfer_comment_path(@xtransfer),
@@ -385,8 +145,10 @@
                 controller: "bs-modal-form",
                 xtransfer_id: @xtransfer.id
               },
-              class: "btn btn-primary"
+              class: "btn btn-primary cm-btn"
             ) do %>
+
+              <i class="bi bi-plus-sm me-1"></i>
 
               Add Comment
 
@@ -400,7 +162,7 @@
 
 
       <ul
-        class="list-group mt-1"
+        class="list-group mt-3"
         id="comment_items"
       >
 
@@ -417,9 +179,9 @@
 
         <% else %>
 
-          <p>
-            no comments
-          </p>
+          <li class="list-group-item text-muted cm-ph">
+            No comments
+          </li>
 
         <% end %>
 
@@ -431,5 +193,9 @@
 
 </div>
 
+
+  </div>
+
+</div>
 
 <%= turbo_frame_tag "modal" %>

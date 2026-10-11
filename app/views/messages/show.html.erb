@@ -168,17 +168,17 @@
   </div>
 </div>
 </div>
-<div class="card mb-5">
+<div class="card mb-5 cm-card">
   <div class="card-body">
     <div class="row">
       <div class="col-lg-6">
         <div class="d-flex justify-content-start">
-          <h5>Comments</h5>
+          <h5 class="cm-h5">Comments</h5>
         </div>
       </div>
       <div class="col-lg-6">
         <div class="d-flex justify-content-end">
-          <%= link_to new_message_comment_path(@message), data: { controller: "bs-modal-form", message_id: @message.id }, class: "btn btn-primary" do %>
+          <%= link_to new_message_comment_path(@message), data: { controller: "bs-modal-form", message_id: @message.id }, class: "btn btn-primary cm-btn" do %>
           Add Comment
           <% end %>
         </div>
@@ -192,7 +192,7 @@
       <% end %>
 
       <% else %>
-      <p>no comments</p>
+      <p class="cm-ph">no comments</p>
       <% end %>
     </ul>
   </div>

@@ -3,12 +3,12 @@
 		
 		<div class="col-lg-6">
 			<div class="d-flex justify-content-start">
-				<small class="text-secondary"><%= comment.user.name%>:</small>
+				<small class="cm-name"><%= comment.user.name%>:</small>
 			</div>
 		</div>
 		
 		<div class="col-lg-6">
-			<div class="d-flex justify-content-end">
+			<div class="d-flex justify-content-end cm-date">
 				<p>
 					<%= comment.created_at.strftime('%A %d %B')  %>
 				</p>
@@ -16,7 +16,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<small dir="rtl" class="text-end">
+		<small dir="rtl" class="text-end cm-text">
 			<%= comment.body %>
 		</small>
 	</div>
