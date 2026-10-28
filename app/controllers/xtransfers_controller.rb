@@ -335,31 +335,30 @@ class XtransfersController < ApplicationController
   # LOAD ACCOUNTS
   # ==================================================
 
+
   def accounts
-    organization =
-      Organization.find(
-        params[:organization_id]
-      )
+    organization = Organization.find(params[:organization_id])
 
-    accounts =
-      organization
-        .xaccounts
-        .includes(:currency)
-        .order(:number)
+    accounts = organization
+      .xaccounts
+      .includes(:currency)
+      .order(:number)
 
-    render json:
-      accounts.map do |account|
-        {
-          id: account.id,
-          number: account.number,
-          kind: account.kind,
-          currency_id: account.currency_id,
-          currency_name: account.currency&.name,
-          organization_name: organization.name,
-          organization_kind: organization.kind
-        }
-      end
+    account_data = accounts.map do |account|
+      {
+        id: account.id,
+        number: account.number,
+        kind: account.kind,
+        currency_id: account.currency_id,
+        currency_name: account.currency&.name,
+        organization_name: organization.name,
+        organization_kind: organization.kind
+      }
+    end
+
+    render json: account_data
   end
+
 
 
   # ==================================================

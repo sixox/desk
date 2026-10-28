@@ -144,36 +144,33 @@
             class: "xt-label"
           ) %>
 
-
-          <%= movement_form.select(
-            :xaccount_id,
-
-            movement.xaccount&.organization&.xaccounts&.map do |account|
-
-              [
-                "#{account.number} - #{account.currency&.name || '—'}",
-                account.id,
-                {
-                  "data-currency-id" => account.currency_id,
-                  "data-currency-name" => account.currency&.name
-                }
-              ]
-
-            end || [],
-
-            {
-              include_blank: "Select account"
-            },
-
-            {
-              class: "form-select",
-              data: {
-                account_select: true,
-                action:
-                  "change->money-movements#setAccountCurrency"
+<%= movement_form.select(
+      :xaccount_id,
+      (
+        movement.xaccount&.organization&.xaccounts
+          &.includes(:currency)
+          &.map do |account|
+            [
+              "#{account.number} - #{account.currency&.name }",
+              account.id,
+              {
+                "data-currency-id" => account.currency_id,
+                "data-currency-name" => account.currency&.name
               }
-            }
-          ) %>
+            ]
+          end
+      ) || [],
+      {
+        include_blank: "Select account"
+      },
+      {
+        class: "form-select",
+        data: {
+          account_select: true,
+          action: "change->money-movements#setAccountCurrency"
+        }
+      }
+    ) %>
 
         </div>
 
@@ -210,6 +207,7 @@
 
             <%= movement_form.number_field(
               :amount,
+              value: nil,
               class: "form-control",
               placeholder: "0",
               min: 0,
@@ -354,6 +352,7 @@
 
             <%= movement_form.number_field(
               :amount_to,
+              value: nil,
               class: "form-control xt-calculated-field",
               readonly: true,
               tabindex: "-1",
@@ -393,6 +392,7 @@
 
           <%= movement_form.number_field(
             :charge,
+            value: nil,
             class: "form-control xt-charge-input",
             placeholder: "0",
             min: 0,

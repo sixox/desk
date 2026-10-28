@@ -6,6 +6,6 @@
     data-currency-id="<%= account.currency_id %>"
     data-currency-name="<%= account.currency&.name %>"
   >
-    <%= account.number %> - <%= account.currency&.name || "—" %>
+    <%= account.number %> - <%= account.currency&.name  %>
   </option>
 <% end %>
