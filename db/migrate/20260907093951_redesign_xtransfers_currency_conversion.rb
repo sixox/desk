@@ -1,9 +1,7 @@
+
 class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
   def change
-    # ------------------------------------------------------------
-    # Rename existing amount columns
-    # ------------------------------------------------------------
-
+    # Rename existing amount columns only if needed.
     if column_exists?(:xtransfers, :sent_amount) &&
        !column_exists?(:xtransfers, :sender_amount)
       rename_column :xtransfers, :sent_amount, :sender_amount
@@ -14,10 +12,7 @@ class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
       rename_column :xtransfers, :receive_amount, :receiver_amount
     end
 
-    # ------------------------------------------------------------
-    # Sender conversion
-    # ------------------------------------------------------------
-
+    # Sender conversion.
     unless column_exists?(:xtransfers, :sender_exchange_rate)
       add_column :xtransfers, :sender_exchange_rate,
                  :decimal, precision: 20, scale: 10
@@ -28,10 +23,7 @@ class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
                  :decimal, precision: 20, scale: 5
     end
 
-    # ------------------------------------------------------------
-    # Receiver conversion
-    # ------------------------------------------------------------
-
+    # Receiver conversion.
     unless column_exists?(:xtransfers, :receiver_exchange_rate)
       add_column :xtransfers, :receiver_exchange_rate,
                  :decimal, precision: 20, scale: 10
@@ -42,28 +34,20 @@ class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
                  :decimal, precision: 20, scale: 5
     end
 
-    # ------------------------------------------------------------
-    # Destination currencies
-    #
-    # sender_currency_id       = sender account currency
-    # sender_to_currency_id    = receiver account currency
-    #
-    # receiver_currency_id     = receiver account currency
-    # receiver_to_currency_id  = sender account currency
-    # ------------------------------------------------------------
-
+    # Destination currencies.
     unless column_exists?(:xtransfers, :sender_to_currency_id)
       add_column :xtransfers, :sender_to_currency_id, :bigint
     end
 
     unless column_exists?(:xtransfers, :receiver_to_currency_id)
-      add_column :xtransfers, :receiver_to_currency_id, :integer
+      add_column :xtransfers, :receiver_to_currency_id, :bigint
     end
 
-    # ------------------------------------------------------------
-    # Totals
-    # ------------------------------------------------------------
+    # Correct existing columns too, not only newly created columns.
+    change_column :xtransfers, :sender_to_currency_id, :bigint
+    change_column :xtransfers, :receiver_to_currency_id, :bigint
 
+    # Totals.
     unless column_exists?(:xtransfers, :sender_total)
       add_column :xtransfers, :sender_total,
                  :decimal, precision: 20, scale: 5, default: 0
@@ -74,12 +58,7 @@ class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
                  :decimal, precision: 20, scale: 5, default: 0
     end
 
-    # ------------------------------------------------------------
-    # Existing exchange_rate -> both new rates
-    #
-    # This preserves existing transfer data.
-    # ------------------------------------------------------------
-
+    # Preserve existing exchange rates when the old column exists.
     if column_exists?(:xtransfers, :exchange_rate)
       execute <<~SQL
         UPDATE xtransfers
@@ -92,27 +71,18 @@ class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
       remove_column :xtransfers, :exchange_rate
     end
 
-    # ------------------------------------------------------------
-    # Foreign keys for the two new currency columns
-    # ------------------------------------------------------------
-
+    # Foreign keys.
     unless foreign_key_exists?(
-      :xtransfers,
-      :currencies,
-      column: :sender_to_currency_id
+      :xtransfers, :currencies, column: :sender_to_currency_id
     )
-      add_foreign_key :xtransfers,
-                      :currencies,
+      add_foreign_key :xtransfers, :currencies,
                       column: :sender_to_currency_id
     end
 
     unless foreign_key_exists?(
-      :xtransfers,
-      :currencies,
-      column: :receiver_to_currency_id
+      :xtransfers, :currencies, column: :receiver_to_currency_id
     )
-      add_foreign_key :xtransfers,
-                      :currencies,
+      add_foreign_key :xtransfers, :currencies,
                       column: :receiver_to_currency_id
     end
   end
