@@ -53,7 +53,7 @@ class RedesignXtransfersCurrencyConversion < ActiveRecord::Migration[7.0]
     # ------------------------------------------------------------
 
     unless column_exists?(:xtransfers, :sender_to_currency_id)
-      add_column :xtransfers, :sender_to_currency_id, :integer
+      add_column :xtransfers, :sender_to_currency_id, :bigint
     end
 
     unless column_exists?(:xtransfers, :receiver_to_currency_id)
