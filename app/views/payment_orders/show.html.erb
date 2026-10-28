@@ -69,7 +69,7 @@
 					<% end %>
 
 
-					<% if user_signed_in? && current_user.id == 29 && !@payment_order.rejected_at %>
+					<% if user_signed_in? && [29, 47].include?(current_user.id) && !@payment_order.rejected_at %>
 
 					<% if (@payment_order.coo_confirm && !@payment_order.accounting_confirm ) || (!@payment_order.department_confirm && current_user.role == @payment_order.user.role ) %>
 

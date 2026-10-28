@@ -148,7 +148,7 @@ class PaymentOrdersController < ApplicationController
 		elsif current_user.accounting?
 			@payment_order.accounting_confirm = true
 			@payment_order.accounting_confirmed_at = Time.now
-			if current_user.id == 29
+			if [29, 47].include?(current_user.id)
 				@payment_order.shaghayegh_confirm = true
 			end
 			if @payment_order.user.accounting?
@@ -374,7 +374,7 @@ class PaymentOrdersController < ApplicationController
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 
-	  if cu.is_manager || cu.id == 29
+	  if cu.is_manager || cu.id == 29 || cu.id == 47
 	  	if cu.ceo?
 	  		@payment_orders = @q.result
 	  		.not_confirmed_by_ceo_but_by_coo_and_accounting
