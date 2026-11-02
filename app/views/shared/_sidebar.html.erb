@@ -1,0 +1,349 @@
+<aside class="menu-sidebar" id="main-sidebar">
+  <div class="logo">
+    <%= link_to root_path, class: "logo-link", data: { turbo: false } do %>
+    <span class="logo-mark">D</span>
+    <span class="logo-text">Desk</span>
+    <% end %>
+
+    <button
+    class="sidebar-close js-sidebar-toggle"
+    type="button"
+    aria-label="Close navigation"
+    data-action="click->cooladmin-sidebar#toggleSidebar">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>
+
+<div class="menu-sidebar__content">
+  <nav class="navbar-sidebar" aria-label="Main navigation">
+    <ul class="list-unstyled navbar__list">
+
+      <% if user_signed_in? %>
+
+      <% sales_controllers = %w[
+        projects pis cis customers banks swifts reports leads
+        letter_heads accounts
+        ] %>
+        <% sales_active = sales_controllers.include?(controller_name) %>
+
+        <% procurement_controllers = %w[ballances prices suppliers] %>
+        <% procurement_active = procurement_controllers.include?(controller_name) %>
+
+        <% accounting_controllers = %w[banks swifts payment_orders reports] %>
+        <% accounting_active = accounting_controllers.include?(controller_name) %>
+
+        <% hr_controllers = %w[
+          documents experiences kpi_lists assessments satisfaction_forms
+          stakeholder_survey_forms candidates managment_vacations salary_admin
+          ] %>
+          <% hr_active = hr_controllers.include?(controller_name) %>
+
+          <li class="nav-group-label">Workspace</li>
+
+          <li class="<%= 'active' if controller_name == 'home' %>">
+            <%= link_to root_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } do %>
+            <i class="fa-solid fa-gauge-high"></i>
+            Dashboard
+            <% end %>
+          </li>
+          <li class="<%= 'active' if controller_name == 'cardex' %>">
+            <%= link_to cardex_path,
+            data: { action: "click->cooladmin-sidebar#closeOnMobile" } do %>
+            <i class="fa-solid fa-layer-group"></i>
+            My Cardex
+            <% end %>
+          </li>
+
+          <li class="nav-group-label">Business</li>
+
+          <!-- Sales & Marketing -->
+          <li class="has-sub <%= 'active open' if sales_active %>">
+            <a
+            href="#"
+            class="js-arrow <%= 'open' if sales_active %>"
+            aria-expanded="<%= sales_active %>"
+            data-action="click->cooladmin-sidebar#toggleSubmenu">
+            <i class="fa-solid fa-chart-line"></i>
+            Sales & Marketing
+          </a>
+
+          <ul
+          class="list-unstyled navbar__sub-list js-sub-list"
+          style="<%= 'display: block;' if sales_active %>">
+
+          <% if current_user.sales? || current_user.logistics? %>
+          <li>
+            <%= link_to new_project_path,
+            data: {
+              controller: "bs-modal-form",
+              action: "click->cooladmin-sidebar#closeOnMobile"
+            } do %>
+            New Project
+            <% end %>
+          </li>
+
+          <li>
+            <%= link_to new_letter_head_path,
+            data: {
+              controller: "bs-modal-form",
+              action: "click->cooladmin-sidebar#closeOnMobile"
+            } do %>
+            Upload Letterhead
+            <% end %>
+          </li>
+
+          <li>
+            <%= link_to new_account_path,
+            data: {
+              controller: "bs-modal-form",
+              action: "click->cooladmin-sidebar#closeOnMobile"
+            } do %>
+            Create Account
+            <% end %>
+          </li>
+          <% end %>
+
+          <li><%= link_to "Projects", projects_path, class: ("active" if controller_name == "projects"), data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <li><%= link_to "PIs", pis_path, class: ("active" if controller_name == "pis"), data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <li><%= link_to "CIs", cis_path, class: ("active" if controller_name == "cis"), data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <li><%= link_to "Customers", customers_path, class: ("active" if controller_name == "customers"), data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+
+          <% if current_user.sales? || current_user.logistics? %>
+          <% if current_user.is_manager %>
+          <li><%= link_to "Banks", banks_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <% end %>
+          <li><%= link_to "Swifts", swifts_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <% end %>
+
+          <% if current_user.sales? || current_user.investment? %>
+          <li><%= link_to "Reports", reports_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <% end %>
+
+          <% if current_user.is_manager || current_user.is_marketing || current_user.sales? || current_user.admin? %>
+          <li><%= link_to "CRM", leads_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+          <li>
+            <%= link_to tasks_path,
+            data: { action: "click->cooladmin-sidebar#closeOnMobile" } do %>
+            <i class="fa-solid fa-list-check"></i>
+            Tasks & Follow-ups
+            <% end %>
+          </li>
+          <li>
+          <%= link_to pipeline_leads_path,
+            data: { action: "click->cooladmin-sidebar#closeOnMobile" } do %>
+          <i class="fa-solid fa-diagram-project"></i>
+              Sales Pipeline
+            <% end %>
+          </li>
+          <% end %>
+
+          <% if current_user.sales? && current_user.is_manager %>
+          <li>
+            <%= link_to "Sales Dashboard",
+            "http://37.221.21.214:8585/Reports/powerbi/sales?rs:Embed=true",
+            target: "_blank",
+            rel: "noopener noreferrer" %>
+          </li>
+          <% end %>
+        </ul>
+      </li>
+
+      <!-- Procurement -->
+      <li class="has-sub <%= 'active open' if procurement_active %>">
+        <a
+        href="#"
+        class="js-arrow <%= 'open' if procurement_active %>"
+        aria-expanded="<%= procurement_active %>"
+        data-action="click->cooladmin-sidebar#toggleSubmenu">
+        <i class="fa-solid fa-boxes-stacked"></i>
+        Procurement
+      </a>
+
+      <ul
+      class="list-unstyled navbar__sub-list js-sub-list"
+      style="<%= 'display: block;' if procurement_active %>">
+
+      <% if current_user.procurement? || current_user.logistics? %>
+      <li>
+        <%= link_to new_ballance_path,
+        data: {
+          controller: "bs-modal-form",
+          action: "click->cooladmin-sidebar#closeOnMobile"
+        } do %>
+        New Inventory
+        <% end %>
+      </li>
+      <% end %>
+
+      <li><%= link_to "Inventories", ballances_path, class: ("active" if controller_name == "ballances"), data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+      <li><%= link_to "Pricing", prices_path, class: ("active" if controller_name == "prices"), data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+
+      <% if current_user.procurement? || current_user.logistics? %>
+      <li><%= link_to "Suppliers", suppliers_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+      <li><%= link_to "Reports", reports_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+
+      <% if current_user.is_manager %>
+      <li>
+        <%= link_to "Procurement Dashboard",
+        "http://37.221.21.214:8585/Reports/powerbi/1.2.1?rs:Embed=true",
+        target: "_blank",
+        rel: "noopener noreferrer" %>
+      </li>
+      <% end %>
+      <% end %>
+    </ul>
+  </li>
+
+  <!-- Accounting -->
+  <li class="has-sub <%= 'active open' if accounting_active %>">
+    <a
+    href="#"
+    class="js-arrow <%= 'open' if accounting_active %>"
+    aria-expanded="<%= accounting_active %>"
+    data-action="click->cooladmin-sidebar#toggleSubmenu">
+    <i class="fa-solid fa-coins"></i>
+    Accounting
+  </a>
+
+  <ul
+  class="list-unstyled navbar__sub-list js-sub-list"
+  style="<%= 'display: block;' if accounting_active %>">
+
+  <% if current_user.ceo? || current_user.accounting? || current_user.cob? ||
+    (current_user.procurement? && current_user.is_manager) %>
+    <li><%= link_to "Banks", banks_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+    <li><%= link_to "Swifts", swifts_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+    <% end %>
+
+    <% if current_user.accounting? && current_user.is_manager %>
+    <li><%= link_to "Reports", reports_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+    <li>
+      <%= link_to "Dashboard",
+      "http://37.221.21.214:8585/Reports/powerbi/1.2.1?rs:Embed=true",
+      target: "_blank",
+      rel: "noopener noreferrer" %>
+    </li>
+    <% end %>
+
+    <li><%= link_to "Payment Orders", payment_orders_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+  </ul>
+</li>
+
+<!-- Management -->
+<% if current_user.ceo? || current_user.admin? || current_user.cob? || current_user.id == 18 %>
+<li class="has-sub <%= 'active open' if controller_name == 'reports' %>">
+  <a
+  href="#"
+  class="js-arrow <%= 'open' if controller_name == 'reports' %>"
+  aria-expanded="<%= controller_name == 'reports' %>"
+  data-action="click->cooladmin-sidebar#toggleSubmenu">
+  <i class="fa-solid fa-user-tie"></i>
+  Management
+</a>
+
+<ul
+class="list-unstyled navbar__sub-list js-sub-list"
+style="<%= 'display: block;' if controller_name == 'reports' %>">
+
+<li>
+  <%= link_to "Dashboard",
+  "http://37.221.21.214:8585/Reports/powerbi/1.2.1?rs:Embed=true",
+  target: "_blank",
+  rel: "noopener noreferrer" %>
+</li>
+
+<li><%= link_to "Reports", reports_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+</ul>
+</li>
+<% end %>
+
+<!-- HR -->
+<li class="has-sub <%= 'active open' if hr_active %>">
+  <a
+  href="#"
+  class="js-arrow <%= 'open' if hr_active %>"
+  aria-expanded="<%= hr_active %>"
+  data-action="click->cooladmin-sidebar#toggleSubmenu">
+  <i class="fa-solid fa-people-group"></i>
+  Human Resources
+
+  <% if current_user.is_manager %>
+  <span class="badge bg-danger ms-auto">
+    <%= count_not_confirmed_vacations %>
+  </span>
+  <% end %>
+</a>
+
+<ul
+class="list-unstyled navbar__sub-list js-sub-list"
+style="<%= 'display: block;' if hr_active %>">
+
+<li><%= link_to "Documents", documents_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<li><%= link_to "Experiences", experiences_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<li><%= link_to "KPIs", kpi_lists_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<li><%= link_to "Assessment Survey", assessments_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<li><%= link_to "Satisfaction Survey", satisfaction_forms_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+
+<% if [1, 8, 17, 18, 19, 20].include?(current_user.id) %>
+<li><%= link_to "Stakeholder Survey", stakeholder_survey_forms_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<% end %>
+
+<li><%= link_to "Candidates", candidates_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+
+<% if current_user.is_manager || current_user.id == 10 %>
+<li><%= link_to "Vacations", managment_vacations_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<% end %>
+
+<% if current_user.hr? %>
+<li><%= link_to "Reports", reports_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<% end %>
+
+<% if current_user.admin? || current_user.is_manager %>
+<li><%= link_to "Payroll Admin Panel", salary_admin_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } %></li>
+<% end %>
+</ul>
+</li>
+
+<li class="nav-group-label">Account</li>
+
+<li>
+  <%= link_to member_path(current_user), data: { action: "click->cooladmin-sidebar#closeOnMobile" } do %>
+  <i class="fa-solid fa-user"></i>
+  Profile
+  <% end %>
+</li>
+
+<li>
+  <%= link_to messages_path, data: { action: "click->cooladmin-sidebar#closeOnMobile" } do %>
+  <i class="fa-solid fa-envelope"></i>
+  Messages
+  <% end %>
+</li>
+
+<li>
+  <%= link_to destroy_user_session_path,
+  data: {
+    turbo_method: :delete,
+    turbo_confirm: "Are you sure you want to sign out?",
+    action: "click->cooladmin-sidebar#closeOnMobile"
+  } do %>
+  <i class="fa-solid fa-right-from-bracket"></i>
+  Sign out
+  <% end %>
+</li>
+
+<% else %>
+
+<li>
+  <%= link_to new_user_session_path do %>
+  <i class="fa-solid fa-right-to-bracket"></i>
+  Sign in
+  <% end %>
+</li>
+
+<% end %>
+
+</ul>
+</nav>
+</div>
+</aside>

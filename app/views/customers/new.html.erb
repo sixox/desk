@@ -1,0 +1,13 @@
+<div class="page-header">
+  <div>
+    <h1>New Customer</h1>
+    <p class="subtitle">Register a new customer.</p>
+  </div>
+</div>
+
+<section class="m-card">
+  <%= render "form",
+    customer: @customer,
+    in_modal: false,
+    cancel_path: customers_path %>
+</section>

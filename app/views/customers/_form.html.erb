@@ -1,72 +1,84 @@
-<%= form_with model: @customer do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @customer.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@customer.errors.count, 'error') %> prohibited your customer from being saved.</h3>
-			<ul>
-				<% @customer.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h3>Customer</h3>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<% if @customer %>
-					<h3 class="secondary"><%= @customer.id %></h3>
-					<% end %>
-				</div>
-			</div>
-		</div>
 
-		<div class="col-lg-12">
+<%
+  in_modal = local_assigns.fetch(:in_modal, true)
+  cancel_path = local_assigns[:cancel_path] || customers_path
+  form_css_class = in_modal ? "erp-modal__form" : "erp-form"
+%>
 
+<%= form_with(
+  model: customer,
+  html: {
+    class: form_css_class
+  }
+) do |f| %>
 
-			<div class="form-group">
-				<label class="mb-2 mt-3">
-					Full Name
-					<span class="text-danger">*</span>
-				</label>
-				<%= form.text_field :name, class: 'form-control' %>
-			</div>
-			<div class="form-group mb-2 mt-3">
-				<label class="mb-2 mt-3">
-					Nick Name
-					<span class="text-danger">*</span>
-				</label>
-				<%= form.text_field :nickname, class: 'form-control' %>
-			</div>
-						<div class="form-group mb-2 mt-3">
-				<label class="mb-2 mt-3">
-					Company
-					<span class="text-danger">*</span>
-				</label>
-				<%= form.text_field :company, class: 'form-control' %>
-			</div>
+  <div class="<%= in_modal ? 'modal-body' : 'card-body' %> erp-form__body">
 
+    <%= render "shared/forms/errors", object: customer %>
 
+    <section class="erp-form__section">
 
+      <%= render "shared/forms/section_heading",
+        icon: "fa-address-card",
+        title: "Customer Identity",
+        description: "Enter the customer's official and business information." %>
 
+      <div class="row g-3">
 
+        <div class="col-12">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :name,
+            label: "Full name",
+            required: true,
+            hint: "Official or registered customer name.",
+            input_options: {
+              placeholder: "Enter full name",
+              autocomplete: "name",
+              autofocus: true
+            } %>
+        </div>
 
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :nickname,
+            label: "Nickname",
+            required: true,
+            hint: "Short name used throughout Desk.",
+            input_options: {
+              placeholder: "e.g. ABC Trading"
+            } %>
+        </div>
 
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :company,
+            label: "Company",
+            required: true,
+            hint: "Customer's company or organization.",
+            input_options: {
+              placeholder: "Enter company name"
+            } %>
+        </div>
 
+      </div>
 
+    </section>
 
-		</div>
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Add Customer', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+    <% if customer.persisted? %>
+      <div class="small text-body-secondary">
+        <i class="fa-solid fa-calendar-plus me-1"></i>
+        Registered on <%= l(customer.created_at.to_date, format: :long) %>
+      </div>
+    <% end %>
+
+  </div>
+
+  <%= render "shared/forms/actions",
+    in_modal: in_modal,
+    cancel_path: cancel_path,
+    submit_label: customer.persisted? ? "Save changes" : "Create customer" %>
+
 <% end %>

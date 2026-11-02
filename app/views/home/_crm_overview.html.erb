@@ -1,0 +1,85 @@
+
+<section class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-bullseye me-2"></i>
+        Sales & CRM
+      </h2>
+      <p class="m-card__subtitle">
+        Pipeline and follow-up overview
+      </p>
+    </div>
+
+    <%= link_to "Open CRM",
+      leads_path,
+      class: "m-btn m-btn--ghost" %>
+  </div>
+
+  <div class="row row-tight">
+
+    <% [
+      {
+        label: "Active Leads",
+        value: @crm_dashboard[:active_leads],
+        icon: "fa-users",
+        color: "c1",
+        path: leads_path
+      },
+      {
+        label: "Offers / Negotiations",
+        value: @crm_dashboard[:offers_in_progress],
+        icon: "fa-file-invoice-dollar",
+        color: "c2",
+        path: pipeline_leads_path
+      },
+      {
+        label: "My Overdue Tasks",
+        value: @crm_dashboard[:my_overdue_tasks],
+        icon: "fa-triangle-exclamation",
+        color: "c3",
+        path: tasks_path
+      },
+      {
+        label: "My Tasks Today",
+        value: @crm_dashboard[:my_tasks_today],
+        icon: "fa-calendar-check",
+        color: "c4",
+        path: tasks_path
+      }
+    ].each do |item| %>
+
+      <div class="col-6 col-xl-3">
+
+        <%= link_to item[:path], class: "text-decoration-none text-reset" do %>
+
+          <article class="stat-card h-100">
+
+            <div class="stat-card__head">
+              <p class="stat-card__label"><%= item[:label] %></p>
+
+              <span class="stat-card__icon stat-card__icon--<%= item[:color] %>">
+                <i class="fa-solid <%= item[:icon] %>"></i>
+              </span>
+            </div>
+
+            <p class="stat-card__value">
+              <%= number_with_delimiter(item[:value]) %>
+            </p>
+
+            <p class="stat-card__delta">
+              View details <i class="fa-solid fa-arrow-right ms-1"></i>
+            </p>
+
+          </article>
+
+        <% end %>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</section>

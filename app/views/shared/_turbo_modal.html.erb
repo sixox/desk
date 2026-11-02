@@ -1,14 +1,62 @@
-<%= turbo_frame_tag :remote_modal, target: :_top do%>
 
-<div class="modal fade" id="bsTurboModal" tabindex="-1" aria-labelledby="bsTurboModalLabel" aria-hidden="true" data-controller="bs-modal">
-	<div class="modal-dialog model-xl">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="bsTurboModalLabel"><%= modal_title %></h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<%= render form_partial %>
-		</div>
-	</div>
-</div>
+<%
+  modal_subtitle = local_assigns[:modal_subtitle]
+  modal_icon = local_assigns.fetch(:modal_icon, "fa-pen-to-square")
+  modal_size = local_assigns.fetch(:modal_size, "modal-xl")
+  form_locals = local_assigns.fetch(:form_locals, {})
+%>
+
+<%= turbo_frame_tag :remote_modal, target: :_top do %>
+
+  <div
+    class="modal fade erp-modal"
+    id="bsTurboModal"
+    tabindex="-1"
+    aria-labelledby="bsTurboModalLabel"
+    aria-hidden="true"
+    data-controller="bs-modal">
+
+    <div class="modal-dialog modal-dialog-centered <%= modal_size %>">
+
+      <div class="modal-content">
+
+        <div class="modal-header">
+
+          <div class="erp-modal__heading">
+
+            <div class="erp-modal__icon">
+              <i class="fa-solid <%= modal_icon %>"></i>
+            </div>
+
+            <div>
+              <h1 class="modal-title erp-modal__title" id="bsTurboModalLabel">
+                <%= modal_title %>
+              </h1>
+
+              <% if modal_subtitle.present? %>
+                <p class="erp-modal__subtitle">
+                  <%= modal_subtitle %>
+                </p>
+              <% end %>
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close">
+          </button>
+
+        </div>
+
+        <%= render form_partial, **form_locals %>
+
+      </div>
+
+    </div>
+
+  </div>
+
 <% end %>

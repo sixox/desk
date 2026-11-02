@@ -1,99 +1,231 @@
-<!-- app/views/tasks/index.html.erb -->
-<div class="col-lg-10 mx-auto mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Tasks</h4>
-    <%= link_to "Leads", leads_path, class: "btn btn-sm btn-outline-secondary" %>
+
+<div class="page-header">
+  <div>
+    <h1>Task Center</h1>
+    <p class="subtitle">Follow-ups and outstanding work across the CRM.</p>
   </div>
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <%= form_with url: tasks_path, method: :get, local: true do %>
-        <div class="row g-2 align-items-end">
-          <div class="col-md-6">
-            <label class="form-label mb-1">Assignee</label>
-            <select name="assignee_id" class="form-select form-select-sm">
-              <% @users.each do |u| %>
-                <option value="<%= u.id %>" <%= "selected" if u.id.to_s == @assignee_id.to_s %>><%= u.name %></option>
-              <% end %>
-            </select>
+  <%= link_to leads_path, class: "btn btn-light border" do %>
+    <i class="fa-solid fa-users me-1"></i> Leads
+  <% end %>
+</div>
+
+<!-- ASSIGNEE FILTER -->
+<section class="m-card mb-3">
+  <%= form_with url: tasks_path, method: :get, local: true do %>
+
+    <div class="row g-2 align-items-end">
+
+      <div class="col-12 col-md-5">
+        <%= label_tag :assignee_id, "Assigned employee", class: "form-label small" %>
+
+        <%= select_tag :assignee_id,
+          options_from_collection_for_select(
+            @users,
+            :id,
+            :name,
+            @assignee_id
+          ),
+          class: "form-select" %>
+      </div>
+
+      <div class="col-auto">
+        <%= button_tag type: "submit", class: "btn btn-primary" do %>
+          <i class="fa-solid fa-filter me-1"></i> Apply
+        <% end %>
+      </div>
+
+      <div class="col-auto">
+        <%= link_to "My Tasks",
+          tasks_path(assignee_id: current_user.id),
+          class: "btn btn-light border" %>
+      </div>
+
+    </div>
+
+  <% end %>
+</section>
+
+<!-- TASK COUNTERS -->
+<div class="row row-tight mb-3">
+
+  <% [
+    ["Overdue", @counts[:overdue], "danger", "fa-triangle-exclamation"],
+    ["Due today", @counts[:today], "warning", "fa-calendar-day"],
+    ["Upcoming", @counts[:upcoming], "success", "fa-calendar-check"],
+    ["No due date", @counts[:nodate], "secondary", "fa-calendar-minus"]
+  ].each do |label, count, color, icon| %>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card h-100">
+
+        <div class="stat-card__head">
+          <p class="stat-card__label"><%= label %></p>
+
+          <span class="stat-card__icon stat-card__icon--c1">
+            <i class="fa-solid <%= icon %>"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= count %>
+        </p>
+
+        <p class="stat-card__delta">
+          <%= count == 1 ? "1 open task" : "#{count} open tasks" %>
+        </p>
+
+      </article>
+    </div>
+
+  <% end %>
+
+</div>
+
+<!-- TASK QUEUES -->
+<%
+  task_sections = [
+    {
+      title: "Overdue",
+      description: "Past their due date",
+      key: :overdue,
+      tasks: @overdue,
+      color: "danger",
+      icon: "fa-triangle-exclamation"
+    },
+    {
+      title: "Due Today",
+      description: "Requires attention today",
+      key: :today,
+      tasks: @today,
+      color: "warning",
+      icon: "fa-calendar-day"
+    },
+    {
+      title: "Upcoming",
+      description: "Scheduled for the future",
+      key: :upcoming,
+      tasks: @upcoming,
+      color: "success",
+      icon: "fa-calendar-check"
+    },
+    {
+      title: "No Due Date",
+      description: "Open tasks without a schedule",
+      key: :nodate,
+      tasks: @nodate,
+      color: "secondary",
+      icon: "fa-calendar-minus"
+    }
+  ]
+%>
+
+<div class="row row-tight">
+
+  <% task_sections.each do |section| %>
+
+    <div class="col-12 col-md-6 col-xl-3">
+
+      <section class="m-card mb-3 h-100">
+
+        <header class="m-card__header">
+          <div>
+            <h2 class="m-card__title">
+              <i class="fa-solid <%= section[:icon] %> me-1 text-<%= section[:color] %>"></i>
+              <%= section[:title] %>
+            </h2>
+
+            <p class="m-card__subtitle">
+              <%= section[:description] %>
+            </p>
           </div>
-          <div class="col-md-6 text-end">
-            <button class="btn btn-sm btn-primary">Apply</button>
-            <%= link_to "Mine", tasks_path(assignee_id: current_user.id), class: "btn btn-sm btn-outline-secondary" %>
+
+          <span class="badge bg-<%= section[:color] %>-subtle text-<%= section[:color] %>">
+            <%= @counts[section[:key]] %>
+          </span>
+        </header>
+
+        <% if section[:tasks].any? %>
+
+          <div class="d-flex flex-column gap-2">
+
+            <% section[:tasks].each do |task| %>
+
+              <article class="border rounded-3 p-3">
+
+                <div class="fw-semibold mb-2">
+                  <%= link_to task.title,
+                    lead_path(task.lead),
+                    class: "text-decoration-none text-body" %>
+                </div>
+
+                <div class="small mb-2">
+                  <i class="fa-solid fa-user-tie text-body-secondary me-1"></i>
+                  <%= task.lead.name %>
+                </div>
+
+                <% if task.lead.company.present? %>
+                  <div class="small text-body-secondary mb-2">
+                    <i class="fa-solid fa-building me-1"></i>
+                    <%= task.lead.company %>
+                  </div>
+                <% end %>
+
+                <div class="d-flex flex-wrap gap-2 mb-2">
+
+                  <% if task.due_on.present? %>
+                    <span class="badge <%= task.due_badge_class %>">
+                      <i class="fa-regular fa-calendar me-1"></i>
+                      <%= l(task.due_on) %>
+                    </span>
+                  <% else %>
+                    <span class="badge bg-secondary-subtle text-secondary">
+                      No date
+                    </span>
+                  <% end %>
+
+                  <% if task.assigned_to.present? %>
+                    <span class="badge bg-light text-body border">
+                      <%= task.assigned_to.name %>
+                    </span>
+                  <% end %>
+
+                </div>
+
+                <% if task.notes.present? %>
+                  <p class="small text-body-secondary mb-2">
+                    <%= truncate(task.notes, length: 90) %>
+                  </p>
+                <% end %>
+
+                <div class="text-end">
+                  <%= link_to lead_path(task.lead),
+                    class: "btn btn-sm btn-light border" do %>
+                    Open lead <i class="fa-solid fa-arrow-right ms-1"></i>
+                  <% end %>
+                </div>
+
+              </article>
+
+            <% end %>
+
           </div>
-        </div>
-      <% end %>
-    </div>
-  </div>
 
-  <div class="row g-3">
-    <div class="col-md-3">
-      <div class="card h-100 border-danger">
-        <div class="card-header bg-danger text-white">Overdue (<%= @counts[:overdue] %>)</div>
-        <div class="list-group list-group-flush">
-          <% @overdue.each do |t| %>
-            <%= link_to lead_path(t.lead), class: "list-group-item list-group-item-action" do %>
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="fw-semibold"><%= t.title %></div>
-                <span class="badge bg-danger"><%= l(t.due_on) %></span>
-              </div>
-              <div class="small text-muted">Lead: <%= t.lead.name %></div>
-            <% end %>
-          <% end %>
-          <% if @overdue.empty? %><div class="list-group-item text-muted small">No items</div><% end %>
-        </div>
-      </div>
+        <% else %>
+
+          <div class="text-center py-4">
+            <i class="fa-solid fa-check-circle text-body-secondary fs-4"></i>
+            <p class="small text-body-secondary mb-0 mt-2">
+              Nothing here.
+            </p>
+          </div>
+
+        <% end %>
+
+      </section>
+
     </div>
 
-    <div class="col-md-3">
-      <div class="card h-100 border-primary">
-        <div class="card-header bg-primary text-white">Today (<%= @counts[:today] %>)</div>
-        <div class="list-group list-group-flush">
-          <% @today.each do |t| %>
-            <%= link_to lead_path(t.lead), class: "list-group-item list-group-item-action" do %>
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="fw-semibold"><%= t.title %></div>
-                <span class="badge bg-primary"><%= l(t.due_on) %></span>
-              </div>
-              <div class="small text-muted">Lead: <%= t.lead.name %></div>
-            <% end %>
-          <% end %>
-          <% if @today.empty? %><div class="list-group-item text-muted small">No items</div><% end %>
-        </div>
-      </div>
-    </div>
+  <% end %>
 
-    <div class="col-md-3">
-      <div class="card h-100 border-success">
-        <div class="card-header bg-success text-white">Upcoming (<%= @counts[:upcoming] %>)</div>
-        <div class="list-group list-group-flush">
-          <% @upcoming.each do |t| %>
-            <%= link_to lead_path(t.lead), class: "list-group-item list-group-item-action" do %>
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="fw-semibold"><%= t.title %></div>
-                <span class="badge bg-success"><%= l(t.due_on) %></span>
-              </div>
-              <div class="small text-muted">Lead: <%= t.lead.name %></div>
-            <% end %>
-          <% end %>
-          <% if @upcoming.empty? %><div class="list-group-item text-muted small">No items</div><% end %>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card h-100 border-secondary">
-        <div class="card-header bg-secondary text-white">No date (<%= @counts[:nodate] %>)</div>
-        <div class="list-group list-group-flush">
-          <% @nodate.each do |t| %>
-            <%= link_to lead_path(t.lead), class: "list-group-item list-group-item-action" do %>
-              <div class="fw-semibold"><%= t.title %></div>
-              <div class="small text-muted">Lead: <%= t.lead.name %></div>
-            <% end %>
-          <% end %>
-          <% if @nodate.empty? %><div class="list-group-item text-muted small">No items</div><% end %>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

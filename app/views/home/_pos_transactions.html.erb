@@ -1,76 +1,140 @@
-<div class="row mt-1">
-	<div class="col-12 col-lg-6">
-		
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">latest Payment Orders</small> 
-			</div>
-			<table class="table table-success table-striped table-hover table-sm">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col"><small>Amount</small></th>
-						<th scope="col"><small>Details</small></th>
-					</tr>
-				</thead>
-				<tbody>
-					<% @latest_payment_orders.each do |payment_order| %>
-					<tr>
-						<th scope="row"><small><%= link_to "#{payment_order.id}", payment_order_path(payment_order), class: 'link-nodecor-po' %></small></th>
-						<td><span class="fw-bold"><%= number_with_delimiter(payment_order.amount, delimiter: ',') %></span>
-							<small class="timeline-small"><%= payment_order.currency %></small>
-						</td>
-						<td><small title="<%= payment_order.details %>"><%= truncate(payment_order.details, length: 40) %></small></td>
-					</tr>
-					<% end %>
-					
-					
-				</tbody>
 
-			</table>
-		</div>
+<div class="row row-tight">
 
+  <!-- PAYMENT ORDERS -->
+  <div class="col-12 col-xl-6">
 
-	</div>
-	<div class="col-12 col-lg-6">
-		
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">latest Transactions</small> 
-			</div>
-			<table class="table table-warning table-striped table-hover table-sm">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col"><small>Bank</small></th>
-						
-						<th scope="col"><small>Type</small></th>
-						<th scope="col"><small>Amount</small></th>
-						<th scope="col"><small>Date</small></th>
-					</tr>
-				</thead>
-				<tbody>
-					<% @transactions.each do |transaction| %>
-					<tr>
-						<th scope="row"><small><%= transaction.id %></small></th>
-						<td><small><%= transaction.bank.name %></small> </td>
-						
-						<td><small><% if transaction.transactionable_type == "PaymentOrder" %>
-							<%= link_to "P.O #{transaction.transactionable_id}", payment_order_path(transaction.transactionable_id), class: 'link-nodecor-po' %>
-							<% else %>
-							<%= transaction.transactionable_type %> <%= transaction.transactionable_id %>
-							<% end %></small> </td>
-							<td><small class="fw-bold <%= transaction.deposit_amount.present? ? 'text-success' : 'text-danger' %>">
-								<%= transaction.deposit_amount.present? ? number_with_delimiter(transaction.deposit_amount, delimiter: ',') : number_with_delimiter(transaction.withdrawal_amount, delimiter: ',') %>
-							</small> </td>
-							<td> <small> <%= (transaction.created_at + 3.5.hours).strftime("%Y-%m-%d %H:%M") %></small></td>
-						</tr>
-						<% end %>	
-					</tbody>
+    <section class="m-card mb-3 h-100">
 
-				</table>
-			</div>
+      <header class="m-card__header">
+        <div>
+          <h2 class="m-card__title">Latest Payment Orders</h2>
+          <p class="m-card__subtitle">Recent payment activity</p>
+        </div>
 
+        <%= link_to "View all", payment_orders_path, class: "m-btn m-btn--ghost" %>
+      </header>
 
-		</div>
-	</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+
+          <thead>
+            <tr>
+              <th>PO</th>
+              <th>Amount</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% @latest_payment_orders.first(6).each do |payment_order| %>
+              <tr>
+                <td>
+                  <%= link_to payment_order.id, payment_order_path(payment_order) %>
+                </td>
+
+                <td class="fw-semibold text-nowrap">
+                  <%= number_with_delimiter(payment_order.amount, delimiter: ",") %>
+                  <small class="text-body-secondary">
+                    <%= payment_order.currency %>
+                  </small>
+                </td>
+
+                <td class="text-body-secondary small">
+                  <span title="<%= payment_order.details %>">
+                    <%= truncate(payment_order.details, length: 35) %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+
+            <% if @latest_payment_orders.empty? %>
+              <tr>
+                <td colspan="3" class="text-center text-body-secondary py-3">
+                  No payment orders.
+                </td>
+              </tr>
+            <% end %>
+
+          </tbody>
+
+        </table>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- TRANSACTIONS -->
+  <div class="col-12 col-xl-6">
+
+    <section class="m-card mb-3 h-100">
+
+      <header class="m-card__header">
+        <div>
+          <h2 class="m-card__title">Latest Transactions</h2>
+          <p class="m-card__subtitle">Recent bank transactions</p>
+        </div>
+      </header>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+
+          <thead>
+            <tr>
+              <th>Bank</th>
+              <th>Reference</th>
+              <th>Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% @transactions.first(6).each do |transaction| %>
+              <tr>
+                <td class="small">
+                  <%= transaction.bank&.name || "—" %>
+                </td>
+
+                <td class="small">
+                  <% if transaction.transactionable_type == "PaymentOrder" %>
+                    <%= link_to "PO ##{transaction.transactionable_id}",
+                      payment_order_path(transaction.transactionable_id) %>
+                  <% else %>
+                    <%= transaction.transactionable_type %>
+                    #<%= transaction.transactionable_id %>
+                  <% end %>
+                </td>
+
+                <td class="fw-semibold text-nowrap <%= transaction.deposit_amount.present? ? 'text-success' : 'text-danger' %>">
+                  <%= transaction.deposit_amount.present? ? "+" : "−" %>
+                  <%= number_with_delimiter(
+                    transaction.deposit_amount.presence || transaction.withdrawal_amount,
+                    delimiter: ","
+                  ) %>
+                </td>
+
+                <td class="text-body-secondary small text-nowrap">
+                  <%= (transaction.created_at + 3.5.hours).strftime("%d %b %H:%M") %>
+                </td>
+              </tr>
+            <% end %>
+
+            <% if @transactions.empty? %>
+              <tr>
+                <td colspan="4" class="text-center text-body-secondary py-3">
+                  No transactions.
+                </td>
+              </tr>
+            <% end %>
+
+          </tbody>
+
+        </table>
+      </div>
+
+    </section>
+
+  </div>
+
+</div>

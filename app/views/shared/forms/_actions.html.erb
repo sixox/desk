@@ -1,0 +1,44 @@
+
+<%
+  in_modal = local_assigns.fetch(:in_modal, true)
+  submit_label = local_assigns.fetch(:submit_label, "Save")
+  cancel_path = local_assigns[:cancel_path]
+%>
+
+<div class="<%= in_modal ? 'modal-footer' : 'card-footer' %> erp-form__actions">
+
+  <span class="erp-form__actions-note">
+    <i class="fa-solid fa-circle-info me-1"></i>
+    Fields marked with * are required.
+  </span>
+
+  <div class="erp-form__actions-buttons">
+
+    <% if in_modal %>
+
+      <button
+        type="button"
+        class="btn btn-light border"
+        data-bs-dismiss="modal">
+        Cancel
+      </button>
+
+    <% else %>
+
+      <%= link_to "Cancel",
+        cancel_path || root_path,
+        class: "btn btn-light border" %>
+
+    <% end %>
+
+    <%= button_tag type: "submit",
+      class: "btn btn-primary" do %>
+
+      <i class="fa-solid fa-check me-1"></i>
+      <%= submit_label %>
+
+    <% end %>
+
+  </div>
+
+</div>

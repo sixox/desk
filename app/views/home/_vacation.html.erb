@@ -1,31 +1,80 @@
-<div class="card" style="background-color: floralwhite !important; border-color: papayawhip !important;">
-	<div class="card-body pb-0 pt-0">
-		<div class="row ">
-			<div class="col-2">
-				<small class="timeline-small fw-bold">Vacations</small>
-			</div>
-			<div class="col-5 timeline-small"><small><%= Time.now.strftime("%A") %>:</small>
-				<% if @current_vacations.any? %>
-				<% @current_vacations.each do |vacation| %>
-				<small class="text-warning"> <%= vacation.user.first_name.titleize %><%= vacation.hourly ? " (H)" : "" %> </small>
-				<small class="text-primary"> | </small>
-				<% end %>
-				<% else %>
-				<small class="text-primary">None</small>
-				<% end %>
-			</div>
-			<div class="col-5 timeline-small"><small><%= (Time.now + 1.day).strftime("%A") %>:</small>
-				<% if @vacations_for_tomorrow.any? %>
-				<% @vacations_for_tomorrow.each do |vacation| %>
-				<small class="text-warning"> <%= vacation.user.first_name.titleize %><%= vacation.hourly ? " (H)" : "" %> </small>
-				<small class="text-primary"> | </small>
-				<% end %>
-				<% else %>
-				<small class="text-primary">None</small>
-				<% end %>
-			</div>
-			
 
-		</div>
-	</div>
-</div>
+<%
+  vacation_days = [
+    {
+      label: "Today",
+      date: Date.current,
+      vacations: Array(@current_vacations)
+    },
+    {
+      label: "Tomorrow",
+      date: Date.tomorrow,
+      vacations: Array(@vacations_for_tomorrow)
+    }
+  ].select { |day| day[:vacations].any? }
+%>
+
+<% if vacation_days.any? %>
+  <section class="m-card mb-3">
+
+    <header class="m-card__header">
+      <div>
+        <h2 class="m-card__title">
+          <i class="fa-solid fa-user-clock me-2"></i>
+          Out of Office
+        </h2>
+        <p class="m-card__subtitle">
+          Employees currently or soon to be away
+        </p>
+      </div>
+
+      <span class="badge bg-warning-subtle text-warning-emphasis">
+        <%= vacation_days.sum { |day| day[:vacations].size } %> absences
+      </span>
+    </header>
+
+    <div class="d-flex flex-column gap-3">
+
+      <% vacation_days.each do |day| %>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+
+          <div class="me-2">
+            <div class="fw-semibold small">
+              <%= day[:label] %>
+            </div>
+            <div class="text-body-secondary small">
+              <%= day[:date].strftime("%d %b") %>
+            </div>
+          </div>
+
+          <% day[:vacations].each do |vacation| %>
+            <% name = vacation.user&.first_name&.titleize.presence || "Employee" %>
+
+            <div class="d-inline-flex align-items-center gap-2 border rounded-pill px-2 py-1">
+
+              <span
+                class="rounded-circle bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center justify-content-center fw-semibold"
+                style="width: 27px; height: 27px;">
+                <%= name.first.upcase %>
+              </span>
+
+              <span class="small fw-medium">
+                <%= name %>
+              </span>
+
+              <% if vacation.hourly %>
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  Hourly
+                </span>
+              <% end %>
+
+            </div>
+          <% end %>
+
+        </div>
+      <% end %>
+
+    </div>
+
+  </section>
+<% end %>

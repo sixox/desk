@@ -1,48 +1,99 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>Desk</title>
-  <%= favicon_link_tag 'favicon.png' %>
 
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= favicon_link_tag "favicon.png" %>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag(
+    "application",
+    "css/font-face",
+    "vendor/fontawesome-7.3.1/css/all.min",
+    "vendor/css-hamburgers/hamburgers.min",
+    "css/theme",
+    "css/app",
+    { "data-turbo-track" => "reload" }
+  ) %>
+
+
+  <%# COMMENT FOLLOWING FONT IN BLACKOUT %> 
+    <%# ----------> %>
+  <link rel="preconnect" href="https://rsms.me">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+  <%# <--------------- %>
 
   <%= javascript_importmap_tags %>
-
 </head>
 
-<body class="<%= controller_name %>-controller <%= action_name %>-action">
-  <% unless controller_name == 'rial_receipts' && action_name == 'show' %>
+<body
+  class="app <%= controller_name %>-controller <%= action_name %>-action"
+  data-controller="cooladmin-sidebar"
+  data-action="keydown.esc@window->cooladmin-sidebar#closeSidebar">
 
-  <div class="<%= 'container' unless controller_name == 'projects' && action_name == 'list' %>">
+  <% if controller_name == "rial_receipts" && action_name == "show" %>
 
-    <div class="row">
-      <div class="col-lg-10 mx-auto">
-
-        <% flash.each do |type, message| %>
-        <div class="alert <%= bootstrap_class_for_flash(type) %> alert-dismissible fade show" role="alert">
-          <%= message %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <% end %>
-        <div id="notices"></div>
-
-
-
-        <%= render 'shared/header' %>
-      </div>
-    </div>
     <%= yield %>
-    <%= turbo_frame_tag 'remote_modal' %>
-    <div class="col-lg-10 mx-auto">
-      <%= render 'shared/footer' %>
-    </div>
-  </div>
+
   <% else %>
-  <%= yield %>
+
+    <div class="page-wrapper">
+
+      <%= render "shared/sidebar" %>
+
+      <div class="page-container">
+
+        <%= render "shared/topbar" %>
+
+        <main class="main-content" id="main-content">
+          <div class="section__content section__content--p30">
+            <div class="container-fluid">
+
+              <% flash.each do |type, message| %>
+                <div
+                  class="alert <%= bootstrap_class_for_flash(type) %> alert-dismissible fade show"
+                  role="alert">
+
+                  <%= message %>
+
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+                  </button>
+                </div>
+              <% end %>
+
+              <div id="notices"></div>
+
+              <%= yield %>
+
+            </div>
+          </div>
+        </main>
+
+        <%= turbo_frame_tag "remote_modal" %>
+
+        <%= render "shared/footer" %>
+
+      </div>
+
+      <div
+        class="sidebar-backdrop"
+        aria-hidden="true"
+        data-action="click->cooladmin-sidebar#closeSidebar">
+      </div>
+
+    </div>
+
   <% end %>
 
 </body>

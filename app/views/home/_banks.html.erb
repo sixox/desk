@@ -1,72 +1,69 @@
-<div class="row">
-	<div class="col-12 col-lg-6">
 
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">Banks</small> 
-			</div>
-			<table class="table table-secondary table-striped table-hover table-sm">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Name</th>
-						<th scope="col">Balance</th>
-						<th scope="col">Expected</th>
-						<th scope="col">Currency</th>
-					</tr>
-				</thead>
-				<tbody>
-					<% @banks[0...(@banks.size / 2)].each do |bank| %>
-					<tr>
-						<th scope="row"><small><%= link_to "#{bank.id}", bank_path(bank), class: 'link-nodecor-po' %></small></th>
-						<td><small><%= bank.name %></small></td>
-						<td><small class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></small></td>
-						<td><small><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></small></td>
-						<td><small><%= bank.currency %></small></td>
-					</tr>
-					<% end %>
-					
+<section class="m-card mb-3">
 
-				</tbody>
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">Bank Accounts</h2>
+      <p class="m-card__subtitle">
+        Current and expected balances
+      </p>
+    </div>
 
-			</table>
-		</div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-primary-subtle text-primary">
+        <%= @banks.size %> accounts
+      </span>
 
+      <%= link_to "View all", banks_path, class: "m-btn m-btn--ghost" %>
+    </div>
+  </header>
 
-	</div>
-	<div class="col-12 col-lg-6">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
 
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">&nbsp;</small> 
-			</div>
-			<table class="table table-secondary table-striped table-hover table-sm">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Name</th>
-						<th scope="col">Balance</th>
-						<th scope="col">Expected</th>
-						<th scope="col">Currency</th>
-					</tr>
-				</thead>
-				<tbody>
-					<% @banks[(@banks.size / 2)..-1].each do |bank| %>
-					<tr>
-						<th scope="row"><small><%= link_to "#{bank.id}", bank_path(bank), class: 'link-nodecor-po' %></small></th>
-						<td><small><%= bank.name %></small></td>
-						<td><small class="fw-bold"><%= number_with_delimiter(bank.account_balance, delimiter: ',')%></small></td>
-						<td><small><%= number_with_delimiter(bank.total_expected_balance, delimiter: ',') %></small></td>
-						<td><small><%= bank.currency %></small></td>
-					</tr>
-					<% end %>
-					
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th class="text-end">Current Balance</th>
+          <th class="text-end">Expected Balance</th>
+          <th>Currency</th>
+        </tr>
+      </thead>
 
-				</tbody>
+      <tbody>
+        <% @banks.each do |bank| %>
+          <tr>
+            <td>
+              <%= link_to bank.name, bank_path(bank), class: "fw-medium" %>
+            </td>
 
-			</table>
-		</div>
+            <td class="text-end fw-semibold text-nowrap">
+              <%= number_with_delimiter(bank.account_balance, delimiter: ",") %>
+            </td>
 
+            <td class="text-end text-body-secondary text-nowrap">
+              <%= number_with_delimiter(bank.total_expected_balance, delimiter: ",") %>
+            </td>
 
-	</div>
-</div>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary">
+                <%= bank.currency %>
+              </span>
+            </td>
+          </tr>
+        <% end %>
+
+        <% if @banks.empty? %>
+          <tr>
+            <td colspan="4" class="text-center text-body-secondary py-3">
+              No bank accounts.
+            </td>
+          </tr>
+        <% end %>
+
+      </tbody>
+
+    </table>
+  </div>
+
+</section>

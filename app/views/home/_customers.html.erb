@@ -1,76 +1,638 @@
-<div class="row">
-	<div class="col-12 col-lg-6">
 
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">Accounts Receivable 
-					<span class="bi bi-info-circle-fill" style="font-size: 1rem;" title="Debt = Total issued invoices - total balance swifts/ pending = Total issued and sent invoices - total balance swifts / click on customer names to view each customer in details"></span>
-				</small> 
-			</div>
-			<table class="table table-primary table-striped table-hover table-sm">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Name</th>
-						<th scope="col">Debt</th>
-						<th scope="col">Pending payment</th>
-						
-					</tr>
-				</thead>
-				<tbody>
-					<% @customers[0...(@customers.size / 2)].each do |customer| %>
-					<% send_debt = customer.total_pending_dirham_sent %>
-					<tr>
-						<th scope="row"><small><%= link_to "#{customer.id}", customer_path(customer), class: 'link-nodecor-po' %></small></th>
-						<td><small><%= link_to "#{customer.nickname}", customer_path(customer), class: 'link-nodecor-po'  %></small></td>
-						<td><small class="fw-bold"><%= number_with_delimiter(customer.total_pending_dirham.to_i, delimiter: ',')%></small></td>
-						<td><small class=" fw-bold <%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt.to_i, delimiter: ',') %><span style="font-size: 8px; color: #614747;"> Dirham</span></small></td>
-						
-					</tr>
-					<% end %>
-					
+<%
+  portfolio = @customer_portfolio
+  totals = portfolio.summary
+  flow = portfolio.monthly_money_flow
 
-				</tbody>
+  currency_labels = {
+    "dollar" => "USD",
+    "dirham" => "AED",
+    "rial" => "IRR",
+    "euro" => "EUR"
+  }
 
-			</table>
-		</div>
+  currency_colors = {
+    "dollar" => "#4272d7",
+    "dirham" => "#14a38b",
+    "rial" => "#8b5cf6",
+    "euro" => "#e5a23b"
+  }
 
+  display_amounts = lambda do |amounts|
+    values = amounts.filter_map do |currency, amount|
+      next unless amount.positive?
 
-	</div>
-	<div class="col-12 col-lg-6">
+      "#{currency_labels[currency] || currency.upcase}: #{number_with_precision(amount, precision: 2, delimiter: ',')}"
+    end
 
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold"> &nbsp</small> 
-			</div>
-			<table class="table table-primary table-striped table-hover table-sm">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Name</th>
-						<th scope="col">Debt</th>
-						<th scope="col">Pending payment</th>
-						
-					</tr>
-				</thead>
-				<tbody>
-					<% @customers[(@customers.size / 2)..-1].each do |customer| %>
-					<% send_debt = customer.total_pending_dirham_sent %>
-					<tr>
-						<th scope="row"><small><%= link_to "#{customer.id}", customer_path(customer), class: 'link-nodecor-po' %></small></th>
-						<td><small><%= link_to "#{customer.nickname}", customer_path(customer), class: 'link-nodecor-po'  %></small></td>
-						<td><small class="fw-bold"><%= number_with_delimiter(customer.total_pending_dirham.to_i, delimiter: ',')%></small></td>
-						<td><small class=" fw-bold <%= send_debt > 10000 ? "bg-warning" : "" %>"><%= number_with_delimiter(send_debt.to_i, delimiter: ',') %><span style="font-size: 8px; color: #614747;"> Dirham</span></small> </td>
-						
-					</tr>
-					<% end %>
-					
+    values.presence&.join(" · ") || "—"
+  end
 
-				</tbody>
+  attention_customers = portfolio.customers_needing_attention(limit: 12)
+%>
 
-			</table>
-		</div>
+<!-- ===================================================== -->
+<!-- CUSTOMER PORTFOLIO -->
+<!-- ===================================================== -->
 
+<section class="mb-4">
 
-	</div>
-</div>
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-building-user me-2"></i>
+        Customer Portfolio
+      </h2>
+
+      <p class="m-card__subtitle">
+        Company-wide customer relationships and financial performance
+      </p>
+    </div>
+
+    <%= link_to customers_path, class: "m-btn m-btn--ghost" do %>
+      Customer Directory
+      <i class="fa-solid fa-arrow-right ms-1"></i>
+    <% end %>
+
+  </div>
+
+  <!-- KPI CARDS -->
+
+  <div class="row row-tight mb-3">
+
+    <% [
+      {
+        label: "Total Customers",
+        value: totals[:customer_count],
+        icon: "fa-users",
+        color: "c1",
+        note: "Registered customers"
+      },
+      {
+        label: "Customers with Projects",
+        value: totals[:customers_with_projects],
+        icon: "fa-folder-open",
+        color: "c2",
+        note: "#{totals[:project_count]} total projects"
+      },
+      {
+        label: "Customers with Debit",
+        value: totals[:customers_with_debit],
+        icon: "fa-wallet",
+        color: "c3",
+        note: "Outstanding estimates"
+      },
+      {
+        label: "Pending Receipts",
+        value: totals[:pending_swift_count],
+        icon: "fa-clock",
+        color: "c4",
+        note: "#{totals[:customers_with_pending_receipts]} customers"
+      }
+    ].each do |item| %>
+
+      <div class="col-6 col-xl-3">
+
+        <article class="stat-card h-100">
+
+          <div class="stat-card__head">
+
+            <p class="stat-card__label">
+              <%= item[:label] %>
+            </p>
+
+            <span class="stat-card__icon stat-card__icon--<%= item[:color] %>">
+              <i class="fa-solid <%= item[:icon] %>"></i>
+            </span>
+
+          </div>
+
+          <p class="stat-card__value">
+            <%= number_with_delimiter(item[:value]) %>
+          </p>
+
+          <p class="stat-card__delta">
+            <%= item[:note] %>
+          </p>
+
+        </article>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+  <!-- PORTFOLIO PROGRESS -->
+
+  <section class="m-card mb-3">
+
+    <header class="m-card__header">
+      <div>
+        <h3 class="m-card__title">Project Portfolio</h3>
+        <p class="m-card__subtitle">
+          Current project execution across all customers
+        </p>
+      </div>
+    </header>
+
+    <div class="row g-3">
+
+      <div class="col-6 col-md-4">
+
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="small text-body-secondary">
+            All Projects
+          </div>
+
+          <div class="fs-3 fw-semibold">
+            <%= number_with_delimiter(totals[:project_count]) %>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="col-6 col-md-4">
+
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="small text-body-secondary">
+            Active / In Logistics
+          </div>
+
+          <div class="fs-3 fw-semibold text-primary">
+            <%= number_with_delimiter(totals[:active_project_count]) %>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="col-6 col-md-4">
+
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="small text-body-secondary">
+            Logistics Completed
+          </div>
+
+          <div class="fs-3 fw-semibold text-success">
+            <%= number_with_delimiter(totals[:completed_project_count]) %>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <% if totals[:project_count].positive? %>
+
+      <% completed_percentage =
+        (totals[:completed_project_count].to_f /
+        totals[:project_count] * 100).round %>
+
+      <div class="mt-3">
+
+        <div class="d-flex justify-content-between mb-1">
+          <span class="small text-body-secondary">
+            Logistics completion rate
+          </span>
+
+          <span class="small fw-semibold">
+            <%= completed_percentage %>%
+          </span>
+        </div>
+
+        <div class="progress" style="height: 8px;">
+          <div
+            class="progress-bar bg-success"
+            style="width: <%= completed_percentage %>%"
+            role="progressbar"
+            aria-valuenow="<%= completed_percentage %>"
+            aria-valuemin="0"
+            aria-valuemax="100">
+          </div>
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </section>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- FINANCIAL PORTFOLIO -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-money-bill-transfer me-2"></i>
+        Customer Financial Portfolio
+      </h2>
+
+      <p class="m-card__subtitle">
+        Commercial value, customer collections, and bank credits
+      </p>
+    </div>
+
+    <% if totals[:missing_invoice_count].positive? %>
+      <span class="badge bg-warning-subtle text-warning-emphasis">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+        <%= totals[:missing_invoice_count] %> incomplete invoices
+      </span>
+    <% end %>
+
+  </header>
+
+  <div class="table-responsive">
+
+    <table class="table table-sm table-hover align-middle mb-0">
+
+      <thead>
+        <tr>
+          <th>Currency</th>
+          <th class="text-end">PI Offers</th>
+          <th class="text-end">CI Invoiced</th>
+          <th class="text-end">Advance Received</th>
+          <th class="text-end">Balance Received</th>
+          <th class="text-end">Pending Receipts</th>
+          <th class="text-end">Outstanding</th>
+          <th class="text-end">Bank Credited</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <% currency_labels.each do |currency, label| %>
+
+          <tr>
+
+            <td class="fw-semibold">
+              <span
+                class="rounded-circle d-inline-block me-2"
+                style="width: 8px; height: 8px; background: <%= currency_colors[currency] %>;">
+              </span>
+
+              <%= label %>
+            </td>
+
+            <td class="text-end text-nowrap">
+              <%= number_with_precision(totals[:pi_offer_amounts][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+            <td class="text-end text-nowrap">
+              <%= number_with_precision(totals[:invoice_amounts][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+            <td class="text-end text-nowrap">
+              <%= number_with_precision(totals[:advance_amounts][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+            <td class="text-end text-nowrap">
+              <%= number_with_precision(totals[:balance_receipts][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+            <td class="text-end text-nowrap text-warning">
+              <%= number_with_precision(totals[:pending_receipts][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+            <td class="text-end text-nowrap fw-semibold">
+              <%= number_with_precision(totals[:outstanding_amounts][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+            <td class="text-end text-nowrap text-success">
+              <%= number_with_precision(totals[:bank_credited][currency], precision: 0, delimiter: ",") %>
+            </td>
+
+          </tr>
+
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="border-top mt-3 pt-3">
+
+    <div class="row g-3">
+
+      <div class="col-6 col-lg-3">
+        <div class="small text-body-secondary">Confirmed receipts</div>
+        <div class="fw-semibold">
+          <%= number_with_delimiter(totals[:confirmed_swift_count]) %>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3">
+        <div class="small text-body-secondary">Rejected receipts</div>
+        <div class="fw-semibold text-danger">
+          <%= number_with_delimiter(totals[:rejected_swift_count]) %>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3">
+        <div class="small text-body-secondary">Bank reconciliation differences</div>
+
+        <div class="small fw-semibold">
+          <%= display_amounts.call(totals[:bank_differences]) %>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3">
+        <div class="small text-body-secondary">Total commercial invoices</div>
+        <div class="fw-semibold">
+          <%= number_with_delimiter(totals[:ci_count]) %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <p class="small text-body-secondary mt-3 mb-0">
+    PI values are commercial offer values, not recognized revenue.
+    Invoice values use CI balance_payment. Customer receipts use confirmed
+    Swift amount. Bank credits use deposited_amount in the receiving bank's
+    currency. Outstanding is an aggregate estimate and does not include
+    advances or invoice-by-invoice allocations. No currencies are combined.
+  </p>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- MONTHLY MONEY FLOW -->
+<!-- ===================================================== -->
+
+<section class="mb-3">
+
+  <div class="mb-2">
+
+    <h2 class="m-card__title">
+      <i class="fa-solid fa-chart-line me-2"></i>
+      Monthly Customer Money Flow
+    </h2>
+
+    <p class="m-card__subtitle">
+      Invoicing, confirmed customer receipts, and bank credits · Last 12 months
+    </p>
+
+  </div>
+
+  <div class="row row-tight">
+
+    <% currency_labels.each do |currency, label| %>
+
+      <%
+        series = flow[:currencies][currency]
+
+        chart_has_data = [
+          series[:invoices],
+          series[:customer_received],
+          series[:bank_credited]
+        ].flatten.any? { |value| value.to_f.positive? }
+
+        color = currency_colors[currency]
+
+        chart_config = {
+          type: "bar",
+          data: {
+            labels: flow[:labels],
+            datasets: [
+              {
+                label: "CI Invoiced",
+                data: series[:invoices],
+                backgroundColor: "rgba(66, 114, 215, 0.20)",
+                borderColor: "#4272d7",
+                borderWidth: 1,
+                borderRadius: 3,
+                maxBarThickness: 16
+              },
+              {
+                type: "line",
+                label: "Customer Received",
+                data: series[:customer_received],
+                borderColor: "#14a38b",
+                backgroundColor: "#14a38b",
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                borderWidth: 2,
+                tension: 0.3,
+                fill: false
+              },
+              {
+                type: "line",
+                label: "Bank Credited",
+                data: series[:bank_credited],
+                borderColor: "#8b5cf6",
+                backgroundColor: "#8b5cf6",
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                borderWidth: 2,
+                borderDash: [4, 3],
+                tension: 0.3,
+                fill: false
+              }
+            ]
+          }
+        }
+      %>
+
+      <div class="col-12 col-xl-6">
+
+        <section class="m-card mb-3 h-100">
+
+          <header class="m-card__header">
+
+            <div>
+              <h3 class="m-card__title">
+                <span
+                  class="rounded-circle d-inline-block me-2"
+                  style="width: 9px; height: 9px; background: <%= color %>;">
+                </span>
+
+                <%= label %> Money Flow
+              </h3>
+
+              <p class="m-card__subtitle">
+                Monthly commercial and collection activity
+              </p>
+            </div>
+
+          </header>
+
+          <div class="d-flex flex-wrap gap-3 mb-3">
+
+            <span class="small text-body-secondary">
+              <span class="rounded-circle d-inline-block me-1"
+                    style="width: 8px; height: 8px; background: #4272d7;"></span>
+              Invoiced
+            </span>
+
+            <span class="small text-body-secondary">
+              <span class="rounded-circle d-inline-block me-1"
+                    style="width: 8px; height: 8px; background: #14a38b;"></span>
+              Customer received
+            </span>
+
+            <span class="small text-body-secondary">
+              <span class="rounded-circle d-inline-block me-1"
+                    style="width: 8px; height: 8px; background: #8b5cf6;"></span>
+              Bank credited
+            </span>
+
+          </div>
+
+          <% if chart_has_data %>
+
+            <div style="height: 205px; position: relative;">
+              <canvas
+                data-controller="dashboard-chart"
+                data-dashboard-chart-unit-value="<%= label %>"
+                data-dashboard-chart-config-value="<%= chart_config.to_json %>">
+              </canvas>
+            </div>
+
+          <% else %>
+
+            <div class="text-center text-body-secondary py-5">
+              <i class="fa-solid fa-chart-area fs-3 mb-2"></i>
+              <p class="small mb-0">No money-flow activity in this period.</p>
+            </div>
+
+          <% end %>
+
+        </section>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- CUSTOMERS REQUIRING ATTENTION -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-bell me-2"></i>
+        Customer Accounts Requiring Attention
+      </h2>
+
+      <p class="m-card__subtitle">
+        Customers with estimated outstanding balances or unconfirmed receipts
+      </p>
+    </div>
+
+    <%= link_to "All customers",
+      customers_path,
+      class: "m-btn m-btn--ghost" %>
+
+  </header>
+
+  <% if attention_customers.any? %>
+
+    <div class="table-responsive">
+
+      <table class="table table-sm table-hover align-middle mb-0">
+
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Projects</th>
+            <th>Outstanding by currency</th>
+            <th>Pending receipts by currency</th>
+            <th>Last activity</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% attention_customers.each do |row| %>
+
+            <tr>
+
+              <td>
+                <%= link_to(
+                  row[:customer].nickname.titleize,
+                  customer_path(row[:customer]),
+                  class: "fw-semibold text-decoration-none"
+                ) %>
+
+                <div class="small text-body-secondary">
+                  <%= row[:customer].company.presence || row[:customer].name %>
+                </div>
+              </td>
+
+              <td class="text-center">
+                <%= row[:project_count] %>
+              </td>
+
+              <td class="small fw-semibold">
+
+                <% if row[:missing_invoice_count].positive? %>
+                  <span class="text-warning">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    Partial estimate
+                  </span>
+                  <div class="small text-body-secondary">
+                    <%= display_amounts.call(row[:outstanding_amounts]) %>
+                  </div>
+                <% else %>
+                  <%= display_amounts.call(row[:outstanding_amounts]) %>
+                <% end %>
+
+              </td>
+
+              <td class="small text-warning-emphasis">
+                <%= display_amounts.call(row[:pending_receipt_amounts]) %>
+              </td>
+
+              <td class="small text-body-secondary text-nowrap">
+                <% if row[:latest_activity].present? %>
+                  <%= time_ago_in_words(row[:latest_activity]) %> ago
+                <% else %>
+                  —
+                <% end %>
+              </td>
+
+            </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center text-body-secondary py-5">
+      <i class="fa-solid fa-circle-check fs-3 mb-2 text-success"></i>
+      <p class="small mb-0">
+        No customer accounts currently require financial attention.
+      </p>
+    </div>
+
+  <% end %>
+
+</section>

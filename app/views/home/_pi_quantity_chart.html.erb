@@ -1,145 +1,77 @@
 
+<section class="m-card mb-3">
 
-
-
-
-
-
-<div class="row mt-1">
-  <div class="col-12 col-lg-6">
-    <div class="card-body pt-0">
-      <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Quantity Base on PI</small> 
-      </div>
-      <canvas id="piQuantityChart" width="800" height="400"> </canvas>
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">Sales Volume & Weight</h2>
+      <p class="m-card__subtitle">Monthly quantities · Last six months</p>
     </div>
-  </div>
-  <div class="col-12 col-lg-6">
-    <div class="card-body pt-0">
-      <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Net weight Base on CI</small> 
+  </header>
+
+  <div class="row row-tight">
+
+    <div class="col-12 col-lg-6">
+      <div class="border rounded-3 p-3 h-100">
+
+        <h3 class="small fw-semibold mb-3">PI Quantity</h3>
+
+        <div style="height: 175px; position: relative;">
+          <canvas
+            data-controller="dashboard-chart"
+            data-dashboard-chart-unit-value="MT"
+            data-dashboard-chart-breakdown-value="<%= @pi_quantity_breakdown.to_json %>"
+            data-dashboard-chart-config-value="<%= {
+              type: "bar",
+              data: {
+                labels: @total_pi_quantity_by_month.map { |data| data[:month] },
+                datasets: [{
+                  label: "Total Quantity",
+                  data: @totals_pi_quantity,
+                  backgroundColor: "rgba(66, 114, 215, 0.18)",
+                  borderColor: "#4272d7",
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  maxBarThickness: 34
+                }]
+              }
+            }.to_json %>">
+          </canvas>
+        </div>
+
       </div>
-      <canvas id="ciNetWeightChart" width="800" height="400"> </canvas>
     </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="border rounded-3 p-3 h-100">
+
+        <h3 class="small fw-semibold mb-3">CI Net Weight</h3>
+
+        <div style="height: 175px; position: relative;">
+          <canvas
+            data-controller="dashboard-chart"
+            data-dashboard-chart-unit-value="MT"
+            data-dashboard-chart-breakdown-value="<%= @ci_net_weight_breakdown.to_json %>"
+            data-dashboard-chart-config-value="<%= {
+              type: "bar",
+              data: {
+                labels: @total_ci_net_weight_by_month.map { |data| data[:month] },
+                datasets: [{
+                  label: "Net Weight",
+                  data: @totals_ci_net_weight,
+                  backgroundColor: "rgba(20, 184, 166, 0.18)",
+                  borderColor: "#14b8a6",
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  maxBarThickness: 34
+                }]
+              }
+            }.to_json %>">
+          </canvas>
+        </div>
+
+      </div>
+    </div>
+
   </div>
-  
-</div>
 
-
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var ctx = document.getElementById("piQuantityChart").getContext("2d");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: <%= @total_pi_quantity_by_month.map { |data| data[:month] }.to_json.html_safe %>,
-        datasets: [{
-          label: "Total Quantity",
-          data: <%= @totals_pi_quantity.to_json.html_safe %>,
-          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
-          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: false,
-              text: 'Quantity Base on PI'
-            }
-          },
-          x: {
-            title: {
-              display: false,
-              text: 'Month'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                var index = context.dataIndex;
-                var monthBreakdown = <%= @pi_quantity_breakdown.to_json.html_safe %>[index]; // Fetch breakdown data
-                var tooltipLines = [`Total: ${context.parsed.y.toLocaleString()} MT`];
-
-                // Append each product on a new line
-                Object.entries(monthBreakdown).forEach(([product, qty]) => {
-                  tooltipLines.push(`• ${product}: ${qty.toLocaleString()} MT`);
-                });
-
-                return tooltipLines; // Returning an array ensures each item appears on a new line
-              }
-            }
-          },
-          legend: {
-            display: false // Hide the legend since it's redundant
-          }
-        }
-      }
-    });
-  });
-</script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var ctx = document.getElementById("ciNetWeightChart").getContext("2d");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: <%= @total_ci_net_weight_by_month.map { |data| data[:month] }.to_json.html_safe %>,
-        datasets: [{
-          label: "Total Net Weight",
-          data: <%= @totals_ci_net_weight.to_json.html_safe %>,
-          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
-          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: false,
-              text: 'Net Weight Base on CI'
-            }
-          },
-          x: {
-            title: {
-              display: false,
-              text: 'Month'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                var index = context.dataIndex;
-                var monthBreakdown = <%= @ci_net_weight_breakdown.to_json.html_safe %>[index]; // Fetch breakdown data
-                var tooltipLines = [`Total: ${context.parsed.y.toLocaleString()} MT`];
-
-                // Append each product's net weight on a new line
-                Object.entries(monthBreakdown).forEach(([product, weight]) => {
-                  tooltipLines.push(`• ${product}: ${weight.toLocaleString()} MT`);
-                });
-
-                return tooltipLines; // Returning an array ensures new lines
-              }
-            }
-          },
-          legend: {
-            display: false // Hide the legend since it's redundant
-          }
-        }
-      }
-    });
-  });
-</script>
-
+</section>

@@ -1,3 +1,13 @@
+
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'Edit Customer', form_partial: "customers/form" %>
+  <%= render "shared/turbo_modal",
+    modal_title: "Edit Customer",
+    modal_subtitle: "Update customer identity and company information.",
+    modal_icon: "fa-user-pen",
+    modal_size: "modal-lg",
+    form_partial: "customers/form",
+    form_locals: {
+      customer: @customer,
+      in_modal: true
+    } %>
 <% end %>

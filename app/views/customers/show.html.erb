@@ -1,197 +1,1474 @@
-<div class="col-lg-10 mx-auto mt-5">
-	<div class="card mb-5">
-		<div class="card-body">
-			<%= link_to "Back to all customers", customers_path %>
-			<ul class="list-group mt-1 mb-5" id="customer_items">
-				<%= render 'customers/customer', customer: @customer %>
-			</ul>
-		</div>
-	</div>
-	<div class="card mt-5 mb-5">
-		<% @customer.pis.each do |pi| %>
-			<% if pi.project %>
-				<div class="card mb-2">
-					<div class="row">
-						<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
-							<%= render 'projects/project', project: pi.project, bookings: pi.project.bookings, title: "PROJECT" %>
-						</div>
-						<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
-							<%= render 'customers/project_swifts', pi: pi, project: pi.project %>
-						</div>
-						<div class="col-12 col-md-4 mb-2 d-flex align-items-stretch">
-							<%= render 'customers/project_cis', pi: pi, cis: pi.cis %>
-						</div>
-					</div>
-				</div>
-			<% else %>
-				
-			<% end %>
-		<% end %>
-	</div>
+
+<%
+  overview = @overview
+  summary = overview.summary
+
+  currencies = Customer360::Overview::CURRENCIES
+  pi_by_id = overview.pis.index_by(&:id)
+
+  invoice_values = overview.invoice_amounts
+  advance_values = overview.confirmed_advance_amounts
+  balance_values = overview.confirmed_balance_amounts
+  outstanding_values = overview.estimated_outstanding_amounts
+  pending_values = overview.pending_receipt_amounts
+  bank_values = overview.bank_credited_amounts
+  bank_differences = overview.bank_difference_amounts
+
+  missing_invoice_count = overview.missing_ci_invoice_values.size
+
+  invoice_currency_present = currencies.index_with do |currency|
+    overview.cis.any? do |ci|
+      pi_by_id[ci.pi_id]&.currency.to_s == currency &&
+        ci.balance_payment.present?
+    end
+  end
+
+  invoice_currency_incomplete = currencies.index_with do |currency|
+    overview.cis.any? do |ci|
+      pi_by_id[ci.pi_id]&.currency.to_s == currency &&
+        ci.balance_payment.nil?
+    end
+  end
+
+  receipt_currency_present = currencies.index_with do |currency|
+    overview.swifts.any? { |swift| swift.currency.to_s == currency }
+  end
+
+  bank_currency_present = currencies.index_with do |currency|
+    overview.confirmed_swifts.any? do |swift|
+      swift.bank&.currency.to_s.downcase == currency &&
+        swift.deposited_amount.present?
+    end
+  end
+
+  currency_colors = {
+    "Dollar" => "#4272d7",
+    "Dirham" => "#14a38b",
+    "Rial" => "#8b5cf6",
+    "Euro" => "#e5a23b"
+  }
+
+  invoice_series = overview.monthly_invoice_series
+  collection_series = overview.monthly_collection_series
+  weight_series = overview.monthly_net_weight_series
+
+  invoice_chart_config = {
+    type: "bar",
+    data: {
+      labels: invoice_series[:labels],
+      datasets: invoice_series[:datasets].map do |dataset|
+        color = currency_colors[dataset[:label]]
+
+        {
+          label: dataset[:label],
+          data: dataset[:data],
+          backgroundColor: color,
+          borderColor: color,
+          borderWidth: 1,
+          borderRadius: 4,
+          maxBarThickness: 25
+        }
+      end
+    }
+  }
+
+  collection_chart_config = {
+    type: "line",
+    data: {
+      labels: collection_series[:labels],
+      datasets: collection_series[:datasets].map do |dataset|
+        color = currency_colors[dataset[:label]]
+
+        {
+          label: dataset[:label],
+          data: dataset[:data],
+          borderColor: color,
+          backgroundColor: color,
+          borderWidth: 2,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          fill: false
+        }
+      end
+    }
+  }
+
+  weight_chart_config = {
+    type: "bar",
+    data: {
+      labels: weight_series[:labels],
+      datasets: [
+        {
+          label: "Net Weight",
+          data: weight_series[:datasets].first[:data],
+          backgroundColor: "rgba(20, 163, 139, 0.2)",
+          borderColor: "#14a38b",
+          borderWidth: 1,
+          borderRadius: 4,
+          maxBarThickness: 28
+        }
+      ]
+    }
+  }
+
+  has_invoice_chart_data = invoice_series[:datasets].any? do |dataset|
+    dataset[:data].any? { |value| value.to_f.positive? }
+  end
+
+  has_collection_chart_data = collection_series[:datasets].any? do |dataset|
+    dataset[:data].any? { |value| value.to_f.positive? }
+  end
+
+  has_weight_chart_data = weight_series[:datasets].any? do |dataset|
+    dataset[:data].any? { |value| value.to_f.positive? }
+  end
+
+  swifts_by_ci = overview.swifts.group_by(&:ci_id)
+
+  standalone_pis = overview.pis.select do |pi|
+    pi.project_id.blank?
+  end
+
+  quality_checks = [
+    [
+      "Commercial invoices missing invoice value",
+      overview.missing_ci_invoice_values.map { |ci| "CI #{ci.number}" }
+    ],
+    [
+      "Commercial invoices missing issue date",
+      overview.missing_ci_issue_dates.map { |ci| "CI #{ci.number}" }
+    ],
+    [
+      "Proforma invoices missing issue date",
+      overview.missing_pi_issue_dates.map { |pi| "PI #{pi.number}" }
+    ],
+    [
+      "Proforma invoices missing total price",
+      overview.missing_pi_total_prices.map { |pi| "PI #{pi.number}" }
+    ],
+    [
+      "Unknown PI currencies",
+      overview.unknown_pi_currencies.map { |pi| "PI #{pi.number}: #{pi.currency}" }
+    ],
+    [
+      "Unknown Swift currencies",
+      overview.unknown_swift_currencies.map { |swift| "Swift ##{swift.id}" }
+    ],
+    [
+      "Unknown bank currencies",
+      overview.unknown_bank_currencies.map { |swift| "Swift ##{swift.id}" }
+    ],
+    [
+      "Conflicting Swift statuses",
+      overview.conflicting_swifts.map { |swift| "Swift ##{swift.id}" }
+    ],
+    [
+      "Confirmed Swifts missing confirmation date",
+      overview.missing_confirm_dates.map { |swift| "Swift ##{swift.id}" }
+    ],
+    [
+      "Confirmed Swifts missing bank amount",
+      overview.missing_bank_amount_swifts.map { |swift| "Swift ##{swift.id}" }
+    ],
+    [
+      "Projects with multiple associated PIs",
+      overview.project_pi_anomalies.map do |project_id, project_pis|
+        "Project ##{project_id}: #{project_pis.map(&:number).join(', ')}"
+      end
+    ]
+  ].select { |_title, records| records.any? }
+%>
+
+<!-- ===================================================== -->
+<!-- HEADER -->
+<!-- ===================================================== -->
+
+<div class="page-header">
+  <div>
+    <div class="small text-body-secondary mb-1">
+      <%= link_to "Customers", customers_path %> / Customer 360
+    </div>
+
+<h1 id="customer-show-title">
+  <%= @customer.name.presence || @customer.nickname.titleize %>
+</h1>
+
+<p class="subtitle" id="customer-show-subtitle">
+  <%= @customer.company.presence || "Individual customer" %>
+  · <%= @customer.nickname %>
+</p>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+
+    <%= link_to customers_path, class: "btn btn-light border" do %>
+      <i class="fa-solid fa-arrow-left me-1"></i>
+      Customers
+    <% end %>
+
+    <%= link_to edit_customer_path(@customer),
+    data: { controller: "bs-modal-form" },
+      class: "btn btn-primary" do %>
+      <i class="fa-solid fa-pen me-1"></i>
+      Edit Customer
+    <% end %>
+
+  </div>
 </div>
 
+<!-- ===================================================== -->
+<!-- CUSTOMER PROFILE -->
+<!-- ===================================================== -->
 
+<section class="m-card mb-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
 
-<hr>
-<h1> table 1</h1>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Metric</th>
-      <th>Total</th>
-      <th>Sent</th>
-      <th>Unsent</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Total Invoices (Dirham)</td>
-      <td><%= @customer.total_invoices_dirham %></td>
-      <td><%= @customer.total_invoices_dirham_sent %></td>
-      <td><%= @customer.total_invoices_dirham_unsent %></td>
-    </tr>
-    <tr>
-      <td>Total Advance Swifts (Dirham)</td>
-      <td><%= @customer.total_advance_swifts_dirham %></td>
-      <td><%= @customer.total_advance_swifts_dirham_sent %></td>
-      <td><%= @customer.total_advance_swifts_dirham_unsent %></td>
-    </tr>
-    <tr>
-      <td>Total Balance Swifts (Dirham)</td>
-      <td><%= @customer.total_balance_swifts_dirham %></td>
-      <td><%= @customer.total_balance_swifts_dirham_sent %></td>
-      <td><%= @customer.total_balance_swifts_dirham_unsent %></td>
-    </tr>
-    <tr>
-      <td>Total Pending Payments (Dirham)</td>
-      <td><%= @customer.total_pending_dirham %></td>
-      <td><%= @customer.total_pending_dirham_sent %></td>
-      <td><%= @customer.total_pending_dirham_unsent %></td>
-    </tr>
-  </tbody>
-</table>
+    <div class="d-flex align-items-center gap-3">
 
+      <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold"
+           style="width: 48px; height: 48px; font-size: 18px;">
+        <%= (@customer.name.presence || @customer.nickname).first.upcase %>
+      </div>
 
+      <div>
+        <div class="fw-semibold">
+          <%= @customer.nickname.titleize %>
+        </div>
 
+        <div class="small text-body-secondary">
+          <i class="fa-solid fa-building me-1"></i>
+          <%= @customer.company.presence || "No company recorded" %>
+        </div>
+      </div>
 
-<h1>table 2</h1>
+    </div>
 
-<table class="table table-bordered table-striped">
-  <thead>
-    <tr>
-      <th>Calculation Name</th>
-      <th>Details (Breakdown of Components)</th>
-      <th>Final Value</th>
-    </tr>
-  </thead>
-  <tbody>
+    <div class="d-flex flex-wrap gap-4">
 
-    <%# ----- CI Count ----- %>
-    <tr>
-      <td><strong>CI Count</strong></td>
-      <td>
-        Total number of CIs associated with this Customer:  
-        <br>
-        <% @customer.cis.each do |ci| %>
-          CI ID: <%= ci.id %>, Balance Payment: <%= ci.balance_payment %> <br>
+      <div>
+        <div class="small text-body-secondary">Customer since</div>
+        <div class="fw-semibold">
+          <%= l(@customer.created_at.to_date, format: :long) %>
+        </div>
+      </div>
+
+      <div>
+        <div class="small text-body-secondary">Account owner</div>
+        <div class="fw-semibold">
+          <%= @customer.user&.name || "—" %>
+        </div>
+      </div>
+
+      <div>
+        <div class="small text-body-secondary">Last database update</div>
+        <div class="fw-semibold">
+          <%= l(@customer.updated_at.to_date, format: :long) %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- OPERATIONAL KPIs -->
+<!-- ===================================================== -->
+
+<div class="row row-tight mb-3">
+
+  <% [
+    ["Proforma Invoices", summary[:pi_count], "fa-file-invoice", "c1"],
+    ["Projects", summary[:projects_count], "fa-folder-open", "c2"],
+    ["Commercial Invoices", summary[:ci_count], "fa-file-invoice-dollar", "c3"],
+    ["Bookings", summary[:booking_count], "fa-boxes-stacked", "c4"]
+  ].each do |label, value, icon, color| %>
+
+    <div class="col-6 col-xl-3">
+
+      <article class="stat-card h-100">
+
+        <div class="stat-card__head">
+          <p class="stat-card__label"><%= label %></p>
+
+          <span class="stat-card__icon stat-card__icon--<%= color %>">
+            <i class="fa-solid <%= icon %>"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= number_with_delimiter(value) %>
+        </p>
+
+      </article>
+
+    </div>
+
+  <% end %>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- FINANCIAL OVERVIEW -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-wallet me-2"></i>
+        Financial Overview
+      </h2>
+
+      <p class="m-card__subtitle">
+        Customer invoices, receipts, and bank reconciliation.
+        Amounts remain in their original currencies.
+      </p>
+    </div>
+
+    <% if missing_invoice_count.positive? %>
+      <span class="badge bg-warning-subtle text-warning-emphasis">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+        <%= missing_invoice_count %> incomplete invoices
+      </span>
+    <% end %>
+  </header>
+
+  <div class="table-responsive">
+
+    <table class="table table-sm table-hover align-middle mb-0">
+
+      <thead>
+        <tr>
+          <th>Currency</th>
+          <th class="text-end">Invoice Value</th>
+          <th class="text-end">Advance Received</th>
+          <th class="text-end">Balance Received</th>
+          <th class="text-end">Estimated Outstanding</th>
+          <th class="text-end">Pending Receipts</th>
+          <th class="text-end">Bank Credited</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <% currencies.each do |currency| %>
+
+          <tr>
+
+            <td class="fw-semibold">
+              <%= currency.titleize %>
+            </td>
+
+            <td class="text-end text-nowrap">
+
+              <% if invoice_currency_present[currency] %>
+                <%= number_with_precision(invoice_values[currency], precision: 2, delimiter: ",") %>
+              <% elsif invoice_currency_incomplete[currency] %>
+                <span class="text-warning">Incomplete</span>
+              <% else %>
+                <span class="text-body-secondary">—</span>
+              <% end %>
+
+            </td>
+
+            <td class="text-end text-nowrap">
+
+              <% if overview.advance_receipts.any? { |s| s.currency.to_s == currency } %>
+                <%= number_with_precision(advance_values[currency], precision: 2, delimiter: ",") %>
+              <% else %>
+                <span class="text-body-secondary">—</span>
+              <% end %>
+
+            </td>
+
+            <td class="text-end text-nowrap">
+
+              <% if overview.balance_receipts.any? { |s| s.currency.to_s == currency } %>
+                <%= number_with_precision(balance_values[currency], precision: 2, delimiter: ",") %>
+              <% else %>
+                <span class="text-body-secondary">—</span>
+              <% end %>
+
+            </td>
+
+            <td class="text-end text-nowrap">
+
+              <% if invoice_currency_incomplete[currency] %>
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  Partial estimate
+                </span>
+              <% elsif invoice_currency_present[currency] %>
+                <span class="fw-semibold">
+                  <%= number_with_precision(outstanding_values[currency], precision: 2, delimiter: ",") %>
+                </span>
+              <% else %>
+                <span class="text-body-secondary">—</span>
+              <% end %>
+
+            </td>
+
+            <td class="text-end text-nowrap">
+
+              <% if overview.pending_swifts.any? { |s| s.currency.to_s == currency } %>
+                <%= number_with_precision(pending_values[currency], precision: 2, delimiter: ",") %>
+              <% else %>
+                <span class="text-body-secondary">—</span>
+              <% end %>
+
+            </td>
+
+            <td class="text-end text-nowrap">
+
+              <% if bank_currency_present[currency] %>
+                <%= number_with_precision(bank_values[currency], precision: 2, delimiter: ",") %>
+              <% else %>
+                <span class="text-body-secondary">—</span>
+              <% end %>
+
+            </td>
+
+          </tr>
+
         <% end %>
-      </td>
-      <td><%= @customer.ci_count %></td>
-    </tr>
 
-    <%# ----- Total Swift Count ----- %>
-    <tr>
-      <td><strong>Total Swift Count</strong></td>
-      <td>
-        Swifts linked to Projects: <%= Swift.where(project_id: @customer.projects.pluck(:id)).count %> <br>
-        Swifts linked to CIs: <%= Swift.where(ci_id: @customer.cis.pluck(:id)).count %>
-      </td>
-      <td><%= @customer.total_swift_count %></td>
-    </tr>
+      </tbody>
 
-    <%# ----- Total Swift (Dollar & Dirham) ----- %>
-    <tr>
-      <td><strong>Total Swift (Dollar & Dirham)</strong></td>
-      <td>
-        <% @customer.total_swift.each do |currency, amount| %>
-          <strong><%= currency.capitalize %>:</strong> <%= amount %> <br>
+    </table>
+
+  </div>
+
+  <div class="border-top mt-3 pt-3">
+
+    <div class="row g-3">
+
+      <div class="col-6 col-md-3">
+        <div class="small text-body-secondary">Confirmed receipts</div>
+        <div class="fw-semibold"><%= overview.confirmed_swifts.size %></div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="small text-body-secondary">Awaiting confirmation</div>
+        <div class="fw-semibold text-warning"><%= overview.pending_swifts.size %></div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="small text-body-secondary">Rejected receipts</div>
+        <div class="fw-semibold text-danger"><%= overview.rejected_swifts.size %></div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="small text-body-secondary">Conflicting records</div>
+        <div class="fw-semibold <%= overview.conflicting_swifts.any? ? 'text-danger' : '' %>">
+          <%= overview.conflicting_swifts.size %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <p class="small text-body-secondary mt-3 mb-0">
+    Advance receipts are displayed separately and are not subtracted from
+    CI invoice balances. Outstanding is an aggregate estimate, not
+    invoice-by-invoice allocation. Bank credited values use the bank's currency.
+  </p>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- CHARTS -->
+<!-- ===================================================== -->
+
+<section class="mb-3">
+
+  <div class="mb-2">
+    <h2 class="m-card__title">
+      <i class="fa-solid fa-chart-line me-2"></i>
+      Business Activity
+    </h2>
+
+    <p class="m-card__subtitle">
+      Monthly activity over the last 12 months
+    </p>
+  </div>
+
+  <div class="row row-tight">
+
+    <!-- INVOICES -->
+    <div class="col-12 col-xl-6">
+
+      <section class="m-card mb-3 h-100">
+
+        <header class="m-card__header">
+          <div>
+            <h3 class="m-card__title">Invoiced Value</h3>
+            <p class="m-card__subtitle">
+              CI balance payment · CI issue date
+            </p>
+          </div>
+        </header>
+
+        <div class="d-flex flex-wrap gap-3 mb-3">
+
+          <% currency_colors.each do |label, color| %>
+            <span class="small text-body-secondary">
+              <span class="rounded-circle d-inline-block me-1"
+                    style="width: 8px; height: 8px; background: <%= color %>;">
+              </span>
+              <%= label %>
+            </span>
+          <% end %>
+
+        </div>
+
+        <% if has_invoice_chart_data %>
+          <div style="height: 230px; position: relative;">
+            <canvas
+              data-controller="dashboard-chart"
+              data-dashboard-chart-config-value="<%= invoice_chart_config.to_json %>">
+            </canvas>
+          </div>
+        <% else %>
+          <div class="text-center text-body-secondary py-5">
+            <i class="fa-solid fa-chart-column fs-3 mb-2"></i>
+            <p class="small mb-0">No invoice activity in this period.</p>
+          </div>
         <% end %>
-      </td>
-      <td>
-        Dollar: <%= @customer.total_swift[:dollar] %>,  
-        Dirham: <%= @customer.total_swift[:dirham] %>
-      </td>
-    </tr>
 
-    <%# ----- Total Pending Dirham Sent ----- %>
-    <tr>
-      <td><strong>Total Pending Dirham (Sent)</strong></td>
-      <td>
-        <strong>CI Balance Payment:</strong>  
-        <% @customer.sum_of_cis(sent: true).each do |currency, amount| %>
-          <%= currency.capitalize %>: <%= amount %> <br>
+      </section>
+
+    </div>
+
+    <!-- COLLECTIONS -->
+    <div class="col-12 col-xl-6">
+
+      <section class="m-card mb-3 h-100">
+
+        <header class="m-card__header">
+          <div>
+            <h3 class="m-card__title">Customer Collections</h3>
+            <p class="m-card__subtitle">
+              Confirmed Swift amount · Confirmation date
+            </p>
+          </div>
+        </header>
+
+        <div class="d-flex flex-wrap gap-3 mb-3">
+
+          <% currency_colors.each do |label, color| %>
+            <span class="small text-body-secondary">
+              <span class="rounded-circle d-inline-block me-1"
+                    style="width: 8px; height: 8px; background: <%= color %>;">
+              </span>
+              <%= label %>
+            </span>
+          <% end %>
+
+        </div>
+
+        <% if has_collection_chart_data %>
+          <div style="height: 230px; position: relative;">
+            <canvas
+              data-controller="dashboard-chart"
+              data-dashboard-chart-config-value="<%= collection_chart_config.to_json %>">
+            </canvas>
+          </div>
+        <% else %>
+          <div class="text-center text-body-secondary py-5">
+            <i class="fa-solid fa-chart-line fs-3 mb-2"></i>
+            <p class="small mb-0">No confirmed collections in this period.</p>
+          </div>
         <% end %>
 
-        <strong>Swifts without Advance:</strong>  
-        <% @customer.sum_balance_swifts.each do |currency, amount| %>
-          <%= currency.capitalize %>: <%= amount %> <br>
+      </section>
+
+    </div>
+
+    <!-- WEIGHT -->
+    <div class="col-12">
+
+      <section class="m-card mb-3">
+
+        <header class="m-card__header">
+          <div>
+            <h3 class="m-card__title">Delivered Invoice Weight</h3>
+            <p class="m-card__subtitle">
+              CI net weight · CI issue date
+            </p>
+          </div>
+
+          <span class="badge bg-info-subtle text-info">
+            <%= number_with_precision(summary[:ci_net_weight], precision: 2) %> MT total
+          </span>
+        </header>
+
+        <% if has_weight_chart_data %>
+          <div style="height: 210px; position: relative;">
+            <canvas
+              data-controller="dashboard-chart"
+              data-dashboard-chart-unit-value="MT"
+              data-dashboard-chart-config-value="<%= weight_chart_config.to_json %>">
+            </canvas>
+          </div>
+        <% else %>
+          <div class="text-center text-body-secondary py-4">
+            <p class="small mb-0">No invoice weight recorded in this period.</p>
+          </div>
         <% end %>
 
-        <hr>
-        <strong>Final Calculation:</strong>  
-        Dollar: (<%= @customer.customer_remain_payments(sent: true)[:dollar] %>) * 3.67  
-        <br>
-        Dirham: <%= @customer.customer_remain_payments(sent: true)[:dirham] %>  
-      </td>
-      <td><%= @customer.total_pending_dirham_sent %></td>
-    </tr>
+      </section>
 
-    <%# ----- Total Invoices Dirham Unsent ----- %>
-    <tr>
-      <td><strong>Total Invoices Dirham (Unsent)</strong></td>
-      <td>
-        <strong>CIs (sent: false OR nil):</strong>  
-        <% @customer.sum_of_cis(sent: false).each do |currency, amount| %>
-          <%= currency.capitalize %>: <%= amount %> <br>
-        <% end %>
+    </div>
 
-        <hr>
-        <strong>Final Calculation:</strong>  
-        Dollar: (<%= @customer.sum_of_cis(sent: false)[:dollar] %>) * 3.67  
-        <br>
-        Dirham: <%= @customer.sum_of_cis(sent: false)[:dirham] %>
-      </td>
-      <td><%= @customer.total_invoices_dirham_unsent %></td>
-    </tr>
+  </div>
 
-    <%# ----- Advance Swifts Breakdown ----- %>
-    <tr>
-      <td><strong>Advance Swifts Breakdown</strong></td>
-      <td>
-        <% @customer.sum_of_swifts_with_advance.each do |currency, amount| %>
-          <%= currency.capitalize %>: <%= amount %> <br>
-        <% end %>
-      </td>
-      <td>
-        Dollar: <%= @customer.sum_of_swifts_with_advance[:dollar] %>,  
-        Dirham: <%= @customer.sum_of_swifts_with_advance[:dirham] %>
-      </td>
-    </tr>
+</section>
 
-    <%# ----- Balance Swifts Breakdown ----- %>
-    <tr>
-      <td><strong>Balance Swifts Breakdown</strong></td>
-      <td>
-        <% @customer.sum_balance_swifts.each do |currency, amount| %>
-          <%= currency.capitalize %>: <%= amount %> <br>
-        <% end %>
-      </td>
-      <td>
-        Dollar: <%= @customer.sum_balance_swifts[:dollar] %>,  
-        Dirham: <%= @customer.sum_balance_swifts[:dirham] %>
-      </td>
-    </tr>
+<!-- ===================================================== -->
+<!-- PROJECT PORTFOLIO -->
+<!-- ===================================================== -->
 
-  </tbody>
-</table>
+<section class="m-card mb-3">
 
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-folder-open me-2"></i>
+        Project Portfolio
+      </h2>
+
+      <p class="m-card__subtitle">
+        Commercial and operational progress by project
+      </p>
+    </div>
+
+    <span class="badge bg-primary-subtle text-primary">
+      <%= overview.projects.size %> projects
+    </span>
+  </header>
+
+  <% if overview.project_summaries.any? %>
+
+    <div class="row g-3">
+
+      <% overview.project_summaries.each do |item| %>
+
+        <%
+          project = item[:project]
+
+          status_color =
+            case item[:status]
+            when "Logistics completed" then "success"
+            when "Sales completed" then "info"
+            when "Purchase started" then "primary"
+            else "warning"
+            end
+        %>
+
+        <div class="col-12">
+
+          <article class="border rounded-3 p-3">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+
+              <div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+
+                  <h3 class="h6 mb-0">
+                    <%= link_to project.number,
+                      project_path(project),
+                      class: "text-decoration-none" %>
+                  </h3>
+
+                  <span class="badge bg-<%= status_color %>-subtle text-<%= status_color %>">
+                    <%= item[:status] %>
+                  </span>
+
+                </div>
+
+                <div class="small text-body-secondary mt-1">
+                  <%= project.name.presence || "Project" %>
+                </div>
+              </div>
+
+              <%= link_to project_path(project),
+                class: "btn btn-sm btn-light border" do %>
+                Open project
+                <i class="fa-solid fa-arrow-right ms-1"></i>
+              <% end %>
+
+            </div>
+
+            <!-- RELATED PIs -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+
+              <span class="small text-body-secondary">Proforma:</span>
+
+              <% item[:pis].each do |pi| %>
+                <%= link_to pi_path(pi),
+                  class: "badge bg-primary-subtle text-primary text-decoration-none" do %>
+                  PI <%= pi.number %>
+                <% end %>
+              <% end %>
+
+              <% if item[:pis].empty? %>
+                <span class="small text-body-secondary">No direct PI link</span>
+              <% end %>
+
+            </div>
+
+            <hr class="my-3">
+
+            <!-- PROJECT INDICATORS -->
+            <div class="row g-3">
+
+              <div class="col-6 col-md-3">
+                <div class="small text-body-secondary">Commercial invoices</div>
+                <div class="fw-semibold"><%= item[:ci_count] %></div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="small text-body-secondary">Bookings</div>
+                <div class="fw-semibold"><%= item[:booking_count] %></div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="small text-body-secondary">Container quantity</div>
+                <div class="fw-semibold"><%= number_with_precision(item[:container_quantity], precision: 2) %></div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="small text-body-secondary">Net weight</div>
+                <div class="fw-semibold"><%= number_with_precision(item[:ci_net_weight], precision: 2) %> MT</div>
+              </div>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+
+              <span class="badge <%= project.sales_done? ? 'bg-success-subtle text-success' : 'bg-light text-body border' %>">
+                <i class="fa-solid fa-file-contract me-1"></i>
+                Sales <%= project.sales_done? ? "completed" : "pending" %>
+              </span>
+
+              <span class="badge <%= project.logistics_done? ? 'bg-success-subtle text-success' : 'bg-light text-body border' %>">
+                <i class="fa-solid fa-truck-fast me-1"></i>
+                Logistics <%= project.logistics_done? ? "completed" : "pending" %>
+              </span>
+
+              <% if item[:booking_count].positive? %>
+                <span class="badge bg-info-subtle text-info">
+                  <%= number_with_delimiter(item[:containers_filled]) %> filled
+                </span>
+
+                <span class="badge bg-secondary-subtle text-secondary">
+                  <%= number_with_delimiter(item[:containers_picked_up]) %> picked up
+                </span>
+              <% end %>
+
+            </div>
+
+            <% if item[:ci_count].positive? %>
+
+              <div class="mt-3 small">
+
+                <% if item[:invoice_values_complete] %>
+                  <span class="text-body-secondary">Recorded CI values:</span>
+
+                  <% item[:invoice_amounts].each do |currency, amount| %>
+                    <% next if amount.zero? %>
+
+                    <strong class="ms-2">
+                      <%= number_with_precision(amount, precision: 2, delimiter: ",") %>
+                      <%= currency.titleize %>
+                    </strong>
+                  <% end %>
+
+                <% else %>
+
+                  <span class="text-warning">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    One or more CI invoice values are missing.
+                  </span>
+
+                <% end %>
+
+              </div>
+
+            <% end %>
+
+          </article>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center text-body-secondary py-5">
+      <i class="fa-solid fa-folder-open fs-3 mb-2"></i>
+      <p class="small mb-0">No projects associated with this customer.</p>
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- PIs WITHOUT DIRECT PROJECT LINK -->
+<!-- ===================================================== -->
+
+<% if standalone_pis.any? %>
+
+  <section class="m-card mb-3">
+
+    <header class="m-card__header">
+      <div>
+        <h2 class="m-card__title">Proforma Invoices Without Direct Project Link</h2>
+        <p class="m-card__subtitle">
+          Commercial offers that are not directly assigned to a project
+        </p>
+      </div>
+
+      <span class="badge bg-secondary-subtle text-secondary">
+        <%= standalone_pis.size %>
+      </span>
+    </header>
+
+    <div class="table-responsive">
+
+      <table class="table table-sm table-hover align-middle mb-0">
+
+        <thead>
+          <tr>
+            <th>PI</th>
+            <th>Product</th>
+            <th>Issue date</th>
+            <th>Quantity</th>
+            <th>Value</th>
+            <th>Confirmation</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% standalone_pis.each do |pi| %>
+
+            <tr>
+
+              <td>
+                <strong>PI <%= pi.number %></strong>
+
+                <% if pi.project.present? %>
+                  <div class="small">
+                    <%= link_to "Open project", project_path(pi.project) %>
+                  </div>
+                <% else %>
+                  <div class="small text-body-secondary">Not assigned to a project</div>
+                <% end %>
+              </td>
+
+              <td class="small">
+                <%= pi.product %>
+              </td>
+
+              <td class="small text-body-secondary">
+                <%= pi.issue_date.present? ? l(pi.issue_date) : "Missing date" %>
+              </td>
+
+              <td class="text-nowrap">
+                <%= number_with_delimiter(pi.quantity) %>
+              </td>
+
+              <td class="text-nowrap fw-semibold">
+                <% if pi.total_price.present? %>
+                  <%= number_with_delimiter(pi.total_price) %>
+                  <small class="text-body-secondary"><%= pi.currency %></small>
+                <% else %>
+                  <span class="text-warning">Incomplete</span>
+                <% end %>
+              </td>
+
+              <td>
+                <% if pi.confirmed == true %>
+                  <span class="badge bg-success-subtle text-success">Confirmed</span>
+                <% elsif pi.rejected == true %>
+                  <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                <% else %>
+                  <span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>
+                <% end %>
+              </td>
+
+            </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+<% end %>
+
+<!-- ===================================================== -->
+<!-- COMMERCIAL INVOICES -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-file-invoice-dollar me-2"></i>
+        Commercial Invoices
+      </h2>
+
+      <p class="m-card__subtitle">
+        Invoice value, dispatch status, and related receipts
+      </p>
+    </div>
+
+    <span class="badge bg-primary-subtle text-primary">
+      <%= overview.cis.size %> invoices
+    </span>
+  </header>
+
+  <% if overview.cis.any? %>
+
+    <div class="table-responsive">
+
+      <table class="table table-sm table-hover align-middle mb-0">
+
+        <thead>
+          <tr>
+            <th>CI</th>
+            <th>Project</th>
+            <th>PI</th>
+            <th>Issue date</th>
+            <th class="text-end">Invoice value</th>
+            <th class="text-end">Net weight</th>
+            <th>Sent</th>
+            <th>Receipts</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% overview.cis.each do |ci| %>
+
+            <% pi = pi_by_id[ci.pi_id] %>
+            <% project = ci.project || pi&.project %>
+            <% ci_swifts = swifts_by_ci[ci.id] || [] %>
+
+            <tr>
+
+              <td>
+                <span class="fw-semibold">CI <%= ci.number %></span>
+              </td>
+
+              <td>
+                <% if project.present? %>
+                  <%= link_to project.number, project_path(project) %>
+                <% else %>
+                  <span class="text-body-secondary">—</span>
+                <% end %>
+              </td>
+
+              <td>
+                <% if pi.present? %>
+                  <%= link_to pi.number, pi_path(pi) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+
+              <td class="small text-nowrap">
+                <%= ci.issue_date.present? ? l(ci.issue_date) : "Missing date" %>
+              </td>
+
+              <td class="text-end text-nowrap fw-semibold">
+
+                <% if ci.balance_payment.present? %>
+                  <%= number_with_delimiter(ci.balance_payment) %>
+                  <small class="text-body-secondary"><%= pi&.currency %></small>
+                <% else %>
+                  <span class="text-warning">Incomplete</span>
+                <% end %>
+
+              </td>
+
+              <td class="text-end text-nowrap">
+                <%= number_with_precision(ci.net_weight, precision: 2) %>
+              </td>
+
+              <td>
+                <% if ci.sent == true %>
+                  <span class="badge bg-success-subtle text-success">Sent</span>
+                <% elsif ci.sent == false %>
+                  <span class="badge bg-warning-subtle text-warning-emphasis">Not sent</span>
+                <% else %>
+                  <span class="badge bg-secondary-subtle text-secondary">Not marked</span>
+                <% end %>
+              </td>
+
+              <td>
+                <% if ci_swifts.any? %>
+                  <span class="badge bg-primary-subtle text-primary">
+                    <%= ci_swifts.size %> Swift
+                  </span>
+                <% else %>
+                  <span class="text-body-secondary small">None</span>
+                <% end %>
+              </td>
+
+            </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center text-body-secondary py-4">
+      No commercial invoices recorded.
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- SWIFT RECEIPTS -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-money-bill-transfer me-2"></i>
+        Customer Receipts
+      </h2>
+
+      <p class="m-card__subtitle">
+        Customer-sent amounts and actual bank credits
+      </p>
+    </div>
+
+    <span class="badge bg-primary-subtle text-primary">
+      <%= overview.swifts.size %> receipts
+    </span>
+  </header>
+
+  <% if overview.swifts.any? %>
+
+    <div class="table-responsive">
+
+      <table class="table table-sm table-hover align-middle mb-0">
+
+        <thead>
+          <tr>
+            <th>Swift</th>
+            <th>Date</th>
+            <th>Project / CI</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th class="text-end">Customer sent</th>
+            <th class="text-end">Bank credited</th>
+            <th>Bank</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% overview.swifts.each do |swift| %>
+
+            <%
+              swift_status =
+                if swift.confirmed == true && swift.rejected == true
+                  ["Conflicting", "danger"]
+                elsif swift.rejected == true
+                  ["Rejected", "danger"]
+                elsif swift.confirmed == true
+                  ["Confirmed", "success"]
+                else
+                  ["Pending", "warning"]
+                end
+
+              related_project = swift.project || swift.ci&.project
+            %>
+
+            <tr>
+
+              <td>
+                <span class="fw-semibold">Swift #<%= swift.id %></span>
+              </td>
+
+              <td class="small text-nowrap">
+                <%= l(swift.created_at.to_date) %>
+              </td>
+
+              <td>
+                <% if related_project.present? %>
+                  <%= link_to related_project.number, project_path(related_project) %>
+                <% elsif swift.ci.present? %>
+                  CI <%= swift.ci.number %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+
+              <td>
+                <% if swift.advance == true %>
+                  <span class="badge bg-info-subtle text-info">Advance</span>
+                <% else %>
+                  <span class="badge bg-secondary-subtle text-secondary">Balance</span>
+                <% end %>
+              </td>
+
+              <td>
+                <span class="badge bg-<%= swift_status[1] %>-subtle text-<%= swift_status[1] %>">
+                  <%= swift_status[0] %>
+                </span>
+              </td>
+
+              <td class="text-end text-nowrap fw-semibold">
+                <%= number_with_delimiter(swift.amount) %>
+                <small class="text-body-secondary"><%= swift.currency %></small>
+              </td>
+
+              <td class="text-end text-nowrap">
+
+                <% if swift.confirmed == true && swift.rejected != true && swift.deposited_amount.present? %>
+                  <%= number_with_delimiter(swift.deposited_amount) %>
+                  <small class="text-body-secondary"><%= swift.bank&.currency %></small>
+                <% elsif swift.confirmed == true && swift.rejected != true %>
+                  <span class="text-warning">Missing</span>
+                <% else %>
+                  <span class="text-body-secondary">—</span>
+                <% end %>
+
+              </td>
+
+              <td class="small">
+                <%= swift.bank&.name || "—" %>
+              </td>
+
+            </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center text-body-secondary py-5">
+      <i class="fa-solid fa-money-bill-transfer fs-3 mb-2"></i>
+      <p class="small mb-0">No customer receipts are associated with this customer.</p>
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- LOGISTICS / BOOKINGS -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-truck-fast me-2"></i>
+        Logistics & Bookings
+      </h2>
+
+      <p class="m-card__subtitle">
+        Container allocation and shipping progress
+      </p>
+    </div>
+
+    <span class="badge bg-primary-subtle text-primary">
+      <%= overview.bookings.size %> bookings
+    </span>
+  </header>
+
+  <% if overview.bookings.any? %>
+
+    <div class="table-responsive">
+
+      <table class="table table-sm table-hover align-middle mb-0">
+
+        <thead>
+          <tr>
+            <th>Booking</th>
+            <th>Project</th>
+            <th>Destination</th>
+            <th>Container type</th>
+            <th class="text-end">Quantity</th>
+            <th class="text-end">Filled</th>
+            <th class="text-end">Picked up</th>
+            <th>Current stage</th>
+            <th>Vessel ETA</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <% overview.bookings.each do |booking| %>
+
+            <tr>
+
+              <td>
+                <span class="fw-semibold">Booking <%= booking.number %></span>
+              </td>
+
+              <td>
+                <%= link_to booking.project.number,
+                  project_path(booking.project) %>
+              </td>
+
+              <td><%= booking.pod %></td>
+
+              <td class="small"><%= booking.container_type %></td>
+
+              <td class="text-end"><%= number_with_delimiter(booking.quantity) %></td>
+
+              <td class="text-end"><%= number_with_delimiter(booking.filled) %></td>
+
+              <td class="text-end"><%= number_with_delimiter(booking.picked_up) %></td>
+
+              <td>
+                <span class="badge bg-info-subtle text-info">
+                  <%= booking.status.presence || "Not started" %>
+                </span>
+              </td>
+
+              <td class="small text-nowrap">
+                <%= booking.vessel_eta.present? ? l(booking.vessel_eta) : "—" %>
+              </td>
+
+            </tr>
+
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center text-body-secondary py-5">
+      <i class="fa-solid fa-box-open fs-3 mb-2"></i>
+      <p class="small mb-0">No bookings associated with this customer.</p>
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- ACTIVITY TIMELINE -->
+<!-- ===================================================== -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-clock-rotate-left me-2"></i>
+        Customer Activity
+      </h2>
+
+      <p class="m-card__subtitle">
+        Commercial, financial, and logistics history
+      </p>
+    </div>
+
+    <span class="badge bg-secondary-subtle text-secondary">
+      <%= overview.activity_events.size %> events
+    </span>
+  </header>
+
+  <% if overview.activity_events.any? %>
+
+    <div class="d-flex flex-column">
+
+      <% overview.activity_events.each do |event| %>
+
+        <%
+          record = event[:record]
+
+          related_project =
+            case event[:kind]
+            when :project
+              record
+            when :pi
+              record.project
+            when :ci
+              record.project || pi_by_id[record.pi_id]&.project
+            when :swift, :swift_confirmation, :swift_rejection
+              record.project || record.ci&.project
+            when :booking, :booking_milestone
+              record.project
+            end
+
+          record_path = related_project.present? ?
+            project_path(related_project) : nil
+
+          event_icon =
+            case event[:kind]
+            when :pi then "fa-file-invoice"
+            when :project then "fa-folder-open"
+            when :ci then "fa-file-invoice-dollar"
+            when :swift then "fa-money-bill-transfer"
+            when :swift_confirmation then "fa-circle-check"
+            when :swift_rejection then "fa-circle-xmark"
+            when :booking then "fa-boxes-stacked"
+            else "fa-truck-fast"
+            end
+
+          event_color =
+            case event[:kind]
+            when :swift_confirmation then "success"
+            when :swift_rejection then "danger"
+            when :booking, :booking_milestone then "info"
+            else "primary"
+            end
+        %>
+
+        <div class="d-flex gap-3 py-3 border-bottom">
+
+          <div class="rounded-circle bg-<%= event_color %>-subtle text-<%= event_color %> d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width: 38px; height: 38px;">
+            <i class="fa-solid <%= event_icon %>"></i>
+          </div>
+
+          <div class="flex-grow-1">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+
+              <div class="fw-semibold">
+                <% if record_path.present? %>
+                  <%= link_to event[:title], record_path,
+                    class: "text-body text-decoration-none" %>
+                <% else %>
+                  <%= event[:title] %>
+                <% end %>
+              </div>
+
+              <span class="small text-body-secondary text-nowrap">
+                <%= l(event[:occurred_at], format: :short) %>
+              </span>
+
+            </div>
+
+            <div class="small text-body-secondary mt-1">
+              <%= event[:description] %>
+            </div>
+
+          </div>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center text-body-secondary py-4">
+      No customer activity recorded yet.
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- DATA QUALITY -->
+<!-- ===================================================== -->
+
+<% if quality_checks.any? %>
+
+  <section class="m-card mb-3">
+
+    <header class="m-card__header">
+      <div>
+        <h2 class="m-card__title">
+          <i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>
+          Data Quality & Attention
+        </h2>
+
+        <p class="m-card__subtitle">
+          Records that need review before financial or operational reporting
+        </p>
+      </div>
+
+      <span class="badge bg-warning-subtle text-warning-emphasis">
+        <%= quality_checks.sum { |_title, records| records.size } %> issues
+      </span>
+    </header>
+
+    <div class="d-flex flex-column gap-3">
+
+      <% quality_checks.each do |title, records| %>
+
+        <div class="border rounded-3 p-3">
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+
+            <span class="fw-semibold small">
+              <%= title %>
+            </span>
+
+            <span class="badge bg-warning-subtle text-warning-emphasis">
+              <%= records.size %>
+            </span>
+
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+
+            <% records.first(10).each do |record_description| %>
+              <span class="badge bg-light text-body border">
+                <%= record_description %>
+              </span>
+            <% end %>
+
+            <% if records.size > 10 %>
+              <span class="badge bg-secondary-subtle text-secondary">
+                +<%= records.size - 10 %> more
+              </span>
+            <% end %>
+
+          </div>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </section>
+
+<% end %>

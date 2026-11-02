@@ -1,89 +1,70 @@
-<div class="row mt-2">
-	<div class="col-12 col-lg-6">
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">Total Payments - <%= Date.current.strftime("%B") %></small> 
-			</div>
-			<div class="row">
-				<div class="col-4">
-					<div class="card" style="background-color: white !important;">
-						<div class="card-body text-center mb-0 pb-0 mt-0 pt-0">
-							<div>
-								<div class="fw-bold dash-amount"><%= number_with_delimiter(@current_paid_dirham, delimiter: ',') %>
-								</div>
-								<small class="text-center timeline-small">Dirham</small>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-4">
-					<div class="card" style="background-color: white !important;">
-						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
-							<div>
-								<div class="fw-bold dash-amount"><%= number_with_delimiter(@current_paid_dollar, delimiter: ',') %>
-								</div>
-								<small class="text-center timeline-small">Dollar</small>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-4">
-					<div class="card" style="background-color: white !important;">
-						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
-							<div>
-								<div class="fw-bold dash-amount"><%= number_with_delimiter(@current_paid_rial, delimiter: ',') %>
-								</div>
-								<small class="text-center timeline-small">Rial</small>
-							</div>
-						</div>
-					</div>
-				</div>
 
-			</div>
-		</div>
-	</div>
-	<div class="col-12 col-lg-6">
-		<div class="card-body pt-0">
-			<div class="card-title pb-1">
-				<small class="timeline-small fw-bold">Total Payments - <%= @last_month.strftime("%B") %></small> 
-			</div>
-			<div class="row">
-				<div class="col-4">
-					<div class="card" style="background-color: white !important;">
-						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
-							<div>
-								<div class="fw-bold dash-amount"><%= number_with_delimiter(@last_month_paid_dirham, delimiter: ',') %>
-								</div>
-								<small class="text-center timeline-small">Dirham</small>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-4">
-					<div class="card" style="background-color: white !important;">
-						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
-							<div>
-								<div class="fw-bold dash-amount"><%= number_with_delimiter(@last_month_paid_dollar, delimiter: ',') %>
-								</div>
-								<small class="text-center timeline-small">Dollar</small>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-4">
-					<div class="card" style="background-color: white !important;">
-						<div class="card-body text-center mt-0 pt-0 mb-0 pb-0">
-							<div>
-								<div class="fw-bold dash-amount"><%= number_with_delimiter(@last_month_paid_rial, delimiter: ',') %>
-								</div>
-								<small class="text-center timeline-small">Rial</small>
-							</div>
-						</div>
-					</div>
-				</div>
+<%
+  payment_stats = [
+    {
+      name: "Dirham",
+      current: @current_paid_dirham,
+      previous: @last_month_paid_dirham,
+      icon: "fa-coins",
+      color: "c1"
+    },
+    {
+      name: "Dollar",
+      current: @current_paid_dollar,
+      previous: @last_month_paid_dollar,
+      icon: "fa-dollar-sign",
+      color: "c2"
+    },
+    {
+      name: "Rial",
+      current: @current_paid_rial,
+      previous: @last_month_paid_rial,
+      icon: "fa-money-bill-wave",
+      color: "c3"
+    }
+  ]
+%>
 
+<div class="mb-3">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h2 class="m-card__title">Payments Collected</h2>
+    <span class="text-body-secondary small">
+      <%= Date.current.strftime("%B %Y") %>
+    </span>
+  </div>
 
-			</div>
-		</div>
-	</div>
+  <div class="row row-tight">
+
+    <% payment_stats.each do |stat| %>
+      <div class="col-12 col-sm-6 col-xl-4">
+
+        <article class="stat-card">
+
+          <div class="stat-card__head">
+            <p class="stat-card__label">
+              <%= stat[:name] %>
+            </p>
+
+            <span class="stat-card__icon stat-card__icon--<%= stat[:color] %>">
+              <i class="fa-solid <%= stat[:icon] %>"></i>
+            </span>
+          </div>
+
+          <p class="stat-card__value">
+            <%= number_with_delimiter(stat[:current], delimiter: ",") %>
+          </p>
+
+          <p class="stat-card__delta">
+            <span class="stat-card__delta-period">
+              Last month:
+              <%= number_with_delimiter(stat[:previous], delimiter: ",") %>
+            </span>
+          </p>
+
+        </article>
+
+      </div>
+    <% end %>
+
+  </div>
 </div>

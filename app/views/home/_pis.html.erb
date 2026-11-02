@@ -1,101 +1,86 @@
 
-<div class="row mt-1">
-  <div class="col-12 col-lg-6">
-    <div class="card-body pt-0">
-      <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Total PIs (dirham)</small> 
-      </div>
-      <canvas id="piAmountChart" width="800" height="400"></canvas>
+<section class="m-card mb-3 h-100">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">Proforma Invoices</h2>
+      <p class="m-card__subtitle">Six-month sales trend</p>
     </div>
+
+    <%= link_to "All", pis_path, class: "m-btn m-btn--ghost" %>
+  </header>
+
+  <div style="height: 125px; position: relative;">
+    <canvas
+      data-controller="dashboard-chart"
+      data-dashboard-chart-unit-value="Dirham"
+      data-dashboard-chart-config-value="<%= {
+        type: "bar",
+        data: {
+          labels: @months,
+          datasets: [{
+            label: "PI Amount",
+            data: @totals,
+            backgroundColor: "rgba(66, 114, 215, 0.18)",
+            borderColor: "#4272d7",
+            borderWidth: 1,
+            borderRadius: 4,
+            maxBarThickness: 28
+          }]
+        }
+      }.to_json %>">
+    </canvas>
   </div>
-  <div class="col-12 col-lg-6">
-    <div class="card-body pt-0">
-      <div class="card-title pb-3">
-        <small class="timeline-small fw-bold">latest PIs</small> 
-      </div>
-      <table class="table table-primary table-striped table-hover table-sm">
+
+  <div class="border-top mt-3 pt-2">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="small fw-semibold">Latest PIs</span>
+      <span class="text-body-secondary small"><%= @latest_pis.size %> records</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0">
+
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col"><small>Project</small></th>
-            <th scope="col"><small>Customer</small></th>
-            <th scope="col"><small>Details</small></th>
+            <th>PI</th>
+            <th>Project</th>
+            <th>Customer</th>
           </tr>
         </thead>
+
         <tbody>
           <% @latest_pis.each do |pi| %>
-          <tr>
-            <th scope="row"><small><%= pi.number %></small></th>
-            <td>
-              <small>
-                <%= pi.project.present? ? link_to("#{pi.project_number}", project_path(pi.project_id), class: 'link-nodecor-po') : "none" %>
-              </small>
-            </td>
-            <td>
-              <small><%= pi.customer_nickname %></small>
-            </td>
-            <td>
-              <small>
-                <%= pi.project.present? ? pi.project_name : "#{pi.quantity}/#{pi.product}/#{pi.pod}" %>
-              </small>
-            </td>
+            <tr>
+              <td class="fw-semibold">
+                <%= pi.number %>
+              </td>
 
-          </tr>
+              <td>
+                <% if pi.project.present? %>
+                  <%= link_to pi.project_number, project_path(pi.project_id) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+
+              <td class="small">
+                <%= truncate(pi.customer_nickname, length: 18) %>
+              </td>
+            </tr>
           <% end %>
-          
-          
+
+          <% if @latest_pis.empty? %>
+            <tr>
+              <td colspan="3" class="text-center text-body-secondary py-3">
+                No PIs.
+              </td>
+            </tr>
+          <% end %>
         </tbody>
 
       </table>
     </div>
   </div>
-</div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var ctx = document.getElementById('piAmountChart').getContext('2d');
-    var piAmountChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: <%= raw @months.to_json %>, // Array of month names without year
-        datasets: [{
-          label: 'Total PI Amount (Dirham)',
-          data: <%= raw @totals.to_json %>,  // Array of total PI amounts
-          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
-          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: false,
-              text: 'Sales in dirham'
-            }
-          },
-          x: {
-            title: {
-              display: false,
-              text: 'Month'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return 'Total: ' + context.parsed.y.toLocaleString() + ' dirham';
-              }
-            }
-          },
-          legend: {
-            display: false // Hide the legend since it's redundant
-          }
-        }
-      }
-    });
-  });
-</script>
+</section>

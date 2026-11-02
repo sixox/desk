@@ -12,6 +12,35 @@ class HomeController < ApplicationController
   def dashboard
 
     if current_user.is_manager || current_user.id == 5
+      
+    my_open_lead_tasks = LeadTask.where(
+      assigned_to_id: current_user.id,
+      status: :open
+    )
+
+    @crm_dashboard = {
+      active_leads: Lead.where.not(
+        status: [
+          Lead.statuses[:won],
+          Lead.statuses[:lost]
+        ]
+      ).count,
+
+      offers_in_progress: Lead.where(
+        status: [
+          Lead.statuses[:offer_sent],
+          Lead.statuses[:negotiation]
+        ]
+      ).count,
+
+      my_overdue_tasks: my_open_lead_tasks
+        .where("due_on IS NOT NULL AND due_on < ?", Date.current)
+        .count,
+
+      my_tasks_today: my_open_lead_tasks
+        .where(due_on: Date.current)
+        .count
+    }
 
 
 
@@ -207,8 +236,7 @@ class HomeController < ApplicationController
 
 
     # Customers
-@customers = Customer.includes(pis: [:cis, :project], cis: :swift, projects: :swifts).to_a
-
+@customer_portfolio = Customer360::Portfolio.new
 # Force calculations
 
 

@@ -398,6 +398,8 @@ resources :xaccounts
 
 resources :xtransactions
 
+get "/cardex", to: "cardex#show", as: :cardex
+
 
 
 

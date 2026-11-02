@@ -1,0 +1,487 @@
+
+<div class="page-header">
+  <div>
+    <h1>My Cardex</h1>
+    <p class="subtitle">
+      Your work, responsibilities, and business activities in one place.
+    </p>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    <span class="badge bg-primary-subtle text-primary px-3 py-2">
+      <i class="fa-solid fa-user me-1"></i>
+      <%= current_user.role.to_s.humanize %>
+    </span>
+
+    <%= link_to tasks_path,
+      class: "btn btn-light border" do %>
+      <i class="fa-solid fa-list-check me-1"></i>
+      Task Center
+    <% end %>
+
+    <% if @sales_access %>
+      <%= link_to new_lead_path,
+        class: "btn btn-primary",
+        data: { controller: "bs-modal-form" } do %>
+        <i class="fa-solid fa-plus me-1"></i>
+        New Lead
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- PERSONAL WORK SUMMARY -->
+<div class="row row-tight mb-3">
+
+  <% personal_stats = [
+    {
+      label: "My Open Tasks",
+      value: @my_open_tasks_count,
+      icon: "fa-list-check",
+      color: "c1"
+    },
+    {
+      label: "Overdue",
+      value: @my_overdue_count,
+      icon: "fa-triangle-exclamation",
+      color: "c3"
+    },
+    {
+      label: "Due Today",
+      value: @my_today_count,
+      icon: "fa-calendar-day",
+      color: "c2"
+    }
+  ] %>
+
+  <% if @sales_access %>
+    <% personal_stats << {
+      label: "My Leads",
+      value: @my_leads_count,
+      icon: "fa-users",
+      color: "c4"
+    } %>
+  <% end %>
+
+  <% personal_stats.each do |item| %>
+
+    <div class="col-6 col-xl-3">
+
+      <article class="stat-card h-100">
+
+        <div class="stat-card__head">
+          <p class="stat-card__label"><%= item[:label] %></p>
+
+          <span class="stat-card__icon stat-card__icon--<%= item[:color] %>">
+            <i class="fa-solid <%= item[:icon] %>"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= number_with_delimiter(item[:value]) %>
+        </p>
+
+      </article>
+
+    </div>
+
+  <% end %>
+
+</div>
+
+<!-- MY WORK -->
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-list-check me-2"></i>
+        My Follow-ups
+      </h2>
+
+      <p class="m-card__subtitle">
+        CRM tasks assigned directly to you
+      </p>
+    </div>
+
+    <%= link_to "All tasks",
+      tasks_path,
+      class: "m-btn m-btn--ghost" %>
+  </header>
+
+  <% if @my_tasks.any? %>
+
+    <div class="d-flex flex-column">
+
+      <% @my_tasks.each do |task| %>
+
+        <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+
+          <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width: 36px; height: 36px;">
+            <i class="fa-solid fa-phone"></i>
+          </div>
+
+          <div class="flex-grow-1 min-width-0">
+
+            <div class="fw-semibold">
+              <%= link_to task.title,
+                lead_path(task.lead),
+                class: "text-body text-decoration-none" %>
+            </div>
+
+            <div class="small text-body-secondary mt-1">
+              Lead:
+              <%= link_to task.lead.name,
+                lead_path(task.lead),
+                class: "text-decoration-none" %>
+
+              <% if task.lead.company.present? %>
+                · <%= task.lead.company %>
+              <% end %>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-2">
+
+              <% if task.due_on.present? %>
+                <span class="badge <%= task.due_badge_class %>">
+                  <i class="fa-regular fa-calendar me-1"></i>
+                  <%= l(task.due_on) %>
+                </span>
+              <% else %>
+                <span class="badge bg-secondary-subtle text-secondary">
+                  No due date
+                </span>
+              <% end %>
+
+              <% if task.due_on.present? && task.due_on < @today %>
+                <span class="badge bg-danger-subtle text-danger">Overdue</span>
+              <% elsif task.due_on == @today %>
+                <span class="badge bg-warning-subtle text-warning-emphasis">Today</span>
+              <% end %>
+
+            </div>
+
+          </div>
+
+          <div class="flex-shrink-0 d-flex align-items-center gap-1">
+
+            <%= button_to(
+              toggle_done_lead_lead_task_path(task.lead, task),
+              method: :patch,
+              class: "btn btn-sm btn-light border",
+              title: "Mark completed"
+            ) do %>
+              <i class="fa-solid fa-check text-success"></i>
+            <% end %>
+
+            <%= link_to lead_path(task.lead),
+              class: "btn btn-sm btn-light border",
+              title: "Open lead" do %>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <% end %>
+
+          </div>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center py-5">
+      <span class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center"
+            style="width: 52px; height: 52px;">
+        <i class="fa-solid fa-check fs-4"></i>
+      </span>
+
+      <h3 class="h6 mt-3">You're all caught up</h3>
+
+      <p class="small text-body-secondary mb-0">
+        No open CRM follow-ups are currently assigned to you.
+      </p>
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- SALES WORKSPACE -->
+<% if @sales_access %>
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-chart-line me-2"></i>
+        Sales Workspace
+      </h2>
+      <p class="m-card__subtitle">
+        Your sales opportunities and pipeline activity
+      </p>
+    </div>
+
+    <%= link_to "Open CRM",
+      leads_path,
+      class: "m-btn m-btn--ghost" %>
+  </div>
+
+  <div class="row row-tight mb-3">
+
+    <!-- PIPELINE -->
+    <div class="col-12 col-xl-5">
+
+      <section class="m-card h-100">
+
+        <header class="m-card__header">
+          <div>
+            <h3 class="m-card__title">Pipeline Overview</h3>
+            <p class="m-card__subtitle">
+              <%= number_with_delimiter(@sales_leads_count) %> leads in your visible workspace
+            </p>
+          </div>
+
+          <%= link_to pipeline_leads_path,
+            class: "btn btn-sm btn-light border" do %>
+            View board
+          <% end %>
+        </header>
+
+        <div class="d-flex flex-column gap-3">
+
+          <% total = [@sales_leads_count, 1].max %>
+
+          <% @sales_status_order.each do |status| %>
+            <% count = @sales_pipeline_counts.fetch(status, 0) %>
+            <% percentage = (count.to_f / total * 100).round %>
+            <% color = status_header_badge_class(status) %>
+
+            <%= link_to leads_path(status: status),
+              class: "text-decoration-none text-body" do %>
+
+              <div class="d-flex justify-content-between align-items-center mb-1">
+
+                <span class="small fw-medium">
+                  <span class="rounded-circle bg-<%= color %> d-inline-block me-2"
+                        style="width: 8px; height: 8px;"></span>
+                  <%= lead_status_label(status) %>
+                </span>
+
+                <span class="small fw-semibold">
+                  <%= count %>
+                </span>
+
+              </div>
+
+              <div class="progress" style="height: 5px;">
+                <div
+                  class="progress-bar bg-<%= color %>"
+                  role="progressbar"
+                  style="width: <%= percentage %>%"
+                  aria-valuenow="<%= percentage %>"
+                  aria-valuemin="0"
+                  aria-valuemax="100">
+                </div>
+              </div>
+
+            <% end %>
+          <% end %>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- RECENT LEADS -->
+    <div class="col-12 col-xl-7">
+
+      <section class="m-card h-100">
+
+        <header class="m-card__header">
+          <div>
+            <h3 class="m-card__title">Recently Updated Leads</h3>
+            <p class="m-card__subtitle">
+              Your leads and those of your direct reports
+            </p>
+          </div>
+
+          <%= link_to "All leads",
+            leads_path,
+            class: "m-btn m-btn--ghost" %>
+        </header>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Stage</th>
+                <th>Owner</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <% @recent_sales_leads.each do |lead| %>
+
+                <% color = status_header_badge_class(lead.status) %>
+
+                <tr>
+                  <td>
+                    <%= link_to lead.name,
+                      lead_path(lead),
+                      class: "fw-semibold text-decoration-none" %>
+
+                    <div class="small text-body-secondary">
+                      <%= lead.company.presence || "Individual" %>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="badge bg-<%= color %>-subtle text-<%= color %>">
+                      <%= lead_status_label(lead.status) %>
+                    </span>
+                  </td>
+
+                  <td class="small">
+                    <%= lead.owner&.name || "Unassigned" %>
+                  </td>
+
+                  <td class="small text-body-secondary text-nowrap">
+                    <%= time_ago_in_words(lead.updated_at) %> ago
+                  </td>
+                </tr>
+
+              <% end %>
+
+              <% if @recent_sales_leads.empty? %>
+                <tr>
+                  <td colspan="4" class="text-center text-body-secondary py-4">
+                    No leads found.
+                  </td>
+                </tr>
+              <% end %>
+
+            </tbody>
+
+          </table>
+        </div>
+
+      </section>
+
+    </div>
+
+  </div>
+
+<% end %>
+
+<!-- MANAGER TEAM WORKSPACE -->
+<% if @is_manager && @team_users.any? %>
+
+  <section class="m-card mb-3">
+
+    <header class="m-card__header">
+      <div>
+        <h2 class="m-card__title">
+          <i class="fa-solid fa-people-group me-2"></i>
+          My Team
+        </h2>
+
+        <p class="m-card__subtitle">
+          Workload assigned to your direct reports
+        </p>
+      </div>
+
+      <span class="badge bg-primary-subtle text-primary">
+        <%= @team_users.size %> employees
+      </span>
+    </header>
+
+    <div class="row row-tight mb-3">
+
+      <% [
+        ["Open Tasks", @team_open_tasks_count, "fa-list-check"],
+        ["Overdue", @team_overdue_count, "fa-triangle-exclamation"],
+        ["Due Today", @team_today_count, "fa-calendar-day"],
+        ["Team Leads", (@team_leads_count if @sales_access) || "—", "fa-users"]
+      ].each do |label, value, icon| %>
+
+        <div class="col-6 col-xl-3">
+          <div class="border rounded-3 p-3 h-100">
+            <div class="small text-body-secondary">
+              <i class="fa-solid <%= icon %> me-1"></i>
+              <%= label %>
+            </div>
+
+            <div class="fs-4 fw-semibold mt-1">
+              <%= value %>
+            </div>
+          </div>
+        </div>
+
+      <% end %>
+
+    </div>
+
+    <% if @team_tasks.any? %>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Lead</th>
+              <th>Assigned employee</th>
+              <th>Due date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% @team_tasks.each do |task| %>
+              <tr>
+                <td>
+                  <%= link_to task.title,
+                    lead_path(task.lead),
+                    class: "fw-medium text-decoration-none" %>
+                </td>
+
+                <td>
+                  <%= link_to task.lead.name, lead_path(task.lead) %>
+                </td>
+
+                <td class="small">
+                  <%= task.assigned_to&.name || "Unassigned" %>
+                </td>
+
+                <td>
+                  <% if task.due_on.present? %>
+                    <span class="badge <%= task.due_badge_class %>">
+                      <%= l(task.due_on) %>
+                    </span>
+                  <% else %>
+                    <span class="text-body-secondary small">No date</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+
+        </table>
+      </div>
+
+    <% else %>
+
+      <p class="small text-body-secondary mb-0">
+        No open CRM tasks are currently assigned to your direct reports.
+      </p>
+
+    <% end %>
+
+  </section>
+
+<% end %>

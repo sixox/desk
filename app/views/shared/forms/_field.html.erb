@@ -1,0 +1,63 @@
+
+<%
+  attribute = attribute.to_sym
+  field_type = local_assigns.fetch(:type, :text_field).to_sym
+  field_label = local_assigns[:label] || form.object.class.human_attribute_name(attribute)
+  hint = local_assigns[:hint]
+  wrapper_class = local_assigns[:wrapper_class]
+
+  field_errors = form.object.errors[attribute]
+
+  input_options = (local_assigns[:input_options] || {}).dup
+
+  default_class = field_type == :select ? "form-select" : "form-control"
+
+  input_options[:class] = [
+    input_options[:class],
+    default_class,
+    ("is-invalid" if field_errors.any?)
+  ].compact.join(" ")
+
+  input_options[:required] = true if local_assigns[:required]
+%>
+
+<div class="erp-form__field <%= wrapper_class %>">
+
+  <%= form.label attribute, class: "form-label" do %>
+    <%= field_label %>
+
+    <% if local_assigns[:required] %>
+      <span class="erp-form__required">*</span>
+    <% end %>
+  <% end %>
+
+  <% if field_type == :select %>
+
+    <%= form.select(
+      attribute,
+      local_assigns[:choices] || [],
+      local_assigns[:select_options] || {},
+      input_options
+    ) %>
+
+  <% elsif field_type == :text_area %>
+
+    <%= form.text_area(attribute, input_options) %>
+
+  <% else %>
+
+    <%= form.public_send(field_type, attribute, input_options) %>
+
+  <% end %>
+
+  <% if hint.present? %>
+    <span class="erp-form__hint"><%= hint %></span>
+  <% end %>
+
+  <% if field_errors.any? %>
+    <div class="invalid-feedback">
+      <%= field_errors.to_sentence %>
+    </div>
+  <% end %>
+
+</div>

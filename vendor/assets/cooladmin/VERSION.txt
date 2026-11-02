@@ -1,0 +1,2 @@
+CoolAdmin v3.5.0
+https://github.com/puikinsh/CoolAdmin

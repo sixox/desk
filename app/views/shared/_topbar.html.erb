@@ -1,0 +1,71 @@
+<header class="header-desktop">
+  <div class="section__content section__content--p30">
+    <div class="container-fluid">
+      <div class="header-wrap">
+
+        <button
+          class="sidebar-toggle js-sidebar-toggle"
+          type="button"
+          aria-label="Toggle navigation"
+          aria-expanded="false"
+          aria-controls="main-sidebar"
+          data-action="click->cooladmin-sidebar#toggleSidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="header-button">
+          <% if user_signed_in? %>
+            <% unread_count = unread_messages_count.to_i %>
+
+            <div class="noti-wrap">
+              <%= link_to messages_path,
+                class: "noti__item",
+                title: "Messages",
+                aria: { label: "Messages" } do %>
+                <i class="fa-solid fa-envelope"></i>
+
+                <% if unread_count.positive? %>
+                  <span class="quantity"><%= unread_count %></span>
+                <% end %>
+              <% end %>
+            </div>
+
+            <div class="account-wrap">
+              <div class="account-item">
+                <div class="image d-flex align-items-center justify-content-center">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div class="content">
+                  <%= link_to(
+                    current_user.first_name.presence&.titleize || current_user.email,
+                    member_path(current_user)
+                  ) %>
+                </div>
+              </div>
+            </div>
+
+            <%= link_to destroy_user_session_path,
+              class: "m-btn m-btn--ghost",
+              data: {
+                turbo_method: :delete,
+                turbo_confirm: "Are you sure you want to sign out?"
+              } do %>
+              <i class="fa-solid fa-right-from-bracket"></i>
+              Sign out
+            <% end %>
+
+          <% else %>
+
+            <%= link_to new_user_session_path, class: "m-btn m-btn--primary" do %>
+              <i class="fa-solid fa-right-to-bracket"></i>
+              Sign in
+            <% end %>
+
+          <% end %>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</header>

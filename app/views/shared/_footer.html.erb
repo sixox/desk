@@ -1,14 +1,9 @@
-<footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-	<p class="col-md-4 mb-0 text-muted">Desk <%= Time.current.year %></p>
-	<% if user_signed_in? %>
-	<ul class="nav col-md-6 justify-content-end">
-		<li class="nav-item"><%= link_to "Home", root_path, data: { turbo: false }, class: "nav-link px-2 text-muted" %></li>
-		
-		<li class="nav-item"><%= link_to "Profile", member_path(current_user), class: "nav-link px-2 text-muted" %></li>
-		
-		<li class="nav-item"><%= link_to 'Projects', projects_path, class: 'nav-link px-2 text-muted' %></li>
-		<li class="nav-item"><%= link_to 'Inventories', ballances_path, class: 'nav-link px-2 text-muted' %></li>
-		<li class="nav-item"><%= link_to "Payment orders", payment_orders_path, class: "nav-link px-2 text-muted" %></li>
-	</ul>
-	<% end %>
+<footer class="copyright">
+  <div class="section__content section__content--p30">
+    <div class="container-fluid">
+      <p>
+        © <%= Time.current.year %> Desk. No rights reserved.
+      </p>
+    </div>
+  </div>
 </footer>

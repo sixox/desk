@@ -1,171 +1,84 @@
-<div class="row mt-1">
-  <div class="col-12 col-lg-4">
-    <div class="card-body pt-0">
-      <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Total Payments (rial)</small> 
-      </div>
-      <canvas id="rialAmountChart" width="800" height="400"> </canvas>
+
+<%
+  payment_charts = [
+    {
+      id: "rial",
+      name: "Rial",
+      values: @total_payments_var_rial,
+      color: "#8b5cf6",
+      background: "rgba(139, 92, 246, 0.18)"
+    },
+    {
+      id: "dirham",
+      name: "Dirham",
+      values: @total_payments_var_dirham,
+      color: "#14b8a6",
+      background: "rgba(20, 184, 166, 0.18)"
+    },
+    {
+      id: "dollar",
+      name: "Dollar",
+      values: @total_payments_var_dollar,
+      color: "#4272d7",
+      background: "rgba(66, 114, 215, 0.18)"
+    }
+  ]
+%>
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">Payment Trends</h2>
+      <p class="m-card__subtitle">Monthly payments · Last six months</p>
     </div>
-  </div>
-  <div class="col-12 col-lg-4">
-    <div class="card-body pt-0">
-      <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Total Payments (dirham)</small> 
+  </header>
+
+  <div class="row row-tight">
+
+    <% payment_charts.each do |chart| %>
+      <div class="col-12 col-md-4">
+
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span
+              class="rounded-circle"
+              style="width: 9px; height: 9px; background-color: <%= chart[:color] %>;">
+            </span>
+
+            <span class="small fw-semibold">
+              <%= chart[:name] %>
+            </span>
+          </div>
+
+          <div style="height: 125px; position: relative;">
+            <canvas
+              data-controller="dashboard-chart"
+              data-dashboard-chart-unit-value="<%= chart[:name] %>"
+              data-dashboard-chart-config-value="<%= {
+                type: "bar",
+                data: {
+                  labels: @months,
+                  datasets: [{
+                    label: "Payments",
+                    data: chart[:values],
+                    backgroundColor: chart[:background],
+                    borderColor: chart[:color],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    maxBarThickness: 28
+                  }]
+                }
+              }.to_json %>">
+            </canvas>
+          </div>
+
+        </div>
+
       </div>
-      <canvas id="dirhamAmountChart" width="800" height="400"> </canvas>
-    </div>
+    <% end %>
+
   </div>
-  <div class="col-12 col-lg-4">
-    <div class="card-body pt-0">
-      <div class="card-title pb-1">
-        <small class="timeline-small fw-bold">Total Payments (dollar)</small> 
-      </div>
-      <canvas id="dollarAmountChart" width="800" height="400"> </canvas>
-    </div>
-  </div>
-</div>
 
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var ctx = document.getElementById('rialAmountChart').getContext('2d');
-    var rialAmountChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: <%= raw @months.to_json %>, // Array of month names without year
-        datasets: [{
-          label: 'Total Swifts Amount (Dirham)',
-          data: <%= raw @total_payments_var_rial.to_json %>,  // Array of total CI amounts
-          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
-          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: false,
-              text: 'PO in rial'
-            }
-          },
-          x: {
-            title: {
-              display: false,
-              text: 'Month'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return 'Total: ' + context.parsed.y.toLocaleString() + ' rial';
-              }
-            }
-          },
-          legend: {
-            display: false // Hide the legend since it's redundant
-          }
-        }
-      }
-    });
-  });
-
-  document.addEventListener('DOMContentLoaded', function () {
-    var ctx = document.getElementById('dirhamAmountChart').getContext('2d');
-    var dirhamAmountChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: <%= raw @months.to_json %>, // Array of month names without year
-        datasets: [{
-          label: 'Total Swifts Amount (Dirham)',
-          data: <%= raw @total_payments_var_dirham.to_json %>,  // Array of total CI amounts
-          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
-          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: false,
-              text: 'PO in rial'
-            }
-          },
-          x: {
-            title: {
-              display: false,
-              text: 'Month'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return 'Total: ' + context.parsed.y.toLocaleString() + ' dirham';
-              }
-            }
-          },
-          legend: {
-            display: false // Hide the legend since it's redundant
-          }
-        }
-      }
-    });
-  });
-
-  document.addEventListener('DOMContentLoaded', function () {
-    var ctx = document.getElementById('dollarAmountChart').getContext('2d');
-    var dollarAmountChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: <%= raw @months.to_json %>, // Array of month names without year
-        datasets: [{
-          label: 'Total Swifts Amount (Dirham)',
-          data: <%= raw @total_payments_var_dollar.to_json %>,  // Array of total CI amounts
-          backgroundColor: <%= raw @colors.to_json %>, // Array of background colors
-          borderColor: <%= raw @colors.map { |color| color.gsub('0.6', '1') }.to_json %>, // Darker border colors
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: false,
-              text: 'PO in rial'
-            }
-          },
-          x: {
-            title: {
-              display: false,
-              text: 'Month'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return 'Total: ' + context.parsed.y.toLocaleString() + ' dollar';
-              }
-            }
-          },
-          legend: {
-            display: false // Hide the legend since it's redundant
-          }
-        }
-      }
-    });
-  });
-</script>
+</section>

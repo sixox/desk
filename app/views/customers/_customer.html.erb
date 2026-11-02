@@ -1,79 +1,118 @@
-<li class="shadow-lg mb-2 bg-body rounded list-group-item position-relative" id="customer_item_<%= customer.id %>">
-	<% dollar_to_dirham = 3.67 %>
-	<div class="card border-0 shadow mt-2">
-		<div class="card-body p-xl-4">
-			<h4 class="card-title mb-2 text-success"> <i class="bi bi-person-fill"></i> <%= customer.nickname.titleize %></h4>
-			<div class="card card-custom mt-1">
-				<div class="card-body">
-					<div class="row d-flex text-center">
-						<div class="col-5">
-							<h6 class="card-subtitle text-secondary mb-3">
-								<span class="text-secondary">  </span><small class="text-secondary"><%= customer.cis.count %> INVOICES</small>
-							</h6>
-						</div>
-						<div class="col-5">
-							<h6 class="card-subtitle text-secondary mb-3">
-								<span class="text-secondary">  </span><small class="text-secondary"><%= customer.total_swift_count %> SWIFTS</small>
-							</h6>
-						</div>
-						<div class="col">
-							<h6 class="card-subtitle text-secondary mb-3">
-								<span class="text-secondary">  </span><small class="text-secondary">TOTAL</small>
-							</h6>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-5 border-end">
-							<div class="row text-center">
-								
-								<div class="col">
-									<small class="fw-bold timeline-small">total issued invoices</small>
-									<hr>
-									<div class="mt-2">
-										<% total_invoices_dirham = customer.sum_of_cis[:dirham].to_i + (customer.sum_of_cis[:dollar].to_i * dollar_to_dirham) %>
-										<span class="fw-bold"><%= number_with_delimiter(total_invoices_dirham.to_i, delimiter: ',') %></span>
-										<small class="text-success" style="font-size: 10px;">dirham</small>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-5 border-end">
-							<div class="row text-center">
-								<div class="col">
-									<small class="fw-bold timeline-small">Advance</small>
-									<hr>
-									<div class="mt-2">
-										<% total_advance_swifts_dirham = customer.sum_of_swifts_with_advance[:dirham].to_i + (customer.sum_of_swifts_with_advance[:dollar].to_i * dollar_to_dirham) %>
-										<span class="fw-bold"><%= number_with_delimiter(total_advance_swifts_dirham.to_i, delimiter: ',') %></span>
-										<small class="text-success" style="font-size: 10px;">dirham</small>
-									</div>
-								</div>
-								<div class="col">
-									<small class="fw-bold timeline-small">Balance</small>
-									<hr>
-									<div class="mt-2">
-										<% total_balance_swifts_dirham = customer.sum_balance_swifts[:dirham].to_i + (customer.sum_balance_swifts[:dollar].to_i * dollar_to_dirham) %>
-										<span class="fw-bold"><%= number_with_delimiter(total_balance_swifts_dirham.to_i, delimiter: ',') %></span>
-										<small class="text-success" style="font-size: 10px;">dirham</small>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col text-center">
-							<small class="fw-bold timeline-small">Debts</small>
-									<hr>
-						  <% total_pending_dirham = customer.customer_remain_payments[:dirham].to_i + (customer.customer_remain_payments[:dollar].to_i * dollar_to_dirham) %>
-						  <span class="fw-bold"><%= number_with_delimiter(total_pending_dirham.to_i, delimiter: ',') %>&nbsp </span>
-						  <small class="text-success" style="font-size: 10px;"> dirham</small>
-						</div>
 
-					</div>		
+<%
+  customer_pis = customer.pis.to_a
 
-				</div>
-			</div>
-		</div>
-	</div>
-</li>
+  customer_cis = customer_pis
+    .flat_map { |pi| pi.cis.to_a }
+    .uniq(&:id)
 
+  customer_projects = (
+    customer_pis.filter_map(&:project) +
+    customer_cis.filter_map(&:project)
+  ).uniq(&:id)
 
+  latest_records = [
+    customer,
+    *customer_pis,
+    *customer_cis,
+    *customer_projects
+  ]
 
+  last_activity = latest_records
+    .filter_map(&:updated_at)
+    .max
+
+  customer_currencies = customer_pis
+    .filter_map { |pi| pi.currency.presence }
+    .uniq
+%>
+
+<tr id="customer_item_<%= customer.id %>">
+
+  <td>
+    <div class="d-flex align-items-center gap-3">
+
+      <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold flex-shrink-0"
+           style="width: 39px; height: 39px;">
+
+        <%= (customer.nickname.presence || customer.name.presence || "C").first.upcase %>
+
+      </div>
+
+      <div class="min-width-0">
+
+        <%= link_to(
+          customer.nickname.presence&.titleize || customer.name,
+          customer_path(customer),
+          class: "fw-semibold text-body text-decoration-none"
+        ) %>
+
+        <div class="small text-body-secondary">
+          <%= customer.company.presence || "No company recorded" %>
+        </div>
+
+      </div>
+
+    </div>
+  </td>
+
+  <td class="text-center">
+    <span class="fw-semibold"><%= customer_projects.size %></span>
+  </td>
+
+  <td class="text-center">
+    <span class="fw-semibold"><%= customer_pis.size %></span>
+  </td>
+
+  <td class="text-center">
+    <span class="fw-semibold"><%= customer_cis.size %></span>
+  </td>
+
+  <td>
+    <div class="d-flex flex-wrap gap-1">
+
+      <% customer_currencies.each do |currency| %>
+        <span class="badge bg-secondary-subtle text-secondary">
+          <%= currency.titleize %>
+        </span>
+      <% end %>
+
+      <% if customer_currencies.empty? %>
+        <span class="text-body-secondary small">—</span>
+      <% end %>
+
+    </div>
+  </td>
+
+  <td class="small text-body-secondary text-nowrap">
+    <% if last_activity.present? %>
+      <%= time_ago_in_words(last_activity) %> ago
+    <% else %>
+      —
+    <% end %>
+  </td>
+
+  <td class="small">
+    <%= customer.user&.name || "—" %>
+  </td>
+
+  <td class="text-end text-nowrap">
+
+    <%= link_to customer_path(customer),
+      class: "btn btn-sm btn-light border",
+      title: "Customer 360" do %>
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    <% end %>
+
+    <% if current_user.sales? %>
+      <%= link_to edit_customer_path(customer),
+        class: "btn btn-sm btn-light border",
+        title: "Edit customer",
+        data: { controller: "bs-modal-form" } do %>
+        <i class="fa-solid fa-pen"></i>
+      <% end %>
+    <% end %>
+
+  </td>
+
+</tr>

@@ -1,4 +1,16 @@
-<div class="col-lg-9 mx-auto mt-4">
-  <h4 class="mb-3">New Lead</h4>
-  <%= render "form", lead: @lead %>
+
+<div class="page-header">
+  <div>
+    <h1>New Lead</h1>
+    <p class="subtitle">Create a new sales prospect.</p>
+  </div>
+
+  <%= link_to "Back to Leads", leads_path, class: "btn btn-light border" %>
 </div>
+
+<section class="m-card">
+  <%= render "form",
+    lead: @lead,
+    in_modal: false,
+    cancel_path: leads_path %>
+</section>

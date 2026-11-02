@@ -1,294 +1,558 @@
-<!-- app/views/leads/show.html.erb -->
-<div class="col-lg-10 mx-auto mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0"><%= @lead.name %></h4>
-    <div class="d-flex gap-2">
-      <%= link_to leads_path, class: "btn btn-sm btn-outline-secondary" do %>
-      ← Back
+
+<%
+lead_tasks = @lead.lead_tasks.to_a
+
+open_tasks = lead_tasks.select(&:open?)
+done_tasks = lead_tasks.select(&:done?)
+
+overdue_tasks = open_tasks.count do |task|
+  task.due_on.present? && task.due_on < Date.current
+end
+
+ordered_tasks = lead_tasks.sort_by do |task|
+  [
+    task.open? ? 0 : 1,
+    task.due_on || Date.new(9999, 12, 31),
+    task.created_at
+  ]
+end
+
+timeline_events = @lead.status_changes.to_a.sort_by do |event|
+  event.occurred_at || event.created_at
+end
+%>
+
+<div class="page-header">
+  <div>
+    <div class="small text-body-secondary mb-1">
+      <%= link_to "CRM", leads_path %> / Lead
+    </div>
+
+    <h1><%= @lead.name %></h1>
+
+    <p class="subtitle">
+      <%= @lead.company.presence || "Individual prospect" %>
+      · Created <%= l(@lead.created_at, format: :short) %>
+    </p>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    <%= link_to leads_path, class: "btn btn-light border" do %>
+    <i class="fa-solid fa-arrow-left me-1"></i> Leads
+    <% end %>
+
+    <%= link_to edit_lead_path(@lead),
+    class: "btn btn-primary",
+      data: { controller: "bs-modal-form" } do %>
+      <i class="fa-solid fa-pen me-1"></i> Edit
       <% end %>
-      <%= link_to edit_lead_path(@lead), class: "btn btn-sm btn-outline-primary" do %>
-      Edit
-      <% end %>
+
       <%= link_to lead_path(@lead),
-      data: { turbo_method: :delete, turbo_confirm: "Delete this lead?" },
-      class: "btn btn-sm btn-outline-danger" do %>
-      Delete
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: "Delete this lead?"
+      },
+      class: "btn btn-light border text-danger" do %>
+      <i class="fa-solid fa-trash"></i>
       <% end %>
     </div>
   </div>
 
-  <!-- Top summary -->
-  <div class="card mb-3">
-    <div class="card-body">
-      <div class="row g-3 align-items-center">
-        <div class="col-md-3">
-          <div class="small text-muted">Status</div>
-          <div><%= status_badge(@lead) %></div>
-        </div>
-        <div class="col-md-3">
-          <div class="small text-muted">Owner</div>
-          <div><%= @lead.owner&.name || "—" %></div>
-        </div>
-        <div class="col-md-3">
-          <div class="small text-muted">Company</div>
-          <div><%= @lead.company.presence || "—" %></div>
-        </div>
-        <div class="col-md-3">
-          <div class="small text-muted">Created</div>
-          <div><%= l(@lead.created_at, format: :short) %></div>
+  <!-- LEAD SUMMARY -->
+  <section class="m-card mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+      <div>
+        <div class="small text-body-secondary mb-1">Current stage</div>
+
+        <span class="badge bg-<%= status_header_badge_class(@lead.status) %>-subtle text-<%= status_header_badge_class(@lead.status) %> px-3 py-2">
+          <%= @lead.status.humanize %>
+        </span>
+      </div>
+
+      <div>
+        <div class="small text-body-secondary mb-1">Lead owner</div>
+        <div class="fw-semibold">
+          <i class="fa-solid fa-user text-body-secondary me-1"></i>
+          <%= @lead.owner&.name || "Unassigned" %>
         </div>
       </div>
+
+      <div>
+        <div class="small text-body-secondary mb-1">Lead source</div>
+        <div class="fw-semibold">
+          <%= @lead.source.presence || "—" %>
+        </div>
+      </div>
+
+      <div>
+        <div class="small text-body-secondary mb-1">Last contact</div>
+        <div class="fw-semibold">
+          <%= @lead.last_contact_on.present? ? l(@lead.last_contact_on) : "—" %>
+        </div>
+      </div>
+
+      <% if @lead.offered_amount.present? %>
+      <div>
+        <div class="small text-body-secondary mb-1">Offered amount</div>
+        <div class="fw-semibold">
+          <%= number_with_precision(@lead.offered_amount, precision: 2) %>
+        </div>
+      </div>
+      <% end %>
+
     </div>
+  </section>
+
+  <!-- LEAD PERFORMANCE -->
+  <div class="row row-tight mb-3">
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card h-100">
+        <div class="stat-card__head">
+          <p class="stat-card__label">First contact</p>
+          <span class="stat-card__icon stat-card__icon--c1">
+            <i class="fa-solid fa-phone"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= human_duration(@lead.time_to_first_contact) %>
+        </p>
+        <p class="stat-card__delta">
+          <%= @lead.contacted_at.present? ? l(@lead.contacted_at, format: :short) : "Not contacted yet" %>
+        </p>
+      </article>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card h-100">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Response time</p>
+          <span class="stat-card__icon stat-card__icon--c2">
+            <i class="fa-solid fa-comments"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= human_duration(@lead.time_to_response) %>
+        </p>
+        <p class="stat-card__delta">
+          <%= @lead.responded_at.present? ? l(@lead.responded_at, format: :short) : "Awaiting response" %>
+        </p>
+      </article>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card h-100">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Time to offer</p>
+          <span class="stat-card__icon stat-card__icon--c3">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= human_duration(@lead.time_to_offer) %>
+        </p>
+        <p class="stat-card__delta">
+          <%= @lead.offered_on.present? ? "Offer date: #{l(@lead.offered_on)}" : "No offer recorded" %>
+        </p>
+      </article>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card h-100">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Current stage age</p>
+          <span class="stat-card__icon stat-card__icon--c4">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= human_duration(@lead.current_status_age) %>
+        </p>
+        <p class="stat-card__delta">
+          <%= @lead.status_changed_at.present? ? "Since #{l(@lead.status_changed_at, format: :short)}" : "No transition recorded" %>
+        </p>
+      </article>
+    </div>
+
   </div>
 
-  <!-- KPI tiles -->
-  <div class="row g-3 mb-3">
-    <div class="col-md-3">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="small text-muted">Time to first contact</div>
-          <div class="fs-5"><%= human_duration(@lead.time_to_first_contact) %></div>
-          <% if @lead.contacted_at %>
-          <div class="text-muted small">on <%= l(@lead.contacted_at, format: :short) %></div>
-          <% end %>
-        </div>
-      </div>
-    </div>
+  <div class="row row-tight">
 
-    <div class="col-md-3">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="small text-muted">Time to response</div>
-          <div class="fs-5"><%= human_duration(@lead.time_to_response) %></div>
-          <% if @lead.responded_at %>
-          <div class="text-muted small">on <%= l(@lead.responded_at, format: :short) %></div>
-          <% end %>
-        </div>
-      </div>
-    </div>
+    <!-- LEFT: LEAD DETAILS AND TIMELINE -->
+    <div class="col-12 col-xl-7">
 
-    <div class="col-md-3">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="small text-muted">Time to offer</div>
-          <div class="fs-5"><%= human_duration(@lead.time_to_offer) %></div>
-          <% if @lead.offer_sent_at %>
-          <div class="text-muted small">on <%= l(@lead.offer_sent_at, format: :short) %></div>
-          <% end %>
-          <% if @lead.offered_amount.present? || @lead.offered_on.present? %>
-          <div class="small mt-1">
-            <span class="text-muted">Offer:</span>
-            <%= number_with_precision(@lead.offered_amount, precision: 2) if @lead.offered_amount.present? %>
-            <% if @lead.offered_on.present? %> (PI date: <%= @lead.offered_on %>) <% end %>
+      <section class="m-card mb-3">
+
+        <header class="m-card__header">
+          <div>
+            <h2 class="m-card__title">Contact Information</h2>
+            <p class="m-card__subtitle">Lead and company details</p>
           </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
+        </header>
 
-    <div class="col-md-3">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="small text-muted">Status age (current)</div>
-          <div class="fs-5"><%= human_duration(@lead.current_status_age) %></div>
-          <% if @lead.status_changed_at %>
-          <div class="text-muted small">since <%= l(@lead.status_changed_at, format: :short) %></div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="row g-3">
 
-  <!-- Timeline -->
-  <div class="card mb-4">
-    <div class="card-header fw-bold">Status Timeline</div>
-    <div class="card-body">
-      <% if @lead.status_changes.exists? %>
-      <ul class="list-group list-group-flush">
-        <% @lead.status_changes.order(occurred_at: :asc, created_at: :asc).each_with_index do |sc, idx| %>
-        <li class="list-group-item">
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="col-12 col-md-6">
+            <div class="small text-body-secondary mb-1">Company</div>
+            <div class="fw-medium"><%= @lead.company.presence || "—" %></div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="small text-body-secondary mb-1">Phone</div>
+            <div class="fw-medium">
+              <% if @lead.phone.present? %>
+              <%= link_to @lead.phone, "tel:#{@lead.phone}" %>
+              <% else %>
+              —
+              <% end %>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="small text-body-secondary mb-1">Email</div>
+            <div class="fw-medium">
+              <%= @lead.email.present? ? mail_to(@lead.email) : "—" %>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="small text-body-secondary mb-1">Source</div>
+            <div class="fw-medium"><%= @lead.source.presence || "—" %></div>
+          </div>
+
+          <div class="col-12">
+            <div class="small text-body-secondary mb-1">Notes</div>
             <div>
-              <span class="badge bg-light text-dark border me-2"><%= idx + 1 %></span>
-
-              <% to_label   = sc.to_status.present?   ? sc.to_status.humanize   : "Unknown" %>
-              <% from_label = sc.from_status.present? ? sc.from_status.humanize : nil %>
-
-              <strong><%= to_label %></strong>
-
-              <% if sc.offered_amount.present? %>
-              <span class="text-muted">(Offer: <%= number_with_precision(sc.offered_amount, precision: 2) %>)</span>
-              <% end %>
-
-              <% if from_label %>
-              <span class="text-muted small ms-2">from <%= from_label %></span>
-              <% end %>
-
-              <% if sc.to_status.blank? %>
-              <span class="badge bg-warning-subtle text-warning-emphasis ms-2">legacy</span>
-              <% end %>
-            </div>
-
-            <div class="text-muted small">
-              <%= l(sc.occurred_at || sc.created_at, format: :short) %>
-              <% if sc.changed_by %> · by <%= sc.changed_by.name %><% end %>
+              <%= simple_format(@lead.notes.presence || "No notes recorded.") %>
             </div>
           </div>
-        </li>
+
+        </div>
+
+      </section>
+
+      <!-- STATUS HISTORY -->
+      <section class="m-card mb-3">
+
+        <header class="m-card__header">
+          <div>
+            <h2 class="m-card__title">Activity Timeline</h2>
+            <p class="m-card__subtitle">
+              Recorded changes in the lead lifecycle
+            </p>
+          </div>
+
+          <span class="badge bg-secondary-subtle text-secondary">
+            <%= timeline_events.size %> events
+          </span>
+        </header>
+
+        <% if timeline_events.any? %>
+
+        <div class="list-group list-group-flush">
+
+          <% timeline_events.reverse_each do |event| %>
+          <% status_color = status_header_badge_class(event.to_status) %>
+
+          <div class="list-group-item px-0">
+            <div class="d-flex align-items-start gap-3">
+
+              <span class="rounded-circle bg-<%= status_color %>-subtle text-<%= status_color %> d-flex align-items-center justify-content-center flex-shrink-0"
+                style="width: 34px; height: 34px;">
+                <i class="fa-solid fa-arrow-right"></i>
+              </span>
+
+              <div class="flex-grow-1">
+
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+
+                  <div class="fw-semibold">
+                    <%= event.to_status.present? ? event.to_status.humanize : "Unknown status" %>
+
+                    <% if event.from_status.present? %>
+                    <span class="text-body-secondary fw-normal small">
+                      from <%= event.from_status.humanize %>
+                    </span>
+                    <% end %>
+                  </div>
+
+                  <span class="small text-body-secondary">
+                    <%= l(event.occurred_at || event.created_at, format: :short) %>
+                  </span>
+
+                </div>
+
+                <div class="small text-body-secondary mt-1">
+                  <%= event.changed_by&.name || "System / Unknown user" %>
+
+                  <% if event.offered_amount.present? %>
+                  · Offer:
+                  <strong>
+                    <%= number_with_precision(event.offered_amount, precision: 2) %>
+                  </strong>
+                  <% end %>
+
+                  <% if event.to_status.blank? %>
+                  · <span class="text-warning">Legacy record</span>
+                  <% end %>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+          <% end %>
+
+        </div>
+
+        <% else %>
+
+        <p class="text-body-secondary small mb-0">
+          No status changes have been recorded yet.
+        </p>
 
         <% end %>
-      </ul>
-      <% else %>
-      <div class="text-muted">No status changes recorded yet.</div>
-      <% end %>
-    </div>
-  </div>
 
-  <!-- Basic details card (optional, keep lean) -->
-  <div class="card">
-    <div class="card-header fw-bold">Details</div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <div class="small text-muted">Phone</div>
-          <div><%= @lead.phone.presence || "—" %></div>
-        </div>
-        <div class="col-md-4">
-          <div class="small text-muted">Email</div>
-          <div><%= @lead.email.present? ? mail_to(@lead.email) : "—" %></div>
-        </div>
-        <div class="col-md-4">
-          <div class="small text-muted">Source</div>
-          <div><%= @lead.source.presence || "—" %></div>
-        </div>
-        <div class="col-12">
-          <div class="small text-muted">Notes</div>
-          <div><%= simple_format(@lead.notes.presence || "—") %></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Tasks (Next Steps) -->
-<div class="card mb-3">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <strong>Next Steps</strong>
-    <span class="text-muted small">
-      Open: <%= @lead.lead_tasks.open.count %> · Overdue: <%= @lead.lead_tasks.overdue.count %>
-    </span>
-  </div>
+      </section>
 
-  <div class="card-body">
-    <% if @lead.lead_tasks.any? %>
-      <ul class="list-group mb-3">
-        <% @lead.lead_tasks.order(:status, :due_on, :created_at).each do |t| %>
-          <li class="list-group-item d-flex justify-content-between align-items-start">
-            <div class="me-2">
-              <div class="fw-semibold <%= 'text-decoration-line-through text-muted' if t.done? %>">
-                <%= t.title %>
+    </div>
+
+    <!-- RIGHT: TASKS -->
+    <div class="col-12 col-xl-5">
+
+      <section class="m-card mb-3">
+
+        <header class="m-card__header">
+          <div>
+            <h2 class="m-card__title">Next Steps</h2>
+            <p class="m-card__subtitle">Lead follow-up and assignments</p>
+          </div>
+
+          <span class="badge bg-primary-subtle text-primary">
+            <%= open_tasks.size %> open
+          </span>
+        </header>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge bg-danger-subtle text-danger">
+            <%= overdue_tasks %> overdue
+          </span>
+
+          <span class="badge bg-success-subtle text-success">
+            <%= done_tasks.size %> completed
+          </span>
+        </div>
+
+        <% if ordered_tasks.any? %>
+
+        <div class="d-flex flex-column gap-2 mb-3">
+
+          <% ordered_tasks.each do |task| %>
+
+          <div class="border rounded-3 p-3">
+
+            <div class="d-flex justify-content-between align-items-start gap-2">
+
+              <div class="flex-grow-1">
+
+                <div class="fw-semibold <%= 'text-body-secondary text-decoration-line-through' if task.done? %>">
+                  <%= task.title %>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+
+                  <% if task.due_on.present? %>
+                  <span class="badge <%= task.due_badge_class %>">
+                    <i class="fa-regular fa-calendar me-1"></i>
+                    <%= l(task.due_on) %>
+                  </span>
+                  <% else %>
+                  <span class="badge bg-secondary-subtle text-secondary">
+                    No due date
+                  </span>
+                  <% end %>
+
+                  <% if task.assigned_to.present? %>
+                  <span class="badge bg-light text-body border">
+                    <i class="fa-solid fa-user me-1"></i>
+                    <%= task.assigned_to.name %>
+                  </span>
+                  <% end %>
+
+                  <% if task.done? %>
+                  <span class="badge bg-success-subtle text-success">Completed</span>
+                  <% end %>
+
+                </div>
+
+                <% if task.notes.present? %>
+                <div class="small text-body-secondary mt-2">
+                  <%= simple_format(task.notes) %>
+                </div>
+                <% end %>
+
               </div>
-              <div class="small text-muted">
-                <% if t.due_on.present? %>
-                  <span class="badge <%= t.due_badge_class %>"><%= l(t.due_on) %></span>
+
+              <div class="dropdown flex-shrink-0">
+                <button
+                class="btn btn-sm btn-light border"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <i class="fa-solid fa-ellipsis"></i>
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end">
+
+                <li>
+                  <%= button_to(
+                    task.done? ? "Reopen task" : "Mark completed",
+                    toggle_done_lead_lead_task_path(@lead, task),
+                    method: :patch,
+                    class: "dropdown-item"
+                      ) %>
+                    </li>
+
+                    <li>
+                      <a class="dropdown-item"
+                      href="#task-edit-<%= task.id %>"
+                      data-bs-toggle="collapse">
+                      Edit task
+                    </a>
+                  </li>
+
+                  <li><hr class="dropdown-divider"></li>
+
+                  <li>
+                    <%= button_to(
+                      "Delete task",
+                      lead_lead_task_path(@lead, task),
+                      method: :delete,
+                      data: { turbo_confirm: "Delete this task?" },
+                      class: "dropdown-item text-danger"
+                        ) %>
+                      </li>
+
+                    </ul>
+                  </div>
+
+                </div>
+
+                <div class="collapse mt-3" id="task-edit-<%= task.id %>">
+
+                  <%= form_with model: [@lead, task], local: true do |f| %>
+
+                  <div class="mb-2">
+                    <%= f.label :title, class: "form-label small" %>
+                    <%= f.text_field :title, class: "form-control form-control-sm" %>
+                  </div>
+
+                  <div class="row g-2">
+
+                    <div class="col-6">
+                      <%= f.label :due_on, class: "form-label small" %>
+                      <%= f.date_field :due_on, class: "form-control form-control-sm" %>
+                    </div>
+
+                    <div class="col-6">
+                      <%= f.label :assigned_to_id, "Assigned to", class: "form-label small" %>
+                      <%= f.collection_select(
+                        :assigned_to_id,
+                        @task_assignees,
+                        :id,
+                        :name,
+                        { include_blank: "Unassigned" },
+                        class: "form-select form-select-sm"
+                          ) %>
+                        </div>
+
+                      </div>
+
+                      <div class="mt-2">
+                        <%= f.label :notes, class: "form-label small" %>
+                        <%= f.text_area :notes, rows: 2, class: "form-control form-control-sm" %>
+                      </div>
+
+                      <div class="text-end mt-2">
+                        <%= f.submit "Save task", class: "btn btn-sm btn-primary" %>
+                      </div>
+
+                      <% end %>
+
+                    </div>
+
+                  </div>
+
+                  <% end %>
+
+                </div>
+
                 <% else %>
-                  <span class="badge bg-secondary">No due date</span>
+
+                <div class="text-center py-3">
+                  <i class="fa-solid fa-list-check fs-3 text-body-secondary"></i>
+                  <p class="small text-body-secondary mt-2 mb-0">
+                    No follow-up tasks yet.
+                  </p>
+                </div>
+
                 <% end %>
-                <% if t.assigned_to %>
-                  · Assigned: <%= t.assigned_to.name %>
-                <% end %>
-              </div>
-              <% if t.notes.present? %>
-                <div class="small mt-1"><%= simple_format(t.notes) %></div>
-              <% end %>
-            </div>
 
-            <div class="ms-2 d-flex gap-1">
-              <%= button_to (t.done? ? "Reopen" : "Done"),
-                            toggle_done_lead_lead_task_path(@lead, t),
-                            method: :patch,
-                            class: "btn btn-sm #{t.done? ? 'btn-outline-secondary' : 'btn-success'}" %>
+                <hr>
 
-              <%= link_to "Edit",
-                          "#",
-                          class: "btn btn-sm btn-outline-secondary",
-                          data: { bs_toggle: "collapse", bs_target: "#task_edit_#{t.id}" } %>
+                <h3 class="h6 fw-semibold mb-3">
+                  <i class="fa-solid fa-plus me-1"></i>
+                  Add follow-up task
+                </h3>
 
-              <%= button_to "Delete",
-                            lead_lead_task_path(@lead, t),
-                            method: :delete,
-                            data: { turbo_confirm: "Delete this task?" },
-                            class: "btn btn-sm btn-outline-danger" %>
-            </div>
-          </li>
+                <%= form_with model: [@lead, LeadTask.new], local: true do |f| %>
 
-          <li class="list-group-item p-2 collapse" id="task_edit_<%= t.id %>">
-            <%= form_with model: [@lead, t], local: true do |f| %>
-              <div class="row g-2 align-items-end">
-                <div class="col-md-5">
-                  <label class="form-label mb-1">Title</label>
-                  <%= f.text_field :title, class: "form-control form-control-sm" %>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label mb-1">Due on</label>
-                  <%= f.date_field :due_on, class: "form-control form-control-sm text-center" %>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label mb-1">Assigned to</label>
-                  <%= f.collection_select :assigned_to_id,
-                        User.by_name,   # was User.order(:name)
-                        :id, :name,
-                        { include_blank: "Me" },
-                        class: "form-select form-select-sm" %>
-                </div>
-                <div class="col-12">
-                  <label class="form-label mb-1">Notes</label>
-                  <%= f.text_area :notes, rows: 2, class: "form-control form-control-sm" %>
-                </div>
-                <div class="col-12 text-end">
-                  <button class="btn btn-sm btn-primary">Save</button>
-                </div>
-              </div>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <div class="text-muted">No tasks yet.</div>
-    <% end %>
+                <div class="mb-2">
+                  <%= f.label :title, "Task", class: "form-label small" %>
+                  <%= f.text_field :title,
+                  class: "form-control",
+                    placeholder: "e.g. Call customer",
+                    required: true %>
+                  </div>
 
-    <hr>
+                  <div class="row g-2">
 
-    <div class="fw-semibold mb-2">Add new task</div>
-    <%= form_with model: [@lead, LeadTask.new], local: true do |f| %>
-      <div class="row g-2 align-items-end">
-        <div class="col-md-5">
-          <label class="form-label mb-1">Title</label>
-          <%= f.text_field :title,
-                           class: "form-control form-control-sm",
-                           placeholder: "e.g., follow-up call" %>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label mb-1">Due on</label>
-          <%= f.date_field :due_on, class: "form-control form-control-sm text-center" %>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label mb-1">Assign to</label>
-          <%= f.collection_select :assigned_to_id,
-                                  User.by_name,
-                                  :id, :name,
-                                  { include_blank: "Me" },
-                                  class: "form-select form-select-sm" %>
-        </div>
-        <div class="col-12">
-          <label class="form-label mb-1">Notes</label>
-          <%= f.text_area :notes, rows: 2, class: "form-control form-control-sm" %>
-        </div>
-        <div class="col-12 text-end">
-          <button class="btn btn-primary btn-sm">Add</button>
-        </div>
-      </div>
-    <% end %>
-  </div>
-</div>
+                    <div class="col-6">
+                      <%= f.label :due_on, "Due date", class: "form-label small" %>
+                      <%= f.date_field :due_on, class: "form-control" %>
+                    </div>
 
+                    <div class="col-6">
+                      <%= f.label :assigned_to_id, "Assign to", class: "form-label small" %>
+                      <%= f.collection_select(
+                        :assigned_to_id,
+                        @task_assignees,
+                        :id,
+                        :name,
+                        { include_blank: "Me (default)" },
+                        class: "form-select"
+                          ) %>
+                        </div>
 
-  </div>
+                      </div>
+
+                      <div class="mt-2">
+                        <%= f.label :notes, class: "form-label small" %>
+                        <%= f.text_area :notes,
+                        rows: 2,
+                        class: "form-control",
+                          placeholder: "Additional instructions..." %>
+                        </div>
+
+                        <div class="d-grid mt-3">
+                          <%= f.submit "Create task", class: "btn btn-primary" %>
+                        </div>
+
+                        <% end %>
+
+                      </section>
+
+                    </div>
+
+                  </div>

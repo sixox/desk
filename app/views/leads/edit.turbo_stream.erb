@@ -1,0 +1,13 @@
+
+<%= turbo_stream.replace "remote_modal" do %>
+  <%= render "shared/turbo_modal",
+    modal_title: "Edit Lead",
+    modal_subtitle: "Update prospect information and commercial details.",
+    modal_icon: "fa-user-pen",
+    modal_size: "modal-lg",
+    form_partial: "leads/form",
+    form_locals: {
+      lead: @lead,
+      in_modal: true
+    } %>
+<% end %>

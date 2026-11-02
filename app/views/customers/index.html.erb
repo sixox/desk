@@ -1,31 +1,205 @@
-<div class="col-lg-10 mx-auto mt-5">
-	<% if current_user.is_manager || current_user.sales? %>
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<h3>Customers</h3>
-					</div>
-				</div>
-				<% if current_user.sales? %>
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-end">
-						<%= link_to new_customer_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
-						<i class="bi bi-plus"></i> New Customer
-						<% end %>
-					</div>
-				</div>
-				<% end %>
-			</div>
-			<ul class="list-group mt-5 mb-5" id="customer_items">
-				<% @customers.each do |customer| %>
-				  <%= link_to customer_path(customer), class: "text-decoration-none" do %>
-						<%= render 'customers/customer', customer: customer %>
-				  <% end %>
-				<% end %>
-			</ul>
-		</div>
-	</div>
-	<% end %>
-</div>
+
+<% if current_user.is_manager || current_user.sales? %>
+
+  <div class="page-header">
+
+    <div>
+      <h1>Customers</h1>
+
+      <p class="subtitle">
+        Customer relationships, projects, and commercial activity.
+      </p>
+    </div>
+
+    <% if current_user.sales? %>
+      <%= link_to new_customer_path,
+        class: "btn btn-primary",
+        data: { controller: "bs-modal-form" } do %>
+
+        <i class="fa-solid fa-plus me-1"></i>
+        New Customer
+
+      <% end %>
+    <% end %>
+
+  </div>
+
+  <!-- CUSTOMER SUMMARY -->
+
+  <div class="row row-tight mb-3">
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Customers</p>
+          <span class="stat-card__icon stat-card__icon--c1">
+            <i class="fa-solid fa-users"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= number_with_delimiter(@customer_count) %>
+        </p>
+      </article>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Customers with Projects</p>
+          <span class="stat-card__icon stat-card__icon--c2">
+            <i class="fa-solid fa-folder-open"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= @customers.count do |customer| %>
+            <%= customer.pis.any?(&:project_id) %>
+          <% end %>
+        </p>
+      </article>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Proforma Invoices</p>
+          <span class="stat-card__icon stat-card__icon--c3">
+            <i class="fa-solid fa-file-invoice"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= @customers.sum { |customer| customer.pis.size } %>
+        </p>
+      </article>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <article class="stat-card">
+        <div class="stat-card__head">
+          <p class="stat-card__label">Commercial Invoices</p>
+          <span class="stat-card__icon stat-card__icon--c4">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </span>
+        </div>
+        <p class="stat-card__value">
+          <%= @customers.sum { |customer| customer.pis.sum { |pi| pi.cis.size } } %>
+        </p>
+      </article>
+    </div>
+
+  </div>
+
+  <!-- CUSTOMER DIRECTORY -->
+
+  <section class="m-card">
+
+    <header class="m-card__header">
+      <div>
+        <h2 class="m-card__title">Customer Directory</h2>
+        <p class="m-card__subtitle">
+          Search and access customer business history.
+        </p>
+      </div>
+
+      <span class="badge bg-primary-subtle text-primary">
+        <%= @customer_count %> records
+      </span>
+    </header>
+
+    <div class="mb-3">
+
+      <%= form_with url: customers_path,
+        method: :get,
+        local: true,
+        class: "row g-2 align-items-end" do |f| %>
+
+        <div class="col-12 col-md-7 col-lg-8">
+
+          <%= f.label :q, "Search customers", class: "form-label small" %>
+
+          <%= f.search_field :q,
+            value: params[:q],
+            class: "form-control",
+            placeholder: "Name, nickname or company..." %>
+
+        </div>
+
+        <div class="col-8 col-md-3">
+
+          <%= f.label :sort, "Sort by", class: "form-label small" %>
+
+          <%= f.select :sort,
+            options_for_select(
+              [
+                ["Name", "name"],
+                ["Recently updated", "recent"]
+              ],
+              params[:sort].presence || "name"
+            ),
+            {},
+            class: "form-select" %>
+
+        </div>
+
+        <div class="col-4 col-md-2 d-flex gap-2">
+
+          <%= f.submit "Search",
+            class: "btn btn-primary flex-grow-1" %>
+
+          <%= link_to customers_path,
+            class: "btn btn-light border",
+            title: "Clear filters" do %>
+            <i class="fa-solid fa-rotate-left"></i>
+          <% end %>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+    <div class="table-responsive">
+
+      <table class="table table-hover align-middle mb-0">
+
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th class="text-center">Projects</th>
+            <th class="text-center">PIs</th>
+            <th class="text-center">CIs</th>
+            <th>Currencies</th>
+            <th>Last activity</th>
+            <th>Owner</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="customer_items">
+
+          <% @customers.each do |customer| %>
+            <%= render "customers/customer", customer: customer %>
+          <% end %>
+
+          <% if @customers.empty? %>
+            <tr>
+              <td colspan="8" class="text-center py-5">
+
+                <i class="fa-solid fa-users fs-3 text-body-secondary"></i>
+
+                <p class="text-body-secondary mt-2 mb-0">
+                  No customers found.
+                </p>
+
+              </td>
+            </tr>
+          <% end %>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+<% end %>

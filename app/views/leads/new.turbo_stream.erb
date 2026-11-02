@@ -1,0 +1,13 @@
+
+<%= turbo_stream.replace "remote_modal" do %>
+  <%= render "shared/turbo_modal",
+    modal_title: "New Lead",
+    modal_subtitle: "Add a new prospect to your sales pipeline.",
+    modal_icon: "fa-user-plus",
+    modal_size: "modal-lg",
+    form_partial: "leads/form",
+    form_locals: {
+      lead: @lead,
+      in_modal: true
+    } %>
+<% end %>

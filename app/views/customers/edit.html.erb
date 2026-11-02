@@ -1,0 +1,13 @@
+<div class="page-header">
+  <div>
+    <h1>Edit Customer</h1>
+    <p class="subtitle"><%= @customer.nickname.titleize %></p>
+  </div>
+</div>
+
+<section class="m-card">
+  <%= render "form",
+    customer: @customer,
+    in_modal: false,
+    cancel_path: customer_path(@customer) %>
+</section>

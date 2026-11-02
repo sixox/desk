@@ -1,0 +1,20 @@
+
+<div class="erp-form__section-heading">
+
+  <div class="erp-form__section-icon">
+    <i class="fa-solid <%= icon %>"></i>
+  </div>
+
+  <div>
+    <h3 class="erp-form__section-title">
+      <%= title %>
+    </h3>
+
+    <% if local_assigns[:description].present? %>
+      <p class="erp-form__section-description">
+        <%= description %>
+      </p>
+    <% end %>
+  </div>
+
+</div>

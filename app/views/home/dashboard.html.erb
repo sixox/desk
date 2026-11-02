@@ -1,28 +1,45 @@
-<div class="col-lg-10 mx-auto mt-3">
-	<%= render 'home/vacation' %>
-	<div class="card mt-3" style="background-color: floralwhite !important; border-color: papayawhip !important;">
-		<%= render 'home/paid_pos' %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render 'home/pos_diagram' %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render 'home/pos_transactions' %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render 'home/banks' %>
-	</div>
-	<div class="card mt-3" style="background-color: floralwhite !important; border-color: papayawhip !important;">
-		<%= render 'home/pis' %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render 'home/cis' %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render 'home/swifts' %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render "home/pi_quantity_chart" %>
-		<hr class="timeline-small me-3 ms-3">
-		<%= render "home/customers" %>
 
-	</div>
+<div class="page-header">
+  <div>
+    <h1>Company Overview</h1>
+    <p class="subtitle">
+      Your company's financial and operational overview.
+    </p>
+  </div>
 
-
-	
-
+  <div class="page-header__actions">
+    <span class="date-chip">
+      <i class="fa-regular fa-calendar"></i>
+      <%= Date.current.strftime("%A, %d %B %Y") %>
+    </span>
+  </div>
 </div>
+
+<%= render "home/vacation" %>
+<%= render "home/crm_overview" %>
+
+<%= render "home/paid_pos" %>
+
+<%= render "home/pos_diagram" %>
+
+<%= render "home/pos_transactions" %>
+
+<%= render "home/banks" %>
+
+<div class="row row-tight">
+  <div class="col-12 col-xl-4">
+    <%= render "home/pis" %>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <%= render "home/cis" %>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <%= render "home/swifts" %>
+  </div>
+</div>
+
+<%= render "home/pi_quantity_chart" %>
+
+<%= render "home/customers" %>

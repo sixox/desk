@@ -1,64 +1,234 @@
-<%= form_with model: lead, local: true do |f| %>
-  <div class="row g-3">
-    <div class="col-md-4">
-      <label class="form-label">Name*</label>
-      <%= f.text_field :name, class: "form-control", required: true %>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Company</label>
-      <%= f.text_field :company, class: "form-control" %>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Status</label>
-      <%= f.select :status, Lead.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "form-select" %>
-    </div>
 
-    <div class="col-md-4">
-      <label class="form-label">Phone</label>
-      <%= f.telephone_field :phone, class: "form-control" %>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Email</label>
-      <%= f.email_field :email, class: "form-control" %>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Source</label>
-      <%= f.text_field :source, class: "form-control" %>
-    </div>
+<%
+  in_modal = local_assigns.fetch(:in_modal, true)
+  cancel_path = local_assigns[:cancel_path] || leads_path
+  form_css_class = in_modal ? "erp-modal__form" : "erp-form"
+%>
 
-    <div class="col-md-3">
-      <label class="form-label">Offered Amount</label>
-      <div class="input-group">
-        <%= f.number_field :offered_amount, step: "0.01", class: "form-control text-end" %>
-        <span class="input-group-text">$</span>
+<%= form_with(
+  model: lead,
+  html: {
+    class: form_css_class,
+    data: {
+      controller: "lead-quick-status"
+    }
+  }
+) do |f| %>
+
+  <div class="<%= in_modal ? 'modal-body' : 'card-body' %> erp-form__body">
+
+    <%= render "shared/forms/errors", object: lead %>
+
+    <!-- BASIC INFORMATION -->
+    <section class="erp-form__section">
+
+      <%= render "shared/forms/section_heading",
+        icon: "fa-user",
+        title: "Lead Information",
+        description: "Basic information about the potential customer." %>
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :name,
+            label: "Lead name",
+            required: true,
+            hint: "Name of the contact or business representative.",
+            input_options: {
+              placeholder: "Enter lead name",
+              autocomplete: "name",
+              autofocus: true
+            } %>
+        </div>
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :company,
+            label: "Company",
+            hint: "Company or organization name.",
+            input_options: {
+              placeholder: "Enter company name"
+            } %>
+        </div>
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :source,
+            label: "Lead source",
+            hint: "How did this lead come to us?",
+            input_options: {
+              placeholder: "Referral, website, exhibition..."
+            } %>
+        </div>
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :status,
+            label: "Current stage",
+            type: :select,
+            required: true,
+            choices: Lead.statuses.keys.map { |status| [status.humanize, status] },
+            select_options: { include_blank: "Select stage" },
+            input_options: {
+              data: {
+                action: "change->lead-quick-status#toggleFields"
+              }
+            } %>
+        </div>
+
+        <div class="col-12">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :notes,
+            label: "Description and notes",
+            type: :text_area,
+            hint: "Important information, customer requirements, or initial discussion.",
+            input_options: {
+              rows: 3,
+              placeholder: "Write relevant details..."
+            } %>
+        </div>
+
       </div>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Offered On</label>
-      <%= f.date_field :offered_on, class: "form-control" %>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Last Contact</label>
-      <%= f.date_field :last_contact_on, class: "form-control" %>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Owner</label>
-      <%= f.collection_select :owner_id,
-                        User.by_name,
-                        :id,
-                        :name,         
-                        { include_blank: "—" },
-                        class: "form-select" %>
-    </div>
 
-    <div class="col-12">
-      <label class="form-label">Notes</label>
-      <%= f.text_area :notes, rows: 3, class: "form-control" %>
-    </div>
+    </section>
 
-    <div class="col-12 d-flex justify-content-end gap-2">
-      <%= link_to "Cancel", leads_path, class: "btn btn-outline-secondary" %>
-      <%= f.submit class: "btn btn-primary", value: (lead.persisted? ? "Save changes" : "Create Lead") %>
-    </div>
+    <!-- CONTACT INFORMATION -->
+    <section class="erp-form__section">
+
+      <%= render "shared/forms/section_heading",
+        icon: "fa-address-card",
+        title: "Contact Information",
+        description: "Contact details and last communication date." %>
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :phone,
+            label: "Phone number",
+            type: :telephone_field,
+            input_options: {
+              placeholder: "+...",
+              autocomplete: "tel"
+            } %>
+        </div>
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :email,
+            label: "Email address",
+            type: :email_field,
+            input_options: {
+              placeholder: "name@example.com",
+              autocomplete: "email"
+            } %>
+        </div>
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :last_contact_on,
+            label: "Last contact date",
+            type: :date_field,
+            hint: "Date of the most recent communication." %>
+        </div>
+
+        <div class="col-md-6">
+          <% if lead.persisted? %>
+
+            <div class="erp-form__field">
+              <%= f.label :owner_id, "Lead owner", class: "form-label" %>
+
+              <%= f.collection_select(
+                :owner_id,
+                User.by_name,
+                :id,
+                :name,
+                { include_blank: "Unassigned" },
+                class: "form-select"
+              ) %>
+
+              <span class="erp-form__hint">
+                Employee responsible for this lead.
+              </span>
+            </div>
+
+          <% else %>
+
+            <div class="erp-form__field">
+              <%= label_tag :lead_owner, "Lead owner", class: "form-label" %>
+
+              <div class="erp-form__readonly">
+                <i class="fa-solid fa-user-check"></i>
+                <strong><%= current_user.name %></strong>
+                <span class="text-body-secondary ms-auto small">Assigned automatically</span>
+              </div>
+            </div>
+
+          <% end %>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- OFFER INFORMATION -->
+    <section
+      class="erp-form__section"
+      data-lead-quick-status-target="offerFields"
+      <%= "hidden" unless lead.status == "offer_sent" %>>
+
+      <%= render "shared/forms/section_heading",
+        icon: "fa-file-invoice-dollar",
+        title: "Commercial Offer",
+        description: "Offer amount and submission date." %>
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <div class="erp-form__field">
+
+            <%= f.label :offered_amount, "Offered amount", class: "form-label" %>
+
+            <div class="input-group">
+              <%= f.number_field :offered_amount,
+                step: "0.01",
+                min: 0,
+                class: "form-control",
+                placeholder: "0.00" %>
+
+              <span class="input-group-text">$</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :offered_on,
+            label: "Offer date",
+            type: :date_field %>
+        </div>
+
+      </div>
+
+    </section>
+
   </div>
+
+  <%= render "shared/forms/actions",
+    form: f,
+    in_modal: in_modal,
+    cancel_path: cancel_path,
+    submit_label: lead.persisted? ? "Save changes" : "Create lead" %>
+
 <% end %>

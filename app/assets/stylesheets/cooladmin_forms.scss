@@ -1,0 +1,297 @@
+
+body.app {
+  // =========================================
+  // FORM MODALS
+  // =========================================
+
+  .erp-modal .modal-dialog {
+    margin: 1rem auto;
+  }
+
+  .erp-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    border: 1px solid var(--m-border);
+    border-radius: 16px;
+    background: var(--m-surface);
+    box-shadow: var(--m-shadow-lg);
+  }
+
+  .erp-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-shrink: 0;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--m-border-soft);
+    background: var(--m-surface);
+  }
+
+  .erp-modal__heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+  }
+
+  .erp-modal__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 12px;
+    background: var(--m-accent-soft);
+    color: var(--m-accent);
+    font-size: 17px;
+  }
+
+  .erp-modal__title {
+    margin: 0;
+    color: var(--m-text);
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+
+  .erp-modal__subtitle {
+    margin: 4px 0 0;
+    color: var(--m-text-muted);
+    font-size: 12.5px;
+    font-weight: 400;
+  }
+
+  .erp-modal .modal-content > form {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .erp-modal .erp-form__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 24px;
+  }
+
+  .erp-modal .erp-form__actions {
+    flex: 0 0 auto;
+    padding: 15px 24px;
+    border-top: 1px solid var(--m-border-soft);
+    background: var(--m-surface-2);
+  }
+
+  // =========================================
+  // FORM SECTIONS
+  // =========================================
+
+  .erp-form__section {
+    padding: 18px;
+    margin-bottom: 16px;
+    border: 1px solid var(--m-border);
+    border-radius: 12px;
+    background: var(--m-surface);
+  }
+
+  .erp-form__section:last-child {
+    margin-bottom: 0;
+  }
+
+  .erp-form__section-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 18px;
+  }
+
+  .erp-form__section-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: 9px;
+    background: var(--m-surface-2);
+    color: var(--m-accent);
+    font-size: 14px;
+  }
+
+  .erp-form__section-title {
+    margin: 0;
+    color: var(--m-text);
+    font-size: 13.5px;
+    font-weight: 650;
+  }
+
+  .erp-form__section-description {
+    margin: 3px 0 0;
+    color: var(--m-text-muted);
+    font-size: 11.5px;
+  }
+
+  // =========================================
+  // FORM FIELDS
+  // =========================================
+
+  .erp-form__field {
+    min-width: 0;
+    margin-bottom: 15px;
+  }
+
+  .erp-form__field:last-child {
+    margin-bottom: 0;
+  }
+
+  .erp-form__field .form-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--m-text);
+    font-size: 12.5px;
+    font-weight: 550;
+  }
+
+  .erp-form__required {
+    color: var(--m-danger);
+    margin-left: 3px;
+  }
+
+  .erp-form__hint {
+    display: block;
+    margin-top: 5px;
+    color: var(--m-text-faint);
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  .erp-form__readonly {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--m-border);
+    border-radius: 8px;
+    background: var(--m-surface-2);
+    color: var(--m-text);
+    font-size: 13px;
+  }
+
+  .erp-form__readonly i {
+    color: var(--m-text-muted);
+  }
+
+  // =========================================
+  // VALIDATION
+  // =========================================
+
+  .erp-form__errors {
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    background: var(--m-danger-soft);
+    color: #b42318;
+    font-size: 13px;
+  }
+
+  .erp-form__errors-title {
+    margin-bottom: 6px;
+    font-weight: 650;
+  }
+
+  .erp-form__errors ul {
+    padding-left: 20px;
+    margin: 0;
+  }
+
+  .erp-form__field .invalid-feedback {
+    display: block;
+    margin-top: 5px;
+    font-size: 11.5px;
+  }
+
+  // =========================================
+  // ACTION FOOTER
+  // =========================================
+
+  .erp-form__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .erp-form__actions-note {
+    color: var(--m-text-faint);
+    font-size: 11.5px;
+  }
+
+  .erp-form__actions-buttons {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-left: auto;
+  }
+
+  .erp-form__actions .btn {
+    min-height: 38px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 550;
+  }
+
+  // =========================================
+  // STANDALONE FORMS
+  // =========================================
+
+  .erp-form:not(.erp-modal__form) .erp-form__body {
+    padding: 22px;
+  }
+
+  .erp-form:not(.erp-modal__form) .erp-form__actions {
+    padding: 15px 22px;
+    border-top: 1px solid var(--m-border-soft);
+    background: var(--m-surface-2);
+    border-radius: 0 0 12px 12px;
+  }
+
+  @media (max-width: 575.98px) {
+    .erp-modal .modal-dialog {
+      margin: 8px;
+    }
+
+    .erp-modal .modal-content {
+      max-height: calc(100dvh - 16px);
+      border-radius: 12px;
+    }
+
+    .erp-modal .modal-header {
+      padding: 15px 16px;
+    }
+
+    .erp-modal .erp-form__body {
+      padding: 15px;
+    }
+
+    .erp-modal .erp-form__actions {
+      padding: 12px 15px;
+    }
+
+    .erp-form__section {
+      padding: 14px;
+    }
+
+    .erp-form__actions-note {
+      display: none;
+    }
+  }
+}

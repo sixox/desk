@@ -1,140 +1,213 @@
-<div class="col-lg-10 mx-auto mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Leads</h4>
-    <div class="d-flex gap-2">
-      <%= link_to "Pipeline", pipeline_leads_path, class: "btn btn-sm btn-outline-primary" %>
-      <%= link_to "New Lead", new_lead_path, class: "btn btn-primary btn-sm" %>
-      <%= link_to tasks_path, class: "btn btn-sm btn-outline-primary position-relative" do %>
-        Tasks
-        <% if @my_due_count.to_i > 0 %>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            <%= @my_due_count %>
-          </span>
-        <% else %>
-          <!-- show a tiny grey dot when zero so we know it renders -->
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary"
-                style="width:10px;height:10px;padding:0;"></span>
-        <% end %>
+<div class="page-header">
+  <div>
+    <h1>CRM & Leads</h1>
+    <p class="subtitle">Manage prospects and follow up on business opportunities.</p>
+  </div>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <%= link_to tasks_path, class: "btn btn-light border position-relative" do %>
+    <i class="fa-solid fa-list-check me-1"></i> My Tasks
+    <% if @my_due_count.to_i.positive? %>
+    <span class="badge bg-danger ms-1"><%= @my_due_count %></span>
+    <% end %>
+    <% end %>
+
+    <%= link_to pipeline_leads_path, class: "btn btn-light border" do %>
+    <i class="fa-solid fa-diagram-project me-1"></i> Pipeline
+    <% end %>
+
+    <%= link_to new_lead_path,
+    class: "btn btn-primary",
+      data: { controller: "bs-modal-form" } do %>
+      <i class="fa-solid fa-plus me-1"></i> New Lead
       <% end %>
     </div>
   </div>
 
+  <section class="card mb-3">
+    <div class="card-body py-3">
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        <span class="text-body-secondary small fw-semibold me-1">
+          <i class="fa-solid fa-filter me-1"></i> Status
+        </span>
 
-  
+        <%= link_to "All",
+        leads_path,
+        class: "btn btn-sm #{params[:status].blank? ? 'btn-primary' : 'btn-light border'}" %>
 
-  <div class="mb-3 d-flex gap-2 align-items-center">
-    <strong>Filter:</strong>
-    <% Lead.statuses.keys.each do |st| %>
-    <%= link_to st.humanize,
-    leads_path(status: st),
-    class: ["btn","btn-sm","btn-outline-secondary", (params[:status] == st ? "btn-dark" : nil)].compact.join(" ") %>
-    <% end %>
-    <%= link_to "All",
-    leads_path,
-    class: ["btn","btn-sm","btn-outline-secondary","ms-2", (params[:status].present? ? nil : "btn-dark")].compact.join(" ") %>
-  </div>
-
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped table-sm align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Name</th>
-          <th>Company</th>
-          <th>Phone</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>Owner</th>
-          <th class="text-end" style="width:420px;">Quick Status</th>
-          <th class="text-end" style="width:120px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @leads.each do |lead| %>
-        <tr>
-          <td><%= link_to lead.name, lead_path(lead) %></td>
-          <td><%= lead.company %></td>
-          <td><%= lead.phone %></td>
-          <td><%= mail_to(lead.email) if lead.email.present? %></td>
-          <td><span class="badge bg-<%= lead.badge_class %>"><%= lead.status.humanize %></span></td>
-          <td><%= lead.owner&.name || "—" %></td>
-
-          <td class="text-end">
-           <%= form_with url: update_status_lead_path(lead),
-           method: :patch,
-           local: true,
-           scope: :lead,
-           html: { class: "quick-status-form d-inline-block w-100", 'data-lead-id': lead.id } do |f| %>
-           <div class="input-group input-group-sm ms-auto" style="max-width: 410px;">
-            <%= hidden_field_tag :back_status, params[:status] %>
-
-            <%= f.select :status,
-            options_for_select(Lead.statuses.keys.map { |s| [s.humanize, s] }, lead.status),
-            {},
-            class: "form-select form-select-sm quick-status-select" %>
-
-            <div class="input-group" data-offer-only style="<%= lead.status == 'offer_sent' ? '' : 'display:none;' %>">
-              <%= f.number_field :offered_amount,
-              step: 0.01,
-              class: "form-control form-control-sm text-end",
-               placeholder: "Amount",
-               style: "width: 120px;",
-               value: lead.offered_amount %>
-
-               <%= f.date_field :offered_on,
-               class: "form-control form-control-sm",
-                 style: "width: 140px;",
-                 value: lead.offered_on %>
-               </div>
-
-               <button class="btn btn-outline-primary btn-sm">Set</button>
-             </div>
-             <% end %>
-
-           </td>
-
-           <td class="text-end">
-            <%= link_to edit_lead_path(lead), class: "btn btn-sm btn-outline-secondary", title: "Edit" do %>
-            <i class="bi bi-pencil"></i>
-            <% end %>
-            <%= link_to lead_path(lead),
-            data: { turbo_method: :delete, turbo_confirm: "Delete this lead?" },
-            class: "btn btn-sm btn-outline-danger", title: "Delete" do %>
-            <i class="bi bi-trash"></i>
-            <% end %>
-
-
-          </td>
-        </tr>
+        <% Lead.statuses.keys.each do |status| %>
+        <%= link_to status.humanize,
+        leads_path(status: status),
+        class: "btn btn-sm #{params[:status] == status ? 'btn-primary' : 'btn-light border'}" %>
         <% end %>
-      </tbody>
-    </table>
-  </div>
-</div>
+      </div>
+    </div>
+  </section>
 
-<!-- Toggle amount/date only when status == offer_sent -->
-<script>
-  (function(){
-    function toggleOfferFields(form){
-      if(!form) return;
-      var select = form.querySelector('.quick-status-select');
-      var offerWrap = form.querySelector('[data-offer-only]');
-      if(!select || !offerWrap) return;
-      if(select.value === 'offer_sent'){
-        offerWrap.style.display = '';
-      }else{
-        offerWrap.style.display = 'none';
-      }
-    }
+  <section class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <div>
+        <h5 class="mb-0">Lead Directory</h5>
+        <small class="text-body-secondary">
+          <%= @leads.size %> matching records
+        </small>
+      </div>
+    </div>
 
-    document.querySelectorAll('.quick-status-form').forEach(function(form){
-      var select = form.querySelector('.quick-status-select');
-      toggleOfferFields(form);
-      if(select){
-        select.addEventListener('change', function(){
-          toggleOfferFields(form);
-        });
-      }
-    });
-  })();
-</script>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
 
+        <thead>
+          <tr>
+            <th>Lead</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Quick Update</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% @leads.each do |lead| %>
+          <tr>
+            <td>
+              <%= link_to lead.name, lead_path(lead),
+              class: "fw-semibold text-decoration-none" %>
+
+              <div class="small text-body-secondary">
+                <%= lead.company.presence || "Individual" %>
+              </div>
+            </td>
+
+            <td>
+              <% if lead.phone.present? %>
+              <div class="small">
+                <i class="fa-solid fa-phone text-body-secondary me-1"></i>
+                <%= lead.phone %>
+              </div>
+              <% end %>
+
+              <% if lead.email.present? %>
+              <div class="small">
+                <i class="fa-solid fa-envelope text-body-secondary me-1"></i>
+                <%= mail_to lead.email, class: "text-decoration-none" %>
+              </div>
+              <% end %>
+
+              <% if lead.phone.blank? && lead.email.blank? %>
+              <span class="text-body-secondary small">—</span>
+              <% end %>
+            </td>
+
+            <td>
+              <span class="badge bg-<%= status_header_badge_class(lead.status) %>-subtle text-<%= status_header_badge_class(lead.status) %>">
+                <%= lead.status.humanize %>
+              </span>
+
+              <div class="small text-body-secondary mt-1">
+                <%= distance_of_time_in_words(lead.current_status_age || 0) %>
+              </div>
+            </td>
+
+            <td>
+              <div class="small fw-medium">
+                <%= lead.owner&.name || "Unassigned" %>
+              </div>
+            </td>
+
+            <td style="min-width: 260px;">
+              <%= form_with(
+                url: update_status_lead_path(lead),
+                method: :patch,
+                local: true,
+                scope: :lead,
+                html: {
+                  class: "d-flex align-items-center gap-1",
+                    data: {
+                      controller: "lead-quick-status"
+                    }
+                  }
+                  ) do |f| %>
+
+                  <%= hidden_field_tag :back_status, params[:status] %>
+
+                  <div class="flex-grow-1">
+                    <%= f.select :status,
+                    options_for_select(
+                      Lead.statuses.keys.map { |s| [s.humanize, s] },
+                      lead.status
+                      ),
+                    {},
+                    class: "form-select form-select-sm",
+                      data: {
+                        action: "change->lead-quick-status#toggleFields"
+                      } %>
+
+                      <div
+                      class="mt-1"
+                      data-lead-quick-status-target="offerFields"
+                      <%= "hidden" unless lead.status == "offer_sent" %>>
+
+                      <%= f.number_field :offered_amount,
+                      step: 0.01,
+                      class: "form-control form-control-sm mb-1",
+                        placeholder: "Offer amount",
+                        value: lead.offered_amount %>
+
+                        <%= f.date_field :offered_on,
+                        class: "form-control form-control-sm",
+                          value: lead.offered_on %>
+                        </div>
+                      </div>
+
+                      <%= f.button class: "btn btn-sm btn-outline-primary",
+                      title: "Update status" do %>
+                      <i class="fa-solid fa-check"></i>
+                      <% end %>
+
+                      <% end %>
+                    </td>
+
+                    <td class="text-end text-nowrap">
+                      <%= link_to lead_path(lead),
+                      class: "btn btn-sm btn-light border",
+                        title: "View" do %>
+                        <i class="fa-solid fa-eye"></i>
+                        <% end %>
+
+                        <%= link_to edit_lead_path(lead),
+                        class: "btn btn-sm btn-light border",
+                          title: "Edit",
+                          data: { controller: "bs-modal-form" } do %>
+                          <i class="fa-solid fa-pen"></i>
+                          <% end %>
+
+                          <%= link_to lead_path(lead),
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "Delete this lead?"
+                          },
+                          class: "btn btn-sm btn-light border text-danger",
+                            title: "Delete" do %>
+                            <i class="fa-solid fa-trash"></i>
+                            <% end %>
+                          </td>
+                        </tr>
+                        <% end %>
+
+                        <% if @leads.empty? %>
+                        <tr>
+                          <td colspan="6" class="text-center py-5">
+                            <i class="fa-solid fa-users text-body-secondary fs-3"></i>
+                            <p class="text-body-secondary mt-2 mb-0">
+                              No leads found.
+                            </p>
+                          </td>
+                        </tr>
+                        <% end %>
+                      </tbody>
+
+                    </table>
+                  </div>
+                </section>
