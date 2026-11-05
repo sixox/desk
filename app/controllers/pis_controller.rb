@@ -1,6 +1,8 @@
 class PisController < ApplicationController
   before_action :authenticate_user!
-  before_action :find_project, only: %i[ new create edit update ]
+  before_action :find_project,
+    only: %i[new create edit update],
+    if: -> { params[:project_id].present? }
   before_action :set_pi, only: [:update_temp, :destroy, :update_temp_form, :show]
 
 
@@ -40,14 +42,52 @@ class PisController < ApplicationController
     @pi = Pi.new
   end
 
-  def create_temp
-    @pi = Pi.new(pi_params)
+  def create
+    @pi = @project.build_pi(pi_params)
     @pi.user = current_user
 
     if @pi.save
-      redirect_to @pi, notice: 'Pi was successfully created.'
+      redirect_to project_path(@project),
+                  notice: "PI created successfully."
     else
-      render :new_temp
+      render "projects/show", status: :unprocessable_entity
+    end
+  end
+
+  def update
+    if params[:project_id].present?
+      @pi = @project.pi
+
+      raise ActiveRecord::RecordNotFound unless
+        @pi.present? && @pi.id == params[:id].to_i
+    else
+      @pi = Pi.find(params[:id])
+      @project = @pi.project
+    end
+
+    if @pi.rejected?
+      @pi.rejected = nil
+      @pi.confirm_or_reject_time = nil
+    end
+
+    if @pi.update(pi_params)
+
+      if @project.present?
+        redirect_to project_path(@project),
+                    notice: "PI was successfully updated."
+      else
+        redirect_to @pi,
+                    notice: "PI was successfully updated."
+      end
+
+    elsif @project.present?
+
+      render "projects/show", status: :unprocessable_entity
+
+    else
+
+      render :edit, status: :unprocessable_entity
+
     end
   end
 
@@ -89,30 +129,7 @@ class PisController < ApplicationController
 
 
 
-  def update
-    @pi = Pi.find(params[:id])
-    if @pi.rejected
-      @pi.rejected = nil
-      @pi.confirm_or_reject_time = nil
-    end 
-    respond_to do |format|
-      if @pi.update(pi_params)
-        format.turbo_stream do
-          render turbo_stream: [
-            turbo_stream.replace("pi_item_#{@pi.id}", partial: 'pis/pi', locals: { pi: @pi, project: @pi.project }),
-            turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'PI was successfully updated.' })
-          ]
-        end
-      else
-        format.turbo_stream do
-          render turbo_stream: [
-            turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'pis/form', modal_title: 'Edit PI' }),
-            turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating PI.' })
-          ]
-        end
-      end
-    end
-  end
+  
 
 def confirm_or_reject
   @pi = Pi.find(params[:id])

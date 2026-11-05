@@ -237,6 +237,8 @@ class HomeController < ApplicationController
 
     # Customers
 @customer_portfolio = Customer360::Portfolio.new
+
+load_project_dashboard
 # Force calculations
 
 
@@ -265,6 +267,154 @@ class HomeController < ApplicationController
       colors << "rgba(#{r}, #{g}, #{b}, 0.6)"
     end
     colors
+  end
+
+  def load_project_dashboard
+    project_ids = Project.select(:id)
+
+    pending_statuses = [
+      "wait for confirm",
+      "wait for payment"
+    ]
+
+    pending_orders = PaymentOrder.where(status: pending_statuses)
+
+    # ------------------------------------------
+    # PROJECT-RELATED PAYMENT ORDERS
+    # Direct project + booking + shared inventory
+    # Count each Payment Order only once.
+    # ------------------------------------------
+
+    direct_order_ids = pending_orders
+      .where(project_id: project_ids)
+      .pluck(:id)
+
+    project_booking_ids = Booking
+      .where(project_id: project_ids)
+      .select(:id)
+
+    booking_order_ids = pending_orders
+      .where(booking_id: project_booking_ids)
+      .pluck(:id)
+
+    allocated_balance_ids = BallanceProject.select(:ballance_id)
+
+    allocated_sci_ids = Sci
+      .where(ballance_id: allocated_balance_ids)
+      .select(:id)
+
+    allocated_spi_ids = Spi
+      .where(ballance_id: allocated_balance_ids)
+      .select(:id)
+
+    shared_order_scope = pending_orders.where(
+      project_id: nil,
+      booking_id: nil
+    )
+
+    shared_order_ids = shared_order_scope
+      .where(ballance_id: allocated_balance_ids)
+      .pluck(:id)
+
+    shared_order_ids += shared_order_scope
+      .where(sci_id: allocated_sci_ids)
+      .pluck(:id)
+
+    shared_order_ids += shared_order_scope
+      .where(spi_id: allocated_spi_ids)
+      .pluck(:id)
+
+    # ------------------------------------------
+    # LOGISTICS OPEN
+    # Include unfinished project logistics and
+    # bookings not marked as complete.
+    # ------------------------------------------
+
+    logistics_open_ids = Project
+      .where(logistics_done: [nil, false])
+      .pluck(:id)
+
+    logistics_open_ids += Booking
+      .where(payment_done: [nil, false])
+      .distinct
+      .pluck(:project_id)
+
+    # ------------------------------------------
+    # UNPAID CUSTOMER INVOICES
+    # CI without an associated Swift.
+    # ------------------------------------------
+
+    unpaid_ci_scope = Ci
+      .left_outer_joins(:swift)
+      .where(swifts: { id: nil })
+
+    # ------------------------------------------
+    # DASHBOARD SUMMARY
+    # ------------------------------------------
+
+    @project_dashboard = {
+      total_projects: Project.count,
+
+      projects_without_pi: Project
+        .left_outer_joins(:pi)
+        .where(pis: { id: nil })
+        .distinct
+        .count(:id),
+
+      sales_open: Project
+        .where(sales_done: [nil, false])
+        .count,
+
+      logistics_open: logistics_open_ids.uniq.size,
+
+      unpaid_cis: unpaid_ci_scope
+        .distinct
+        .count(:id),
+
+      pending_payment_orders: (
+        direct_order_ids +
+        booking_order_ids +
+        shared_order_ids
+      ).uniq.size
+    }
+
+    # ------------------------------------------
+    # RECENT PROJECT ACTIVITY
+    # ------------------------------------------
+
+    @dashboard_recent_projects = Project
+      .includes(
+        { pi: :customer },
+        :bookings,
+        { cis: :swift }
+      )
+      .order(updated_at: :desc)
+      .limit(8)
+      .to_a
+
+    recent_project_ids = @dashboard_recent_projects.map(&:id)
+
+    if recent_project_ids.any?
+
+      @dashboard_recent_unpaid_ci_counts = unpaid_ci_scope
+        .where(project_id: recent_project_ids)
+        .group(:project_id)
+        .count
+
+      @dashboard_recent_pending_booking_counts = Booking
+        .where(
+          project_id: recent_project_ids,
+          payment_done: [nil, false]
+        )
+        .group(:project_id)
+        .count
+
+    else
+
+      @dashboard_recent_unpaid_ci_counts = {}
+      @dashboard_recent_pending_booking_counts = {}
+
+    end
   end
 
 end

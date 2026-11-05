@@ -1,100 +1,288 @@
-<%= link_to project_path(project), class: "text-decoration-none d-flex flex-column h-100 w-100" do %>
-  <div class="card h-100 w-100 border-0 shadow">
-    <div class="card-body d-flex flex-column">
-      <div class="row d-flex justify-content-between mt-2">
-        <div class="col-auto">
-          <% if !project.pi.present? %>
-          <span class="text-danger fw-bold">
-              NO_PI
-          </span>
-          <% else %>
-          <span style="color: #49af98;">
-            <% if title == "PROJECT" %>
-            <span class="fw-bold">PROJECT</span>
-            <% else %>
-            <%= project.pi.customer.nickname %>
-            <% end %>
-          </span>
-          <% end %>
+<%
+  pi = project.pi
+
+  cis = project.cis.to_a
+  bookings = project.bookings.to_a
+
+  project_swifts = (
+    project.swifts.to_a +
+    cis.filter_map(&:swift)
+  ).uniq(&:id)
+
+  customer = pi&.customer
+
+  total_containers = bookings.sum { |booking| booking.quantity.to_i }
+  picked_up = bookings.sum { |booking| booking.picked_up.to_i }
+  stuffed = bookings.sum { |booking| booking.filled.to_i }
+
+  stuffing_percentage =
+    if total_containers.positive?
+      [(stuffed.to_f / total_containers * 100).round, 100].min
+    else
+      0
+    end
+
+  risk = project.risk.to_i
+
+  risk_label, risk_class =
+    case risk
+    when 1..15
+      ["Low risk", "bg-success-subtle text-success"]
+    when 16..25
+      ["Medium risk", "bg-info-subtle text-info"]
+    when 26..36
+      ["High risk", "bg-warning-subtle text-warning-emphasis"]
+    when 37..Float::INFINITY
+      ["Extreme risk", "bg-danger-subtle text-danger"]
+    else
+      ["No risk data", "bg-secondary-subtle text-secondary"]
+    end
+
+  confirmed_swifts = project_swifts.select do |swift|
+    swift.confirmed == true && swift.rejected != true
+  end
+
+  has_bl_draft = bookings.any? do |booking|
+    booking.bl_draft.attached?
+  end
+%>
+
+<%= link_to project_path(project),
+  class: "text-decoration-none text-body d-block h-100" do %>
+
+  <article class="m-card h-100">
+
+    <!-- HEADER -->
+
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+
+      <div class="min-width-0">
+
+        <div class="small text-body-secondary mb-1">
+          <%= customer&.nickname.presence || "Customer not assigned" %>
         </div>
-        <div class="col-auto">
-          <span class="fw-bold" style="font-size: 19px; color: #0c590c;"><%= project.number %></span>
+
+        <h3 class="h5 fw-bold mb-1">
+          <%= project.number %>
+        </h3>
+
+        <div class="small text-body-secondary">
+          <%= project.name.presence || "Unnamed project" %>
+        </div>
+
+      </div>
+
+      <span class="badge <%= risk_class %> flex-shrink-0">
+        <%= risk_label %>
+      </span>
+
+    </div>
+
+    <!-- PI SUMMARY -->
+
+    <% if pi.present? %>
+
+      <div class="border rounded-3 p-3 mb-3">
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+
+          <span class="small fw-semibold">
+            <i class="fa-solid fa-file-invoice me-1 text-body-secondary"></i>
+            PI <%= pi.number %>
+          </span>
+
+          <span class="badge bg-success-subtle text-success">
+            Issued
+          </span>
+
+        </div>
+
+        <div class="fw-semibold">
+          <%= pi.product %>
+        </div>
+
+        <div class="small text-body-secondary mt-1">
+
+          <%= number_with_delimiter(pi.quantity.to_i) %> MT
+
+          <% if pi.packing_type.present? %>
+            · <%= pi.packing_type %>
+          <% end %>
+
+        </div>
+
+        <div class="small text-body-secondary mt-1">
+          <%= pi.incoterm %>
+          <%= pi.pod %>
+        </div>
+
+        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+
+          <span class="small text-body-secondary">
+            PI value
+          </span>
+
+          <span class="small fw-semibold">
+            <%= number_with_delimiter(pi.total_price.to_i) %>
+            <%= pi.currency&.upcase %>
+          </span>
+
+        </div>
+
+      </div>
+
+    <% else %>
+
+      <div class="border border-warning-subtle bg-warning-subtle rounded-3 p-3 mb-3">
+
+        <div class="small fw-semibold text-warning-emphasis">
+          <i class="fa-solid fa-circle-exclamation me-1"></i>
+          PI not assigned
+        </div>
+
+        <div class="small text-body-secondary mt-1">
+          This project does not have a Proforma Invoice yet.
+        </div>
+
+      </div>
+
+    <% end %>
+
+    <!-- BUSINESS RECORDS -->
+
+    <div class="row g-2 mb-3">
+
+      <div class="col-4">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-body-secondary">CIs</div>
+          <div class="fw-semibold">
+            <%= cis.size %>
+          </div>
         </div>
       </div>
-      <% if project.pi.present? %>
-        <p class="card-text mt-3">
-          <small><%= project.pi.quantity.to_i %></small> MT <small><%= project.pi.product %></small> - <small><%= project.pi.packing_type %></small>
-          <br>
 
-          <small><%= project.pi.incoterm %> <%= project.pi.pod %></small> 
-          <br>
-        </p>
-        <hr>
-        <div style="font-size: 10px;">
-          <div class="row">
-            <div class="col-4 fw-bold">
-              <span class="text-success"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> PI</span>
-            </div>
-            <div class="col-4">
-              <% if project.swifts.present? %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Advance</span>
-              <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Advance</span>
-              <% end %>
-            </div>
-            <div class="col-4">
-              <% if project.bookings.present? %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Booking</span>
-              <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Booking</span>
-              <% end %>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-4">
-              <% if project.any_booking_stuffing_finished? %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Documents</span>
-              <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Documents</span>
-              <% end %>
-            </div>
-            <div class="col-4">
-              <% if project.bookings.any? { |booking| booking.bl_draft.attached? } %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Shipping</span>
-              <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Shipping</span>
-              <% end %>
-            </div>
-            
-            <div class="col-4">
-              <% if project.cis.present? %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-check-circle-fill"></i> Invoice</span>
-              <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Invoice</span>
-              <% end %>
-            </div>
+      <div class="col-4">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-body-secondary">Bookings</div>
+          <div class="fw-semibold">
+            <%= bookings.size %>
           </div>
         </div>
-        <div style="font-size: 10px;">
-          <hr>
-          <div class="row">
-            <div class="col-6">
-              <% if project.sales_done %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Sales Process Over</span>
-                <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Sales Process Not Over</span>
-              <% end %>
-            </div>
-             <div class="col-6">
-              <% if project.logistics_done %>
-                <span class="text-success fw-bold"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Logistics Over</span>
-                <% else %>
-                <span class="text-warning"><i style="font-size: 10px;" class="bi bi-dash-circle-fill"></i> Logistics Not Over</span>
-              <% end %>
-            </div>
+      </div>
+
+      <div class="col-4">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-body-secondary">Receipts</div>
+          <div class="fw-semibold">
+            <%= confirmed_swifts.size %>
           </div>
         </div>
-      <% end %>
+      </div>
+
     </div>
-  </div>
+
+    <!-- BOOKING PROGRESS -->
+
+    <% if total_containers.positive? %>
+
+      <div class="mb-3">
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+
+          <span class="small text-body-secondary">
+            Stuffing progress
+          </span>
+
+          <span class="small fw-semibold">
+            <%= stuffed %> / <%= total_containers %>
+          </span>
+
+        </div>
+
+        <div class="progress" style="height: 6px;">
+
+          <div
+            class="progress-bar bg-success"
+            role="progressbar"
+            style="width: <%= stuffing_percentage %>%"
+            aria-valuenow="<%= stuffing_percentage %>"
+            aria-valuemin="0"
+            aria-valuemax="100">
+          </div>
+
+        </div>
+
+        <div class="d-flex justify-content-between small text-body-secondary mt-1">
+
+          <span>Picked up: <%= picked_up %></span>
+
+          <span>Stuffed: <%= stuffed %></span>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+    <!-- WORKFLOW STATUS -->
+
+    <div class="border-top pt-3 mt-auto">
+
+      <div class="d-flex flex-wrap gap-2">
+
+        <% if project.started? %>
+          <span class="badge bg-primary-subtle text-primary">
+            Started
+          </span>
+        <% else %>
+          <span class="badge bg-secondary-subtle text-secondary">
+            Not started
+          </span>
+        <% end %>
+
+        <% if project.sales_done? %>
+          <span class="badge bg-success-subtle text-success">
+            Sales completed
+          </span>
+        <% else %>
+          <span class="badge bg-warning-subtle text-warning-emphasis">
+            Sales open
+          </span>
+        <% end %>
+
+        <% if project.logistics_done? %>
+          <span class="badge bg-success-subtle text-success">
+            Logistics completed
+          </span>
+        <% else %>
+          <span class="badge bg-warning-subtle text-warning-emphasis">
+            Logistics open
+          </span>
+        <% end %>
+
+      </div>
+
+      <div class="d-flex flex-wrap gap-3 small text-body-secondary mt-3">
+
+        <span>
+          <i class="fa-solid fa-file-invoice me-1"></i>
+          <%= pi.present? ? "PI available" : "No PI" %>
+        </span>
+
+        <span>
+          <i class="fa-solid fa-receipt me-1"></i>
+          <%= cis.size %> invoice(s)
+        </span>
+
+        <span>
+          <i class="fa-solid fa-file-pdf me-1"></i>
+          <%= has_bl_draft ? "BL draft uploaded" : "BL draft pending" %>
+        </span>
+
+      </div>
+
+    </div>
+
+  </article>
+
 <% end %>

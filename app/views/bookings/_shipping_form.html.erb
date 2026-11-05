@@ -1,103 +1,163 @@
-<%= form_for [@project, @booking] do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @booking.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
-			<ul>
-				<% @booking.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-	</div>
-	<div class="row mb-3">
-		<h5>booking no.<%= @booking.number %></h5>
-		<div class="subtitle">Shipping</div>
-	</div>
+<%= form_with model: [@project, @booking],
+  html: { multipart: true } do |form| %>
 
-	<div class="row mt-3 bg-semi">
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					Upload BL draft
-					<%= form.file_field :bl_draft, class: "form-control custom-file-input mt-2" %>
-				</label>
-			</div>
-		</div>
-	</div>
+  <div class="modal-body erp-form">
 
-	<div class="row mt-3">
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					Vessel ETA 
-					<%= form.date_field :vessel_eta, class: "form-control mt-2" %>
-				</label>
-			</div>
-		</div>
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					Vessel Name and Voyage
-					<%= form.text_field :vessel_name, class: "form-control custom-file-input mt-2" %>
-				</label>
-			</div>
-		</div>
-		
-	</div>
-	<div class="row mt-3 bg-semi">
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					BL Number 
-					<%= form.text_field :bl_number, class: "form-control mt-2" %>
-				</label>
-			</div>
-		</div>
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					date of BL
-					<%= form.date_field :date_of_bl, class: "form-control custom-file-input mt-2" %>
-				</label>
-			</div>
-		</div>
-		
-	</div>
-	<div class="row mt-3 ">
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					Dated Bl 
-					<%= form.file_field :bl_dated, class: "form-control custom-file-input mt-2" %>				</label>
-			</div>
-		</div>
-		<div class="col-lg">
-			<div class="form-group">
-				<label class="fw-bold mb-2 mt-1">
-					Surrender
-					<%= form.file_field :surrender, class: "form-control custom-file-input mt-2" %>
-				</label>
-			</div>
-		</div>
-		
-	</div>
-	<div class="row mt-3 bg-semi">
-		<h6>has payment done and cargo released?</h6>
-		<div class="col-lg mb-2 mt-2">
-			<%= form.check_box :payment_done, class: 'form-check-input' %>
-			<label class="form-check-label" for="hourly">
-				YES
-			</label>	
-		</div>
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+    <%= render "shared/forms/errors", object: @booking %>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <div class="small text-body-secondary">Booking</div>
+        <div class="fw-semibold"><%= @booking.number %></div>
+      </div>
+
+      <% if @booking.vessel_eta.present? %>
+        <span class="badge bg-info-subtle text-info">
+          ETA <%= @booking.vessel_eta.strftime("%d %b %Y") %>
+        </span>
+      <% end %>
+    </div>
+
+    <%= render "shared/forms/section_heading",
+      title: "Vessel Information",
+      description: "Vessel schedule and shipping details.",
+      icon: "fa-ship" %>
+
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :vessel_eta,
+          label: "Vessel ETA",
+          type: :date_field %>
+      </div>
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :vessel_name,
+          label: "Vessel Name & Voyage" %>
+      </div>
+
+    </div>
+
+    <div class="erp-form__divider"></div>
+
+    <%= render "shared/forms/section_heading",
+      title: "Bill of Lading",
+      description: "BL reference and document uploads.",
+      icon: "fa-file-lines" %>
+
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :bl_number,
+          label: "BL Number" %>
+      </div>
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :date_of_bl,
+          label: "BL Date",
+          type: :date_field %>
+      </div>
+
+      <div class="col-12">
+        <div class="border rounded-3 p-3">
+
+          <%= render "shared/forms/field",
+            form: form,
+            attribute: :bl_draft,
+            label: "BL Draft",
+            type: :file_field %>
+
+          <% if @booking.bl_draft.attached? %>
+            <div class="small mt-2">
+              <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+              <%= link_to "View current draft",
+                rails_blob_path(@booking.bl_draft, disposition: "attachment"),
+                target: "_blank",
+                rel: "noopener" %>
+            </div>
+          <% end %>
+
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="border rounded-3 p-3 h-100">
+
+          <%= render "shared/forms/field",
+            form: form,
+            attribute: :bl_dated,
+            label: "Dated BL",
+            type: :file_field %>
+
+          <% if @booking.bl_dated.attached? %>
+            <div class="small mt-2">
+              <%= link_to "View current document",
+                rails_blob_path(@booking.bl_dated, disposition: "attachment"),
+                target: "_blank",
+                rel: "noopener" %>
+            </div>
+          <% end %>
+
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="border rounded-3 p-3 h-100">
+
+          <%= render "shared/forms/field",
+            form: form,
+            attribute: :surrender,
+            label: "Surrender Document",
+            type: :file_field %>
+
+          <% if @booking.surrender.attached? %>
+            <div class="small mt-2">
+              <%= link_to "View current document",
+                rails_blob_path(@booking.surrender, disposition: "attachment"),
+                target: "_blank",
+                rel: "noopener" %>
+            </div>
+          <% end %>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="erp-form__divider"></div>
+
+    <%= render "shared/forms/section_heading",
+      title: "Payment & Cargo Release",
+      description: "Confirm the existing booking payment and release flag.",
+      icon: "fa-circle-check" %>
+
+    <div class="border rounded-3 p-3">
+
+      <div class="form-check form-switch">
+
+        <%= form.check_box :payment_done,
+          class: "form-check-input" %>
+
+        <%= form.label :payment_done,
+          "Payment completed and cargo released",
+          class: "form-check-label fw-semibold" %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%= render "shared/forms/actions",
+    in_modal: true,
+    submit_label: "Update Shipping" %>
+
 <% end %>

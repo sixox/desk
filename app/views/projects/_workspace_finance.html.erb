@@ -1,0 +1,301 @@
+
+<%
+  can_add_swift =
+    current_user.admin? ||
+    current_user.sales? ||
+    current_user.logistics? ||
+    current_user.ceo? ||
+    current_user.cob? ||
+    current_user.id == 5
+%>
+<%
+  allocations ||= project.ballance_projects.includes(ballance: :supplier).to_a
+
+  swifts = (
+    project.swifts.to_a +
+    cis.filter_map(&:swift)
+  ).uniq(&:id)
+
+  swifts_by_currency = swifts.group_by do |swift|
+    swift.currency.to_s.downcase.presence || "unknown"
+  end
+%>
+
+<div class="m-card">
+
+  <div class="m-card__header">
+    <div>
+      <h5 class="m-card__title">Finance & Procurement</h5>
+      <p class="m-card__subtitle">
+        Inventory allocation, customer receipts and supplier payments
+      </p>
+    </div>
+  </div>
+
+  <div class="p-3">
+
+    <!-- INVENTORY ALLOCATION -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+      <div>
+        <h6 class="mb-1">Supplier Inventory Allocation</h6>
+        <small class="text-body-secondary">
+          Inventory assigned to this project
+        </small>
+      </div>
+
+      <%= link_to project_ballance_projects_path(project),
+  class: "btn btn-light border btn-sm" do %>
+  Manage Allocation
+<% end %>
+
+    </div>
+
+    <% if allocations.any? %>
+
+      <div class="table-responsive mb-4">
+
+        <table class="table table-sm align-middle">
+
+          <thead>
+            <tr>
+              <th>Inventory</th>
+              <th>Supplier</th>
+              <th>Allocated</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <% allocations.each do |allocation| %>
+              <% balance = allocation.ballance %>
+
+              <tr>
+
+                <td>
+                  <% if balance.present? %>
+                    <%= link_to balance.number,
+                      ballance_path(balance),
+                      class: "fw-semibold text-decoration-none" %>
+                  <% else %>
+                    —
+                  <% end %>
+                </td>
+
+                <td>
+                  <%= balance&.supplier&.name || "—" %>
+                </td>
+
+                <td class="fw-semibold">
+                  <%= number_with_delimiter(allocation.quantity) %> MT
+                </td>
+
+                <td class="text-end">
+                  <% if balance.present? %>
+                    <%= link_to ballance_path(balance),
+                      class: "btn btn-sm btn-light border" do %>
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <% end %>
+                  <% end %>
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="small text-body-secondary mb-4">
+        Remaining PI quantity:
+        <strong class="text-body">
+          <%= project.remaining_quantity %> MT
+        </strong>
+      </div>
+
+    <% else %>
+
+      <p class="small text-body-secondary mb-4">
+        No supplier inventory has been allocated to this project.
+      </p>
+
+    <% end %>
+
+
+    <hr class="my-4">
+
+
+    <!-- CUSTOMER RECEIPTS -->
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+
+      <div>
+        <h6 class="mb-1">Customer Receipts</h6>
+        <small class="text-body-secondary">
+          Advance and CI balance Swifts
+        </small>
+      </div>
+
+      <% if can_add_swift && (project.pi.present? || current_user.id == 5) %>
+  <%= link_to new_project_swift_path(project),
+    data: { controller: "bs-modal-form" },
+    class: "btn btn-light border btn-sm" do %>
+    <i class="fa-solid fa-plus me-1"></i>
+    Add Advance Swift
+  <% end %>
+<% end %>
+
+    </div>
+
+    <% if swifts_by_currency.any? %>
+
+      <% swifts_by_currency.sort.each do |currency, currency_swifts| %>
+
+        <div class="border rounded-3 p-3 mb-3">
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong><%= currency.humanize %></strong>
+            <small class="text-body-secondary">
+              <%= currency_swifts.size %> receipts
+            </small>
+          </div>
+
+          <div class="table-responsive">
+
+            <table class="table table-sm align-middle mb-0">
+
+              <thead>
+                <tr>
+                  <th>Receipt</th>
+                  <th>Type</th>
+                  <th>Amount Sent</th>
+                  <th>Bank Credit</th>
+                  <th>Status</th>
+                  <th>Documents</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                <% currency_swifts.each do |swift| %>
+
+                  <tr>
+
+                    <td>
+                      <span class="fw-semibold">#<%= swift.id %></span>
+                      <div class="small text-body-secondary">
+                        <%= swift.created_at&.strftime("%d %b %Y") %>
+                      </div>
+                    </td>
+
+                    <td>
+                      <% if swift.advance? %>
+                        Advance
+                      <% else %>
+                        Balance
+                      <% end %>
+                    </td>
+
+                    <td class="fw-semibold">
+                      <%= number_with_delimiter(swift.amount) %>
+                    </td>
+
+                    <td>
+                      <%= number_with_delimiter(swift.deposited_amount) %>
+                      <small class="text-body-secondary">
+                        <%= swift.bank&.currency %>
+                      </small>
+                    </td>
+
+                    <td>
+                      <% if swift.confirmed? && !swift.rejected? %>
+                        <span class="badge bg-success-subtle text-success">
+                          Confirmed
+                        </span>
+                      <% elsif swift.rejected? %>
+                        <span class="badge bg-danger-subtle text-danger">
+                          Rejected
+                        </span>
+                      <% else %>
+                        <span class="badge bg-warning-subtle text-warning-emphasis">
+                          Pending
+                        </span>
+                      <% end %>
+                    </td>
+
+                    <td>
+                      <% swift.documents.each_with_index do |document, index| %>
+                        <%= link_to index + 1,
+                          rails_blob_path(document, disposition: "attachment"),
+                          target: "_blank",
+                          rel: "noopener",
+                          class: "small me-1" %>
+                      <% end %>
+                    </td>
+
+                  </tr>
+
+                <% end %>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <div class="text-end mt-2">
+            <small class="text-body-secondary">
+              Total in <%= currency %>:
+            </small>
+
+            <strong>
+              <%= number_with_delimiter(
+                    currency_swifts.sum { |swift| swift.amount.to_d }
+                  ) %>
+            </strong>
+          </div>
+
+        </div>
+
+      <% end %>
+
+    <% else %>
+
+      <p class="small text-body-secondary mb-4">
+        No customer receipts have been recorded.
+      </p>
+
+    <% end %>
+
+
+    <hr class="my-4">
+
+
+    <!-- PAYMENT ORDERS -->
+
+    <%= render "projects/payment_orders" %>
+
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+
+      <%= link_to payment_orders_path,
+        class: "btn btn-light border btn-sm" do %>
+        All Payment Orders
+        <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+      <% end %>
+
+      <%= link_to release_requests_path,
+        class: "btn btn-light border btn-sm" do %>
+        Release Requests
+        <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+      <% end %>
+
+    </div>
+
+  </div>
+</div>

@@ -8,30 +8,70 @@ class ProjectsController < ApplicationController
 
 
 	def show
-		@pi = @project.pi if @project.pi
-		@cis = @project.cis if @project.cis
-		@bookings = @project.bookings if @project.bookings
-		@allocates = @project.ballance_projects
-		filtered_payment_orders = @project.payment_orders
-		@payment_orders_with_status_paid_dollar = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'dollar')
-		@payment_orders_with_status_paid_dirham = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'dirham')
-		@payment_orders_with_status_paid_rial = filtered_payment_orders.where(status: ['wait for delivery', 'delivered'], currency: 'rial')
-		@sum_paid_dollar = @payment_orders_with_status_paid_dollar.sum(:amount)
-		@sum_paid_dirham = @payment_orders_with_status_paid_dirham.sum(:amount)
-		@sum_paid_rial = @payment_orders_with_status_paid_rial.sum(:amount)
-		@payment_orders_with_status_not_paid = filtered_payment_orders.where.not(status: ['wait for delivery', 'delivered'])
-		@remains = @project.remaining_quantity
-
-
-
+		
 	end
 
 	def index
-		@q = Project.ransack(params[:q])
-	  @projects = @q.result.includes(:pi, :cis, :bookings, :swifts, ballance_projects: :ballance).order(created_at: :desc)
-    @projects = @projects.page(params[:page]).per(18)
+    @q = Project.ransack(params[:q])
 
-	end
+    projects = @q.result
+      .includes(
+        { pi: :customer },
+        { cis: [:pi, :swift] },
+        :bookings,
+        { swifts: :bank },
+        {
+          ballance_projects: {
+            ballance: [:supplier, :spi]
+          }
+        }
+      )
+
+    case params[:stage].to_s
+    when "sales_open"
+      projects = projects.where(sales_done: [nil, false])
+
+    when "logistics_open"
+      projects = projects.where(logistics_done: [nil, false])
+
+    when "completed"
+      projects = projects.where(
+        sales_done: true,
+        logistics_done: true
+      )
+
+    when "at_risk"
+      projects = projects.where("projects.risk >= ?", 26)
+
+    when "without_pi"
+      projects = projects
+        .left_outer_joins(:pi)
+        .where(pis: { id: nil })
+    end
+
+    @project_stats = {
+      total: Project.count,
+
+      sales_open: Project
+        .where(sales_done: [nil, false])
+        .count,
+
+      logistics_open: Project
+        .where(logistics_done: [nil, false])
+        .count,
+
+      high_risk: Project
+        .where("projects.risk >= ?", 26)
+        .count
+    }
+
+    @projects = projects
+      .order(updated_at: :desc)
+      .page(params[:page])
+      .per(18)
+
+    @project_total_count = @projects.total_count
+  end
 
 	def new	
 		@project = Project.new
@@ -65,7 +105,7 @@ class ProjectsController < ApplicationController
       if @project.update(project_params)
         redirect_to project_path(@project), notice: "Project Edited Successfully"
       else
-        redirect_to project_path(@project), alert: "Project Editing Failed"
+        render :show, status: :unprocessable_entity
       end
     end
   end
@@ -321,19 +361,322 @@ def turnover
   end
 
 	def set_timeline
-		@project = Project.includes(:pi, :cis, :bookings, :swifts).find(params[:id])
-    @latest_booking = @project.bookings&.max_by(&:updated_at)
-    @any_bl_draft_attached = @project.bookings&.any? { |booking| booking.bl_draft.attached? }
-    @all_bookings_done = @project.bookings.all? { |booking| booking.payment_done }
-    filtered_swifts = @project.swifts.where.not(advance: true)
-    # Collect Swifts from each Ci associated with the project
-    cis_swifts = @project.cis.map(&:swift).compact
+    @project = Project.includes(
+      { pi: :customer },
+      { cis: [:pi, { swift: :bank }] },
+      { bookings: [:release_request, { payment_orders: [:user, :bank] }] },
+      { swifts: :bank },
+      { ballance_projects: { ballance: [:supplier, :spi, :scis] } },
+      { payment_orders: [:user, :bank, :ballance, :booking, :sci, :spi] }
+    ).find(params[:id])
 
-    # Merge the two arrays
-    @balance_swifts = (filtered_swifts + cis_swifts).uniq
-    @total_balance_swift_amount = @balance_swifts.sum(&:amount)
-    @advance_swifts = @project.swifts&.where(advance: true)
-	end
+    @pi       = @project.pi
+    @cis      = @project.cis.to_a
+    @bookings = @project.bookings.to_a
+    @allocates = @project.ballance_projects.to_a
+
+    # --------------------------------------------------
+    # SWIFTS
+    # --------------------------------------------------
+
+    direct_swifts = @project.swifts.to_a
+    ci_swifts = @cis.filter_map(&:swift)
+
+    @project_swifts = (direct_swifts + ci_swifts)
+      .uniq(&:id)
+      .sort_by { |swift| swift.confirm_at || swift.created_at || Time.at(0) }
+
+    @advance_swifts = direct_swifts.select { |swift| swift.advance == true }
+
+    @balance_swifts = (
+      direct_swifts.reject { |swift| swift.advance == true } + ci_swifts
+    ).uniq(&:id)
+
+    @confirmed_swifts = @project_swifts.select do |swift|
+      swift.confirmed == true && swift.rejected != true
+    end
+
+    @pending_swifts = @project_swifts.select do |swift|
+      swift.confirmed != true && swift.rejected != true
+    end
+
+    @rejected_swifts = @project_swifts.select do |swift|
+      swift.rejected == true && swift.confirmed != true
+    end
+
+    @conflicting_swifts = @project_swifts.select do |swift|
+      swift.confirmed == true && swift.rejected == true
+    end
+
+    @confirmed_receipts_by_currency = @confirmed_swifts
+      .group_by { |swift| swift.currency.to_s.downcase }
+      .transform_values { |records| records.sum { |swift| swift.amount.to_f } }
+
+    @bank_credits_by_currency = @confirmed_swifts
+      .group_by { |swift| swift.bank&.currency.to_s.downcase }
+      .reject { |currency, _| currency.blank? }
+      .transform_values { |records| records.sum { |swift| swift.deposited_amount.to_f } }
+
+    @invoice_amounts_by_currency = @cis
+      .group_by { |ci| ci.pi&.currency.to_s.downcase }
+      .reject { |currency, _| currency.blank? }
+      .transform_values { |records| records.sum { |ci| ci.balance_payment.to_f } }
+
+    # --------------------------------------------------
+    # BOOKINGS AND PROJECT TOTALS
+    # --------------------------------------------------
+
+    @latest_booking = @bookings.max_by(&:updated_at)
+
+    @all_bookings_done = @bookings.present? &&
+                         @bookings.all?(&:payment_done)
+
+    @any_bl_draft_attached = @bookings.any? do |booking|
+      booking.bl_draft.attached?
+    end
+
+    @project_total_containers = @bookings.sum { |booking| booking.quantity.to_i }
+    @project_total_picked_up  = @bookings.sum { |booking| booking.picked_up.to_i }
+    @project_total_filled     = @bookings.sum { |booking| booking.filled.to_i }
+
+    @project_total_net_weight   = @cis.sum { |ci| ci.net_weight.to_f }
+    @project_total_gross_weight = @cis.sum { |ci| ci.gross_weight.to_f }
+
+    # --------------------------------------------------
+    # PAYMENT ORDERS
+    #
+    # 1. Directly linked to this project
+    # 2. Linked to one of this project's bookings
+    # 3. Shared supplier/inventory orders linked to an
+    #    allocated Ballance, SCI, or SPI
+    #
+    # Indirect supplier orders are included only when
+    # they have no project or booking assigned. This
+    # avoids pulling in an order explicitly assigned
+    # to a different project.
+    # --------------------------------------------------
+
+    booking_ids = @bookings.map(&:id)
+
+    balances = @allocates.filter_map(&:ballance)
+
+    balance_ids = balances.map(&:id).uniq
+    sci_ids = balances.flat_map { |balance| balance.scis.map(&:id) }.uniq
+    spi_ids = balances.filter_map { |balance| balance.spi&.id }.uniq
+
+    payment_orders_scope = PaymentOrder.where(project_id: @project.id)
+
+    if booking_ids.any?
+      payment_orders_scope = payment_orders_scope.or(
+        PaymentOrder.where(booking_id: booking_ids)
+      )
+    end
+
+    if balance_ids.any?
+      payment_orders_scope = payment_orders_scope.or(
+        PaymentOrder.where(
+          project_id: nil,
+          booking_id: nil,
+          ballance_id: balance_ids
+        )
+      )
+    end
+
+    if sci_ids.any?
+      payment_orders_scope = payment_orders_scope.or(
+        PaymentOrder.where(
+          project_id: nil,
+          booking_id: nil,
+          sci_id: sci_ids
+        )
+      )
+    end
+
+    if spi_ids.any?
+      payment_orders_scope = payment_orders_scope.or(
+        PaymentOrder.where(
+          project_id: nil,
+          booking_id: nil,
+          spi_id: spi_ids
+        )
+      )
+    end
+
+    @project_payment_orders = payment_orders_scope
+      .distinct
+      .includes(:user, :bank, :booking, :ballance, :sci, :spi)
+      .order(created_at: :desc)
+      .to_a
+
+    # Identify supplier/inventory orders that are shared
+    # rather than directly assigned to this project.
+    @shared_supplier_payment_order_ids = @project_payment_orders.select do |order|
+      order.project_id.nil? &&
+        order.booking_id.nil? &&
+        (
+          balance_ids.include?(order.ballance_id) ||
+          sci_ids.include?(order.sci_id) ||
+          spi_ids.include?(order.spi_id)
+        )
+    end.map(&:id)
+
+    # Human-readable explanation of why each order appears.
+    @payment_order_relation_labels = {}
+
+    @project_payment_orders.each do |order|
+      label =
+        if booking_ids.include?(order.booking_id)
+          "Booking #{order.booking&.number || order.booking_id}"
+        elsif order.project_id == @project.id
+          "Project"
+        elsif sci_ids.include?(order.sci_id)
+          "Supplier CI #{order.sci&.number || order.sci_id}"
+        elsif spi_ids.include?(order.spi_id)
+          "Supplier PI #{order.spi&.number || order.spi_id}"
+        elsif balance_ids.include?(order.ballance_id)
+          "Shared inventory #{order.ballance&.number || order.ballance_id}"
+        else
+          "Related"
+        end
+
+      @payment_order_relation_labels[order.id] = label
+    end
+
+    # --------------------------------------------------
+    # PAYMENT ORDER REPORTS
+    #
+    # Currency totals remain separate. Shared supplier
+    # orders are shown separately from project/booking
+    # orders; they are not treated as project-only costs.
+    # --------------------------------------------------
+
+    shared_ids = @shared_supplier_payment_order_ids
+
+    amount_for = lambda do |records|
+      records.sum do |order|
+        order.amount.present? ? order.amount.to_d : 0.to_d
+      end
+    end
+
+    status_definitions = {
+      "wait for confirm" => {
+        label: "Awaiting approval",
+        color: "warning"
+      },
+      "wait for payment" => {
+        label: "Awaiting payment",
+        color: "info"
+      },
+      "wait for delivery" => {
+        label: "Paid · awaiting delivery",
+        color: "primary"
+      },
+      "delivered" => {
+        label: "Delivered",
+        color: "success"
+      },
+      "rejected" => {
+        label: "Rejected",
+        color: "danger"
+      }
+    }
+
+    @payment_order_currency_reports = @project_payment_orders
+      .group_by { |order| order.currency.to_s.downcase.presence || "unknown" }
+      .sort_by { |currency, _| currency }
+      .map do |currency, records|
+
+        total = amount_for.call(records)
+
+        shared_records = records.select { |order| shared_ids.include?(order.id) }
+        shared_total = amount_for.call(shared_records)
+
+        status_rows = status_definitions.map do |status, definition|
+          status_records = records.select do |order|
+            order.status.to_s.downcase == status
+          end
+
+          status_amount = amount_for.call(status_records)
+
+          {
+            key: status,
+            label: definition[:label],
+            color: definition[:color],
+            count: status_records.size,
+            amount: status_amount,
+            percentage: total.positive? ? (status_amount / total * 100).to_f : 0
+          }
+        end
+
+        other_records = records.reject do |order|
+          status_definitions.key?(order.status.to_s.downcase)
+        end
+
+        if other_records.any?
+          other_amount = amount_for.call(other_records)
+
+          status_rows << {
+            key: "other",
+            label: "Other",
+            color: "secondary",
+            count: other_records.size,
+            amount: other_amount,
+            percentage: total.positive? ? (other_amount / total * 100).to_f : 0
+          }
+        end
+
+        paid_records = records.select do |order|
+          ["wait for delivery", "delivered"].include?(order.status.to_s.downcase)
+        end
+
+        {
+          currency: currency,
+          count: records.size,
+          total: total,
+          shared_total: shared_total,
+          project_linked_total: total - shared_total,
+          paid_total: amount_for.call(paid_records),
+          statuses: status_rows
+        }
+      end
+
+    # --------------------------------------------------
+    # EXISTING PAYMENT ORDER STATUS GROUPS
+    # --------------------------------------------------
+
+    paid_statuses = ["wait for delivery", "delivered"]
+
+    @paid_project_payment_orders = @project_payment_orders.select do |order|
+      paid_statuses.include?(order.status.to_s.downcase)
+    end
+
+    @pending_project_payment_orders = @project_payment_orders.reject do |order|
+      paid_statuses.include?(order.status.to_s.downcase)
+    end
+
+    @paid_orders_by_currency = @paid_project_payment_orders
+      .group_by { |order| order.currency.to_s.downcase }
+      .transform_values { |records| records.sum { |order| order.amount.to_f } }
+
+    @pending_orders_by_currency = @pending_project_payment_orders
+      .group_by { |order| order.currency.to_s.downcase }
+      .transform_values { |records| records.sum { |order| order.amount.to_f } }
+
+    # --------------------------------------------------
+    # OTHER EXISTING SHOW VARIABLES
+    # --------------------------------------------------
+
+    @remains = @pi.present? ? @project.remaining_quantity : nil
+
+    @total_balance_swift_amount =
+      if @balance_swifts.map(&:currency).uniq.one?
+        @balance_swifts.sum { |swift| swift.amount.to_f }
+      end
+
+    @show_turnover_report =
+      (@bookings.present? && @all_bookings_done) ||
+      @pi&.packing_type == "bulk"
+  end
 
 	def set_project
 		@project = Project.find(params[:id])

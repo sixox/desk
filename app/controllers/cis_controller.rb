@@ -1,7 +1,8 @@
 class CisController < ApplicationController
 	before_action :authenticate_user!
-  before_action :find_project, only: %i[ new create edit update ]
-
+	before_action :find_project,
+	  only: %i[new create edit update],
+	  if: -> { params[:project_id].present? }
 
   def toggle_sent
   	@ci = Ci.find(params[:id])
@@ -15,16 +16,7 @@ class CisController < ApplicationController
 	  @ci = @project.cis.build
 	end
 
-	def create
-	@ci = @project.cis.build(ci_params)
-	@ci.user = current_user
-	@ci.pi = @project.pi
-	if @ci.save
-      redirect_to project_path(@project), notice: "CI created successfully."
-    else
-      render :new
-    end
-	end
+	
 
 	def index
 		@in_page = "index"
@@ -98,24 +90,43 @@ class CisController < ApplicationController
 	end
 
 	
+	def create
+	  @ci = @project.cis.build(ci_params)
+	  @ci.user = current_user
+	  @ci.pi = @project.pi
+
+	  if @ci.save
+	    redirect_to project_path(@project),
+	                notice: "CI created successfully."
+	  else
+	    @new_ci = @ci
+	    render "projects/show", status: :unprocessable_entity
+	  end
+	end
+
 	def update
-	  @ci = Ci.find(params[:id])
-	  respond_to do |format|
-	    if @ci.update(ci_params)
-	      format.turbo_stream do
-	        render turbo_stream: [
-	          turbo_stream.replace("ci_item_#{@ci.id}", partial: 'cis/ci', locals: { ci: @ci, project: @ci.project }),
-	          turbo_stream.update('notices', partial: 'shared/notices', locals: { notice: 'CI was successfully updated.' })
-	        ]
-	      end
-	    else
-	      format.turbo_stream do
-	        render turbo_stream: [
-	          turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'cis/form', modal_title: 'Edit CI' }),
-	          turbo_stream.update('notices', partial: 'shared/notices', locals: { alert: 'Error updating CI.' })
-	        ]
-	      end
-	    end
+	  if params[:project_id].present?
+		  @ci = @project.cis.find(params[:id])
+		else
+		  @ci = Ci.find(params[:id])
+		  @project = @ci.project
+		end
+
+	  if @ci.update(ci_params)
+
+	    redirect_to project_path(@project),
+	                notice: "CI was successfully updated."
+
+	  else
+
+	    @cis = @project.cis.includes(:swift).order(issue_date: :desc).to_a
+	    @editing_ci_id = @ci.id
+
+	    index = @cis.index { |record| record.id == @ci.id }
+	    @cis[index] = @ci if index
+
+	    render "projects/show", status: :unprocessable_entity
+
 	  end
 	end
 

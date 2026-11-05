@@ -1,0 +1,618 @@
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-truck-fast me-2"></i>
+        Logistics & Shipping
+      </h2>
+
+      <p class="m-card__subtitle">
+        Bookings, container handling, customs, and shipping documents
+      </p>
+    </div>
+
+    <% if @can_manage_project %>
+
+      <%= link_to new_project_booking_path(@project),
+        class: "btn btn-sm btn-primary",
+        data: { controller: "bs-modal-form" } do %>
+        <i class="fa-solid fa-plus me-1"></i>
+        New Booking
+      <% end %>
+
+    <% end %>
+
+  </header>
+
+  <!-- PROJECT CONTAINER SUMMARY -->
+
+  <div class="border rounded-3 p-3 mb-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+
+      <span class="small text-body-secondary">
+        Overall stuffing progress
+      </span>
+
+      <span class="fw-semibold">
+        <%= @project_total_filled %> / <%= @project_total_containers %>
+      </span>
+
+    </div>
+
+    <%
+      project_stuffing_percentage =
+        if @project_total_containers.positive?
+          [
+            (@project_total_filled.to_f / @project_total_containers * 100).round,
+            100
+          ].min
+        else
+          0
+        end
+    %>
+
+    <div class="progress" style="height: 8px;">
+
+      <div
+        class="progress-bar bg-success"
+        role="progressbar"
+        style="width: <%= project_stuffing_percentage %>%"
+        aria-valuenow="<%= project_stuffing_percentage %>"
+        aria-valuemin="0"
+        aria-valuemax="100">
+      </div>
+
+    </div>
+
+    <div class="d-flex justify-content-between flex-wrap gap-2 small text-body-secondary mt-2">
+
+      <span>
+        <%= @project_total_picked_up %> picked up
+      </span>
+
+      <span>
+        <%= @project_total_filled %> stuffed
+      </span>
+
+      <span>
+        <%= @bookings.size %> bookings
+      </span>
+
+    </div>
+
+  </div>
+
+  <% if @bookings.any? %>
+
+    <% @bookings.each do |booking| %>
+
+      <%
+        quantity = booking.quantity.to_i
+        picked_up = booking.picked_up.to_i
+        filled = booking.filled.to_i
+
+        stuffing_percentage =
+          if quantity.positive?
+            [[(filled.to_f / quantity * 100).round, 100].min, 0].max
+          else
+            0
+          end
+
+        booking_status =
+          if quantity.positive? && filled >= quantity
+            ["Stuffing completed", "bg-success-subtle text-success"]
+          elsif booking.stuffing == true || filled.positive?
+            ["Stuffing in progress", "bg-info-subtle text-info"]
+          elsif picked_up.positive?
+            ["Picked up", "bg-primary-subtle text-primary"]
+          else
+            ["Not started", "bg-secondary-subtle text-secondary"]
+          end
+      %>
+
+      <article class="border rounded-3 p-3 mb-3">
+
+        <!-- BOOKING HEADER -->
+
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+
+          <div>
+
+            <div class="small text-body-secondary">
+              Booking
+            </div>
+
+            <div class="fw-bold fs-5">
+              <%= booking.number %>
+            </div>
+
+            <div class="small text-body-secondary">
+              <%= booking.container_type.presence || "Container type not specified" %>
+            </div>
+
+          </div>
+
+          <div class="d-flex flex-column align-items-end gap-1">
+
+            <span class="badge <%= booking_status[1] %>">
+              <%= booking_status[0] %>
+            </span>
+
+            <% if booking.payment_done? %>
+              <span class="badge bg-success-subtle text-success">
+                Booking payment settled
+              </span>
+            <% else %>
+              <span class="badge bg-warning-subtle text-warning-emphasis">
+                Booking payment pending
+              </span>
+            <% end %>
+
+          </div>
+
+        </div>
+
+        <!-- CONTAINER PROGRESS -->
+
+        <div class="row g-2 mb-3">
+
+          <div class="col-4">
+
+            <div class="border rounded-3 p-2 h-100">
+
+              <div class="small text-body-secondary">
+                Total
+              </div>
+
+              <div class="fw-semibold">
+                <%= quantity %>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-4">
+
+            <div class="border rounded-3 p-2 h-100">
+
+              <div class="small text-body-secondary">
+                Picked up
+              </div>
+
+              <div class="fw-semibold">
+                <%= picked_up %>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-4">
+
+            <div class="border rounded-3 p-2 h-100">
+
+              <div class="small text-body-secondary">
+                Stuffed
+              </div>
+
+              <div class="fw-semibold">
+                <%= filled %>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="progress mb-3" style="height: 6px;">
+
+          <div
+            class="progress-bar bg-success"
+            role="progressbar"
+            style="width: <%= stuffing_percentage %>%"
+            aria-valuenow="<%= stuffing_percentage %>"
+            aria-valuemin="0"
+            aria-valuemax="100">
+          </div>
+
+        </div>
+
+        <!-- BOOKING DETAILS -->
+
+        <div class="row g-3">
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Destination / POD
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.pod.presence || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Line
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.line.presence || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Forwarder
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.forwarder.presence || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Weight
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.weight.present? ? "#{booking.weight} MT" : "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Factory order
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.factory_order_date&.strftime("%d %b %Y") || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Pickup date
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.pick_up_date&.strftime("%d %b %Y") || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Custom submission
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.custom_submission_date&.strftime("%d %b %Y") || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Free time
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.free_time.presence || "—" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Inspection
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.inspection? ? "Included" : "Not included" %>
+            </div>
+
+          </div>
+
+          <div class="col-6">
+
+            <div class="small text-body-secondary">
+              Freight per container
+            </div>
+
+            <div class="fw-semibold">
+              <%= booking.freight_price.present? ? "#{number_with_delimiter(booking.freight_price)} USD" : "—" %>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- CUSTOMS / SHIPPING -->
+
+        <div class="border-top mt-3 pt-3">
+
+          <div class="small fw-semibold text-body-secondary mb-2">
+            Customs & Shipping
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mb-2">
+
+            <% if booking.declaration? %>
+              <span class="badge bg-success-subtle text-success">Declaration</span>
+            <% else %>
+              <span class="badge bg-secondary-subtle text-secondary">Declaration pending</span>
+            <% end %>
+
+            <% if booking.tally? %>
+              <span class="badge bg-success-subtle text-success">Tally</span>
+            <% else %>
+              <span class="badge bg-secondary-subtle text-secondary">Tally pending</span>
+            <% end %>
+
+            <% if booking.custom_clearance? %>
+              <span class="badge bg-success-subtle text-success">Custom clearance</span>
+            <% else %>
+              <span class="badge bg-secondary-subtle text-secondary">Custom clearance pending</span>
+            <% end %>
+
+            <% if booking.send_to_line? %>
+              <span class="badge bg-success-subtle text-success">Documents sent to line</span>
+            <% else %>
+              <span class="badge bg-warning-subtle text-warning-emphasis">Not sent to line</span>
+            <% end %>
+
+          </div>
+
+          <div class="row g-2">
+
+            <div class="col-6">
+
+              <div class="small text-body-secondary">
+                Vessel
+              </div>
+
+              <div class="fw-semibold">
+                <%= booking.vessel_name.presence || "—" %>
+              </div>
+
+            </div>
+
+            <div class="col-6">
+
+              <div class="small text-body-secondary">
+                Vessel ETA
+              </div>
+
+              <div class="fw-semibold">
+                <%= booking.vessel_eta&.strftime("%d %b %Y") || "—" %>
+              </div>
+
+            </div>
+
+            <div class="col-6">
+
+              <div class="small text-body-secondary">
+                BL Number
+              </div>
+
+              <div class="fw-semibold">
+                <%= booking.bl_number.presence || "—" %>
+              </div>
+
+            </div>
+
+            <div class="col-6">
+
+              <div class="small text-body-secondary">
+                BL Date
+              </div>
+
+              <div class="fw-semibold">
+                <%= booking.date_of_bl&.strftime("%d %b %Y") || "—" %>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- RELEASE REQUEST -->
+
+        <div class="border-top mt-3 pt-3">
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+            <div>
+
+              <div class="small text-body-secondary">
+                Release permission
+              </div>
+
+              <% if booking.release_permission? %>
+
+                <span class="badge bg-success-subtle text-success">
+                  Granted
+                </span>
+
+                <span class="small text-body-secondary">
+                  <%= booking.release_permission_date&.strftime("%d %b %Y") %>
+                </span>
+
+              <% elsif booking.release_request&.confirmed? %>
+
+                <span class="badge bg-success-subtle text-success">
+                  Request confirmed
+                </span>
+
+              <% elsif booking.release_request.present? %>
+
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  Request pending
+                </span>
+
+              <% else %>
+
+                <span class="badge bg-secondary-subtle text-secondary">
+                  No request
+                </span>
+
+              <% end %>
+
+            </div>
+
+            <% if @can_manage_project && !booking.release_permission? && booking.release_request.blank? %>
+
+              <%= link_to new_project_booking_release_request_path(@project, booking),
+                class: "btn btn-sm btn-light border",
+                data: { controller: "bs-modal-form" } do %>
+                <i class="fa-solid fa-file-signature me-1"></i>
+                Request release
+              <% end %>
+
+            <% end %>
+
+          </div>
+
+        </div>
+
+        <!-- ATTACHED DOCUMENTS AND IMAGES -->
+
+        <div class="border-top mt-3 pt-3">
+
+          <div class="small fw-semibold text-body-secondary mb-2">
+            Shipping documents and images
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+
+            <% [
+              ["BL Draft", booking.bl_draft],
+              ["Dated BL", booking.bl_dated],
+              ["Surrender", booking.surrender]
+            ].each do |label, attachment| %>
+
+              <% if attachment.attached? %>
+
+                <%= link_to rails_blob_path(attachment, disposition: "attachment"),
+                  class: "btn btn-sm btn-light border",
+                  target: "_blank" do %>
+
+                  <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+                  <%= label %>
+
+                <% end %>
+
+              <% end %>
+
+            <% end %>
+
+            <% if booking.images.attached? %>
+
+              <% booking.images.each_with_index do |image, index| %>
+
+                <%= link_to rails_blob_path(image, disposition: "attachment"),
+                  class: "btn btn-sm btn-light border",
+                  target: "_blank" do %>
+
+                  <i class="fa-solid fa-image me-1"></i>
+                  Image <%= index + 1 %>
+
+                <% end %>
+
+              <% end %>
+
+            <% end %>
+
+          </div>
+
+        </div>
+
+        <!-- BOOKING ACTIONS -->
+
+        <% if @can_manage_project %>
+
+          <div class="border-top mt-3 pt-3 d-flex flex-wrap gap-2">
+
+            <%= link_to edit_project_booking_path(@project, booking),
+              class: "btn btn-sm btn-light border",
+              data: { controller: "bs-modal-form" } do %>
+              <i class="fa-solid fa-pen me-1"></i>
+              Edit booking
+            <% end %>
+
+            <%= link_to edit_picked_up_project_booking_path(@project, booking),
+              class: "btn btn-sm btn-light border",
+              data: { controller: "bs-modal-form" } do %>
+              <i class="fa-solid fa-box me-1"></i>
+              Pickup & stuffing
+            <% end %>
+
+            <%= link_to edit_status_project_booking_path(@project, booking),
+              class: "btn btn-sm btn-light border",
+              data: { controller: "bs-modal-form" } do %>
+              <i class="fa-solid fa-clipboard-check me-1"></i>
+              Custom clearance
+            <% end %>
+
+            <%= link_to shipping_project_booking_path(@project, booking),
+              class: "btn btn-sm btn-light border",
+              data: { controller: "bs-modal-form" } do %>
+              <i class="fa-solid fa-ship me-1"></i>
+              Shipping
+            <% end %>
+
+          </div>
+
+        <% end %>
+
+      </article>
+
+    <% end %>
+
+    <% if @can_manage_project %>
+
+      <%= link_to update_timeline_project_path(@project),
+        class: "btn btn-sm btn-light border" do %>
+        <i class="fa-solid fa-images me-1"></i>
+        Manage booking images
+      <% end %>
+
+    <% end %>
+
+  <% else %>
+
+    <div class="text-center py-4">
+
+      <i class="fa-solid fa-truck-fast fs-3 text-body-secondary"></i>
+
+      <p class="small text-body-secondary mt-2 mb-0">
+        No Bookings have been created for this Project.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</section>

@@ -1,3 +1,8 @@
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'Update booking status', form_partial: "bookings/booking_edit_status" %>
+  <%= render "shared/turbo_modal",
+    modal_title: "Customs Clearance",
+    modal_subtitle: "Project #{@project.number} · Booking #{@booking.number}",
+    modal_icon: "fa-stamp",
+    modal_size: "modal-lg",
+    form_partial: "bookings/booking_edit_status" %>
 <% end %>

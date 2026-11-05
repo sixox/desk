@@ -1,3 +1,14 @@
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'New Project', form_partial: "projects/form" %>
+
+  <%= render "shared/turbo_modal",
+    modal_title: "Create Project",
+    modal_subtitle: "Start a new commercial and operational project.",
+    modal_icon: "fa-folder-plus",
+    modal_size: "modal-lg",
+    form_partial: "projects/form",
+    form_locals: {
+      project: @project,
+      in_modal: true
+    } %>
+
 <% end %>

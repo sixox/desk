@@ -1,0 +1,395 @@
+<%
+  pi ||= project.pi || project.build_pi
+  accounts = Account.includes(:bank).order(:id)
+  customers = Customer.order(:nickname)
+  form_open = !pi.persisted? || pi.errors.any?
+%>
+
+<div class="m-card">
+
+  <div class="m-card__header">
+    <div>
+      <h5 class="m-card__title">Performa Invoice</h5>
+      <p class="m-card__subtitle">
+        Commercial agreement, customer, product and pricing
+      </p>
+    </div>
+
+    <% if pi.persisted? %>
+      <span class="badge bg-success-subtle text-success">
+        <%= pi.number %>
+      </span>
+    <% else %>
+      <span class="badge bg-warning-subtle text-warning-emphasis">
+        No PI
+      </span>
+    <% end %>
+  </div>
+
+  <div class="p-3">
+
+    <% if pi.persisted? %>
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-3">
+          <small class="text-body-secondary">Customer</small>
+          <div class="fw-semibold">
+            <%= pi.customer&.nickname || "—" %>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <small class="text-body-secondary">Product</small>
+          <div class="fw-semibold"><%= pi.product %></div>
+        </div>
+
+        <div class="col-md-2">
+          <small class="text-body-secondary">Quantity</small>
+          <div class="fw-semibold">
+            <%= number_with_delimiter(pi.quantity) %> MT
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <small class="text-body-secondary">Unit Price</small>
+          <div class="fw-semibold">
+            <%= number_with_delimiter(pi.unit_price) %>
+            <%= pi.currency %>
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <small class="text-body-secondary">Total</small>
+          <div class="fw-semibold">
+            <%= number_with_delimiter(pi.total_price) %>
+            <%= pi.currency %>
+          </div>
+        </div>
+
+      </div>
+
+      <% if pi.document.attached? %>
+        <div class="mb-3">
+          <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+          <%= link_to "#{pi.number} · PI document",
+            rails_blob_path(pi.document, disposition: "attachment"),
+            target: "_blank",
+            rel: "noopener" %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% if can_manage %>
+
+      <details <%= "open" if form_open %>>
+
+        <summary class="btn btn-light border btn-sm">
+          <i class="fa-solid fa-pen-to-square me-1"></i>
+          <%= pi.persisted? ? "Edit PI" : "Create PI" %>
+        </summary>
+
+        <div class="pt-4">
+
+          <%= form_with model: [project, pi],
+            multipart: true,
+            data: { turbo: false },
+            class: "erp-form" do |form| %>
+
+            <%= render "shared/forms/errors", object: pi %>
+
+            <%= render "shared/forms/section_heading",
+              title: "Invoice & Customer",
+              description: "Reference, customer and issue details.",
+              icon: "fa-file-invoice" %>
+
+            <div class="row g-3 mb-4">
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :number,
+                  label: "PI Number",
+                  required: true %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :issue_date,
+                  label: "Issue Date",
+                  type: :date_field,
+                  required: true %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :seller,
+                  label: "Seller",
+                  required: true %>
+              </div>
+
+              <div class="col-md-6">
+                <%= form.label :customer_id, "Customer",
+                  class: "form-label" %>
+                <%= form.collection_select :customer_id,
+                  customers,
+                  :id,
+                  :nickname,
+                  { prompt: "Select customer" },
+                  { class: "form-select" } %>
+              </div>
+
+              <div class="col-md-6">
+                <%= form.label :account_id, "Bank Account",
+                  class: "form-label" %>
+                <%= form.collection_select :account_id,
+                  accounts,
+                  :id,
+                  :display_name_with_bank,
+                  { include_blank: "Select account" },
+                  { class: "form-select" } %>
+              </div>
+
+            </div>
+
+            <%= render "shared/forms/section_heading",
+              title: "Product & Quantity",
+              description: "Product specification and packing.",
+              icon: "fa-box" %>
+
+            <div class="row g-3 mb-4">
+
+              <div class="col-md-5">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :product,
+                  type: :select,
+                  choices: Pi::PRODUCT,
+                  select_options: { prompt: "Select product" },
+                  required: true %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :packing_type,
+                  label: "Packing",
+                  type: :select,
+                  choices: Pi::PACKING_TYPE,
+                  select_options: { prompt: "Select packing" },
+                  required: true %>
+              </div>
+
+              <div class="col-md-3">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :tolerance,
+                  label: "Tolerance %",
+                  type: :number_field,
+                  input_options: { step: "any" } %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :quantity,
+                  label: "Quantity (MT)",
+                  type: :number_field,
+                  required: true,
+                  input_options: { min: 0, step: "any" } %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :unit_price,
+                  type: :number_field,
+                  required: true,
+                  input_options: { min: 0, step: "0.0001" } %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :total_price,
+                  type: :number_field,
+                  required: true,
+                  input_options: { min: 0, step: "0.0001" } %>
+              </div>
+
+              <div class="col-md-6">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :payment_term,
+                  label: "Advance / Payment Term",
+                  hint: "Enter 0 if there is no advance payment.",
+                  required: true %>
+              </div>
+
+              <div class="col-md-3">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :currency,
+                  type: :select,
+                  choices: Pi::CURRENCY,
+                  select_options: { prompt: "Currency" },
+                  required: true %>
+              </div>
+
+              <div class="col-md-3">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :packing_count,
+                  label: "Packing Count",
+                  type: :number_field,
+                  input_options: { min: 0 } %>
+              </div>
+
+            </div>
+
+            <%= render "shared/forms/section_heading",
+              title: "Route & Delivery",
+              description: "Ports, incoterm and delivery timeline.",
+              icon: "fa-route" %>
+
+            <div class="row g-3 mb-4">
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :pol,
+                  label: "Loading Port" %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :pod,
+                  label: "Destination Port",
+                  required: true %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :incoterm,
+                  label: "Incoterm",
+                  input_options: { placeholder: "CFR" } %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :delivery_time,
+                  label: "Delivery Time (Days)",
+                  type: :number_field,
+                  input_options: { min: 0 } %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :validity,
+                  label: "Validity (Days)",
+                  type: :number_field,
+                  input_options: { min: 0 } %>
+              </div>
+
+              <div class="col-md-4">
+                <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :agent,
+                  type: :select,
+                  choices: Pi::AGENT,
+                  select_options: { prompt: "Select agent" } %>
+              </div>
+
+            </div>
+
+            <details class="mb-4">
+              <summary class="fw-semibold small">
+                Cost breakdown and commissions
+              </summary>
+
+              <div class="row g-3 mt-1">
+
+                <% [
+                  [:purchase, "Purchase"],
+                  [:packing_cost, "Packing Cost"],
+                  [:shipment_rate, "Shipment Rate"],
+                  [:transport, "Transport"],
+                  [:custom_cost, "Custom Cost"],
+                  [:freight, "Freight"],
+                  [:insurance, "Insurance"],
+                  [:inspection, "Inspection"],
+                  [:other_cost, "Other Cost"],
+                  [:internal_commission, "Internal Commission"],
+                  [:foreign_commission, "Foreign Commission"],
+                  [:commission, "Commission per MT"]
+                ].each do |attribute, label| %>
+
+                  <div class="col-md-4">
+                    <%= render "shared/forms/field",
+                      form: form,
+                      attribute: attribute,
+                      label: label,
+                      type: :number_field,
+                      input_options: { step: "any" } %>
+                  </div>
+
+                <% end %>
+
+                <div class="col-md-6">
+                  <%= render "shared/forms/field",
+                    form: form,
+                    attribute: :cttd,
+                    label: "CTTD",
+                    required: true %>
+                </div>
+
+                <div class="col-md-6">
+                  <%= render "shared/forms/field",
+                    form: form,
+                    attribute: :sales_by,
+                    label: "Sales By",
+                    required: true %>
+                </div>
+
+              </div>
+            </details>
+
+            <%= render "shared/forms/section_heading",
+              title: "PI Document",
+              description: "Attach or replace the PI document.",
+              icon: "fa-paperclip" %>
+
+            <div class="mb-4">
+              <%= form.label :document, "PI Document",
+                class: "form-label" %>
+              <%= form.file_field :document,
+                class: "form-control",
+                accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png" %>
+
+              <% if pi.document.attached? %>
+                <small class="text-body-secondary">
+                  Current document:
+                  <%= pi.document.filename %>
+                </small>
+              <% end %>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <%= form.submit pi.persisted? ? "Save PI" : "Create PI",
+                class: "btn btn-primary" %>
+            </div>
+
+          <% end %>
+
+        </div>
+      </details>
+
+    <% end %>
+
+  </div>
+</div>

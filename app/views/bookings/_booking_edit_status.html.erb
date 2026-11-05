@@ -1,54 +1,95 @@
-<%= form_for [@project, @booking] do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @booking.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
-			<ul>
-				<% @booking.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-	</div>
-	<div class="row mb-3">
-		<h5>booking no.<%= @booking.number %></h5>
-		<div class="subtitle">custom clearance</div>
-	</div>
-	<div class="row">
-		<div class="col-lg">
-				<%= form.check_box :declaration, class: 'form-check-input' %>
-				<label class="fw-bold form-check-label">
-					Declaration
-				</label>
-			
-		</div>
-		
-		<div class="col-lg">
-				<%= form.check_box :tally, class: 'form-check-input' %>
-				<label class="fw-bold form-check-label">
-					Tally
-				</label>
-			
-		</div>
-		
+<%= form_with model: [@project, @booking] do |form| %>
 
-		<div class="col-lg">
-				<%= form.check_box :send_to_line, class: 'form-check-input' %>
-				<label class="fw-bold form-check-label">
-					Deliver to line
-				</label>
-			
-		</div>
+  <div class="modal-body erp-form">
 
-		
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+    <%= render "shared/forms/errors", object: @booking %>
+
+    <div class="mb-4">
+      <div class="small text-body-secondary">Booking</div>
+      <div class="fw-semibold"><%= @booking.number %></div>
+    </div>
+
+    <%= render "shared/forms/section_heading",
+      title: "Customs Clearance",
+      description: "Update the progress of customs processing.",
+      icon: "fa-stamp" %>
+
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-4">
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="form-check form-switch">
+
+            <%= form.check_box :declaration,
+              class: "form-check-input" %>
+
+            <%= form.label :declaration,
+              "Declaration",
+              class: "form-check-label fw-semibold" %>
+
+          </div>
+
+          <small class="text-body-secondary">
+            Customs declaration completed.
+          </small>
+
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="form-check form-switch">
+
+            <%= form.check_box :tally,
+              class: "form-check-input" %>
+
+            <%= form.label :tally,
+              "Tally",
+              class: "form-check-label fw-semibold" %>
+
+          </div>
+
+          <small class="text-body-secondary">
+            Tally process completed.
+          </small>
+
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="form-check form-switch">
+
+            <%= form.check_box :send_to_line,
+              class: "form-check-input" %>
+
+            <%= form.label :send_to_line,
+              "Deliver to Line",
+              class: "form-check-label fw-semibold" %>
+
+          </div>
+
+          <small class="text-body-secondary">
+            Cargo delivered to the shipping line.
+          </small>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="alert alert-light border small mb-0">
+      <i class="fa-solid fa-circle-info me-1"></i>
+      These fields update the existing customs workflow flags.
+    </div>
+
+  </div>
+
+  <%= render "shared/forms/actions",
+    in_modal: true,
+    submit_label: "Update Customs Status" %>
+
 <% end %>

@@ -1,45 +1,261 @@
-<div class="col-lg-10 mx-auto mt-5">
-	<%= link_to 'View Projects List', list_projects_path, class: 'btn btn-warning m-2' %>
-	<%= link_to 'Release Requests', release_requests_path, class: 'btn btn-secondary m-2' %>
+<div class="page-header">
+  <div>
+    <h1>Projects</h1>
+    <p class="subtitle">
+      Manage commercial projects, customer invoices, procurement,
+      payments, and logistics execution.
+    </p>
+  </div>
 
-	<%= link_to "All Projects DSO", turnovers_projects_path, class: "btn btn-sm btn-outline-primary" %>
+  <div class="d-flex flex-wrap gap-2">
 
+    <%= link_to list_projects_path,
+      class: "btn btn-light border" do %>
+      <i class="fa-solid fa-table-list me-1"></i>
+      Project List
+    <% end %>
 
-	<div class="card mt-4 mb-4">
-		<div class="card-body">
-			<h3 class="text-center mb-3">Search in projects</h3>
-			<%= search_form_for @q, url: projects_path do |form| %>
-			
-			<div class="input-group mb-3">
-				<%= form.search_field :name_or_number_cont, class: "form-control", placeholder: "Search by project number or name", area: { label: "Search by project number or name", describedby: "button-addon2" } %>
-				<%= form.submit "Search", class: "btn btn-primary", id: "button-addon2" %>
-			</div>
-			<% end %>
-		</div>
-	</div>
+    <%= link_to release_requests_path,
+      class: "btn btn-light border" do %>
+      <i class="fa-solid fa-file-signature me-1"></i>
+      Release Requests
+    <% end %>
 
+    <%= link_to turnovers_projects_path,
+      class: "btn btn-light border" do %>
+      <i class="fa-solid fa-chart-line me-1"></i>
+      DSO Report
+    <% end %>
 
+    <% if current_user.sales? || current_user.logistics? %>
+      <%= link_to new_project_path,
+        class: "btn btn-primary",
+        data: { controller: "bs-modal-form" } do %>
+        <i class="fa-solid fa-plus me-1"></i>
+        New Project
+      <% end %>
+    <% end %>
 
-	<div class="row">
-		<% @projects.each do |project| %>
-		<div class="col-12 col-md-4 mb-3 d-flex align-items-stretch">
-			<%= render 'projects/project', project: project, bookings: project.bookings, title: "" %>
-		</div>
-		<% end %>
-	</div>
-	<div class="row mt-3">
-		<div class="col-sm">
-			<nav aria-label="Page navigation">
-				<ul class="pagination justify-content-center">
-					<%= paginate @projects, remote: true %>
-				</ul>
-			</nav>
-		</div>
-	</div>
+  </div>
 </div>
 
+<!-- PROJECT SUMMARY -->
 
+<div class="row row-tight mb-3">
 
+  <% [
+    {
+      label: "Total Projects",
+      value: @project_stats[:total],
+      icon: "fa-folder-open",
+      color: "c1"
+    },
+    {
+      label: "Sales Pending",
+      value: @project_stats[:sales_open],
+      icon: "fa-handshake",
+      color: "c2"
+    },
+    {
+      label: "Logistics Pending",
+      value: @project_stats[:logistics_open],
+      icon: "fa-truck-fast",
+      color: "c3"
+    },
+    {
+      label: "High / Extreme Risk",
+      value: @project_stats[:high_risk],
+      icon: "fa-triangle-exclamation",
+      color: "c4"
+    }
+  ].each do |item| %>
 
+    <div class="col-6 col-xl-3">
 
+      <article class="stat-card h-100">
 
+        <div class="stat-card__head">
+          <p class="stat-card__label">
+            <%= item[:label] %>
+          </p>
+
+          <span class="stat-card__icon stat-card__icon--<%= item[:color] %>">
+            <i class="fa-solid <%= item[:icon] %>"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= number_with_delimiter(item[:value]) %>
+        </p>
+
+      </article>
+
+    </div>
+
+  <% end %>
+
+</div>
+
+<!-- PROJECT DIRECTORY -->
+
+<section class="m-card">
+
+  <header class="m-card__header">
+    <div>
+      <h2 class="m-card__title">Project Directory</h2>
+
+      <p class="m-card__subtitle">
+        <%= number_with_delimiter(@project_total_count) %>
+        matching projects
+      </p>
+    </div>
+  </header>
+
+  <!-- SEARCH AND FILTERS -->
+
+  <div class="mb-4">
+
+    <%= form_with(
+      url: projects_path,
+      method: :get,
+      local: true,
+      class: "row g-2 align-items-end"
+    ) do %>
+
+      <div class="col-12 col-lg-6">
+
+        <label class="form-label small">
+          Search projects
+        </label>
+
+        <%= text_field_tag(
+          "q[name_or_number_cont]",
+          params.dig(:q, :name_or_number_cont),
+          class: "form-control",
+          placeholder: "Project number or name..."
+        ) %>
+
+      </div>
+
+      <div class="col-8 col-lg-4">
+
+        <label class="form-label small">
+          Project stage
+        </label>
+
+        <%= select_tag(
+          :stage,
+          options_for_select(
+            [
+              ["All projects", ""],
+              ["Sales pending", "sales_open"],
+              ["Logistics pending", "logistics_open"],
+              ["Completed", "completed"],
+              ["High / extreme risk", "at_risk"],
+              ["Projects without PI", "without_pi"]
+            ],
+            params[:stage]
+          ),
+          class: "form-select"
+        ) %>
+
+      </div>
+
+      <div class="col-4 col-lg-2 d-flex gap-2">
+
+        <%= submit_tag "Search",
+          class: "btn btn-primary flex-grow-1" %>
+
+        <%= link_to projects_path,
+          class: "btn btn-light border",
+          title: "Clear filters" do %>
+          <i class="fa-solid fa-rotate-left"></i>
+        <% end %>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+  <!-- QUICK FILTERS -->
+
+  <div class="d-flex flex-wrap gap-2 mb-3">
+
+    <% [
+      ["All", ""],
+      ["Sales pending", "sales_open"],
+      ["Logistics pending", "logistics_open"],
+      ["Completed", "completed"],
+      ["At risk", "at_risk"],
+      ["Without PI", "without_pi"]
+    ].each do |label, value| %>
+
+      <%= link_to label,
+        projects_path(
+          q: params[:q]&.to_unsafe_h,
+          stage: value
+        ),
+        class: "btn btn-sm #{params[:stage].to_s == value ? 'btn-primary' : 'btn-light border'}" %>
+
+    <% end %>
+
+  </div>
+
+  <!-- PROJECT CARDS -->
+
+  <div class="row row-tight">
+
+    <% @projects.each do |project| %>
+
+      <div class="col-12 col-md-6 col-xxl-4 mb-3">
+
+        <%= render "projects/project",
+          project: project %>
+
+      </div>
+
+    <% end %>
+
+    <% if @projects.empty? %>
+
+      <div class="col-12">
+
+        <div class="text-center py-5">
+
+          <span class="rounded-circle bg-secondary-subtle text-secondary d-inline-flex align-items-center justify-content-center"
+                style="width: 60px; height: 60px;">
+
+            <i class="fa-solid fa-folder-open fs-4"></i>
+
+          </span>
+
+          <h3 class="h6 mt-3">
+            No projects found
+          </h3>
+
+          <p class="small text-body-secondary mb-0">
+            Try changing your search or filters.
+          </p>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+  <!-- PAGINATION -->
+
+  <% if @projects.total_pages > 1 %>
+
+    <div class="d-flex justify-content-center mt-3">
+
+      <%= paginate @projects %>
+
+    </div>
+
+  <% end %>
+
+</section>

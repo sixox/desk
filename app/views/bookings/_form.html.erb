@@ -1,183 +1,218 @@
-<%= form_for [@project, @booking] do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @booking.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
-			<ul>
-				<% @booking.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h4>Booking</h4>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<% if @project.pi %>
-					<small class="text-secondary">Project: <%= @project.number %></small><br>
-					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
-					<% end %>
-				</div>
-			</div>
-		</div>
+<%
+  project = local_assigns[:project] || @project
+  booking = local_assigns[:booking] || @booking
+%>
 
-		<div class="col-lg-12">
-			<div class="row bg-semi">
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Booking number
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_field :number, class: 'form-control' %>
-					</div>
-				</div>
-				<div class="col-lg-2">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Part
-						</label>
-						<%= form.number_field :part, class: 'form-control' %>
-					</div>
-				</div>
-				<div class="col-lg-5">
-					<div class="form-group  ">
+<%= form_with model: [project, booking] do |form| %>
 
-						<label class="mb-2 mt-3">
-							Line
-							<span class="text-danger">*</span>
-							<%= form.select :line, options_for_select(Booking::LINE, selected: form.object.line), { prompt: 'Select line' }, { class:"form-select mt-2" } %>
-						</label>
+  <div class="modal-body erp-form">
 
+    <%= render "shared/forms/errors", object: booking %>
 
-					</div>
-					
-				</div>
-			</div>
+    <!-- PROJECT CONTEXT -->
 
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
 
-			<div class="row">
-				<div class="col-lg">
-					<div class="form-group  ">
+      <div>
+        <div class="small text-body-secondary">Project</div>
 
-						<label class="mb-2 mt-1">
-							Forwarder
-							<span class="text-danger">*</span>
-							<%= form.select :forwarder, options_for_select(Booking::FORWARDER, selected: form.object.forwarder), { prompt: 'Select forwarder' }, { class:"form-select mt-2" } %>
-						</label>
+        <%= link_to project.number,
+          project_path(project),
+          class: "fw-semibold text-decoration-none" %>
+      </div>
 
+      <% if project.pi.present? %>
+        <div class="text-end">
+          <div class="small text-body-secondary">Performa Invoice</div>
+          <span class="small fw-medium">
+            <%= project.pi.number %>
+          </span>
+        </div>
+      <% end %>
 
-					</div>
-				</div>
-				<div class="col-lg">
-					<div class="form-group  ">
+    </div>
 
-						<label class="mb-2 mt-1">
-							Type of fcl
-							<span class="text-danger">*</span>
-							<%= form.select :container_type, options_for_select(Booking::CONTAINER_TYPE, selected: form.object.container_type), { prompt: 'Select fcl' }, { class:"form-select mt-2" } %>
-						</label>
+    <!-- BOOKING DETAILS -->
 
+    <%= render "shared/forms/section_heading",
+      title: "Booking Details",
+      description: "Booking reference and container configuration.",
+      icon: "fa-box" %>
 
-					</div>
-				</div>
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Number of fcl
-							<%= form.number_field :quantity, class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
+    <div class="row g-3 mb-4">
 
-				
-			</div>
+      <div class="col-md-8">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :number,
+          label: "Booking Number",
+          required: true %>
+      </div>
 
+      <div class="col-md-4">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :part,
+          label: "Part",
+          type: :number_field %>
+      </div>
 
-			<div class="row bg-semi">
-				<div class="col-lg">
-					<div class="form-group ">
-						<label class="mb-2 mt-1">
-							Port
-							<span class="text-danger">*</span>
-							
-							<%= form.text_field :pod, class: "form-control mt-2" %>
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :line,
+          label: "Shipping Line",
+          type: :select,
+          choices: Booking::LINE,
+          select_options: { prompt: "Select shipping line" },
+          required: true %>
+      </div>
 
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :forwarder,
+          label: "Forwarder",
+          type: :select,
+          choices: Booking::FORWARDER,
+          select_options: { prompt: "Select forwarder" },
+          required: true %>
+      </div>
 
-						</label>
-					</div>
-				</div>
-				
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Free time
-							<%= form.number_field :free_time, class: "form-control mt-2" %>
-						</label>
-					</div>
-				</div>
-				
-			</div>
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :container_type,
+          label: "Container Type",
+          type: :select,
+          choices: Booking::CONTAINER_TYPE,
+          select_options: { prompt: "Select container type" },
+          required: true %>
+      </div>
 
-			<div class="row bg-semi">
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :quantity,
+          label: "Number of Containers",
+          type: :number_field,
+          required: true,
+          input_options: { min: 0 } %>
+      </div>
 
-				
-				<div class="col-lg mb-2">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Freight rate per container
-							<div class="input-group mt-2">
-								<%= form.number_field :freight_price, class: "form-control" %>
-								<span class="input-group-text">$</span>
-							</div>
-						</label>
-					</div>
-				</div>
-				<div class="col-lg mb-2">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Weight
-							<div class="input-group mt-2">
-								<%= form.number_field :weight, class: "form-control" %>
-								<span class="input-group-text">MT</span>
-							</div>
-						</label>
-					</div>
-				</div>
-				<div class="col-lg-5">
-					<div class="form-group mt-5">
-						<%= form.check_box :have_flexi, class: 'form-check-input' %>
-						<label class="form-check-label" for="haveFlexi">
-							Have flexi?
-						</label>
-					</div>
-					<div class="form-group">
-						<%= form.check_box :inspection, class: 'form-check-input' %>
-						<label class="form-check-label" for="inspection">
-							Have Inspection?
-						</label>
-					</div>
-				</div>
-				
-				
-			</div>
+    </div>
 
+    <div class="erp-form__divider"></div>
 
+    <!-- ROUTE AND FREIGHT -->
 
+    <%= render "shared/forms/section_heading",
+      title: "Destination & Freight",
+      description: "Port, freight price and cargo details.",
+      icon: "fa-ship" %>
 
-		</div>
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+    <div class="row g-3 mb-4">
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :pod,
+          label: "Port of Destination (POD)",
+          required: true %>
+      </div>
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :free_time,
+          label: "Free Time (Days)",
+          type: :number_field,
+          input_options: { min: 0 } %>
+      </div>
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :freight_price,
+          label: "Freight Rate per Container (USD)",
+          type: :number_field,
+          input_options: { min: 0, step: "any" } %>
+      </div>
+
+      <div class="col-md-6">
+        <%= render "shared/forms/field",
+          form: form,
+          attribute: :weight,
+          label: "Weight (MT)",
+          type: :number_field,
+          input_options: { min: 0, step: "any" } %>
+      </div>
+
+    </div>
+
+    <div class="erp-form__divider"></div>
+
+    <!-- SERVICES -->
+
+    <%= render "shared/forms/section_heading",
+      title: "Additional Services",
+      description: "Optional booking requirements.",
+      icon: "fa-clipboard-check" %>
+
+    <div class="row g-3">
+
+      <div class="col-md-6">
+
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="form-check form-switch">
+
+            <%= form.check_box :have_flexi,
+              class: "form-check-input" %>
+
+            <%= form.label :have_flexi,
+              "Flexi Required",
+              class: "form-check-label fw-medium" %>
+
+          </div>
+
+          <small class="text-body-secondary">
+            Enable when this booking requires a flexi container.
+          </small>
+
+        </div>
+
+      </div>
+
+      <div class="col-md-6">
+
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="form-check form-switch">
+
+            <%= form.check_box :inspection,
+              class: "form-check-input" %>
+
+            <%= form.label :inspection,
+              "Inspection Required",
+              class: "form-check-label fw-medium" %>
+
+          </div>
+
+          <small class="text-body-secondary">
+            Enable when cargo inspection is required.
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%= render "shared/forms/actions",
+    in_modal: true,
+    submit_label: booking.persisted? ? "Save Booking" : "Create Booking" %>
+
 <% end %>

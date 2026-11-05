@@ -1,101 +1,124 @@
-<%= form_for [@project, @booking] do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @booking.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@booking.errors.count, 'error') %> prohibited your booking from being saved.</h3>
-			<ul>
-				<% @booking.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h4>Booking</h4>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<% if @project.pi %>
-					<small class="text-secondary">Project: <%= @project.number %></small><br>
-					<small class="text-secondary">PI number: <%= @project.pi.number %></small>
-					<% end %>
-				</div>
-			</div>
-		</div>
+<%= form_with model: [@project, @booking] do |form| %>
 
-		<div class="col-lg-12">
-			<div class="row bg-semi">
-				<div class="col-lg-7">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Booking number
-							<span class="text-danger">*</span>
-						</label>
-					<div>
-						<%= @booking.number %>
-					</div>
-					</div>
-				</div>
-				<div class="col-lg-5">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Quantity
-							<div>
-							<%= @booking.quantity %>
-							</div>
-						</label>
-					</div>
-					
-				</div>
-			</div>
+  <div class="modal-body erp-form">
 
+    <%= render "shared/forms/errors", object: @booking %>
 
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <div class="small text-body-secondary">Booking</div>
+        <div class="fw-semibold"><%= @booking.number %></div>
+      </div>
+      <div class="text-end">
+        <div class="small text-body-secondary">Total containers</div>
+        <div class="fs-5 fw-semibold"><%= @booking.quantity %></div>
+      </div>
+    </div>
 
+    <%= render "shared/forms/section_heading",
+      title: "Container Progress",
+      description: "Update pickup and stuffing quantities.",
+      icon: "fa-boxes-stacked" %>
 
+    <%
+      quantity = @booking.quantity.to_i
+      picked_up = @booking.picked_up.to_i
+      filled = @booking.filled.to_i
 
-			<div class="row bg-semi mt-3">
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Picked up
-					        <%= form.range_field :picked_up, min: 0, max: @booking.quantity, class: "form-range mt-2", id: "picked_up_range" %>
-						</label>
-					</div>
-				</div>
-				<div class="col-lg">
-					<div class="form-group">
-						<label class="mb-2 mt-1">
-							Stuffed
-							<%= form.range_field :filled, min: 0, max: @booking.quantity, class: "form-range mt-2" %>
-						</label>
-					</div>
-				</div>
-				<div class="col-lg mb-2 mt-5">
-					<%= form.check_box :stuffing, class: 'form-check-input' %>
-					<label class="form-check-label" for="hourly">
-						Stuffing started
-					</label>
-				
-				</div>
-				
-				
-			</div>
+      picked_percentage = quantity.positive? ? [(picked_up.to_f / quantity * 100).round, 100].min : 0
+      filled_percentage = quantity.positive? ? [(filled.to_f / quantity * 100).round, 100].min : 0
+    %>
 
+    <div class="row g-3 mb-4">
 
+      <div class="col-md-6">
+        <div class="border rounded-3 p-3 h-100">
 
+          <div class="d-flex justify-content-between mb-2">
+            <label class="form-label fw-semibold mb-0">
+              Picked up
+            </label>
+            <span class="small text-body-secondary">
+              <%= picked_up %> / <%= quantity %>
+            </span>
+          </div>
 
+          <div class="progress mb-3" style="height: 7px;">
+            <div class="progress-bar bg-primary"
+                 style="width: <%= picked_percentage %>%">
+            </div>
+          </div>
 
-		</div>
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+          <%= form.number_field :picked_up,
+            class: "form-control",
+            min: 0,
+            max: quantity,
+            step: 1 %>
+
+          <small class="text-body-secondary">
+            Number of containers collected from the factory.
+          </small>
+
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="border rounded-3 p-3 h-100">
+
+          <div class="d-flex justify-content-between mb-2">
+            <label class="form-label fw-semibold mb-0">
+              Stuffed
+            </label>
+            <span class="small text-body-secondary">
+              <%= filled %> / <%= quantity %>
+            </span>
+          </div>
+
+          <div class="progress mb-3" style="height: 7px;">
+            <div class="progress-bar bg-success"
+                 style="width: <%= filled_percentage %>%">
+            </div>
+          </div>
+
+          <%= form.number_field :filled,
+            class: "form-control",
+            min: 0,
+            max: quantity,
+            step: 1 %>
+
+          <small class="text-body-secondary">
+            Number of containers that have been stuffed.
+          </small>
+
+        </div>
+      </div>
+
+    </div>
+
+    <%= render "shared/forms/section_heading",
+      title: "Stuffing Status",
+      description: "Indicate whether stuffing operations have started.",
+      icon: "fa-clipboard-check" %>
+
+    <div class="border rounded-3 p-3">
+
+      <div class="form-check form-switch">
+
+        <%= form.check_box :stuffing,
+          class: "form-check-input" %>
+
+        <%= form.label :stuffing,
+          "Stuffing started",
+          class: "form-check-label fw-semibold" %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%= render "shared/forms/actions",
+    in_modal: true,
+    submit_label: "Update Pickup & Stuffing" %>
+
 <% end %>

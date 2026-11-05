@@ -1,3 +1,8 @@
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'Pickup or fill booking', form_partial: "bookings/booking_picked_up" %>
+  <%= render "shared/turbo_modal",
+    modal_title: "Pickup & Stuffing",
+    modal_subtitle: "Project #{@project.number} · Booking #{@booking.number}",
+    modal_icon: "fa-boxes-stacked",
+    modal_size: "modal-lg",
+    form_partial: "bookings/booking_picked_up" %>
 <% end %>

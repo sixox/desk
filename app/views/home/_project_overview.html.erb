@@ -1,0 +1,288 @@
+<section class="mb-4">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-diagram-project me-2"></i>
+        Project Portfolio
+      </h2>
+
+      <p class="m-card__subtitle">
+        Company-wide project execution and operational attention
+      </p>
+    </div>
+
+    <%= link_to projects_path, class: "m-btn m-btn--ghost" do %>
+      All Projects
+      <i class="fa-solid fa-arrow-right ms-1"></i>
+    <% end %>
+
+  </div>
+
+  <!-- PROJECT STATISTICS -->
+
+  <div class="row row-tight mb-3">
+
+    <% stats = [
+      {
+        label: "Total Projects",
+        value: @project_dashboard[:total_projects],
+        icon: "fa-folder-open",
+        color: "c1",
+        path: projects_path
+      },
+      {
+        label: "Without PI",
+        value: @project_dashboard[:projects_without_pi],
+        icon: "fa-file-circle-question",
+        color: "c4",
+        path: projects_path(stage: "without_pi")
+      },
+      {
+        label: "Sales Open",
+        value: @project_dashboard[:sales_open],
+        icon: "fa-handshake",
+        color: "c2",
+        path: projects_path(stage: "sales_open")
+      },
+      {
+        label: "Logistics Open",
+        value: @project_dashboard[:logistics_open],
+        icon: "fa-truck-fast",
+        color: "c3",
+        path: projects_path(stage: "logistics_open")
+      },
+      {
+        label: "Unpaid CIs",
+        value: @project_dashboard[:unpaid_cis],
+        icon: "fa-file-invoice",
+        color: "c3",
+        path: cis_path
+      },
+      {
+        label: "Pending Payment Orders",
+        value: @project_dashboard[:pending_payment_orders],
+        icon: "fa-money-bill-transfer",
+        color: "c2",
+        path: payment_orders_path
+      }
+    ] %>
+
+    <% stats.each do |item| %>
+
+      <div class="col-6 col-xl-2">
+
+        <%= link_to item[:path],
+          class: "text-decoration-none text-reset" do %>
+
+          <article class="stat-card h-100">
+
+            <div class="stat-card__head">
+
+              <p class="stat-card__label">
+                <%= item[:label] %>
+              </p>
+
+              <span class="stat-card__icon stat-card__icon--<%= item[:color] %>">
+                <i class="fa-solid <%= item[:icon] %>"></i>
+              </span>
+
+            </div>
+
+            <p class="stat-card__value">
+              <%= number_with_delimiter(item[:value]) %>
+            </p>
+
+            <p class="stat-card__delta">
+              View details
+              <i class="fa-solid fa-arrow-right ms-1"></i>
+            </p>
+
+          </article>
+
+        <% end %>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+  <!-- RECENT PROJECTS -->
+
+  <section class="m-card">
+
+    <header class="m-card__header">
+
+      <div>
+        <h3 class="m-card__title">
+          Recently Updated Projects
+        </h3>
+
+        <p class="m-card__subtitle">
+          Latest project activity across the company
+        </p>
+      </div>
+
+      <span class="badge bg-light text-body-secondary border">
+        Latest 8
+      </span>
+
+    </header>
+
+    <% if @dashboard_recent_projects.any? %>
+
+      <div class="table-responsive">
+
+        <table class="table table-sm table-hover align-middle mb-0">
+
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Customer</th>
+              <th>Current Status</th>
+              <th>Last Activity</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <% @dashboard_recent_projects.each do |project| %>
+
+              <%
+                customer = project.pi&.customer
+
+                pending_cis =
+                  @dashboard_recent_unpaid_ci_counts[project.id].to_i
+
+                pending_bookings =
+                  @dashboard_recent_pending_booking_counts[project.id].to_i
+
+                sales_open = project.sales_done != true
+
+                logistics_open =
+                  project.logistics_done != true ||
+                  pending_bookings.positive?
+
+                has_attention =
+                  sales_open ||
+                  logistics_open ||
+                  pending_cis.positive?
+              %>
+
+              <tr>
+
+                <td style="min-width: 140px;">
+
+                  <%= link_to project.number,
+                    project_path(project),
+                    class: "fw-semibold text-decoration-none" %>
+
+                  <% if project.name.present? %>
+                    <div class="small text-body-secondary">
+                      <%= project.name %>
+                    </div>
+                  <% end %>
+
+                </td>
+
+                <td class="small">
+
+                  <% if customer.present? %>
+                    <%= customer.nickname.presence || customer.name %>
+                  <% else %>
+                    <span class="text-body-secondary">
+                      No PI / Customer
+                    </span>
+                  <% end %>
+
+                </td>
+
+                <td style="min-width: 200px;">
+
+                  <div class="d-flex flex-wrap gap-1">
+
+                    <% unless project.pi.present? %>
+                      <span class="badge bg-light text-secondary border">
+                        No PI
+                      </span>
+                    <% end %>
+
+                    <% if sales_open %>
+                      <span class="badge bg-info-subtle text-info">
+                        Sales open
+                      </span>
+                    <% end %>
+
+                    <% if logistics_open %>
+                      <span class="badge bg-warning-subtle text-warning-emphasis">
+                        Logistics
+                        <% if pending_bookings.positive? %>
+                          · <%= pending_bookings %>
+                        <% end %>
+                      </span>
+                    <% end %>
+
+                    <% if pending_cis.positive? %>
+                      <span class="badge bg-danger-subtle text-danger">
+                        Unpaid CI · <%= pending_cis %>
+                      </span>
+                    <% end %>
+
+                    <% unless has_attention %>
+                      <span class="badge bg-success-subtle text-success">
+                        Up to date
+                      </span>
+                    <% end %>
+
+                  </div>
+
+                </td>
+
+                <td class="text-nowrap">
+
+                  <div class="small fw-medium">
+                    <%= time_ago_in_words(project.updated_at) %> ago
+                  </div>
+
+                  <small class="text-body-secondary">
+                    <%= project.updated_at&.strftime("%d %b %Y") %>
+                  </small>
+
+                </td>
+
+                <td class="text-end">
+
+                  <%= link_to project_path(project),
+                    class: "btn btn-sm btn-light border",
+                    title: "Open project" do %>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
+                  <% end %>
+
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    <% else %>
+
+      <div class="text-center text-body-secondary py-4">
+        No projects have been created yet.
+      </div>
+
+    <% end %>
+
+  </section>
+
+</section>

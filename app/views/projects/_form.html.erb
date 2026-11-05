@@ -1,87 +1,210 @@
-<%= form_with model: @project do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @project.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@project.errors.count, 'error') %> prohibited your project from being saved.</h3>
-			<ul>
-				<% @project.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h3>Project</h3>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<% if @project %>
-					<h3 class="secondary"><%= @project.number %></h3>
-					<% end %>
-				</div>
-			</div>
-		</div>
+<%
+  project = local_assigns[:project] || @project
+  in_modal = local_assigns.fetch(:in_modal, true)
 
-		<div class="col-lg-12">
-			<div class="row mb-3">
-				<div class="col-md-6">
-					<%= form.label :number, 'Project Number', class: 'form-label' %>
-					<%= form.text_field :number, class: 'form-control', required: true %>
-				</div>
-				<div class="col-md-6">
-					<%= form.label :name, 'Project Name', class: 'form-label' %>
-					<%= form.text_field :name, class: 'form-control', required: true %>
-				</div>
-			</div>
-			<div class="row mb-3">
-				<div class="form-group mb-2 mt-3">
-				<%= form.check_box :started, class: 'form-check-input' %>
-				<label class="form-check-label" for="hourly">
-					Started?
-				</label>
-				</div>
-			</div>
-			<div class="row mb-3">
-				  <div class="col-md-6">
-				    <%= form.label :password, class: 'form-label' %>
-				    <%= form.password_field :password, class: 'form-control' %>
-				  </div>
+  form_css_class = in_modal ? "erp-modal__form" : "erp-form"
 
-				  <div class="col-md-6">
-				    <%= form.label :password_confirmation, class: 'form-label' %>
-				    <%= form.password_field :password_confirmation, class: 'form-control' %>
-				  </div>
-			</div>
+  risk_attributes = [
+    [:new_customer, "New customer"],
+    [:new_destination, "New destination"],
+    [:shipping, "Shipping risk"],
+    [:exchange, "Exchange risk"],
+    [:supplier_prepaid, "Supplier prepaid"],
+    [:delivery_failure, "Delivery failure"],
+    [:supplier_credits, "Supplier credits"],
+    [:third_person, "Third person involved"],
+    [:custom_clearance, "Custom clearance"],
+    [:logistic, "Logistics risk"],
+    [:quality, "Quality risk"]
+  ]
+%>
 
-			<!-- Project Options -->
-			<div class="card">
-				<div class="card-header">
-					Possible issues 
-				</div>
-				<div class="card-body">
-					<%# Dynamically generate checkbox for each boolean attribute %>
-					<div class="row">
-						<% [:new_customer, :custom_clearance, :new_destination, :shipping, :exchange, :supplier_prepaid, :delivery_failure, :supplier_credits, :third_person, :logistic, :quality].each do |attribute| %>
-						<div class="col-md-6">
-							<%= form.check_box attribute %>
-							<%= form.label attribute %>
-						</div>
-						<% end %>
-					</div>
-				</div>
+<%= form_with(
+  model: project,
+  html: {
+    class: form_css_class
+  }
+) do |f| %>
 
-			</div>
-		</div>
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Save Changes', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+  <div class="<%= in_modal ? 'modal-body' : 'card-body' %> erp-form__body">
+
+    <%= render "shared/forms/errors", object: project %>
+
+    <!-- PROJECT DETAILS -->
+
+    <section class="erp-form__section">
+
+      <%= render "shared/forms/section_heading",
+        icon: "fa-folder-open",
+        title: "Project Details",
+        description: "Enter the project identity and basic information." %>
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :number,
+            label: "Project number",
+            required: true,
+            hint: "Use the existing Project number format.",
+            input_options: {
+              placeholder: "e.g. 1400-0001",
+              autofocus: true
+            } %>
+
+        </div>
+
+        <div class="col-md-6">
+
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :name,
+            label: "Project name",
+            required: true,
+            input_options: {
+              placeholder: "Enter project name"
+            } %>
+
+        </div>
+
+      </div>
+
+      <div class="mt-3">
+
+        <div class="form-check form-switch">
+
+          <%= f.check_box :started,
+            class: "form-check-input",
+            role: "switch" %>
+
+          <%= f.label :started,
+            "Project has started",
+            class: "form-check-label fw-medium" %>
+
+        </div>
+
+        <div class="erp-form__hint">
+          This records the operational start flag. Sales and Logistics
+          completion remain separate workflow states.
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- PROJECT PORTAL ACCESS -->
+
+    <section class="erp-form__section">
+
+      <%= render "shared/forms/section_heading",
+        icon: "fa-lock",
+        title: "Project Portal Access",
+        description: "The Project password is used for external timeline access with the PI number." %>
+
+      <div class="row g-3">
+
+        <div class="col-md-6">
+
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :password,
+            type: :password_field,
+            label: project.persisted? ? "New password" : "Project password",
+            required: !project.persisted?,
+            hint: project.persisted? ? "Leave blank to keep the current password." : "Required when creating a project.",
+            input_options: {
+              autocomplete: "new-password",
+              placeholder: project.persisted? ? "Leave blank to keep current password" : "Create project password"
+            } %>
+
+        </div>
+
+        <div class="col-md-6">
+
+          <%= render "shared/forms/field",
+            form: f,
+            attribute: :password_confirmation,
+            type: :password_field,
+            label: "Confirm password",
+            hint: "Repeat the new password when changing it.",
+            input_options: {
+              autocomplete: "new-password",
+              placeholder: "Confirm password"
+            } %>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- RISK ASSESSMENT -->
+
+    <section class="erp-form__section">
+
+      <%= render "shared/forms/section_heading",
+        icon: "fa-shield-halved",
+        title: "Project Risk Assessment",
+        description: "Select every applicable risk factor. The Project model recalculates the risk score, impact, likelihood, and selected risk when saving." %>
+
+      <div class="row g-3">
+
+        <% risk_attributes.each do |attribute, label| %>
+
+          <div class="col-12 col-sm-6">
+
+            <div class="border rounded-3 p-3 h-100">
+
+              <div class="form-check">
+
+                <%= f.check_box attribute,
+                  class: "form-check-input" %>
+
+                <%= f.label attribute,
+                  label,
+                  class: "form-check-label fw-medium" %>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+      </div>
+
+      <% if project.persisted? && project.risk.to_i.positive? %>
+
+        <div class="small text-body-secondary mt-3">
+
+          Current calculated risk:
+          <strong><%= project.risk %></strong>
+
+          · Impact:
+          <strong><%= project.impact %></strong>
+
+          · Likelihood:
+          <strong><%= project.likelihood %></strong>
+
+          <% if project.selected_risk.present? %>
+            · Main factor:
+            <strong><%= project.selected_risk.to_s.humanize %></strong>
+          <% end %>
+
+        </div>
+
+      <% end %>
+
+    </section>
+
+  </div>
+
+  <%= render "shared/forms/actions",
+    in_modal: in_modal,
+    cancel_path: projects_path,
+    submit_label: project.persisted? ? "Save project changes" : "Create project" %>
+
 <% end %>

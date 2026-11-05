@@ -173,10 +173,21 @@
               </div>
               <% end %>
 
-              <% if @balance_swifts.second %>
+              <% @balance_swifts.group_by { |swift| swift.currency.to_s.downcase }.each do |currency, records| %>
+
               <hr>
-              <small class="mt-2 timeline-small">total <span class="text-secondary fw-bold"> 
-                <%= number_with_delimiter(@total_balance_swift_amount.to_i, delimiter: ',') %></span> <span style="font-size: 9px;"> <%= @balance_swifts.second.currency %></span></small>
+
+              <small class="mt-2 timeline-small">
+                Total <%= currency.upcase %>:
+
+                <span class="text-secondary fw-bold">
+                  <%= number_with_delimiter(
+                    records.sum { |swift| swift.amount.to_f }.round(2),
+                    delimiter: ","
+                    ) %>
+                  </span>
+                </small>
+
                 <% end %>
               </div>
             </div>

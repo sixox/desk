@@ -1,0 +1,95 @@
+<%
+  bookings ||= project.bookings.includes(:release_request).order(created_at: :desc).to_a
+  new_booking = @new_booking || project.bookings.build
+  total_quantity = bookings.sum { |booking| booking.quantity.to_i }
+  total_picked = bookings.sum { |booking| booking.picked_up.to_i }
+  total_filled = bookings.sum { |booking| booking.filled.to_i }
+%>
+
+<div class="m-card">
+
+  <div class="m-card__header">
+
+    <div>
+      <h5 class="m-card__title">Logistics & Shipping</h5>
+      <p class="m-card__subtitle">
+        Container operations, customs, vessel schedule and shipping documents
+      </p>
+    </div>
+
+    <span class="badge bg-light text-secondary border">
+      <%= bookings.size %> bookings
+    </span>
+
+  </div>
+
+  <div class="p-3">
+
+    <div class="row g-2 mb-4">
+
+      <% [
+        ["Containers", total_quantity],
+        ["Picked Up", total_picked],
+        ["Stuffed", total_filled]
+      ].each do |label, value| %>
+
+        <div class="col-4">
+          <div class="border rounded-3 p-2 text-center">
+            <small class="text-body-secondary"><%= label %></small>
+            <div class="fs-5 fw-semibold"><%= value %></div>
+          </div>
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+    <% if bookings.any? %>
+
+      <% bookings.each do |booking| %>
+
+        <%= render "projects/workspace_booking",
+          project: project,
+          booking: booking,
+          can_manage: can_manage,
+          initially_open: @editing_booking_id.to_i == booking.id %>
+
+      <% end %>
+
+    <% else %>
+
+      <div class="text-center text-body-secondary py-4">
+        <i class="fa-solid fa-truck-fast fs-3 mb-2"></i>
+        <div>No bookings have been created for this project.</div>
+      </div>
+
+    <% end %>
+
+
+    <% if can_manage %>
+
+      <details class="border rounded-3 p-3 mt-3"
+        <%= "open" if new_booking.errors.any? || @new_booking.present? %>>
+
+        <summary class="fw-semibold">
+          <i class="fa-solid fa-plus me-1"></i>
+          Add Booking
+        </summary>
+
+        <div class="pt-3">
+
+          <%= render "projects/workspace_booking",
+            project: project,
+            booking: new_booking,
+            can_manage: can_manage,
+            initially_open: true %>
+
+        </div>
+
+      </details>
+
+    <% end %>
+
+  </div>
+</div>

@@ -1,0 +1,1074 @@
+<%
+  currency_labels = {
+    "dollar" => "USD",
+    "dirham" => "AED",
+    "rial" => "IRR",
+    "euro" => "EUR"
+  }
+
+  risk_labels = {
+    new_customer: "New customer",
+    new_destination: "New destination",
+    shipping: "Shipping",
+    exchange: "Exchange",
+    supplier_prepaid: "Supplier prepaid",
+    delivery_failure: "Delivery failure",
+    supplier_credits: "Supplier credits",
+    third_person: "Third person",
+    custom_clearance: "Custom clearance",
+    logistic: "Logistics",
+    quality: "Quality"
+  }
+
+  active_risks = risk_labels.select do |attribute, _label|
+    @project.public_send(attribute) == true
+  end
+%>
+
+<div class="row g-3">
+
+  <!-- COMMERCIAL / FINANCE -->
+
+  <div class="col-12 col-xl-7">
+
+    <div class="accordion" id="projectCommercialAccordion">
+
+      <!-- PI AND CI -->
+
+      <div class="accordion-item border rounded-3 mb-2">
+
+        <h2 class="accordion-header">
+
+          <button
+            class="accordion-button py-2 px-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#projectInvoices"
+            aria-expanded="true">
+
+            <span class="fw-semibold">
+              <i class="fa-solid fa-file-invoice me-2 text-body-secondary"></i>
+              Commercial
+            </span>
+
+            <span class="badge bg-secondary-subtle text-secondary ms-2">
+              <%= @cis.size %> CIs
+            </span>
+
+          </button>
+
+        </h2>
+
+        <div
+          id="projectInvoices"
+          class="accordion-collapse collapse show"
+          data-bs-parent="#projectCommercialAccordion">
+
+          <div class="accordion-body p-3">
+
+            <!-- PI -->
+
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+
+              <div>
+                <div class="small text-body-secondary">Proforma Invoice</div>
+
+                <% if @pi.present? %>
+
+                  <div class="fw-semibold">
+                    PI <%= @pi.number %>
+                  </div>
+
+                <% else %>
+
+                  <div class="text-warning small">
+                    No PI assigned
+                  </div>
+
+                <% end %>
+
+              </div>
+
+              <% if @can_manage_project %>
+
+                <% if @pi.present? %>
+
+                  <%= link_to edit_project_pi_path(@project, @pi),
+                    class: "btn btn-sm btn-light border",
+                    data: { controller: "bs-modal-form" } do %>
+                    <i class="fa-solid fa-pen"></i>
+                  <% end %>
+
+                <% elsif current_user.sales? %>
+
+                  <%= link_to new_project_pi_path(@project),
+                    class: "btn btn-sm btn-primary",
+                    data: { controller: "bs-modal-form" } do %>
+                    <i class="fa-solid fa-plus me-1"></i>
+                    Add PI
+                  <% end %>
+
+                <% end %>
+
+              <% end %>
+
+            </div>
+
+            <% if @pi.present? %>
+
+              <div class="row g-2 small mb-3">
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">Product</span>
+                  <div class="fw-medium"><%= @pi.product %></div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">Quantity</span>
+                  <div class="fw-medium"><%= number_with_delimiter(@pi.quantity.to_i) %> MT</div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">PI value</span>
+                  <div class="fw-medium">
+                    <%= number_with_delimiter(@pi.total_price.to_f) %>
+                    <%= @pi.currency&.upcase %>
+                  </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">Issue date</span>
+                  <div class="fw-medium"><%= @pi.issue_date&.strftime("%d %b %Y") || "—" %></div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">Payment term</span>
+                  <div class="fw-medium"><%= @pi.payment_term.presence || "—" %></div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">Incoterm</span>
+                  <div class="fw-medium"><%= @pi.incoterm.presence || "—" %></div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">POD</span>
+                  <div class="fw-medium"><%= @pi.pod.presence || "—" %></div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <span class="text-body-secondary">Packing</span>
+                  <div class="fw-medium"><%= @pi.packing_type.presence || "—" %></div>
+                </div>
+
+              </div>
+
+              <% if @pi.document.attached? %>
+
+                <div class="small mb-3">
+                  <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+
+                  <%= link_to "#{@pi.number}.PDF",
+                    rails_blob_path(@pi.document, disposition: "attachment"),
+                    target: "_blank" %>
+                </div>
+
+              <% end %>
+
+            <% end %>
+
+            <hr class="my-3">
+
+            <!-- CI TABLE -->
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+              <span class="small fw-semibold">
+                Commercial Invoices
+              </span>
+
+              <% if @can_manage_project && @pi.present? %>
+
+                <%= link_to new_project_ci_path(@project),
+                  class: "btn btn-sm btn-light border",
+                  data: { controller: "bs-modal-form" } do %>
+                  <i class="fa-solid fa-plus me-1"></i>
+                  New CI
+                <% end %>
+
+              <% end %>
+
+            </div>
+
+            <% if @cis.any? %>
+
+              <div class="table-responsive">
+
+                <table class="table table-sm table-hover align-middle mb-0">
+
+                  <thead>
+                    <tr>
+                      <th>CI</th>
+                      <th>Date</th>
+                      <th class="text-end">Net MT</th>
+                      <th class="text-end">Invoice</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    <% @cis.each do |ci| %>
+
+                      <%
+                        swift = ci.swift
+
+                        ci_status =
+                          if swift&.confirmed == true && swift&.rejected == true
+                            ["Conflict", "bg-danger-subtle text-danger"]
+                          elsif swift&.rejected == true
+                            ["Rejected", "bg-danger-subtle text-danger"]
+                          elsif swift&.confirmed == true
+                            ["Paid", "bg-success-subtle text-success"]
+                          elsif swift.present?
+                            ["Pending", "bg-warning-subtle text-warning-emphasis"]
+                          else
+                            ["Unpaid", "bg-secondary-subtle text-secondary"]
+                          end
+                      %>
+
+                      <tr>
+
+                        <td class="fw-semibold text-nowrap">
+                          <%= ci.number %>
+                        </td>
+
+                        <td class="small text-nowrap">
+                          <%= ci.issue_date&.strftime("%d %b %y") || "—" %>
+                        </td>
+
+                        <td class="text-end">
+                          <%= number_with_precision(ci.net_weight.to_f, precision: 2) %>
+                        </td>
+
+                        <td class="text-end text-nowrap">
+                          <%= number_with_delimiter(ci.balance_payment.to_f) %>
+                          <small class="text-body-secondary">
+                            <%= ci.pi&.currency&.upcase %>
+                          </small>
+                        </td>
+
+                        <td>
+                          <span class="badge <%= ci_status[1] %>">
+                            <%= ci_status[0] %>
+                          </span>
+                        </td>
+
+                        <td class="text-end text-nowrap">
+
+                          <% if ci.document.attached? %>
+
+                            <%= link_to rails_blob_path(ci.document, disposition: "attachment"),
+                              target: "_blank",
+                              class: "btn btn-sm btn-light border",
+                              title: "Invoice document" do %>
+                              <i class="fa-solid fa-file-pdf"></i>
+                            <% end %>
+
+                          <% end %>
+
+                          <% if @can_manage_project %>
+
+                            <%= link_to edit_project_ci_path(@project, ci),
+                              class: "btn btn-sm btn-light border",
+                              data: { controller: "bs-modal-form" } do %>
+                              <i class="fa-solid fa-pen"></i>
+                            <% end %>
+
+                            <% unless swift.present? %>
+
+                              <%= link_to new_ci_swift_path(ci),
+                                class: "btn btn-sm btn-light border",
+                                data: { controller: "bs-modal-form" } do %>
+                                <i class="fa-solid fa-money-bill-transfer"></i>
+                              <% end %>
+
+                            <% end %>
+
+                          <% end %>
+
+                        </td>
+
+                      </tr>
+
+                    <% end %>
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            <% else %>
+
+              <div class="small text-body-secondary py-2">
+                No Commercial Invoices.
+              </div>
+
+            <% end %>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMER RECEIPTS -->
+
+      <div class="accordion-item border rounded-3 mb-2">
+
+        <h2 class="accordion-header">
+
+          <button
+            class="accordion-button collapsed py-2 px-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#projectReceipts">
+
+            <span class="fw-semibold">
+              <i class="fa-solid fa-money-bill-transfer me-2 text-body-secondary"></i>
+              Customer Receipts
+            </span>
+
+            <span class="badge bg-secondary-subtle text-secondary ms-2">
+              <%= @project_swifts.size %> Swifts
+            </span>
+
+          </button>
+
+        </h2>
+
+        <div
+          id="projectReceipts"
+          class="accordion-collapse collapse"
+          data-bs-parent="#projectCommercialAccordion">
+
+          <div class="accordion-body p-3">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+              <span class="small text-body-secondary">
+                Confirmed amounts by customer currency
+              </span>
+
+              <% if @can_manage_project && (@pi.present? || current_user.id == 5) %>
+
+                <%= link_to new_project_swift_path(@project),
+                  class: "btn btn-sm btn-light border",
+                  data: { controller: "bs-modal-form" } do %>
+                  <i class="fa-solid fa-plus me-1"></i>
+                  New Swift
+                <% end %>
+
+              <% end %>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+
+              <% @confirmed_receipts_by_currency.sort.each do |currency, amount| %>
+
+                <span class="badge bg-success-subtle text-success p-2">
+                  <%= currency_labels[currency] || currency.upcase %>:
+                  <%= number_with_delimiter(amount.round(2)) %>
+                </span>
+
+              <% end %>
+
+              <% if @confirmed_receipts_by_currency.empty? %>
+                <span class="small text-body-secondary">No confirmed receipts</span>
+              <% end %>
+
+            </div>
+
+            <% if @bank_credits_by_currency.any? %>
+
+              <div class="small text-body-secondary mb-2">
+                Bank credits:
+
+                <% @bank_credits_by_currency.sort.each do |currency, amount| %>
+
+                  <strong class="me-2">
+                    <%= currency_labels[currency] || currency.upcase %>
+                    <%= number_with_delimiter(amount.round(2)) %>
+                  </strong>
+
+                <% end %>
+
+              </div>
+
+            <% end %>
+
+            <% if @project_swifts.any? %>
+
+              <div class="table-responsive">
+
+                <table class="table table-sm table-hover align-middle mb-0">
+
+                  <thead>
+                    <tr>
+                      <th>Source</th>
+                      <th>Bank</th>
+                      <th class="text-end">Sent</th>
+                      <th class="text-end">Deposited</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    <% @project_swifts.each do |swift| %>
+
+                      <%
+                        source =
+                          if swift.ci.present?
+                            "CI #{swift.ci.number}"
+                          elsif swift.advance == true
+                            "Advance"
+                          else
+                            "Project"
+                          end
+
+                        status, status_class =
+                          if swift.confirmed == true && swift.rejected == true
+                            ["Conflict", "bg-danger-subtle text-danger"]
+                          elsif swift.rejected == true
+                            ["Rejected", "bg-danger-subtle text-danger"]
+                          elsif swift.confirmed == true
+                            ["Confirmed", "bg-success-subtle text-success"]
+                          else
+                            ["Pending", "bg-warning-subtle text-warning-emphasis"]
+                          end
+                      %>
+
+                      <tr>
+
+                        <td class="small">
+                          <%= source %>
+                          <div class="text-body-secondary">#<%= swift.id %></div>
+                        </td>
+
+                        <td class="small">
+                          <%= swift.bank&.name || "—" %>
+                        </td>
+
+                        <td class="text-end text-nowrap">
+                          <%= number_with_delimiter(swift.amount.to_f.round(2)) %>
+                          <small class="text-body-secondary">
+                            <%= swift.currency&.upcase %>
+                          </small>
+                        </td>
+
+                        <td class="text-end text-nowrap">
+                          <% if swift.deposited_amount.present? %>
+                            <%= number_with_delimiter(swift.deposited_amount.to_f.round(2)) %>
+                            <small class="text-body-secondary">
+                              <%= swift.bank&.currency&.upcase %>
+                            </small>
+                          <% else %>
+                            —
+                          <% end %>
+                        </td>
+
+                        <td>
+                          <span class="badge <%= status_class %>">
+                            <%= status %>
+                          </span>
+                        </td>
+
+                        <td class="small text-nowrap">
+                          <%= (swift.confirm_at || swift.rejected_at || swift.created_at)&.strftime("%d %b %y") || "—" %>
+                        </td>
+
+                        <td class="text-end text-nowrap">
+
+                          <% swift.documents.each_with_index do |document, index| %>
+
+                            <%= link_to rails_blob_path(document, disposition: "attachment"),
+                              target: "_blank",
+                              class: "btn btn-sm btn-light border" do %>
+                              <i class="fa-solid fa-file-pdf"></i>
+                              <%= index + 1 %>
+                            <% end %>
+
+                          <% end %>
+
+                        </td>
+
+                      </tr>
+
+                    <% end %>
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            <% else %>
+
+              <div class="small text-body-secondary">
+                No Swift records.
+              </div>
+
+            <% end %>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- PROCUREMENT -->
+
+      <div class="accordion-item border rounded-3 mb-2">
+
+        <h2 class="accordion-header">
+
+          <button
+            class="accordion-button collapsed py-2 px-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#projectProcurement">
+
+            <span class="fw-semibold">
+              <i class="fa-solid fa-boxes-stacked me-2 text-body-secondary"></i>
+              Procurement & Allocations
+            </span>
+
+            <span class="badge bg-secondary-subtle text-secondary ms-2">
+              <%= @allocates.size %>
+            </span>
+
+          </button>
+
+        </h2>
+
+        <div
+          id="projectProcurement"
+          class="accordion-collapse collapse"
+          data-bs-parent="#projectCommercialAccordion">
+
+          <div class="accordion-body p-3">
+
+            <div class="d-flex flex-wrap gap-3 small mb-3">
+
+              <span>
+                PI:
+                <strong><%= number_with_delimiter(@pi&.quantity.to_i) %> MT</strong>
+              </span>
+
+              <span>
+                Allocated:
+                <strong><%= number_with_delimiter(@allocates.sum { |a| a.quantity.to_i }) %> MT</strong>
+              </span>
+
+              <span>
+                Remaining:
+                <strong class="<%= @remains.negative? ? 'text-danger' : 'text-success' %>">
+                  <%= number_with_delimiter(@remains) %> MT
+                </strong>
+              </span>
+
+            </div>
+
+            <% if @allocates.any? %>
+
+              <div class="table-responsive">
+
+                <table class="table table-sm table-hover align-middle mb-0">
+
+                  <thead>
+                    <tr>
+                      <th>Balance</th>
+                      <th>Supplier</th>
+                      <th>Supplier PI</th>
+                      <th class="text-end">Allocated</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    <% @allocates.each do |allocation| %>
+
+                      <% balance = allocation.ballance %>
+                      <% spi = balance&.spi %>
+
+                      <tr>
+
+                        <td>
+                          <%= link_to balance.number,
+                            ballance_path(balance),
+                            class: "fw-semibold text-decoration-none" %>
+                          <div class="small text-body-secondary">
+                            <%= balance.product %>
+                          </div>
+                        </td>
+
+                        <td class="small">
+                          <%= balance.supplier&.name || "—" %>
+                        </td>
+
+                        <td class="small">
+                          <%= spi&.number || "—" %>
+                        </td>
+
+                        <td class="text-end text-nowrap">
+                          <strong><%= number_with_delimiter(allocation.quantity.to_i) %></strong>
+                          MT
+                        </td>
+
+                      </tr>
+
+                    <% end %>
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            <% else %>
+
+              <div class="small text-body-secondary">
+                No inventory allocated to this Project.
+              </div>
+
+            <% end %>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPLIER PAYMENTS -->
+
+    <%= render "projects/payment_orders" %>
+
+    </div>
+
+  </div>
+
+  <!-- LOGISTICS / RISK -->
+
+  <div class="col-12 col-xl-5">
+
+    <div class="accordion" id="projectOperationsAccordion">
+
+      <!-- BOOKINGS -->
+
+      <div class="accordion-item border rounded-3 mb-2">
+
+        <h2 class="accordion-header">
+
+          <button
+            class="accordion-button py-2 px-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#projectBookings"
+            aria-expanded="true">
+
+            <span class="fw-semibold">
+              <i class="fa-solid fa-truck-fast me-2 text-body-secondary"></i>
+              Logistics & Bookings
+            </span>
+
+            <span class="badge bg-secondary-subtle text-secondary ms-2">
+              <%= @bookings.size %>
+            </span>
+
+          </button>
+
+        </h2>
+
+        <div
+          id="projectBookings"
+          class="accordion-collapse collapse show"
+          data-bs-parent="#projectOperationsAccordion">
+
+          <div class="accordion-body p-3">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+              <span class="small text-body-secondary">
+                Container progress
+              </span>
+
+              <% if @can_manage_project %>
+
+                <%= link_to new_project_booking_path(@project),
+                  class: "btn btn-sm btn-light border",
+                  data: { controller: "bs-modal-form" } do %>
+                  <i class="fa-solid fa-plus me-1"></i>
+                  Booking
+                <% end %>
+
+              <% end %>
+
+            </div>
+
+            <div class="small mb-2">
+              <strong><%= @project_total_filled %></strong>
+              / <%= @project_total_containers %> stuffed
+              · <%= @project_total_picked_up %> picked up
+            </div>
+
+            <div class="progress mb-3" style="height: 5px;">
+              <div
+                class="progress-bar bg-success"
+                style="width: <%= @project_total_containers.positive? ? [(@project_total_filled.to_f / @project_total_containers * 100).round, 100].min : 0 %>%">
+              </div>
+            </div>
+
+            <% if @bookings.any? %>
+
+              <% @bookings.each do |booking| %>
+
+                <%
+                  quantity = booking.quantity.to_i
+                  filled = booking.filled.to_i
+                  picked = booking.picked_up.to_i
+
+                  booking_status =
+                    if quantity.positive? && filled >= quantity
+                      ["Stuffed", "bg-success-subtle text-success"]
+                    elsif filled.positive? || booking.stuffing?
+                      ["Stuffing", "bg-info-subtle text-info"]
+                    elsif picked.positive?
+                      ["Picked up", "bg-primary-subtle text-primary"]
+                    else
+                      ["Not started", "bg-secondary-subtle text-secondary"]
+                    end
+                %>
+
+                <div class="border-top py-3">
+
+                  <div class="d-flex justify-content-between align-items-start gap-2">
+
+                    <div>
+                      <div class="fw-semibold">
+                        <%= booking.number %>
+                      </div>
+                      <div class="small text-body-secondary">
+                        <%= booking.pod %>
+                        · <%= booking.container_type %>
+                      </div>
+                    </div>
+
+                    <span class="badge <%= booking_status[1] %>">
+                      <%= booking_status[0] %>
+                    </span>
+
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-3 small mt-2">
+
+                    <span>
+                      Containers:
+                      <strong><%= quantity %></strong>
+                    </span>
+
+                    <span>
+                      Picked:
+                      <strong><%= picked %></strong>
+                    </span>
+
+                    <span>
+                      Stuffed:
+                      <strong><%= filled %></strong>
+                    </span>
+
+                  </div>
+
+                  <div class="small text-body-secondary mt-2">
+
+                    <%= booking.line.presence || "No line" %>
+                    · <%= booking.forwarder.presence || "No forwarder" %>
+
+                    <% if booking.vessel_name.present? %>
+                      · <%= booking.vessel_name %>
+                    <% end %>
+
+                    <% if booking.vessel_eta.present? %>
+                      · ETA <%= booking.vessel_eta.strftime("%d %b %y") %>
+                    <% end %>
+
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2 small mt-2">
+
+                    <% if booking.bl_draft.attached? %>
+                      <%= link_to "BL Draft",
+                        rails_blob_path(booking.bl_draft),
+                        target: "_blank" %>
+                    <% end %>
+
+                    <% if booking.bl_dated.attached? %>
+                      <%= link_to "Dated BL",
+                        rails_blob_path(booking.bl_dated),
+                        target: "_blank" %>
+                    <% end %>
+
+                    <% if booking.surrender.attached? %>
+                      <%= link_to "Surrender",
+                        rails_blob_path(booking.surrender),
+                        target: "_blank" %>
+                    <% end %>
+
+                    <% if booking.images.attached? %>
+                      <span class="text-body-secondary">
+                        <%= booking.images.size %> images
+                      </span>
+                    <% end %>
+
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-1 mt-2">
+
+                    <% if booking.release_permission? %>
+
+                      <span class="badge bg-success-subtle text-success">
+                        Release permitted
+                      </span>
+
+                    <% elsif booking.release_request.present? %>
+
+                      <span class="badge <%= booking.release_request.confirmed? ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning-emphasis' %>">
+                        Release request <%= booking.release_request.confirmed? ? "confirmed" : "pending" %>
+                      </span>
+
+                    <% else %>
+
+                      <span class="badge bg-secondary-subtle text-secondary">
+                        No release request
+                      </span>
+
+                    <% end %>
+
+                    <% if booking.payment_done? %>
+                      <span class="badge bg-success-subtle text-success">
+                        Payment done
+                      </span>
+                    <% else %>
+                      <span class="badge bg-warning-subtle text-warning-emphasis">
+                        Payment pending
+                      </span>
+                    <% end %>
+
+                  </div>
+
+                  <% if @can_manage_project %>
+
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+
+                      <%= link_to "Edit",
+                        edit_project_booking_path(@project, booking),
+                        class: "btn btn-sm btn-light border",
+                        data: { controller: "bs-modal-form" } %>
+
+                      <%= link_to "Pickup / stuffing",
+                        edit_picked_up_project_booking_path(@project, booking),
+                        class: "btn btn-sm btn-light border",
+                        data: { controller: "bs-modal-form" } %>
+
+                      <%= link_to "Customs",
+                        edit_status_project_booking_path(@project, booking),
+                        class: "btn btn-sm btn-light border",
+                        data: { controller: "bs-modal-form" } %>
+
+                      <%= link_to "Shipping",
+                        shipping_project_booking_path(@project, booking),
+                        class: "btn btn-sm btn-light border",
+                        data: { controller: "bs-modal-form" } %>
+
+                      <% if !booking.release_permission? && booking.release_request.blank? %>
+
+                        <%= link_to "Request release",
+                          new_project_booking_release_request_path(@project, booking),
+                          class: "btn btn-sm btn-light border",
+                          data: { controller: "bs-modal-form" } %>
+
+                      <% end %>
+
+                    </div>
+
+                  <% end %>
+
+                </div>
+
+              <% end %>
+
+              <% if @can_manage_project %>
+
+                <%= link_to update_timeline_project_path(@project),
+                  class: "btn btn-sm btn-light border mt-2" do %>
+                  <i class="fa-solid fa-images me-1"></i>
+                  Manage images
+                <% end %>
+
+              <% end %>
+
+            <% else %>
+
+              <div class="small text-body-secondary">
+                No bookings created.
+              </div>
+
+            <% end %>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RISK AND COMPLETION -->
+
+      <div class="accordion-item border rounded-3 mb-2">
+
+        <h2 class="accordion-header">
+
+          <button
+            class="accordion-button collapsed py-2 px-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#projectRisk">
+
+            <span class="fw-semibold">
+              <i class="fa-solid fa-shield-halved me-2 text-body-secondary"></i>
+              Risk & Completion
+            </span>
+
+            <span class="badge bg-secondary-subtle text-secondary ms-2">
+              <%= @project.risk.to_i %>
+            </span>
+
+          </button>
+
+        </h2>
+
+        <div
+          id="projectRisk"
+          class="accordion-collapse collapse"
+          data-bs-parent="#projectOperationsAccordion">
+
+          <div class="accordion-body p-3">
+
+            <div class="d-flex justify-content-between align-items-center small mb-2">
+
+              <span class="text-body-secondary">Risk assessment</span>
+
+              <strong><%= risk_level_tag(@project) %></strong>
+
+            </div>
+
+            <div class="small text-body-secondary mb-3">
+              Impact: <strong><%= @project.impact.to_i %></strong>
+              · Likelihood: <strong><%= @project.likelihood.to_i %></strong>
+
+              <% if @project.selected_risk.present? %>
+                · Main factor:
+                <strong><%= @project.selected_risk.to_s.humanize %></strong>
+              <% end %>
+            </div>
+
+            <% if active_risks.any? %>
+
+              <div class="d-flex flex-wrap gap-1 mb-3">
+
+                <% active_risks.each do |_attribute, label| %>
+
+                  <span class="badge bg-warning-subtle text-warning-emphasis">
+                    <%= label %>
+                  </span>
+
+                <% end %>
+
+              </div>
+
+            <% else %>
+
+              <div class="small text-body-secondary mb-3">
+                No active risk factors.
+              </div>
+
+            <% end %>
+
+            <hr class="my-2">
+
+            <div class="d-flex justify-content-between align-items-center py-2">
+
+              <span class="small fw-medium">Sales</span>
+
+              <% if @project.sales_done? %>
+
+                <span class="badge bg-success-subtle text-success">
+                  Completed
+                </span>
+
+              <% elsif current_user.sales? %>
+
+                <%= button_to "Finish",
+                  finish_sales_project_path(@project),
+                  method: :patch,
+                  class: "btn btn-sm btn-outline-success" %>
+
+              <% else %>
+
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  Pending
+                </span>
+
+              <% end %>
+
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center py-2">
+
+              <span class="small fw-medium">Logistics</span>
+
+              <% if @project.logistics_done? %>
+
+                <span class="badge bg-success-subtle text-success">
+                  Completed
+                </span>
+
+              <% elsif current_user.logistics? %>
+
+                <%= button_to "Finish",
+                  finish_logistics_project_path(@project),
+                  method: :patch,
+                  class: "btn btn-sm btn-outline-success",
+                  data: {
+                    turbo_confirm: "This will mark all Project Bookings as payment done. Continue?"
+                  } %>
+
+              <% else %>
+
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  Pending
+                </span>
+
+              <% end %>
+
+            </div>
+
+            <p class="small text-body-secondary mb-0 mt-2">
+              Finishing Logistics also marks all Project Bookings as payment done.
+            </p>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

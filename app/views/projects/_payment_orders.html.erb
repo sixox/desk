@@ -1,0 +1,334 @@
+<% orders = @project_payment_orders || [] %>
+<% reports = @payment_order_currency_reports || [] %>
+
+<%
+  can_view_confidential_orders =
+    current_user&.admin? ||
+    current_user&.ceo? ||
+    current_user&.cob? ||
+    (current_user&.accounting? && current_user.is_manager)
+
+  status_badges = {
+    "wait for confirm" => ["Awaiting approval", "warning"],
+    "wait for payment" => ["Awaiting payment", "info"],
+    "wait for delivery" => ["Paid · awaiting delivery", "primary"],
+    "delivered" => ["Delivered", "success"],
+    "rejected" => ["Rejected", "danger"]
+  }
+%>
+
+<div class="m-card mt-3">
+
+  <div class="m-card__header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h5 class="mb-1">Payment Orders</h5>
+      <small class="text-muted">
+        Project, booking and allocated supplier/inventory payments
+      </small>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-light text-dark border">
+        <%= orders.size %> orders
+      </span>
+
+      <% if @show_turnover_report %>
+        <%= link_to "DSO / Turnover Report",
+                    turnover_project_path(@project),
+                    class: "btn btn-light border btn-sm" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="p-3">
+
+    <% if reports.any? %>
+
+      <div class="row g-3 mb-4">
+
+        <% reports.each do |report| %>
+
+          <div class="col-12 col-xl-6">
+
+            <div class="border rounded-3 p-3 h-100">
+
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <div class="fw-semibold">
+                    <%= report[:currency].humanize %>
+                  </div>
+                  <small class="text-muted">
+                    <%= report[:count] %> related orders
+                  </small>
+                </div>
+
+                <div class="text-end">
+                  <div class="fw-bold">
+                    <%= number_with_precision(
+                          report[:total],
+                          precision: 2,
+                          delimiter: ",",
+                          strip_insignificant_zeros: true
+                        ) %>
+                  </div>
+                  <small class="text-muted">Related total</small>
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3">
+
+                <div class="col-6">
+                  <small class="text-muted">Project / booking linked</small>
+                  <div class="fw-semibold">
+                    <%= number_with_precision(
+                          report[:project_linked_total],
+                          precision: 2,
+                          delimiter: ",",
+                          strip_insignificant_zeros: true
+                        ) %>
+                  </div>
+                </div>
+
+                <div class="col-6">
+                  <small class="text-muted">Supplier / inventory linked</small>
+                  <div class="fw-semibold">
+                    <%= number_with_precision(
+                          report[:shared_total],
+                          precision: 2,
+                          delimiter: ",",
+                          strip_insignificant_zeros: true
+                        ) %>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <small class="text-muted">
+                    Paid to supplier
+                  </small>
+                  <div class="fw-semibold text-success">
+                    <%= number_with_precision(
+                          report[:paid_total],
+                          precision: 2,
+                          delimiter: ",",
+                          strip_insignificant_zeros: true
+                        ) %>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="small text-muted mb-2">
+                Payment order status distribution
+              </div>
+
+              <div class="progress mb-3" style="height: 10px;">
+                <% report[:statuses].each do |status| %>
+                  <% if status[:percentage].positive? %>
+                    <div
+                      class="progress-bar bg-<%= status[:color] %>"
+                      role="img"
+                      aria-label="<%= status[:label] %>"
+                      style="width: <%= number_with_precision(status[:percentage], precision: 2) %>%">
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <div class="row g-2">
+
+                <% report[:statuses].each do |status| %>
+
+                  <div class="col-6">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                      <span class="small text-muted">
+                        <span class="badge bg-<%= status[:color] %> me-1">&nbsp;</span>
+                        <%= status[:label] %>
+                      </span>
+
+                      <span class="small fw-semibold text-nowrap">
+                        <%= number_with_precision(
+                              status[:amount],
+                              precision: 2,
+                              delimiter: ",",
+                              strip_insignificant_zeros: true
+                            ) %>
+                      </span>
+                    </div>
+                  </div>
+
+                <% end %>
+
+              </div>
+
+            </div>
+          </div>
+
+        <% end %>
+
+      </div>
+
+    <% end %>
+
+    <% if orders.any? %>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Related Payment Order Details</h6>
+        <small class="text-muted">
+          Amounts remain separated by currency
+        </small>
+      </div>
+
+      <div class="table-responsive">
+
+        <table class="table table-sm table-hover align-middle mb-0">
+
+          <thead class="table-light">
+            <tr>
+              <th>Order</th>
+              <th>Relationship</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Details</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <% orders.each do |order| %>
+
+              <% confidential =
+                   order.mahramane? &&
+                   order.user_id != current_user.id &&
+                   !can_view_confidential_orders %>
+
+              <% status_label, status_color =
+                   status_badges.fetch(
+                     order.status.to_s.downcase,
+                     ["Unknown", "secondary"]
+                   ) %>
+
+              <tr>
+
+                <td class="text-nowrap">
+                  <%= link_to "PO ##{order.id}",
+                              payment_order_path(order),
+                              class: "fw-semibold text-decoration-none" %>
+                </td>
+
+                <td>
+                  <% if confidential %>
+                    <span class="text-muted small">Confidential</span>
+                  <% else %>
+                    <span class="small">
+                      <%= @payment_order_relation_labels[order.id] || "Related" %>
+                    </span>
+
+                    <% if order.ballance.present? %>
+                      <div>
+                        <small class="text-muted">
+                          Inventory:
+                          <%= order.ballance.number %>
+                        </small>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </td>
+
+                <td class="text-nowrap fw-semibold">
+                  <% if confidential %>
+                    <span class="text-muted">Hidden</span>
+                  <% else %>
+                    <%= number_with_precision(
+                          order.amount,
+                          precision: 2,
+                          delimiter: ",",
+                          strip_insignificant_zeros: true
+                        ) %>
+                    <small class="text-muted">
+                      <%= order.currency.to_s.humanize %>
+                    </small>
+                  <% end %>
+                </td>
+
+                <td>
+                  <% if confidential %>
+                    <span class="text-muted small">Hidden</span>
+                  <% else %>
+                    <span class="badge bg-<%= status_color %>">
+                      <%= status_label %>
+                    </span>
+                  <% end %>
+                </td>
+
+                <td style="min-width: 180px;">
+                  <% if confidential %>
+                    <span class="text-muted small">Confidential order</span>
+                  <% else %>
+                    <div class="small">
+                      <%= order.details.presence || order.cost_type.presence || "—" %>
+                    </div>
+
+                    <% if order.user.present? %>
+                      <small class="text-muted">
+                        By <%= order.user.name %>
+                      </small>
+                    <% end %>
+
+                    <% if order.document.attached? || order.receipt.attached? %>
+                      <div class="mt-1 d-flex gap-2">
+                        <% if order.document.attached? %>
+                          <%= link_to "Document",
+                                      rails_blob_path(order.document, disposition: "attachment"),
+                                      class: "small",
+                                      target: "_blank" %>
+                        <% end %>
+
+                        <% if order.receipt.attached? %>
+                          <%= link_to "Receipt",
+                                      rails_blob_path(order.receipt, disposition: "attachment"),
+                                      class: "small",
+                                      target: "_blank" %>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </td>
+
+                <td class="text-nowrap">
+                  <% if confidential %>
+                    <span class="text-muted">—</span>
+                  <% else %>
+                    <small class="text-muted">
+                      <%= order.created_at&.strftime("%d %b %Y") %>
+                    </small>
+                  <% end %>
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+        </table>
+
+      </div>
+
+    <% else %>
+
+      <div class="text-center text-muted py-4">
+        No Payment Orders are linked to this project yet.
+      </div>
+
+    <% end %>
+
+    <div class="mt-3">
+      <small class="text-muted">
+        Supplier/inventory-linked orders may be shared across multiple projects.
+        Their full amount is displayed here for reference, but is not treated as
+        an amount spent exclusively by this project.
+      </small>
+    </div>
+
+  </div>
+</div>

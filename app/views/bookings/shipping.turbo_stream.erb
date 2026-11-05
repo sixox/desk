@@ -1,3 +1,8 @@
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'Update shipping status', form_partial: "bookings/shipping_form" %>
+  <%= render "shared/turbo_modal",
+    modal_title: "Shipping & Bill of Lading",
+    modal_subtitle: "Project #{@project.number} · Booking #{@booking.number}",
+    modal_icon: "fa-ship",
+    modal_size: "modal-lg",
+    form_partial: "bookings/shipping_form" %>
 <% end %>

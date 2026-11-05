@@ -1,0 +1,418 @@
+<!-- PROFORMA INVOICE -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-file-invoice me-2"></i>
+        Proforma Invoice
+      </h2>
+
+      <p class="m-card__subtitle">
+        Commercial agreement and customer order details
+      </p>
+    </div>
+
+    <% if @can_manage_project %>
+
+      <% if @pi.present? %>
+
+        <%= link_to edit_project_pi_path(@project, @pi),
+          class: "btn btn-sm btn-light border",
+          data: { controller: "bs-modal-form" } do %>
+          <i class="fa-solid fa-pen me-1"></i>
+          Edit PI
+        <% end %>
+
+      <% elsif current_user.sales? %>
+
+        <%= link_to new_project_pi_path(@project),
+          class: "btn btn-sm btn-primary",
+          data: { controller: "bs-modal-form" } do %>
+          <i class="fa-solid fa-plus me-1"></i>
+          Create PI
+        <% end %>
+
+      <% end %>
+
+    <% end %>
+
+  </header>
+
+  <% if @pi.present? %>
+
+    <div class="border rounded-3 p-3">
+
+      <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+
+        <div>
+          <div class="small text-body-secondary">
+            PI Number
+          </div>
+
+          <div class="fw-bold fs-5">
+            <%= @pi.number %>
+          </div>
+        </div>
+
+        <div class="text-end">
+          <div class="small text-body-secondary">
+            Issue date
+          </div>
+
+          <div class="fw-semibold">
+            <%= @pi.issue_date&.strftime("%d %b %Y") || "—" %>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row g-3">
+
+        <div class="col-12">
+          <div class="small text-body-secondary">Product</div>
+          <div class="fw-semibold"><%= @pi.product.presence || "—" %></div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Quantity</div>
+          <div class="fw-semibold">
+            <%= number_with_delimiter(@pi.quantity.to_i) %> MT
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Packing</div>
+          <div class="fw-semibold">
+            <%= @pi.packing_type.presence || "—" %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Unit price</div>
+          <div class="fw-semibold">
+            <%= number_with_delimiter(@pi.unit_price.to_f) %>
+            <%= @pi.currency&.upcase %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Total PI value</div>
+          <div class="fw-semibold">
+            <%= number_with_delimiter(@pi.total_price.to_f) %>
+            <%= @pi.currency&.upcase %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Incoterm</div>
+          <div class="fw-semibold">
+            <%= @pi.incoterm.presence || "—" %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Destination / POD</div>
+          <div class="fw-semibold">
+            <%= @pi.pod.presence || "—" %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Payment term</div>
+          <div class="fw-semibold">
+            <%= @pi.payment_term.presence || "—" %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="small text-body-secondary">Seller</div>
+          <div class="fw-semibold">
+            <%= @pi.seller.presence || "—" %>
+          </div>
+        </div>
+
+        <% if @pi.agent.present? || @pi.commission.present? %>
+
+          <div class="col-12">
+            <div class="small text-body-secondary">Agent / Commission</div>
+            <div class="fw-semibold">
+              <%= @pi.agent.presence || "—" %>
+              <% if @pi.commission.present? %>
+                · <%= @pi.commission %> per MT
+              <% end %>
+            </div>
+          </div>
+
+        <% end %>
+
+      </div>
+
+      <div class="border-top mt-3 pt-3 d-flex flex-wrap justify-content-between gap-2">
+
+        <div class="small">
+
+          <% if @pi.document.attached? %>
+
+            <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+
+            <%= link_to "#{@pi.number}.PDF",
+              rails_blob_path(@pi.document, disposition: "attachment"),
+              target: "_blank",
+              class: "text-decoration-none" %>
+
+          <% else %>
+
+            <span class="text-body-secondary">
+              No PI document uploaded
+            </span>
+
+          <% end %>
+
+        </div>
+
+        <% if @pi.customer.present? %>
+
+          <%= link_to customer_path(@pi.customer),
+            class: "small text-decoration-none" do %>
+            <i class="fa-solid fa-user me-1"></i>
+            Customer profile
+          <% end %>
+
+        <% end %>
+
+      </div>
+
+      <%= render "pis/forecast", pi: @pi %>
+
+    </div>
+
+  <% else %>
+
+    <div class="text-center py-4">
+
+      <i class="fa-solid fa-file-circle-exclamation fs-3 text-body-secondary"></i>
+
+      <h3 class="h6 mt-3">No PI assigned</h3>
+
+      <p class="small text-body-secondary mb-0">
+        This Project has not been connected to a Proforma Invoice yet.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</section>
+
+<!-- COMMERCIAL INVOICES -->
+
+<section class="m-card mb-3">
+
+  <header class="m-card__header">
+
+    <div>
+      <h2 class="m-card__title">
+        <i class="fa-solid fa-file-invoice-dollar me-2"></i>
+        Commercial Invoices
+      </h2>
+
+      <p class="m-card__subtitle">
+        Customer invoices, shipment weights, and receipt status
+      </p>
+    </div>
+
+    <% if @can_manage_project && @pi.present? %>
+
+      <%= link_to new_project_ci_path(@project),
+        class: "btn btn-sm btn-primary",
+        data: { controller: "bs-modal-form" } do %>
+        <i class="fa-solid fa-plus me-1"></i>
+        New CI
+      <% end %>
+
+    <% end %>
+
+  </header>
+
+  <% if @cis.any? %>
+
+    <% @cis.each do |ci| %>
+
+      <%
+        ci_currency = ci.pi&.currency.presence || @pi&.currency
+
+        swift = ci.swift
+
+        swift_status, swift_class =
+          if swift.blank?
+            ["No receipt", "bg-warning-subtle text-warning-emphasis"]
+          elsif swift.confirmed == true && swift.rejected == true
+            ["Conflicting status", "bg-danger-subtle text-danger"]
+          elsif swift.rejected == true
+            ["Rejected", "bg-danger-subtle text-danger"]
+          elsif swift.confirmed == true
+            ["Confirmed", "bg-success-subtle text-success"]
+          else
+            ["Pending", "bg-warning-subtle text-warning-emphasis"]
+          end
+      %>
+
+      <article class="border rounded-3 p-3 mb-3">
+
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+
+          <div>
+            <div class="small text-body-secondary">
+              Commercial Invoice
+            </div>
+
+            <div class="fw-bold">
+              <%= ci.number %>
+            </div>
+
+            <div class="small text-body-secondary">
+              <%= ci.issue_date&.strftime("%d %b %Y") || "No issue date" %>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-1">
+
+            <span class="badge <%= swift_status == 'Confirmed' ? 'bg-success-subtle text-success' : swift_class %>">
+              <%= swift_status %>
+            </span>
+
+            <% if ci.sent == true %>
+              <span class="badge bg-primary-subtle text-primary">Sent</span>
+            <% else %>
+              <span class="badge bg-secondary-subtle text-secondary">Not sent</span>
+            <% end %>
+
+          </div>
+
+        </div>
+
+        <div class="row g-3">
+
+          <div class="col-6 col-md-3">
+            <div class="small text-body-secondary">Net weight</div>
+            <div class="fw-semibold">
+              <%= number_with_precision(ci.net_weight.to_f, precision: 2) %> MT
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="small text-body-secondary">Gross weight</div>
+            <div class="fw-semibold">
+              <%= number_with_precision(ci.gross_weight.to_f, precision: 2) %> MT
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="small text-body-secondary">Advance</div>
+            <div class="fw-semibold">
+              <%= number_with_delimiter(ci.advance_payment.to_f) %>
+              <%= ci_currency&.upcase %>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="small text-body-secondary">Invoice value</div>
+            <div class="fw-semibold">
+              <%= number_with_delimiter(ci.balance_payment.to_f) %>
+              <%= ci_currency&.upcase %>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="border-top mt-3 pt-3 d-flex flex-wrap justify-content-between gap-2">
+
+          <div class="d-flex flex-wrap gap-3 small">
+
+            <% if ci.document.attached? %>
+
+              <%= link_to rails_blob_path(ci.document, disposition: "attachment"),
+                target: "_blank",
+                class: "text-decoration-none" do %>
+                <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+                Invoice PDF
+              <% end %>
+
+            <% else %>
+
+              <span class="text-body-secondary">
+                No invoice file
+              </span>
+
+            <% end %>
+
+            <% if swift.present? %>
+              <span class="text-body-secondary">
+                Bank: <strong><%= swift.bank&.name || "—" %></strong>
+              </span>
+            <% end %>
+
+          </div>
+
+          <% if @can_manage_project %>
+
+            <div class="d-flex flex-wrap gap-1">
+
+              <%= link_to edit_project_ci_path(@project, ci),
+                class: "btn btn-sm btn-light border",
+                data: { controller: "bs-modal-form" } do %>
+                <i class="fa-solid fa-pen me-1"></i>
+                Edit CI
+              <% end %>
+
+              <% if swift.blank? %>
+
+                <%= link_to new_ci_swift_path(ci),
+                  class: "btn btn-sm btn-light border",
+                  data: { controller: "bs-modal-form" } do %>
+                  <i class="fa-solid fa-money-bill-transfer me-1"></i>
+                  Add Swift
+                <% end %>
+
+              <% end %>
+
+              <%= link_to toggle_sent_ci_path(ci),
+                data: {
+                  turbo_method: :patch,
+                  turbo_confirm: "Change the sent status for CI #{ci.number}?"
+                },
+                class: "btn btn-sm btn-light border" do %>
+
+                <i class="fa-solid fa-paper-plane me-1"></i>
+                <%= ci.sent ? "Withdraw CI" : "Mark as sent" %>
+
+              <% end %>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      </article>
+
+    <% end %>
+
+  <% else %>
+
+    <div class="text-center py-4">
+
+      <i class="fa-solid fa-file-invoice fs-3 text-body-secondary"></i>
+
+      <p class="small text-body-secondary mt-2 mb-0">
+        No Commercial Invoices have been created for this Project.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</section>
