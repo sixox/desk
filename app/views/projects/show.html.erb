@@ -2,14 +2,35 @@
   pi = @pi || @project.pi
   cis = @cis || @project.cis.includes(:swift).order(issue_date: :desc).to_a
   bookings = @bookings || @project.bookings.includes(:release_request).order(created_at: :desc).to_a
-  allocations = @allocates || @project.ballance_projects.includes(:ballance).to_a
+  allocations = @allocates || @project.ballance_projects.includes(ballance: :supplier).to_a
+
+  swifts = @project_swifts || (
+    @project.swifts.to_a + cis.filter_map(&:swift)
+  ).uniq(&:id)
+
+  payment_orders = @project_payment_orders || []
+  pending_orders = @pending_project_payment_orders || []
+
+  confirmed_swifts = @confirmed_swifts || swifts.select do |swift|
+    swift.confirmed == true && swift.rejected != true
+  end
+
+  pending_swifts = @pending_swifts || swifts.select do |swift|
+    swift.confirmed != true && swift.rejected != true
+  end
 
   total_containers = bookings.sum { |booking| booking.quantity.to_i }
   total_picked_up = bookings.sum { |booking| booking.picked_up.to_i }
   total_stuffed = bookings.sum { |booking| booking.filled.to_i }
 
-  unpaid_cis = cis.count { |ci| ci.swift.nil? }
-  pending_bookings = bookings.count { |booking| booking.payment_done != true }
+  unpaid_cis = cis.count { |ci| ci.swift.blank? }
+
+  stuffing_percentage =
+    if total_containers.positive?
+      [[(total_stuffed.to_f / total_containers * 100).round, 100].min, 0].max
+    else
+      0
+    end
 
   can_manage_project =
     current_user.logistics? ||
@@ -19,28 +40,18 @@
     current_user.ceo? ||
     current_user.cob?
 
-  can_manage_logistics =
-    current_user.logistics? ||
-    current_user.admin? ||
-    current_user.ceo? ||
-    current_user.cob?
-
-  can_manage_commercial =
-    current_user.sales? ||
-    current_user.admin? ||
-    current_user.ceo? ||
-    current_user.cob? ||
-    (current_user.is_manager && current_user.procurement?)
+  customer_name = pi&.customer&.nickname || "Customer not assigned"
 %>
 
-<div class="container-fluid project-workspace py-3">
+<div class="container-fluid py-3 project-workspace">
 
   <!-- HEADER -->
 
   <div class="page-header mb-3">
 
     <div>
-      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+
+      <div class="d-flex flex-wrap align-items-center gap-2">
 
         <h1 class="mb-0">
           <%= @project.number %>
@@ -49,33 +60,44 @@
         <%= risk_level_tag(@project) %>
 
         <% if @project.sales_done? %>
-          <span class="badge bg-success-subtle text-success">Sales complete</span>
+          <span class="badge bg-success-subtle text-success">
+            Sales complete
+          </span>
         <% else %>
-          <span class="badge bg-light text-secondary border">Sales open</span>
+          <span class="badge bg-warning-subtle text-warning-emphasis">
+            Sales open
+          </span>
         <% end %>
 
         <% if @project.logistics_done? %>
-          <span class="badge bg-success-subtle text-success">Logistics complete</span>
+          <span class="badge bg-success-subtle text-success">
+            Logistics complete
+          </span>
         <% else %>
-          <span class="badge bg-warning-subtle text-warning-emphasis">Logistics open</span>
+          <span class="badge bg-warning-subtle text-warning-emphasis">
+            Logistics open
+          </span>
         <% end %>
 
       </div>
 
-      <p class="subtitle mb-0">
-        <%= pi&.customer&.nickname || "No customer assigned" %>
+      <p class="subtitle mb-0 mt-1">
+        <%= customer_name %>
+
         <% if pi.present? %>
-          <span class="mx-1">·</span>
-          PI <%= pi.number %>
+          · PI <%= pi.number %>
+          · <%= pi.product %>
+          · <%= pi.pod %>
         <% end %>
-        <span class="mx-1">·</span>
-        Updated <%= time_ago_in_words(@project.updated_at) %> ago
+
       </p>
+
     </div>
 
     <div class="d-flex flex-wrap gap-2">
 
-      <%= link_to projects_path, class: "btn btn-light border btn-sm" do %>
+      <%= link_to projects_path,
+        class: "btn btn-light border btn-sm" do %>
         <i class="fa-solid fa-arrow-left me-1"></i>
         Projects
       <% end %>
@@ -90,7 +112,7 @@
         <%= link_to turnover_project_path(@project),
           class: "btn btn-light border btn-sm" do %>
           <i class="fa-solid fa-chart-line me-1"></i>
-          DSO / Turnover
+          DSO
         <% end %>
       <% end %>
 
@@ -99,103 +121,200 @@
   </div>
 
 
-  <!-- QUICK NAVIGATION -->
+  <!-- IMPORTANT PROJECT FIGURES -->
 
-  <div class="d-flex flex-wrap gap-2 mb-3">
+  <div class="row g-2 mb-3">
 
-    <% [
-      ["Project", "#project-details"],
-      ["PI", "#project-pi"],
-      ["CIs", "#project-cis"],
-      ["Logistics", "#project-logistics"],
-      ["Finance", "#project-finance"]
-    ].each do |label, anchor| %>
+    <div class="col-6 col-md-4 col-xl-3">
 
-      <%= link_to label, anchor,
-        class: "btn btn-sm btn-light border" %>
+      <div class="stat-card h-100">
 
-    <% end %>
-
-  </div>
-
-
-  <!-- SUMMARY -->
-
-  <div class="row g-2 mb-4">
-
-    <% [
-      ["PI Quantity", pi.present? ? "#{number_with_delimiter(pi.quantity.to_i)} MT" : "—"],
-      ["Invoices", cis.size],
-      ["Unpaid CIs", unpaid_cis],
-      ["Containers", total_containers],
-      ["Picked Up", total_picked_up],
-      ["Stuffed", total_stuffed]
-    ].each do |label, value| %>
-
-      <div class="col-6 col-md-4 col-xl-2">
-
-        <div class="stat-card h-100">
-
-          <div class="stat-card__head">
-            <p class="stat-card__label"><%= label %></p>
-          </div>
-
-          <p class="stat-card__value">
-            <%= value %>
-          </p>
-
+        <div class="stat-card__head">
+          <p class="stat-card__label">PI Value</p>
+          <span class="stat-card__icon stat-card__icon--c1">
+            <i class="fa-solid fa-file-invoice"></i>
+          </span>
         </div>
+
+        <p class="stat-card__value">
+          <% if pi.present? %>
+            <%= number_with_delimiter(pi.total_price.to_f.round(2)) %>
+          <% else %>
+            —
+          <% end %>
+        </p>
+
+        <small class="text-body-secondary">
+          <%= pi.present? ? pi.currency.to_s.upcase : "No PI" %>
+        </small>
 
       </div>
 
-    <% end %>
+    </div>
+
+
+    <div class="col-6 col-md-4 col-xl-3">
+
+      <div class="stat-card h-100">
+
+        <div class="stat-card__head">
+          <p class="stat-card__label">Commercial Invoices</p>
+          <span class="stat-card__icon stat-card__icon--c2">
+            <i class="fa-solid fa-receipt"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= cis.size %>
+        </p>
+
+        <small class="text-body-secondary">
+          <%= unpaid_cis %> without Swift
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="col-6 col-md-4 col-xl-3">
+
+      <div class="stat-card h-100">
+
+        <div class="stat-card__head">
+          <p class="stat-card__label">Container Progress</p>
+          <span class="stat-card__icon stat-card__icon--c3">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= total_stuffed %> / <%= total_containers %>
+        </p>
+
+        <div class="progress mt-2" style="height: 6px;">
+          <div class="progress-bar bg-success"
+            style="width: <%= stuffing_percentage %>%">
+          </div>
+        </div>
+
+        <small class="text-body-secondary mt-1">
+          <%= total_picked_up %> picked up · <%= total_stuffed %> stuffed
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="col-6 col-md-4 col-xl-3">
+
+      <div class="stat-card h-100">
+
+        <div class="stat-card__head">
+          <p class="stat-card__label">Supplier Payments</p>
+          <span class="stat-card__icon stat-card__icon--c4">
+            <i class="fa-solid fa-wallet"></i>
+          </span>
+        </div>
+
+        <p class="stat-card__value">
+          <%= payment_orders.size %>
+        </p>
+
+        <small class="text-body-secondary">
+          <%= pending_orders.size %> pending
+        </small>
+
+      </div>
+
+    </div>
 
   </div>
 
 
-  <!-- PROJECT DETAILS -->
+  <!-- PAGE NAVIGATION -->
 
-  <section id="project-details" class="mb-4">
-    <%= render "projects/workspace_project",
-      project: @project,
-      can_manage: can_manage_project %>
-  </section>
+  <div class="d-flex flex-wrap gap-2 mb-3">
 
+    <%= link_to "Project & Commercial", "#project-commercial",
+      class: "btn btn-sm btn-light border" %>
 
-  <!-- COMMERCIAL -->
+    <%= link_to "Logistics", "#project-logistics",
+      class: "btn btn-sm btn-light border" %>
 
-  <section id="project-pi" class="mb-4">
-    <%= render "projects/workspace_pi",
-      project: @project,
-      pi: pi,
-      can_manage: can_manage_commercial %>
-  </section>
+    <%= link_to "Finance & Procurement", "#project-finance",
+      class: "btn btn-sm btn-light border" %>
 
-  <section id="project-cis" class="mb-4">
-    <%= render "projects/workspace_cis",
-      project: @project,
-      cis: cis,
-      can_manage: can_manage_commercial %>
-  </section>
+  </div>
 
 
-  <!-- LOGISTICS -->
+  <!-- MAIN TWO-COLUMN LAYOUT -->
 
-  <section id="project-logistics" class="mb-4">
-    <%= render "projects/workspace_logistics",
-      project: @project,
-      bookings: bookings,
-      can_manage: can_manage_logistics %>
-  </section>
+  <div class="row g-3 align-items-start">
+
+    <!-- LEFT: PROJECT / COMMERCIAL -->
+
+    <div class="col-12 col-xl-7">
+
+      <section id="project-commercial" class="mb-3">
+
+        <%= render "projects/workspace_project",
+          project: @project,
+          can_manage: can_manage_project %>
+
+      </section>
 
 
-  <!-- FINANCE AND PROCUREMENT -->
+      <section class="mb-3">
 
-  <section id="project-finance" class="mb-4">
+        <%= render "projects/workspace_pi",
+          project: @project,
+          pi: pi,
+          can_manage: can_manage_project %>
+
+      </section>
+
+
+      <section class="mb-3">
+
+        <%= render "projects/workspace_cis",
+          project: @project,
+          cis: cis,
+          can_manage: can_manage_project %>
+
+      </section>
+
+    </div>
+
+
+    <!-- RIGHT: LOGISTICS -->
+
+    <div class="col-12 col-xl-5">
+
+      <section id="project-logistics">
+
+        <%= render "projects/workspace_logistics",
+          project: @project,
+          bookings: bookings,
+          can_manage: can_manage_project %>
+
+      </section>
+
+    </div>
+
+  </div>
+
+
+  <!-- FINANCE / PROCUREMENT -->
+
+  <section id="project-finance" class="mt-3">
+
     <%= render "projects/workspace_finance",
       project: @project,
       cis: cis,
       allocations: allocations %>
+
   </section>
 
 </div>

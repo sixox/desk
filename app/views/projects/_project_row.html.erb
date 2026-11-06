@@ -1,0 +1,262 @@
+<%
+  pi = project.pi
+  cis = project.cis.to_a
+  bookings = project.bookings.to_a
+
+  unpaid_cis = cis.count { |ci| ci.swift.blank? }
+
+  total_containers = bookings.sum { |booking| booking.quantity.to_i }
+  picked_up = bookings.sum { |booking| booking.picked_up.to_i }
+  stuffed = bookings.sum { |booking| booking.filled.to_i }
+
+  stuffing_percentage =
+    if total_containers.positive?
+      [[(stuffed.to_f / total_containers * 100).round, 100].min, 0].max
+    else
+      0
+    end
+
+  project_swifts = (
+    project.swifts.to_a + cis.filter_map(&:swift)
+  ).uniq(&:id)
+
+  confirmed_receipts = project_swifts.count do |swift|
+    swift.confirmed == true && swift.rejected != true
+  end
+
+  risk = project.risk.to_i
+
+  risk_label, risk_class =
+    case risk
+    when 1..15
+      ["Low", "bg-success-subtle text-success"]
+    when 16..25
+      ["Medium", "bg-info-subtle text-info"]
+    when 26..36
+      ["High", "bg-warning-subtle text-warning-emphasis"]
+    when 37..Float::INFINITY
+      ["Extreme", "bg-danger-subtle text-danger"]
+    else
+      ["—", "bg-secondary-subtle text-secondary"]
+    end
+%>
+
+<tr>
+
+  <!-- PROJECT -->
+
+  <td class="text-nowrap">
+
+    <%= link_to project.number,
+      project_path(project),
+      class: "fw-bold text-decoration-none" %>
+
+    <% if project.name.present? %>
+      <div class="small text-body-secondary">
+        <%= project.name %>
+      </div>
+    <% end %>
+
+  </td>
+
+
+  <!-- CUSTOMER -->
+
+  <td>
+
+    <% if pi&.customer.present? %>
+
+      <%= link_to pi.customer.nickname,
+        customer_path(pi.customer),
+        class: "text-decoration-none fw-medium" %>
+
+    <% else %>
+
+      <span class="text-body-secondary">—</span>
+
+    <% end %>
+
+  </td>
+
+
+  <!-- PI -->
+
+  <td style="min-width: 190px;">
+
+    <% if pi.present? %>
+
+      <div class="fw-semibold">
+        PI <%= pi.number %>
+      </div>
+
+      <div class="small text-body-secondary">
+        <%= pi.product %>
+      </div>
+
+      <div class="small text-body-secondary">
+        <%= number_with_delimiter(pi.quantity.to_i) %> MT
+        · <%= pi.packing_type %>
+      </div>
+
+      <div class="small fw-semibold mt-1">
+        <%= number_with_delimiter(pi.total_price.to_f.round(2)) %>
+        <%= pi.currency&.upcase %>
+      </div>
+
+      <div class="small text-body-secondary">
+        <%= pi.incoterm %> <%= pi.pod %>
+      </div>
+
+    <% else %>
+
+      <span class="badge bg-warning-subtle text-warning-emphasis">
+        No PI
+      </span>
+
+    <% end %>
+
+  </td>
+
+
+  <!-- CIs -->
+
+  <td class="text-nowrap">
+
+    <div class="fw-semibold">
+      <%= cis.size %> invoices
+    </div>
+
+    <% if unpaid_cis.positive? %>
+
+      <div class="small text-warning-emphasis">
+        <%= unpaid_cis %> without Swift
+      </div>
+
+    <% else %>
+
+      <div class="small text-success">
+        All have Swift
+      </div>
+
+    <% end %>
+
+  </td>
+
+
+  <!-- LOGISTICS -->
+
+  <td style="min-width: 150px;">
+
+    <div class="fw-semibold">
+      <%= bookings.size %> bookings
+    </div>
+
+    <% if total_containers.positive? %>
+
+      <div class="small text-body-secondary mt-1">
+        <%= stuffed %> / <%= total_containers %> stuffed
+      </div>
+
+      <div class="progress my-1" style="height: 5px;">
+        <div class="progress-bar bg-success"
+          style="width: <%= stuffing_percentage %>%">
+        </div>
+      </div>
+
+      <div class="small text-body-secondary">
+        <%= picked_up %> picked up
+      </div>
+
+    <% else %>
+
+      <div class="small text-body-secondary">
+        No container data
+      </div>
+
+    <% end %>
+
+  </td>
+
+
+  <!-- RECEIPTS -->
+
+  <td class="text-nowrap">
+
+    <div class="fw-semibold">
+      <%= confirmed_receipts %> confirmed
+    </div>
+
+    <div class="small text-body-secondary">
+      <%= project_swifts.size - confirmed_receipts %> other
+    </div>
+
+  </td>
+
+
+  <!-- STATUS -->
+
+  <td style="min-width: 145px;">
+
+    <div class="d-flex flex-wrap gap-1 mb-1">
+
+      <span class="badge <%= risk_class %>">
+        <%= risk_label %> risk
+      </span>
+
+      <% if project.started? %>
+        <span class="badge bg-primary-subtle text-primary">Started</span>
+      <% end %>
+
+    </div>
+
+    <div class="small">
+
+      <% if project.sales_done? %>
+        <span class="text-success">Sales complete</span>
+      <% else %>
+        <span class="text-warning-emphasis">Sales open</span>
+      <% end %>
+
+    </div>
+
+    <div class="small">
+
+      <% if project.logistics_done? %>
+        <span class="text-success">Logistics complete</span>
+      <% else %>
+        <span class="text-warning-emphasis">Logistics open</span>
+      <% end %>
+
+    </div>
+
+  </td>
+
+
+  <!-- UPDATED -->
+
+  <td class="text-nowrap">
+
+    <div class="small fw-medium">
+      <%= project.updated_at&.strftime("%d %b %Y") %>
+    </div>
+
+    <div class="small text-body-secondary">
+      <%= time_ago_in_words(project.updated_at) %> ago
+    </div>
+
+  </td>
+
+
+  <!-- OPEN -->
+
+  <td class="text-end">
+
+    <%= link_to project_path(project),
+      class: "btn btn-sm btn-light border" do %>
+      Open
+      <i class="fa-solid fa-arrow-right ms-1"></i>
+    <% end %>
+
+  </td>
+
+</tr>

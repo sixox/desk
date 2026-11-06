@@ -21,42 +21,73 @@
     end
 %>
 
-<div class="border rounded-3 p-3 mb-3">
+<article class="border rounded-3 p-3 mb-3">
+
+  <!-- BOOKING HEADER -->
 
   <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
 
     <div>
-      <div class="fw-semibold">
+
+      <div class="fw-bold">
         <%= booking.persisted? ? booking.number : "New Booking" %>
+
         <% if booking.part.present? %>
-          <small class="text-body-secondary">Part <%= booking.part %></small>
+          <small class="text-body-secondary">
+            Part <%= booking.part %>
+          </small>
         <% end %>
       </div>
 
-      <small class="text-body-secondary">
+      <div class="small text-body-secondary mt-1">
+
         <%= booking.container_type.presence || "Container type not set" %>
+
         <% if booking.pod.present? %>
-          · To <%= booking.pod %>
+          · <%= booking.pod %>
         <% end %>
-      </small>
+
+        <% if booking.line.present? %>
+          · <%= booking.line %>
+        <% end %>
+
+      </div>
+
     </div>
 
-    <div class="d-flex gap-2 align-items-center">
+
+    <div class="d-flex flex-wrap gap-1">
 
       <span class="badge bg-<%= booking_status[1] %>-subtle text-<%= booking_status[1] %>">
         <%= booking_status[0] %>
       </span>
 
-      <% if booking.release_request.present? %>
-        <% if booking.release_permission.present? %>
-          <span class="badge bg-success-subtle text-success">
-            Release permitted
-          </span>
-        <% else %>
-          <span class="badge bg-warning-subtle text-warning-emphasis">
-            Release pending
-          </span>
-        <% end %>
+      <% if booking.payment_done? %>
+
+        <span class="badge bg-success-subtle text-success">
+          Payment settled
+        </span>
+
+      <% else %>
+
+        <span class="badge bg-warning-subtle text-warning-emphasis">
+          Payment pending
+        </span>
+
+      <% end %>
+
+      <% if booking.release_permission? %>
+
+        <span class="badge bg-success-subtle text-success">
+          Release permitted
+        </span>
+
+      <% elsif booking.release_request.present? %>
+
+        <span class="badge bg-warning-subtle text-warning-emphasis">
+          Release requested
+        </span>
+
       <% end %>
 
     </div>
@@ -64,178 +95,381 @@
   </div>
 
 
-  <% if can_manage %>
+  <!-- CONTAINER COUNTS -->
 
-    <%= form_with model: [project, booking],
-      multipart: true,
-      data: { turbo: false },
-      class: "erp-form" do |form| %>
+  <div class="row g-2 mb-3">
 
-      <%= render "shared/forms/errors", object: booking %>
+    <div class="col-4">
 
-      <!-- BOOKING IDENTIFICATION -->
-
-      <div class="row g-3 mb-3">
-
-        <div class="col-md-4">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :number,
-            label: "Booking Number",
-            required: true %>
-        </div>
-
-        <div class="col-md-2">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :part,
-            label: "Part",
-            type: :number_field %>
-        </div>
-
-        <div class="col-md-3">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :line,
-            label: "Shipping Line",
-            type: :select,
-            choices: Booking::LINE,
-            select_options: { prompt: "Select line" } %>
-        </div>
-
-        <div class="col-md-3">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :forwarder,
-            label: "Forwarder",
-            type: :select,
-            choices: Booking::FORWARDER,
-            select_options: { prompt: "Select forwarder" } %>
-        </div>
-
-        <div class="col-md-3">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :container_type,
-            label: "Container Type",
-            type: :select,
-            choices: Booking::CONTAINER_TYPE,
-            select_options: { prompt: "Select type" },
-            required: true %>
-        </div>
-
-        <div class="col-md-3">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :quantity,
-            label: "Total Containers",
-            type: :number_field,
-            required: true,
-            input_options: { min: 0, step: 1 } %>
-        </div>
-
-        <div class="col-md-3">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :picked_up,
-            label: "Picked Up",
-            type: :number_field,
-            input_options: { min: 0, step: 1 } %>
-        </div>
-
-        <div class="col-md-3">
-          <%= render "shared/forms/field",
-            form: form,
-            attribute: :filled,
-            label: "Stuffed",
-            type: :number_field,
-            input_options: { min: 0, step: 1 } %>
-        </div>
-
+      <div class="border rounded-3 p-2 text-center h-100">
+        <small class="text-body-secondary">Total</small>
+        <div class="fs-5 fw-semibold"><%= quantity %></div>
       </div>
 
+    </div>
 
-      <!-- LIVE PROGRESS -->
+    <div class="col-4">
 
-      <div class="row g-3 mb-4">
-
-        <div class="col-md-6">
-
-          <div class="d-flex justify-content-between small mb-1">
-            <span>Pickup progress</span>
-            <strong><%= picked %> / <%= quantity %></strong>
-          </div>
-
-          <div class="progress" style="height: 7px;">
-            <div class="progress-bar"
-              style="width: <%= picked_percentage %>%"></div>
-          </div>
-
-        </div>
-
-        <div class="col-md-6">
-
-          <div class="d-flex justify-content-between small mb-1">
-            <span>Stuffing progress</span>
-            <strong><%= filled %> / <%= quantity %></strong>
-          </div>
-
-          <div class="progress" style="height: 7px;">
-            <div class="progress-bar bg-success"
-              style="width: <%= filled_percentage %>%"></div>
-          </div>
-
-        </div>
-
+      <div class="border rounded-3 p-2 text-center h-100">
+        <small class="text-body-secondary">Picked Up</small>
+        <div class="fs-5 fw-semibold"><%= picked %></div>
       </div>
 
+    </div>
 
-      <!-- OPERATIONAL FLAGS -->
+    <div class="col-4">
 
-      <div class="border rounded-3 p-3 mb-3">
+      <div class="border rounded-3 p-2 text-center h-100">
+        <small class="text-body-secondary">Stuffed</small>
+        <div class="fs-5 fw-semibold"><%= filled %></div>
+      </div>
 
-        <div class="fw-semibold small mb-3">
-          Operations & Customs
-        </div>
+    </div>
 
-        <div class="row g-3">
+  </div>
 
-          <% [
-            [:stuffing, "Stuffing Started"],
-            [:declaration, "Declaration"],
-            [:tally, "Tally"],
-            [:send_to_line, "Documents Sent to Line"],
-            [:custom_clearance, "Customs Cleared"],
-            [:inspection, "Inspection"],
-            [:have_flexi, "Flexi Required"],
-            [:payment_done, "Booking Payment Completed"]
-          ].each do |attribute, label| %>
 
-            <div class="col-6 col-md-3">
-              <div class="form-check form-switch">
-                <%= form.check_box attribute,
-                  class: "form-check-input" %>
-                <%= form.label attribute,
-                  label,
-                  class: "form-check-label small" %>
-              </div>
-            </div>
+  <!-- PICKUP PROGRESS -->
+
+  <div class="mb-3">
+
+    <div class="d-flex justify-content-between small mb-1">
+      <span>Pickup</span>
+      <strong><%= picked_percentage %>%</strong>
+    </div>
+
+    <div class="progress" style="height: 6px;">
+      <div class="progress-bar"
+        style="width: <%= picked_percentage %>%">
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- STUFFING PROGRESS -->
+
+  <div class="mb-3">
+
+    <div class="d-flex justify-content-between small mb-1">
+      <span>Stuffing</span>
+      <strong><%= filled_percentage %>%</strong>
+    </div>
+
+    <div class="progress" style="height: 6px;">
+      <div class="progress-bar bg-success"
+        style="width: <%= filled_percentage %>%">
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- IMPORTANT BOOKING DETAILS -->
+
+  <div class="row g-2 small">
+
+    <div class="col-6">
+
+      <span class="text-body-secondary">Forwarder</span>
+
+      <div class="fw-semibold">
+        <%= booking.forwarder.presence || "—" %>
+      </div>
+
+    </div>
+
+    <div class="col-6">
+
+      <span class="text-body-secondary">Weight</span>
+
+      <div class="fw-semibold">
+        <%= booking.weight.present? ? "#{booking.weight} MT" : "—" %>
+      </div>
+
+    </div>
+
+    <div class="col-6">
+
+      <span class="text-body-secondary">Pickup Date</span>
+
+      <div class="fw-semibold">
+        <%= booking.pick_up_date&.strftime("%d %b %Y") || "—" %>
+      </div>
+
+    </div>
+
+    <div class="col-6">
+
+      <span class="text-body-secondary">Vessel ETA</span>
+
+      <div class="fw-semibold">
+        <%= booking.vessel_eta&.strftime("%d %b %Y") || "—" %>
+      </div>
+
+    </div>
+
+    <div class="col-6">
+
+      <span class="text-body-secondary">Vessel</span>
+
+      <div class="fw-semibold">
+        <%= booking.vessel_name.presence || "—" %>
+      </div>
+
+    </div>
+
+    <div class="col-6">
+
+      <span class="text-body-secondary">BL Number</span>
+
+      <div class="fw-semibold">
+        <%= booking.bl_number.presence || "—" %>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- CUSTOMS STATUS -->
+
+  <div class="border-top mt-3 pt-3">
+
+    <div class="small fw-semibold text-body-secondary mb-2">
+      Customs & Documents
+    </div>
+
+    <div class="d-flex flex-wrap gap-1">
+
+      <% [
+        [:stuffing, "Stuffing"],
+        [:declaration, "Declaration"],
+        [:tally, "Tally"],
+        [:custom_clearance, "Customs cleared"],
+        [:send_to_line, "Sent to line"],
+        [:inspection, "Inspection"]
+      ].each do |attribute, label| %>
+
+        <% active = booking.public_send(attribute) == true %>
+
+        <span class="badge <%= active ? 'bg-success-subtle text-success' : 'bg-light text-secondary border' %>">
+          <%= label %>
+        </span>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- SHIPPING DOCUMENTS -->
+
+  <div class="border-top mt-3 pt-3">
+
+    <div class="d-flex flex-wrap gap-2">
+
+      <% [
+        ["BL Draft", booking.bl_draft],
+        ["Dated BL", booking.bl_dated],
+        ["Surrender", booking.surrender]
+      ].each do |label, attachment| %>
+
+        <% if attachment.attached? %>
+
+          <%= link_to rails_blob_path(attachment, disposition: "attachment"),
+            class: "btn btn-sm btn-light border",
+            target: "_blank",
+            rel: "noopener" do %>
+
+            <i class="fa-solid fa-file-pdf text-danger me-1"></i>
+            <%= label %>
 
           <% end %>
 
-        </div>
+        <% end %>
+
+      <% end %>
+
+
+      <% if booking.images.attached? %>
+
+        <% booking.images.each_with_index do |image, index| %>
+
+          <%= link_to rails_blob_path(image, disposition: "attachment"),
+            class: "btn btn-sm btn-light border",
+            target: "_blank",
+            rel: "noopener" do %>
+
+            <i class="fa-solid fa-image me-1"></i>
+            Image <%= index + 1 %>
+
+          <% end %>
+
+        <% end %>
+
+      <% end %>
+
+      <% if booking.bl_draft.blank? &&
+            booking.bl_dated.blank? &&
+            booking.surrender.blank? &&
+            !booking.images.attached? %>
+
+        <span class="small text-body-secondary">
+          No shipping documents uploaded.
+        </span>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+  <!-- RELEASE REQUEST -->
+
+  <% if booking.persisted? %>
+
+    <div class="border-top mt-3 pt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+      <div class="small">
+
+        <span class="text-body-secondary">Release:</span>
+
+        <% if booking.release_permission? %>
+
+          <strong class="text-success">
+            Permitted
+          </strong>
+
+          <span class="text-body-secondary">
+            <%= booking.release_permission_date&.strftime("%d %b %Y") %>
+          </span>
+
+        <% elsif booking.release_request.present? %>
+
+          <strong class="text-warning-emphasis">
+            Request submitted
+          </strong>
+
+        <% else %>
+
+          <span class="text-body-secondary">
+            No request
+          </span>
+
+        <% end %>
 
       </div>
 
+      <% if can_manage &&
+            booking.release_request.blank? &&
+            !booking.release_permission? %>
 
-      <!-- ROUTE AND DATES -->
+        <%= link_to new_project_booking_release_request_path(project, booking),
+          class: "btn btn-sm btn-light border",
+          data: { controller: "bs-modal-form" } do %>
+          <i class="fa-solid fa-file-signature me-1"></i>
+          Request Release
+        <% end %>
 
-      <details class="mb-3">
-        <summary class="fw-semibold small">
-          Booking details, dates and freight
+      <% end %>
+
+    </div>
+
+  <% end %>
+
+
+  <!-- EDITOR -->
+
+  <% if can_manage %>
+
+    <% if booking.persisted? %>
+
+      <details class="mt-3"
+        <%= "open" if initially_open || booking.errors.any? %>>
+
+        <summary class="btn btn-light border btn-sm">
+          <i class="fa-solid fa-pen-to-square me-1"></i>
+          Edit Booking / Pickup / Stuffing / Customs / Shipping
         </summary>
 
-        <div class="row g-3 mt-1">
+    <% end %>
+
+
+    <div class="pt-3">
+
+      <%= form_with model: [project, booking],
+        multipart: true,
+        data: { turbo: false },
+        class: "erp-form" do |form| %>
+
+        <%= render "shared/forms/errors", object: booking %>
+
+
+        <!-- BOOKING INFORMATION -->
+
+        <h6 class="mb-3">Booking Information</h6>
+
+        <div class="row g-3 mb-4">
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :number,
+              label: "Booking Number",
+              required: true %>
+          </div>
+
+          <div class="col-md-2">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :part,
+              label: "Part",
+              type: :number_field %>
+          </div>
+
+          <div class="col-md-3">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :line,
+              label: "Shipping Line",
+              type: :select,
+              choices: Booking::LINE,
+              select_options: { prompt: "Select line" } %>
+          </div>
+
+          <div class="col-md-3">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :forwarder,
+              label: "Forwarder",
+              type: :select,
+              choices: Booking::FORWARDER,
+              select_options: { prompt: "Select forwarder" } %>
+          </div>
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :container_type,
+              label: "Container Type",
+              type: :select,
+              choices: Booking::CONTAINER_TYPE,
+              select_options: { prompt: "Select type" },
+              required: true %>
+          </div>
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :quantity,
+              label: "Total Containers",
+              type: :number_field,
+              required: true,
+              input_options: { min: 0, step: 1 } %>
+          </div>
 
           <div class="col-md-4">
             <%= render "shared/forms/field",
@@ -245,12 +479,39 @@
               required: true %>
           </div>
 
+        </div>
+
+
+        <!-- PICKUP AND STUFFING -->
+
+        <h6 class="mb-3">Pickup & Stuffing</h6>
+
+        <div class="row g-3 mb-4">
+
           <div class="col-md-4">
             <%= render "shared/forms/field",
               form: form,
-              attribute: :free_time,
-              label: "Free Time (Days)",
-              type: :number_field %>
+              attribute: :picked_up,
+              label: "Containers Picked Up",
+              type: :number_field,
+              input_options: {
+                min: 0,
+                step: 1,
+                value: booking.picked_up.to_i
+              } %>
+          </div>
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :filled,
+              label: "Containers Stuffed",
+              type: :number_field,
+              input_options: {
+                min: 0,
+                step: 1,
+                value: booking.filled.to_i
+              } %>
           </div>
 
           <div class="col-md-4">
@@ -258,15 +519,6 @@
               form: form,
               attribute: :weight,
               label: "Weight (MT)",
-              type: :number_field,
-              input_options: { min: 0, step: "any" } %>
-          </div>
-
-          <div class="col-md-4">
-            <%= render "shared/forms/field",
-              form: form,
-              attribute: :freight_price,
-              label: "Freight per Container",
               type: :number_field,
               input_options: { min: 0, step: "any" } %>
           </div>
@@ -290,17 +542,101 @@
           <div class="col-md-4">
             <%= render "shared/forms/field",
               form: form,
+              attribute: :validation_date,
+              label: "Validation Date",
+              type: :date_field %>
+          </div>
+
+        </div>
+
+
+        <!-- CUSTOMS -->
+
+        <h6 class="mb-3">Customs & Line Documents</h6>
+
+        <div class="row g-3 mb-4">
+
+          <% [
+            [:stuffing, "Stuffing Started"],
+            [:declaration, "Declaration"],
+            [:tally, "Tally"],
+            [:custom_clearance, "Customs Cleared"],
+            [:send_to_line, "Documents Sent to Line"],
+            [:inspection, "Inspection"],
+            [:have_flexi, "Flexi Required"],
+            [:payment_done, "Booking Payment Completed"]
+          ].each do |attribute, label| %>
+
+            <div class="col-6 col-md-3">
+
+              <div class="border rounded-3 p-2 h-100">
+
+                <div class="form-check form-switch">
+
+                  <%= form.check_box attribute,
+                    class: "form-check-input" %>
+
+                  <%= form.label attribute,
+                    label,
+                    class: "form-check-label small" %>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
               attribute: :custom_submission_date,
               label: "Customs Submission Date",
               type: :date_field %>
           </div>
 
+        </div>
+
+
+        <!-- FREIGHT -->
+
+        <h6 class="mb-3">Freight & Timing</h6>
+
+        <div class="row g-3 mb-4">
+
           <div class="col-md-4">
             <%= render "shared/forms/field",
               form: form,
-              attribute: :validation_date,
-              label: "Validation Date",
-              type: :date_field %>
+              attribute: :freight_price,
+              label: "Freight per Container",
+              type: :number_field,
+              input_options: { min: 0, step: "any" } %>
+          </div>
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :free_time,
+              label: "Free Time (Days)",
+              type: :number_field,
+              input_options: { min: 0 } %>
+          </div>
+
+        </div>
+
+
+        <!-- SHIPPING -->
+
+        <h6 class="mb-3">Shipping & Vessel</h6>
+
+        <div class="row g-3 mb-4">
+
+          <div class="col-md-4">
+            <%= render "shared/forms/field",
+              form: form,
+              attribute: :vessel_name,
+              label: "Vessel / Voyage" %>
           </div>
 
           <div class="col-md-4">
@@ -311,35 +647,14 @@
               type: :date_field %>
           </div>
 
-          <div class="col-md-6">
-            <%= render "shared/forms/field",
-              form: form,
-              attribute: :vessel_name,
-              label: "Vessel / Voyage" %>
-          </div>
-
-        </div>
-
-      </details>
-
-
-      <!-- SHIPPING DOCUMENTS -->
-
-      <details class="mb-3">
-        <summary class="fw-semibold small">
-          Shipping documents
-        </summary>
-
-        <div class="row g-3 mt-1">
-
-          <div class="col-md-6">
+          <div class="col-md-4">
             <%= render "shared/forms/field",
               form: form,
               attribute: :bl_number,
               label: "BL Number" %>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-4">
             <%= render "shared/forms/field",
               form: form,
               attribute: :date_of_bl,
@@ -347,111 +662,108 @@
               type: :date_field %>
           </div>
 
+        </div>
+
+
+        <!-- FILES -->
+
+        <h6 class="mb-3">Shipping Documents</h6>
+
+        <div class="row g-3 mb-4">
+
           <% [
             [:bl_draft, "BL Draft"],
             [:bl_dated, "Dated BL"],
-            [:surrender, "Surrender Document"]
+            [:surrender, "Surrender"]
           ].each do |attribute, label| %>
 
             <div class="col-md-4">
-              <%= form.label attribute, label, class: "form-label" %>
-              <%= form.file_field attribute, class: "form-control" %>
+
+              <%= form.label attribute,
+                label,
+                class: "form-label" %>
+
+              <%= form.file_field attribute,
+                class: "form-control" %>
 
               <% attachment = booking.public_send(attribute) %>
+
               <% if attachment.attached? %>
-                <small class="text-body-secondary">
+
+                <small class="d-block mt-1">
                   <%= link_to attachment.filename,
                     rails_blob_path(attachment, disposition: "attachment"),
                     target: "_blank",
                     rel: "noopener" %>
                 </small>
+
               <% end %>
+
             </div>
 
           <% end %>
 
+
           <div class="col-12">
-            <%= form.label :images, "Additional Images",
+
+            <%= form.label :images,
+              "Additional Images",
               class: "form-label" %>
+
             <%= form.file_field :images,
               multiple: true,
               class: "form-control",
               accept: "image/*" %>
 
             <% if booking.images.attached? %>
+
               <div class="d-flex flex-wrap gap-2 mt-2">
+
                 <% booking.images.each_with_index do |image, index| %>
+
                   <%= link_to "Image #{index + 1}",
                     rails_blob_path(image, disposition: "attachment"),
                     target: "_blank",
                     rel: "noopener",
                     class: "small" %>
+
                 <% end %>
+
               </div>
+
+              <%= link_to "Delete all images",
+                delete_all_images_project_booking_path(project, booking),
+                data: {
+                  turbo_method: :delete,
+                  turbo_confirm: "Delete all booking images?"
+                },
+                class: "btn btn-sm btn-outline-danger mt-2" %>
+
             <% end %>
 
           </div>
 
         </div>
-      </details>
 
 
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+        <div class="d-flex justify-content-end gap-2">
 
-        <div class="d-flex flex-wrap gap-2">
-
-          <% if booking.persisted? %>
-
-            <%= link_to new_project_booking_release_request_path(
-                project_id: project.id,
-                booking_id: booking.id
-              ),
-              data: { controller: "bs-modal-form" },
-              class: "btn btn-light border btn-sm" do %>
-
-              <i class="fa-solid fa-unlock-keyhole me-1"></i>
-              Request Release
-
-            <% end %>
-
-            <% if booking.release_request.present? %>
-              <span class="small text-body-secondary align-self-center">
-                Release request exists
-              </span>
-            <% end %>
-
-          <% end %>
+          <%= form.submit(
+            booking.persisted? ? "Save Booking" : "Create Booking",
+            class: "btn btn-primary"
+          ) %>
 
         </div>
 
-        <%= form.submit booking.persisted? ? "Save Booking" : "Create Booking",
-          class: "btn btn-primary" %>
-
-      </div>
-
-    <% end %>
-
-  <% else %>
-
-    <div class="row g-3">
-
-      <div class="col-4">
-        <small class="text-body-secondary">Total</small>
-        <div class="fw-semibold"><%= quantity %></div>
-      </div>
-
-      <div class="col-4">
-        <small class="text-body-secondary">Picked Up</small>
-        <div class="fw-semibold"><%= picked %></div>
-      </div>
-
-      <div class="col-4">
-        <small class="text-body-secondary">Stuffed</small>
-        <div class="fw-semibold"><%= filled %></div>
-      </div>
+      <% end %>
 
     </div>
 
+
+    <% if booking.persisted? %>
+      </details>
+    <% end %>
+
   <% end %>
 
-</div>
+</article>

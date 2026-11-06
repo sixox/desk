@@ -11,15 +11,6 @@ class PisController < ApplicationController
     @pi = @project.build_pi
   end
 
-  def create
-    @pi = @project.build_pi(pi_params)
-    @pi.user = current_user
-    if @pi.save
-      redirect_to project_path(@project), notice: "PI created successfully."
-    else
-      render :new
-    end
-  end
 
   def show 
   end

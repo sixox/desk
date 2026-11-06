@@ -2,7 +2,7 @@
   pi ||= project.pi || project.build_pi
   accounts = Account.includes(:bank).order(:id)
   customers = Customer.order(:nickname)
-  form_open = !pi.persisted? || pi.errors.any?
+  form_open = pi.errors.any?
 %>
 
 <div class="m-card">
