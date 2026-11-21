@@ -1,3 +1,15 @@
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'Create Message', form_partial: "release_requests/form" %>
+
+  <%= render "shared/turbo_modal",
+    modal_title: "Request Release Permission",
+    modal_subtitle: "Project #{@project.number} · Booking #{@booking.number}",
+    modal_icon: "fa-file-signature",
+    modal_size: "modal-md",
+    form_partial: "release_requests/form",
+    form_locals: {
+      project: @project,
+      booking: @booking,
+      release_request: @release_request
+    } %>
+
 <% end %>

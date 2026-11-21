@@ -1,51 +1,312 @@
+
 <%
-  bookings ||= project.bookings.includes(:release_request).order(created_at: :desc).to_a
+  bookings ||= project.bookings
+    .includes(:release_request)
+    .order(created_at: :desc)
+    .to_a
+
   new_booking = @new_booking || project.bookings.build
+
   total_quantity = bookings.sum { |booking| booking.quantity.to_i }
   total_picked = bookings.sum { |booking| booking.picked_up.to_i }
   total_filled = bookings.sum { |booking| booking.filled.to_i }
+
+  remaining_pickup = [total_quantity - total_picked, 0].max
+  remaining_stuffing = [total_quantity - total_filled, 0].max
+
+  pickup_percentage =
+    total_quantity.positive? ?
+      [(total_picked.to_f / total_quantity * 100).round, 100].min : 0
+
+  stuffing_percentage =
+    total_quantity.positive? ?
+      [(total_filled.to_f / total_quantity * 100).round, 100].min : 0
+
+  total_weight = bookings.sum { |booking| booking.weight.to_f }
+
+  bookings_with_release_request =
+    bookings.count { |booking| booking.release_request.present? }
+
+  bookings_with_release_permission =
+    bookings.count { |booking| booking.release_permission? }
+
+  bookings_waiting_payment =
+    bookings.count { |booking| !booking.payment_done? }
+
+  bookings_with_bl =
+    bookings.count { |booking| booking.bl_number.present? }
 %>
 
-<div class="m-card">
 
-  <div class="m-card__header">
+<div class="project-logistics">
 
-    <div>
-      <h5 class="m-card__title">Logistics & Shipping</h5>
-      <p class="m-card__subtitle">
-        Container operations, customs, vessel schedule and shipping documents
-      </p>
+  <!-- HEADER -->
+
+  <div class="project-section-heading">
+
+    <div class="project-section-heading__icon project-section-heading__icon--logistics">
+      <i class="fa-solid fa-truck-fast"></i>
     </div>
 
-    <span class="badge bg-light text-secondary border">
+    <div class="project-section-heading__text">
+
+      <div class="project-section-heading__eyebrow">
+        OPERATIONAL EXECUTION
+      </div>
+
+      <h2>Logistics & Shipping</h2>
+
+      <p>
+        Container pickup, stuffing, customs, vessel schedule and release
+      </p>
+
+    </div>
+
+    <span class="project-finance__count">
       <%= bookings.size %> bookings
     </span>
 
   </div>
 
-  <div class="p-3">
 
-    <div class="row g-2 mb-4">
+  <!-- PROJECT-WIDE OVERVIEW -->
 
-      <% [
-        ["Containers", total_quantity],
-        ["Picked Up", total_picked],
-        ["Stuffed", total_filled]
-      ].each do |label, value| %>
+  <div class="project-logistics__overview">
 
-        <div class="col-4">
-          <div class="border rounded-3 p-2 text-center">
-            <small class="text-body-secondary"><%= label %></small>
-            <div class="fs-5 fw-semibold"><%= value %></div>
-          </div>
-        </div>
+    <div class="project-logistics__overview-top">
 
-      <% end %>
+      <div>
+        <span>Container Operations</span>
+
+        <strong>
+          <%= total_filled %>
+          <small>/ <%= total_quantity %> stuffed</small>
+        </strong>
+      </div>
+
+      <div class="project-logistics__completion">
+        <strong><%= stuffing_percentage %>%</strong>
+        <span>Stuffing completed</span>
+      </div>
 
     </div>
 
 
-    <% if bookings.any? %>
+    <!-- STUFFING PROGRESS -->
+
+    <div class="project-logistics__progress">
+
+      <div class="project-logistics__progress-label">
+        <span>Stuffing progress</span>
+        <strong><%= total_filled %> / <%= total_quantity %></strong>
+      </div>
+
+      <div class="progress">
+
+        <div class="progress-bar"
+          style="width: <%= stuffing_percentage %>%">
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- SUMMARY METRICS -->
+
+    <div class="project-logistics__metrics">
+
+      <div>
+
+        <span class="project-logistics__metric-icon is-blue">
+          <i class="fa-solid fa-box"></i>
+        </span>
+
+        <div>
+          <strong><%= total_quantity %></strong>
+          <small>Total containers</small>
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="project-logistics__metric-icon is-teal">
+          <i class="fa-solid fa-truck-ramp-box"></i>
+        </span>
+
+        <div>
+          <strong><%= total_picked %></strong>
+          <small>Picked up</small>
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="project-logistics__metric-icon is-green">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </span>
+
+        <div>
+          <strong><%= total_filled %></strong>
+          <small>Stuffed</small>
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="project-logistics__metric-icon is-orange">
+          <i class="fa-solid fa-hourglass-half"></i>
+        </span>
+
+        <div>
+          <strong><%= remaining_stuffing %></strong>
+          <small>Remaining to stuff</small>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- PICKUP / STUFFING -->
+
+    <div class="project-logistics__dual-progress">
+
+      <div>
+
+        <div class="project-logistics__progress-label">
+          <span>Pickup</span>
+          <strong><%= pickup_percentage %>%</strong>
+        </div>
+
+        <div class="progress">
+
+          <div class="progress-bar is-pickup"
+            style="width: <%= pickup_percentage %>%">
+          </div>
+
+        </div>
+
+        <small>
+          <%= remaining_pickup %> containers remaining
+        </small>
+
+      </div>
+
+
+      <div>
+
+        <div class="project-logistics__progress-label">
+          <span>Stuffing</span>
+          <strong><%= stuffing_percentage %>%</strong>
+        </div>
+
+        <div class="progress">
+
+          <div class="progress-bar is-stuffing"
+            style="width: <%= stuffing_percentage %>%">
+          </div>
+
+        </div>
+
+        <small>
+          <%= remaining_stuffing %> containers remaining
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <!-- OTHER LOGISTICS INFORMATION -->
+
+    <div class="project-logistics__secondary-summary">
+
+      <div>
+        <i class="fa-solid fa-weight-hanging"></i>
+        <span>
+          <strong>
+            <%= number_with_precision(
+              total_weight,
+              precision: 2,
+              strip_insignificant_zeros: true
+            ) %>
+            MT
+          </strong>
+          Total booking weight
+        </span>
+      </div>
+
+
+      <div>
+        <i class="fa-solid fa-file-signature"></i>
+        <span>
+          <strong><%= bookings_with_release_request %></strong>
+          Release requests
+        </span>
+      </div>
+
+
+      <div>
+        <i class="fa-solid fa-unlock-keyhole"></i>
+        <span>
+          <strong><%= bookings_with_release_permission %></strong>
+          Release permitted
+        </span>
+      </div>
+
+
+      <div>
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+        <span>
+          <strong><%= bookings_waiting_payment %></strong>
+          Payment pending
+        </span>
+      </div>
+
+
+      <div>
+        <i class="fa-solid fa-file-pdf"></i>
+        <span>
+          <strong><%= bookings_with_bl %></strong>
+          BL numbers assigned
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- BOOKINGS HEADING -->
+
+  <div class="project-logistics__bookings-heading">
+
+    <div>
+      <h3>Bookings</h3>
+      <p>
+        Operational status and shipping details per booking
+      </p>
+    </div>
+
+    <span>
+      <%= bookings.size %> records
+    </span>
+
+  </div>
+
+
+  <!-- EXISTING BOOKINGS -->
+
+  <% if bookings.any? %>
+
+    <div class="project-logistics__booking-grid">
 
       <% bookings.each do |booking| %>
 
@@ -57,39 +318,73 @@
 
       <% end %>
 
-    <% else %>
+    </div>
 
-      <div class="text-center text-body-secondary py-4">
-        <i class="fa-solid fa-truck-fast fs-3 mb-2"></i>
-        <div>No bookings have been created for this project.</div>
+  <% else %>
+
+    <div class="project-logistics__empty">
+
+      <div>
+        <i class="fa-solid fa-truck-fast"></i>
       </div>
 
-    <% end %>
+      <h3>No bookings yet</h3>
+
+      <p>
+        Create the first booking to start tracking pickup, stuffing,
+        customs and shipping.
+      </p>
+
+    </div>
+
+  <% end %>
 
 
-    <% if can_manage %>
+  <!-- CREATE BOOKING -->
 
-      <details class="border rounded-3 p-3 mt-3"
-        <%= "open" if new_booking.errors.any? || @new_booking.present? %>>
+  <% if can_manage %>
 
-        <summary class="fw-semibold">
-          <i class="fa-solid fa-plus me-1"></i>
-          Add Booking
-        </summary>
+    <details
+      id="project-booking-create"
+      class="project-editor project-booking-create"
+      data-project-workspace-target="bookingCreate"
+      <%= "open" if new_booking.errors.any? || @new_booking.present? %>>
 
-        <div class="pt-3">
 
-          <%= render "projects/workspace_booking",
-            project: project,
-            booking: new_booking,
-            can_manage: can_manage,
-            initially_open: true %>
+      <summary class="project-ci-create__summary">
+
+        <i class="fa-solid fa-plus"></i>
+        Create Booking
+
+      </summary>
+
+
+      <div class="project-editor__inner">
+
+        <div class="project-editor__heading">
+
+          <div>
+            <span>LOGISTICS</span>
+            <h3>New Booking</h3>
+          </div>
+
+          <span class="project-editor__reference">
+            Project <%= project.number %>
+          </span>
 
         </div>
 
-      </details>
 
-    <% end %>
+        <%= render "projects/workspace_booking",
+          project: project,
+          booking: new_booking,
+          can_manage: can_manage,
+          initially_open: true %>
 
-  </div>
+      </div>
+
+    </details>
+
+  <% end %>
+
 </div>

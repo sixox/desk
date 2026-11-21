@@ -1,127 +1,435 @@
-<div class="col-lg-10 mx-auto mt-5">
+<div class="page-header mb-3">
 
-	<div class="row">
-		<div class="col-lg-6">
-			<div class="d-flex justify-content-start">
-				<h3>Release Reuests</h3>
-			</div>
-		</div>
-		<div class="col-lg-6">
-			<div class="d-flex justify-content-end">
-				<div class="hide-on-desktop">
+  <div>
+    <h1>Release Requests</h1>
+    <p class="subtitle mb-0">
+      Review booking release requests and granted permissions.
+    </p>
+  </div>
 
-				</div>
-				<div class="hide-on-mobile">
-					<div class="btn-group" role="group" aria-label="Page Toggle">
-						<% if @in_page == "unconfirmed" %>
-						<%= link_to "Pending", unconfirmed_release_requests_path, class: "btn btn-primary active" %>
-						<%= link_to "All", release_requests_path, class: "btn btn-primary" %>
-						<% else %>
-						<%= link_to "Pending", unconfirmed_release_requests_path, class: "btn btn-primary" %>
-						<%= link_to "All", release_requests_path, class: "btn btn-primary active" %>
-						<% end %>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div class="d-flex flex-wrap gap-2">
 
+    <%= link_to unconfirmed_release_requests_path,
+      class: "btn btn-sm #{@in_page == 'unconfirmed' ? 'btn-primary' : 'btn-light border'}" do %>
+      Pending
+      <span class="ms-1"><%= @pending_count %></span>
+    <% end %>
 
+    <%= link_to release_requests_path,
+      class: "btn btn-sm #{@in_page == 'index' ? 'btn-primary' : 'btn-light border'}" do %>
+      All
+    <% end %>
 
-
-
-
-
-	<row class="m-2">
-		<div class="col-sm">
-			<table class="table">
-				<thead>
-					<tr>
-						<th scope="col" class="col-1">#</th>
-						<th scope="col" class="col-2">Project</th>
-						<th scope="col" class="col-2">Booking</th>
-						<th scope="col" class="col">Weight</th>
-						<th scope="col" class="col-2">Customer</th>
-						<th scope="col" class="col-1">Note</th>
-
-						<th scope="col" class="col-2">Confirmed at</th>
-						<th scope="col" class="col-3">Requested at</th>
-					</tr>
-				</thead>
-				<tbody>
-					<% @release_requests.each do |release_request| %>
-					<% booking = release_request.booking %>
-					<% project = booking.project if booking %>
-					<% customer = project&.pi&.customer if project %>
-					<tr style="font-size: 12px;" class="<%= 
-					if release_request.confirmed.present?
-						'table-success'
-					else
-						'table-warning'
-					end
-				%>">
-				<th scope="row">
-					<%= release_request.id %>
-				</th>
-				
-				<td>
-				<% if project %>
-				<%= link_to project.number, project_path(project) %>
-				<% end %>
-			</td>
-			<td><%= booking&.number %></td>
-			<td><%= booking&.weight %> <%= booking.weight.present? ? "MT" : "" %></td>
-			<td><%= customer&.nickname %></td>
-
-
-
-				
-
-				
-			<td>
-				<% if release_request.note.present? %>
-				<div class="accordion" id="accordionNote<%= release_request.id %>">
-					<div class="accordion-item">
-						<h2 class="accordion-header" id="headingNote<%= release_request.id %>">
-							<button class="accordion-button collapsed my-custom-accordion-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNote<%= release_request.id %>" aria-expanded="false" aria-controls="collapseNote<%= release_request.id %>">
-								Note
-							</button>
-						</h2>
-						<div id="collapseNote<%= release_request.id %>" class="accordion-collapse collapse" aria-labelledby="headingNote<%= release_request.id %>" data-bs-parent="#accordionNote<%= release_request.id %>">
-							<div class="accordion-body">
-								<%= release_request.note %>
-							</div>
-						</div>
-					</div>
-				</div>
-				<% else %>
-				-
-				<% end %>
-			</td>
-			<td><%= 
-				if release_request.confirmed.present?
-					"#{release_request.confirmed_at&.strftime('%b %d')}" 
-				else
-					'Wait for confirm'
-				end
-			%></td>
-			<td>
-				<%= release_request.created_at&.strftime('%b %d') %>
-			</td>
-			</tr>
-			<% end %>
-		</tbody>
-	</table>
+  </div>
 
 </div>
-</row>
-<div class="row mt-3">
-	<div class="col-sm">
-		<nav aria-label="Page navigation">
-			<ul class="pagination justify-content-center">
-				<%= paginate @release_requests, remote: true %>
-			</ul>
-		</nav>
-	</div>
+
+
+<!-- SUMMARY -->
+
+<div class="row g-2 mb-3">
+
+  <div class="col-6 col-xl-4">
+
+    <div class="stat-card h-100">
+
+      <div class="stat-card__head">
+        <p class="stat-card__label">Total Requests</p>
+        <span class="stat-card__icon stat-card__icon--c1">
+          <i class="fa-solid fa-file-signature"></i>
+        </span>
+      </div>
+
+      <p class="stat-card__value">
+        <%= number_with_delimiter(@all_count) %>
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="col-6 col-xl-4">
+
+    <div class="stat-card h-100">
+
+      <div class="stat-card__head">
+        <p class="stat-card__label">Pending Confirmation</p>
+        <span class="stat-card__icon stat-card__icon--c2">
+          <i class="fa-solid fa-clock"></i>
+        </span>
+      </div>
+
+      <p class="stat-card__value">
+        <%= number_with_delimiter(@pending_count) %>
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="col-6 col-xl-4">
+
+    <div class="stat-card h-100">
+
+      <div class="stat-card__head">
+        <p class="stat-card__label">Confirmed</p>
+        <span class="stat-card__icon stat-card__icon--c3">
+          <i class="fa-solid fa-circle-check"></i>
+        </span>
+      </div>
+
+      <p class="stat-card__value">
+        <%= number_with_delimiter(@confirmed_count) %>
+      </p>
+
+    </div>
+
+  </div>
+
 </div>
-</div>
+
+
+<!-- REQUEST QUEUE -->
+
+<section class="m-card">
+
+  <div class="m-card__header">
+
+    <div>
+      <h2 class="m-card__title">
+        <%= @in_page == "unconfirmed" ? "Pending Requests" : "All Requests" %>
+      </h2>
+
+      <p class="m-card__subtitle">
+        <%= number_with_delimiter(@release_requests.total_count) %>
+        matching requests
+      </p>
+    </div>
+
+    <% if current_user.accounting? %>
+      <span class="badge bg-info-subtle text-info">
+        Accounting approval
+      </span>
+    <% end %>
+
+  </div>
+
+
+  <div class="p-3">
+
+
+    <!-- SEARCH -->
+
+    <%= form_with url: request.path,
+      method: :get,
+      local: true,
+      class: "row g-2 mb-3" do %>
+
+      <div class="col-12 col-md-9">
+
+        <%= text_field_tag :q,
+          params[:q],
+          class: "form-control",
+          placeholder: "Search request ID, project, booking, customer or note..." %>
+
+      </div>
+
+      <div class="col-6 col-md-2">
+
+        <%= submit_tag "Search",
+          class: "btn btn-primary w-100" %>
+
+      </div>
+
+      <div class="col-6 col-md-1">
+
+        <%= link_to request.path,
+          class: "btn btn-light border w-100",
+          title: "Clear search" do %>
+          <i class="fa-solid fa-rotate-left"></i>
+        <% end %>
+
+      </div>
+
+    <% end %>
+
+
+    <!-- TABLE -->
+
+    <% if @release_requests.any? %>
+
+      <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+          <thead class="table-light">
+
+            <tr>
+              <th>Request</th>
+              <th>Project / Customer</th>
+              <th>Booking</th>
+              <th>Containers / Weight</th>
+              <th>Note</th>
+              <th>Requested</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <% @release_requests.each do |release_request| %>
+
+              <%
+                booking = release_request.booking
+                project = booking&.project
+                pi = project&.pi
+                customer = pi&.customer
+
+                if release_request.confirmed? && booking&.release_permission?
+                  status_label = "Permission granted"
+                  status_class = "bg-success-subtle text-success"
+                elsif release_request.confirmed?
+                  status_label = "Confirmed · Check booking"
+                  status_class = "bg-warning-subtle text-warning-emphasis"
+                else
+                  status_label = "Awaiting accounting"
+                  status_class = "bg-warning-subtle text-warning-emphasis"
+                end
+              %>
+
+              <tr>
+
+                <!-- REQUEST -->
+
+                <td class="text-nowrap">
+
+                  <div class="fw-semibold">
+                    #<%= release_request.id %>
+                  </div>
+
+                  <small class="text-body-secondary">
+                    <%= release_request.created_at&.strftime("%d %b %Y") %>
+                  </small>
+
+                </td>
+
+
+                <!-- PROJECT -->
+
+                <td>
+
+                  <% if project.present? %>
+
+                    <%= link_to project.number,
+                      project_path(project, anchor: "booking-#{booking.id}"),
+                      class: "fw-semibold text-decoration-none" %>
+
+                    <div class="small text-body-secondary">
+                      <%= customer&.nickname || "No customer" %>
+                    </div>
+
+                    <% if pi.present? %>
+                      <div class="small text-body-secondary">
+                        PI <%= pi.number %>
+                      </div>
+                    <% end %>
+
+                  <% else %>
+
+                    <span class="text-body-secondary">Project unavailable</span>
+
+                  <% end %>
+
+                </td>
+
+
+                <!-- BOOKING -->
+
+                <td>
+
+                  <div class="fw-semibold">
+                    <%= booking&.number || "—" %>
+                  </div>
+
+                  <div class="small text-body-secondary">
+                    <%= booking&.container_type || "—" %>
+                    · <%= booking&.pod || "—" %>
+                  </div>
+
+                </td>
+
+
+                <!-- QUANTITY -->
+
+                <td class="text-nowrap">
+
+                  <div class="fw-semibold">
+                    <%= booking&.quantity.to_i %> containers
+                  </div>
+
+                  <div class="small text-body-secondary">
+                    Picked up: <%= booking&.picked_up.to_i %>
+                    · Stuffed: <%= booking&.filled.to_i %>
+                  </div>
+
+                  <div class="small text-body-secondary">
+                    Weight: <%= booking&.weight.presence || "—" %>
+                    <%= booking&.weight.present? ? "MT" : "" %>
+                  </div>
+
+                </td>
+
+
+                <!-- NOTE -->
+
+                <td style="min-width: 160px; max-width: 250px;">
+
+                  <% if release_request.note.present? %>
+
+                    <details>
+
+                      <summary class="small fw-semibold text-primary">
+                        View note
+                      </summary>
+
+                      <div class="small text-body-secondary mt-2"
+                        style="white-space: pre-wrap;">
+                        <%= release_request.note %>
+                      </div>
+
+                    </details>
+
+                  <% else %>
+
+                    <span class="text-body-secondary">—</span>
+
+                  <% end %>
+
+                </td>
+
+
+                <!-- REQUEST DATE -->
+
+                <td class="text-nowrap">
+
+                  <div class="small fw-medium">
+                    <%= release_request.created_at&.strftime("%d %b %Y") %>
+                  </div>
+
+                  <div class="small text-body-secondary">
+                    <%= time_ago_in_words(release_request.created_at) %> ago
+                  </div>
+
+                </td>
+
+
+                <!-- STATUS -->
+
+                <td>
+
+                  <span class="badge <%= status_class %>">
+                    <%= status_label %>
+                  </span>
+
+                  <% if release_request.confirmed? %>
+
+                    <div class="small text-body-secondary mt-1">
+                      <%= release_request.confirmed_at&.strftime("%d %b %Y %H:%M") %>
+                    </div>
+
+                  <% end %>
+
+                </td>
+
+
+                <!-- ACTION -->
+
+                <td class="text-end text-nowrap">
+
+                  <% if !release_request.confirmed? && current_user.accounting? %>
+
+                    <%= button_to confirm_release_request_path(release_request),
+                      method: :patch,
+                      class: "btn btn-sm btn-success",
+                      form: {
+                        data: {
+                          turbo_confirm: "Confirm this request and grant release permission for Booking #{booking&.number}?"
+                        }
+                      } do %>
+
+                      <i class="fa-solid fa-check me-1"></i>
+                      Confirm
+
+                    <% end %>
+
+                  <% elsif !release_request.confirmed? %>
+
+                    <span class="small text-body-secondary">
+                      Accounting approval required
+                    </span>
+
+                  <% else %>
+
+                    <span class="small text-success">
+                      <i class="fa-solid fa-check-circle me-1"></i>
+                      Done
+                    </span>
+
+                  <% end %>
+
+                </td>
+
+              </tr>
+
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- PAGINATION -->
+
+      <% if @release_requests.total_pages > 1 %>
+
+        <div class="d-flex justify-content-center mt-3">
+
+          <%= paginate @release_requests %>
+
+        </div>
+
+      <% end %>
+
+
+    <% else %>
+
+      <div class="text-center py-5">
+
+        <i class="fa-solid fa-file-circle-check fs-2 text-body-secondary"></i>
+
+        <h3 class="h6 mt-3">
+          <%= @in_page == "unconfirmed" ?
+            "No pending release requests" :
+            "No release requests found" %>
+        </h3>
+
+        <p class="small text-body-secondary mb-0">
+          <%= @in_page == "unconfirmed" ?
+            "All submitted requests have been confirmed." :
+            "Try changing your search." %>
+        </p>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</section>

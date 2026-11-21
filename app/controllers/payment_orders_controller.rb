@@ -368,7 +368,10 @@ class PaymentOrdersController < ApplicationController
 		cu = current_user
 
 		if cu.accounting?
-			@release_requests = ReleaseRequest.where(confirmed: [false, nil])
+			@release_requests = ReleaseRequest
+				  .where(confirmed: [false, nil])
+				  .includes(booking: { project: { pi: :customer } })
+				  .order(created_at: :desc)
 		end
 
 	  # Initialize Ransack search object

@@ -1,36 +1,26 @@
+
 <%
   pi = @pi || @project.pi
-  cis = @cis || @project.cis.includes(:swift).order(issue_date: :desc).to_a
-  bookings = @bookings || @project.bookings.includes(:release_request).order(created_at: :desc).to_a
-  allocations = @allocates || @project.ballance_projects.includes(ballance: :supplier).to_a
 
-  swifts = @project_swifts || (
+  cis = @cis || @project.cis
+    .includes(:swift)
+    .order(issue_date: :desc)
+    .to_a
+
+  bookings = @bookings || @project.bookings
+    .includes(:release_request)
+    .order(created_at: :desc)
+    .to_a
+
+  allocations = @allocates || @project.ballance_projects
+    .includes(ballance: :supplier)
+    .to_a
+
+  project_swifts = @project_swifts || (
     @project.swifts.to_a + cis.filter_map(&:swift)
   ).uniq(&:id)
 
-  payment_orders = @project_payment_orders || []
-  pending_orders = @pending_project_payment_orders || []
-
-  confirmed_swifts = @confirmed_swifts || swifts.select do |swift|
-    swift.confirmed == true && swift.rejected != true
-  end
-
-  pending_swifts = @pending_swifts || swifts.select do |swift|
-    swift.confirmed != true && swift.rejected != true
-  end
-
-  total_containers = bookings.sum { |booking| booking.quantity.to_i }
-  total_picked_up = bookings.sum { |booking| booking.picked_up.to_i }
-  total_stuffed = bookings.sum { |booking| booking.filled.to_i }
-
-  unpaid_cis = cis.count { |ci| ci.swift.blank? }
-
-  stuffing_percentage =
-    if total_containers.positive?
-      [[(total_stuffed.to_f / total_containers * 100).round, 100].min, 0].max
-    else
-      0
-    end
+  customer = pi&.customer
 
   can_manage_project =
     current_user.logistics? ||
@@ -40,280 +30,362 @@
     current_user.ceo? ||
     current_user.cob?
 
-  customer_name = pi&.customer&.nickname || "Customer not assigned"
+  can_add_swift =
+    current_user.admin? ||
+    current_user.sales? ||
+    current_user.logistics? ||
+    current_user.ceo? ||
+    current_user.cob? ||
+    current_user.id == 5
 %>
 
-<div class="container-fluid py-3 project-workspace">
+<div class="project-show" data-controller="project-workspace">
 
-  <!-- HEADER -->
+  <!-- =====================================================
+       PROJECT HEADER
+       ===================================================== -->
 
-  <div class="page-header mb-3">
+  <header class="project-show__hero">
 
-    <div>
+    <div class="project-show__hero-main">
 
-      <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="project-show__eyebrow">
+        PROJECT WORKSPACE
+      </div>
 
-        <h1 class="mb-0">
+      <div class="project-show__title-row">
+
+        <h1>
           <%= @project.number %>
         </h1>
 
-        <%= risk_level_tag(@project) %>
+        <span class="project-show__risk">
+          <%= risk_level_tag(@project) %>
+        </span>
 
-        <% if @project.sales_done? %>
-          <span class="badge bg-success-subtle text-success">
-            Sales complete
+      </div>
+
+      <div class="project-show__subtitle">
+
+        <% if customer.present? %>
+          <%= link_to customer.nickname,
+            customer_path(customer) %>
+        <% else %>
+          Customer not assigned
+        <% end %>
+
+        <% if pi.present? %>
+          <span>·</span>
+          PI <%= pi.number %>
+          <span>·</span>
+          <%= pi.product %>
+          <% if pi.pod.present? %>
+            <span>·</span>
+            <%= pi.pod %>
+          <% end %>
+        <% end %>
+
+      </div>
+
+      <div class="project-show__status-row">
+
+        <% if @project.started? %>
+          <span class="project-show__status is-started">
+            <i class="fa-solid fa-play"></i>
+            Started
           </span>
         <% else %>
-          <span class="badge bg-warning-subtle text-warning-emphasis">
+          <span class="project-show__status is-muted">
+            <i class="fa-regular fa-circle"></i>
+            Not started
+          </span>
+        <% end %>
+
+        <% if @project.sales_done? %>
+          <span class="project-show__status is-done">
+            <i class="fa-solid fa-circle-check"></i>
+            Sales completed
+          </span>
+        <% else %>
+          <span class="project-show__status is-open">
+            <i class="fa-solid fa-clock"></i>
             Sales open
           </span>
         <% end %>
 
         <% if @project.logistics_done? %>
-          <span class="badge bg-success-subtle text-success">
-            Logistics complete
+          <span class="project-show__status is-done">
+            <i class="fa-solid fa-circle-check"></i>
+            Logistics completed
           </span>
         <% else %>
-          <span class="badge bg-warning-subtle text-warning-emphasis">
+          <span class="project-show__status is-open">
+            <i class="fa-solid fa-clock"></i>
             Logistics open
           </span>
         <% end %>
 
       </div>
 
-      <p class="subtitle mb-0 mt-1">
-        <%= customer_name %>
+    </div>
 
-        <% if pi.present? %>
-          · PI <%= pi.number %>
-          · <%= pi.product %>
-          · <%= pi.pod %>
-        <% end %>
 
-      </p>
+    <div class="project-show__hero-meta">
+
+      <div>
+        <span>Created</span>
+        <strong>
+          <%= @project.created_at&.strftime("%d %b %Y") || "—" %>
+        </strong>
+      </div>
+
+      <div>
+        <span>Last updated</span>
+        <strong>
+          <%= @project.updated_at&.strftime("%d %b %Y") || "—" %>
+        </strong>
+      </div>
 
     </div>
 
-    <div class="d-flex flex-wrap gap-2">
+  </header>
 
-      <%= link_to projects_path,
-        class: "btn btn-light border btn-sm" do %>
-        <i class="fa-solid fa-arrow-left me-1"></i>
-        Projects
-      <% end %>
 
-      <%= link_to time_line_project_path(@project),
-        class: "btn btn-light border btn-sm" do %>
-        <i class="fa-solid fa-clock-rotate-left me-1"></i>
-        Timeline
-      <% end %>
+  <!-- =====================================================
+       PROJECT ACTIONS & USEFUL LINKS
+       ===================================================== -->
 
-      <% if @show_turnover_report %>
-        <%= link_to turnover_project_path(@project),
-          class: "btn btn-light border btn-sm" do %>
-          <i class="fa-solid fa-chart-line me-1"></i>
-          DSO
-        <% end %>
-      <% end %>
+  <section class="project-action-dock">
 
+    <div class="project-action-dock__heading">
+      <div>
+        <i class="fa-solid fa-bolt"></i>
+        Project Actions
+      </div>
+
+      <span>
+        Operations and useful links
+      </span>
     </div>
 
-  </div>
+
+    <div class="project-action-dock__groups">
+
+      <!-- OPERATIONS -->
+
+      <div class="project-action-dock__group">
+
+        <span class="project-action-dock__label">
+          Manage
+        </span>
 
 
-  <!-- IMPORTANT PROJECT FIGURES -->
+        <% if can_manage_project %>
 
-  <div class="row g-2 mb-3">
+          <button type="button"
+            class="project-action project-action--primary"
+            data-action="project-workspace#togglePi">
 
-    <div class="col-6 col-md-4 col-xl-3">
-
-      <div class="stat-card h-100">
-
-        <div class="stat-card__head">
-          <p class="stat-card__label">PI Value</p>
-          <span class="stat-card__icon stat-card__icon--c1">
             <i class="fa-solid fa-file-invoice"></i>
-          </span>
-        </div>
 
-        <p class="stat-card__value">
+            <%= pi&.persisted? ? "Edit PI" : "Create PI" %>
+
+          </button>
+
+
           <% if pi.present? %>
-            <%= number_with_delimiter(pi.total_price.to_f.round(2)) %>
-          <% else %>
-            —
+
+            <button type="button"
+              class="project-action"
+              data-action="project-workspace#toggleCi">
+
+              <i class="fa-solid fa-receipt"></i>
+              New CI
+
+            </button>
+
           <% end %>
-        </p>
-
-        <small class="text-body-secondary">
-          <%= pi.present? ? pi.currency.to_s.upcase : "No PI" %>
-        </small>
-
-      </div>
-
-    </div>
 
 
-    <div class="col-6 col-md-4 col-xl-3">
+          <button type="button"
+            class="project-action"
+            data-action="project-workspace#toggleBooking">
 
-      <div class="stat-card h-100">
-
-        <div class="stat-card__head">
-          <p class="stat-card__label">Commercial Invoices</p>
-          <span class="stat-card__icon stat-card__icon--c2">
-            <i class="fa-solid fa-receipt"></i>
-          </span>
-        </div>
-
-        <p class="stat-card__value">
-          <%= cis.size %>
-        </p>
-
-        <small class="text-body-secondary">
-          <%= unpaid_cis %> without Swift
-        </small>
-
-      </div>
-
-    </div>
-
-
-    <div class="col-6 col-md-4 col-xl-3">
-
-      <div class="stat-card h-100">
-
-        <div class="stat-card__head">
-          <p class="stat-card__label">Container Progress</p>
-          <span class="stat-card__icon stat-card__icon--c3">
             <i class="fa-solid fa-boxes-stacked"></i>
-          </span>
-        </div>
+            New Booking
 
-        <p class="stat-card__value">
-          <%= total_stuffed %> / <%= total_containers %>
-        </p>
+          </button>
 
-        <div class="progress mt-2" style="height: 6px;">
-          <div class="progress-bar bg-success"
-            style="width: <%= stuffing_percentage %>%">
-          </div>
-        </div>
 
-        <small class="text-body-secondary mt-1">
-          <%= total_picked_up %> picked up · <%= total_stuffed %> stuffed
-        </small>
+          <%= link_to edit_project_path(@project),
+            class: "project-action",
+            data: { controller: "bs-modal-form" } do %>
+
+            <i class="fa-solid fa-pen-to-square"></i>
+            Edit Project
+
+          <% end %>
+
+
+          <%= link_to project_ballance_projects_path(@project),
+            class: "project-action" do %>
+
+            <i class="fa-solid fa-warehouse"></i>
+            Inventory Allocation
+
+          <% end %>
+
+        <% end %>
+
+
+        <% if can_add_swift && (pi.present? || current_user.id == 5) %>
+
+          <%= link_to new_project_swift_path(@project),
+            class: "project-action project-action--receipt",
+            data: { controller: "bs-modal-form" } do %>
+
+            <i class="fa-solid fa-money-bill-transfer"></i>
+            Advance Swift
+
+          <% end %>
+
+        <% end %>
+
+
+        <% if current_user.sales? && !@project.sales_done? %>
+
+          <%= button_to finish_sales_project_path(@project),
+            method: :patch,
+            class: "project-action project-action--success",
+            form: {
+              class: "d-inline",
+              data: {
+                turbo_confirm: "Finish the sales stage?"
+              }
+            } do %>
+
+            <i class="fa-solid fa-check"></i>
+            Finish Sales
+
+          <% end %>
+
+        <% end %>
+
+
+        <% if current_user.logistics? && !@project.logistics_done? %>
+
+          <%= button_to finish_logistics_project_path(@project),
+            method: :patch,
+            class: "project-action project-action--success",
+            form: {
+              class: "d-inline",
+              data: {
+                turbo_confirm: "This will mark all bookings as payment done. Continue?"
+              }
+            } do %>
+
+            <i class="fa-solid fa-check"></i>
+            Finish Logistics
+
+          <% end %>
+
+        <% end %>
+
+      </div>
+
+
+      <!-- NAVIGATION -->
+
+      <div class="project-action-dock__group">
+
+        <span class="project-action-dock__label">
+          Navigate
+        </span>
+
+        <%= link_to projects_path,
+          class: "project-action" do %>
+          <i class="fa-solid fa-arrow-left"></i>
+          Projects
+        <% end %>
+
+        <%= link_to time_line_project_path(@project),
+          class: "project-action" do %>
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          Timeline
+        <% end %>
+
+        <% if @show_turnover_report %>
+          <%= link_to turnover_project_path(@project),
+            class: "project-action" do %>
+            <i class="fa-solid fa-chart-line"></i>
+            DSO Report
+          <% end %>
+        <% end %>
+
+        <%= link_to payment_orders_path,
+          class: "project-action" do %>
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          Payment Orders
+        <% end %>
+
+        <%= link_to swifts_path,
+          class: "project-action" do %>
+          <i class="fa-solid fa-money-bill-transfer"></i>
+          All Swifts
+        <% end %>
+
+        <%= link_to release_requests_path,
+          class: "project-action" do %>
+          <i class="fa-solid fa-file-signature"></i>
+          Release Requests
+        <% end %>
 
       </div>
 
     </div>
 
-
-    <div class="col-6 col-md-4 col-xl-3">
-
-      <div class="stat-card h-100">
-
-        <div class="stat-card__head">
-          <p class="stat-card__label">Supplier Payments</p>
-          <span class="stat-card__icon stat-card__icon--c4">
-            <i class="fa-solid fa-wallet"></i>
-          </span>
-        </div>
-
-        <p class="stat-card__value">
-          <%= payment_orders.size %>
-        </p>
-
-        <small class="text-body-secondary">
-          <%= pending_orders.size %> pending
-        </small>
-
-      </div>
-
-    </div>
-
-  </div>
+  </section>
 
 
-  <!-- PAGE NAVIGATION -->
+  <!-- =====================================================
+       1. PI
+       ===================================================== -->
 
-  <div class="d-flex flex-wrap gap-2 mb-3">
+  <section id="project-pi" class="project-show__section">
 
-    <%= link_to "Project & Commercial", "#project-commercial",
-      class: "btn btn-sm btn-light border" %>
+    <%= render "projects/workspace_pi",
+      project: @project,
+      pi: pi,
+      can_manage: can_manage_project %>
 
-    <%= link_to "Logistics", "#project-logistics",
-      class: "btn btn-sm btn-light border" %>
-
-    <%= link_to "Finance & Procurement", "#project-finance",
-      class: "btn btn-sm btn-light border" %>
-
-  </div>
+  </section>
 
 
-  <!-- MAIN TWO-COLUMN LAYOUT -->
+  <!-- =====================================================
+       2. FINANCE
+       ===================================================== -->
 
-  <div class="row g-3 align-items-start">
-
-    <!-- LEFT: PROJECT / COMMERCIAL -->
-
-    <div class="col-12 col-xl-7">
-
-      <section id="project-commercial" class="mb-3">
-
-        <%= render "projects/workspace_project",
-          project: @project,
-          can_manage: can_manage_project %>
-
-      </section>
-
-
-      <section class="mb-3">
-
-        <%= render "projects/workspace_pi",
-          project: @project,
-          pi: pi,
-          can_manage: can_manage_project %>
-
-      </section>
-
-
-      <section class="mb-3">
-
-        <%= render "projects/workspace_cis",
-          project: @project,
-          cis: cis,
-          can_manage: can_manage_project %>
-
-      </section>
-
-    </div>
-
-
-    <!-- RIGHT: LOGISTICS -->
-
-    <div class="col-12 col-xl-5">
-
-      <section id="project-logistics">
-
-        <%= render "projects/workspace_logistics",
-          project: @project,
-          bookings: bookings,
-          can_manage: can_manage_project %>
-
-      </section>
-
-    </div>
-
-  </div>
-
-
-  <!-- FINANCE / PROCUREMENT -->
-
-  <section id="project-finance" class="mt-3">
+  <section id="project-finance" class="project-show__section">
 
     <%= render "projects/workspace_finance",
       project: @project,
       cis: cis,
-      allocations: allocations %>
+      allocations: allocations,
+      can_manage: can_manage_project %>
+
+  </section>
+
+
+  <!-- =====================================================
+       3. LOGISTICS
+       ===================================================== -->
+
+  <section id="project-logistics" class="project-show__section">
+
+    <%= render "projects/workspace_logistics",
+      project: @project,
+      bookings: bookings,
+      can_manage: can_manage_project %>
 
   </section>
 

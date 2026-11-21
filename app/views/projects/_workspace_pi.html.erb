@@ -1,395 +1,1008 @@
+
 <%
   pi ||= project.pi || project.build_pi
+
   accounts = Account.includes(:bank).order(:id)
   customers = Customer.order(:nickname)
-  form_open = pi.errors.any?
+
+  currency = pi.currency.to_s.upcase
+
+  pi_status, pi_status_class =
+    if pi.confirmed? && pi.rejected?
+      ["Conflicting status", "is-conflict"]
+    elsif pi.confirmed?
+      ["Confirmed", "is-confirmed"]
+    elsif pi.rejected?
+      ["Rejected", "is-rejected"]
+    else
+      ["Awaiting confirmation", "is-pending"]
+    end
+
+  forecast_fields = [
+    [:purchase, "Purchase"],
+    [:freight, "Freight"],
+    [:transport, "Transportation"],
+    [:packing_cost, "Packing"],
+    [:custom_cost, "Customs"],
+    [:other_cost, "Other costs"],
+    [:insurance, "Insurance"],
+    [:inspection, "Inspection"],
+    [:internal_commission, "Internal commission"],
+    [:foreign_commission, "Foreign commission"]
+  ]
+
+  forecast_items = forecast_fields.map do |attribute, label|
+    [label, pi.public_send(attribute)]
+  end.select { |_label, value| value.present? }
+
+  forecast_available = forecast_items.any?
+
+  forecast_cost_per_mt = forecast_items.sum do |_label, value|
+    value.to_f
+  end
+
+  forecast_quantity = pi.quantity.to_f
+  forecast_sales_value = pi.total_price.to_f
+
+  forecast_total_cost = forecast_cost_per_mt * forecast_quantity
+
+  forecast_profit_per_mt =
+    pi.unit_price.to_f - forecast_cost_per_mt
+
+  forecast_profit_total =
+    forecast_sales_value - forecast_total_cost
+
+  forecast_margin =
+    if forecast_sales_value.positive?
+      forecast_profit_total / forecast_sales_value * 100
+    end
 %>
 
-<div class="m-card">
 
-  <div class="m-card__header">
-    <div>
-      <h5 class="m-card__title">Performa Invoice</h5>
-      <p class="m-card__subtitle">
-        Commercial agreement, customer, product and pricing
+<div class="project-pi-card">
+
+  <!-- PI HEADER -->
+
+  <div class="project-section-heading">
+
+    <div class="project-section-heading__icon project-section-heading__icon--pi">
+      <i class="fa-solid fa-file-invoice"></i>
+    </div>
+
+    <div class="project-section-heading__text">
+
+      <div class="project-section-heading__eyebrow">
+        COMMERCIAL AGREEMENT
+      </div>
+
+      <h2>Proforma Invoice</h2>
+
+      <p>
+        Commercial terms, product specification and sales forecast
       </p>
+
     </div>
 
     <% if pi.persisted? %>
-      <span class="badge bg-success-subtle text-success">
-        <%= pi.number %>
-      </span>
+
+      <div class="project-pi-card__status <%= pi_status_class %>">
+        <i class="fa-solid fa-circle"></i>
+        <%= pi_status %>
+      </div>
+
     <% else %>
-      <span class="badge bg-warning-subtle text-warning-emphasis">
-        No PI
-      </span>
+
+      <div class="project-pi-card__status is-pending">
+        PI not created
+      </div>
+
     <% end %>
+
   </div>
 
-  <div class="p-3">
 
-    <% if pi.persisted? %>
-      <div class="row g-3 mb-3">
+  <% if pi.persisted? %>
 
-        <div class="col-md-3">
-          <small class="text-body-secondary">Customer</small>
-          <div class="fw-semibold">
-            <%= pi.customer&.nickname || "—" %>
-          </div>
+    <!-- PI IDENTITY -->
+
+    <div class="project-pi-card__identity">
+
+      <div>
+        <span>PI Reference</span>
+        <strong><%= pi.number %></strong>
+      </div>
+
+      <div>
+        <span>Issue Date</span>
+        <strong>
+          <%= pi.issue_date&.strftime("%d %B %Y") || "—" %>
+        </strong>
+      </div>
+
+      <% if pi.confirm_or_reject_time.present? %>
+        <div>
+          <span>Decision Date</span>
+          <strong>
+            <%= pi.confirm_or_reject_time.strftime("%d %b %Y") %>
+          </strong>
         </div>
+      <% end %>
 
-        <div class="col-md-3">
-          <small class="text-body-secondary">Product</small>
-          <div class="fw-semibold"><%= pi.product %></div>
-        </div>
+      <% if pi.document.attached? %>
+        <%= link_to rails_blob_path(pi.document, disposition: "attachment"),
+          target: "_blank",
+          rel: "noopener",
+          class: "project-pi-card__document" do %>
 
-        <div class="col-md-2">
-          <small class="text-body-secondary">Quantity</small>
-          <div class="fw-semibold">
-            <%= number_with_delimiter(pi.quantity) %> MT
-          </div>
-        </div>
+          <i class="fa-solid fa-file-pdf"></i>
+          PI Document
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
 
-        <div class="col-md-2">
-          <small class="text-body-secondary">Unit Price</small>
-          <div class="fw-semibold">
-            <%= number_with_delimiter(pi.unit_price) %>
-            <%= pi.currency %>
-          </div>
-        </div>
+        <% end %>
+      <% end %>
 
-        <div class="col-md-2">
-          <small class="text-body-secondary">Total</small>
-          <div class="fw-semibold">
-            <%= number_with_delimiter(pi.total_price) %>
-            <%= pi.currency %>
-          </div>
+    </div>
+
+
+    <!-- SELLER / BUYER -->
+
+    <div class="project-pi-card__parties">
+
+      <div class="project-pi-card__party">
+
+        <span class="project-pi-card__party-icon">
+          <i class="fa-solid fa-building"></i>
+        </span>
+
+        <div>
+          <small>SELLER</small>
+          <strong>
+            <%= pi.seller.presence || "—" %>
+          </strong>
         </div>
 
       </div>
 
-      <% if pi.document.attached? %>
-        <div class="mb-3">
-          <i class="fa-solid fa-file-pdf text-danger me-1"></i>
-          <%= link_to "#{pi.number} · PI document",
-            rails_blob_path(pi.document, disposition: "attachment"),
-            target: "_blank",
-            rel: "noopener" %>
+
+      <div class="project-pi-card__party">
+
+        <span class="project-pi-card__party-icon">
+          <i class="fa-solid fa-user-tie"></i>
+        </span>
+
+        <div>
+          <small>BUYER</small>
+
+          <% if pi.customer.present? %>
+
+            <strong>
+              <%= link_to pi.customer.nickname,
+                customer_path(pi.customer) %>
+            </strong>
+
+            <span>
+              Customer #<%= pi.customer_id %>
+            </span>
+
+          <% else %>
+
+            <strong>Customer not assigned</strong>
+
+          <% end %>
+
         </div>
-      <% end %>
-    <% end %>
 
-    <% if can_manage %>
+      </div>
 
-      <details <%= "open" if form_open %>>
+    </div>
 
-        <summary class="btn btn-light border btn-sm">
-          <i class="fa-solid fa-pen-to-square me-1"></i>
-          <%= pi.persisted? ? "Edit PI" : "Create PI" %>
-        </summary>
 
-        <div class="pt-4">
+    <!-- PRODUCT HERO -->
 
-          <%= form_with model: [project, pi],
-            multipart: true,
-            data: { turbo: false },
-            class: "erp-form" do |form| %>
+    <div class="project-pi-card__product">
 
-            <%= render "shared/forms/errors", object: pi %>
+      <div class="project-pi-card__product-main">
 
-            <%= render "shared/forms/section_heading",
-              title: "Invoice & Customer",
-              description: "Reference, customer and issue details.",
-              icon: "fa-file-invoice" %>
+        <span class="project-pi-card__product-label">
+          PRODUCT
+        </span>
 
-            <div class="row g-3 mb-4">
+        <h3>
+          <%= pi.product.presence || "Product not specified" %>
+        </h3>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :number,
-                  label: "PI Number",
-                  required: true %>
-              </div>
+        <div class="project-pi-card__product-meta">
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :issue_date,
-                  label: "Issue Date",
-                  type: :date_field,
-                  required: true %>
-              </div>
+          <% if pi.packing_type.present? %>
+            <span>
+              <i class="fa-solid fa-box"></i>
+              <%= pi.packing_type %>
+            </span>
+          <% end %>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :seller,
-                  label: "Seller",
-                  required: true %>
-              </div>
+          <% if pi.packing_count.present? %>
+            <span>
+              <i class="fa-solid fa-cubes"></i>
+              <%= number_with_delimiter(pi.packing_count) %> packs
+            </span>
+          <% end %>
 
-              <div class="col-md-6">
-                <%= form.label :customer_id, "Customer",
-                  class: "form-label" %>
-                <%= form.collection_select :customer_id,
-                  customers,
-                  :id,
-                  :nickname,
-                  { prompt: "Select customer" },
-                  { class: "form-select" } %>
-              </div>
+          <% if pi.tolerance.present? %>
+            <span>
+              <i class="fa-solid fa-scale-balanced"></i>
+              ±<%= pi.tolerance %>%
+            </span>
+          <% end %>
 
-              <div class="col-md-6">
-                <%= form.label :account_id, "Bank Account",
-                  class: "form-label" %>
-                <%= form.collection_select :account_id,
-                  accounts,
-                  :id,
-                  :display_name_with_bank,
-                  { include_blank: "Select account" },
-                  { class: "form-select" } %>
-              </div>
+        </div>
 
-            </div>
+      </div>
 
-            <%= render "shared/forms/section_heading",
-              title: "Product & Quantity",
-              description: "Product specification and packing.",
-              icon: "fa-box" %>
 
-            <div class="row g-3 mb-4">
+      <div class="project-pi-card__product-quantity">
 
-              <div class="col-md-5">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :product,
-                  type: :select,
-                  choices: Pi::PRODUCT,
-                  select_options: { prompt: "Select product" },
-                  required: true %>
-              </div>
+        <strong>
+          <%= number_with_precision(
+            pi.quantity,
+            precision: 2,
+            strip_insignificant_zeros: true
+          ) %>
+        </strong>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :packing_type,
-                  label: "Packing",
-                  type: :select,
-                  choices: Pi::PACKING_TYPE,
-                  select_options: { prompt: "Select packing" },
-                  required: true %>
-              </div>
+        <span>METRIC TONS</span>
 
-              <div class="col-md-3">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :tolerance,
-                  label: "Tolerance %",
-                  type: :number_field,
-                  input_options: { step: "any" } %>
-              </div>
+      </div>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :quantity,
-                  label: "Quantity (MT)",
-                  type: :number_field,
-                  required: true,
-                  input_options: { min: 0, step: "any" } %>
-              </div>
+    </div>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :unit_price,
-                  type: :number_field,
-                  required: true,
-                  input_options: { min: 0, step: "0.0001" } %>
-              </div>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :total_price,
-                  type: :number_field,
-                  required: true,
-                  input_options: { min: 0, step: "0.0001" } %>
-              </div>
+    <!-- COMMERCIAL VALUE -->
 
-              <div class="col-md-6">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :payment_term,
-                  label: "Advance / Payment Term",
-                  hint: "Enter 0 if there is no advance payment.",
-                  required: true %>
-              </div>
+    <div class="project-pi-card__commercial">
 
-              <div class="col-md-3">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :currency,
-                  type: :select,
-                  choices: Pi::CURRENCY,
-                  select_options: { prompt: "Currency" },
-                  required: true %>
-              </div>
+      <div>
+        <span>Unit Price</span>
+        <strong>
+          <%= currency %>
+          <%= number_with_delimiter(pi.unit_price) %>
+          <small>/ MT</small>
+        </strong>
+      </div>
 
-              <div class="col-md-3">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :packing_count,
-                  label: "Packing Count",
-                  type: :number_field,
-                  input_options: { min: 0 } %>
-              </div>
+      <div>
+        <span>Payment Terms</span>
+        <strong>
+          <%= pi.payment_term.presence || "—" %>
+        </strong>
+      </div>
 
-            </div>
+      <div class="project-pi-card__total">
 
-            <%= render "shared/forms/section_heading",
-              title: "Route & Delivery",
-              description: "Ports, incoterm and delivery timeline.",
-              icon: "fa-route" %>
+        <span>Total Invoice Value</span>
 
-            <div class="row g-3 mb-4">
+        <strong>
+          <%= currency %>
+          <%= number_with_delimiter(pi.total_price) %>
+        </strong>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :pol,
-                  label: "Loading Port" %>
-              </div>
+      </div>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :pod,
-                  label: "Destination Port",
-                  required: true %>
-              </div>
+    </div>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :incoterm,
-                  label: "Incoterm",
-                  input_options: { placeholder: "CFR" } %>
-              </div>
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :delivery_time,
-                  label: "Delivery Time (Days)",
-                  type: :number_field,
-                  input_options: { min: 0 } %>
-              </div>
+    <!-- SHIPMENT DETAILS -->
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :validity,
-                  label: "Validity (Days)",
-                  type: :number_field,
-                  input_options: { min: 0 } %>
-              </div>
+    <div class="project-pi-card__details">
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :agent,
-                  type: :select,
-                  choices: Pi::AGENT,
-                  select_options: { prompt: "Select agent" } %>
-              </div>
+      <div class="project-pi-card__details-heading">
+        <i class="fa-solid fa-route"></i>
+        Shipment & Delivery
+      </div>
 
-            </div>
+      <div class="project-pi-card__details-grid">
 
-            <details class="mb-4">
-              <summary class="fw-semibold small">
-                Cost breakdown and commissions
-              </summary>
+        <div>
+          <span>Incoterm</span>
+          <strong><%= pi.incoterm.presence || "—" %></strong>
+        </div>
 
-              <div class="row g-3 mt-1">
+        <div>
+          <span>Port of Loading</span>
+          <strong><%= pi.pol.presence || "—" %></strong>
+        </div>
 
-                <% [
-                  [:purchase, "Purchase"],
-                  [:packing_cost, "Packing Cost"],
-                  [:shipment_rate, "Shipment Rate"],
-                  [:transport, "Transport"],
-                  [:custom_cost, "Custom Cost"],
-                  [:freight, "Freight"],
-                  [:insurance, "Insurance"],
-                  [:inspection, "Inspection"],
-                  [:other_cost, "Other Cost"],
-                  [:internal_commission, "Internal Commission"],
-                  [:foreign_commission, "Foreign Commission"],
-                  [:commission, "Commission per MT"]
-                ].each do |attribute, label| %>
+        <div>
+          <span>Port of Discharge</span>
+          <strong><%= pi.pod.presence || "—" %></strong>
+        </div>
 
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: attribute,
-                      label: label,
-                      type: :number_field,
-                      input_options: { step: "any" } %>
-                  </div>
+        <div>
+          <span>Delivery Time</span>
+          <strong>
+            <%= pi.delivery_time.present? ? "#{pi.delivery_time} days" : "To be confirmed" %>
+          </strong>
+        </div>
 
-                <% end %>
+        <div>
+          <span>Validity</span>
+          <strong>
+            <%= pi.validity.present? ? "#{pi.validity} days" : "—" %>
+          </strong>
+        </div>
 
-                <div class="col-md-6">
-                  <%= render "shared/forms/field",
-                    form: form,
-                    attribute: :cttd,
-                    label: "CTTD",
-                    required: true %>
-                </div>
+        <div>
+          <span>Shipment Rate</span>
+          <strong>
+            <%= pi.shipment_rate.present? ? "#{currency} #{number_with_delimiter(pi.shipment_rate)}" : "—" %>
+          </strong>
+        </div>
 
-                <div class="col-md-6">
-                  <%= render "shared/forms/field",
-                    form: form,
-                    attribute: :sales_by,
-                    label: "Sales By",
-                    required: true %>
-                </div>
+      </div>
 
-              </div>
-            </details>
+    </div>
 
-            <%= render "shared/forms/section_heading",
-              title: "PI Document",
-              description: "Attach or replace the PI document.",
-              icon: "fa-paperclip" %>
 
-            <div class="mb-4">
-              <%= form.label :document, "PI Document",
-                class: "form-label" %>
-              <%= form.file_field :document,
-                class: "form-control",
-                accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png" %>
+    <!-- ADDITIONAL COMMERCIAL DETAILS -->
 
-              <% if pi.document.attached? %>
-                <small class="text-body-secondary">
-                  Current document:
-                  <%= pi.document.filename %>
-                </small>
-              <% end %>
-            </div>
+    <div class="project-pi-card__details project-pi-card__details--secondary">
 
-            <div class="d-flex justify-content-end gap-2">
-              <%= form.submit pi.persisted? ? "Save PI" : "Create PI",
-                class: "btn btn-primary" %>
+      <div class="project-pi-card__details-heading">
+        <i class="fa-solid fa-clipboard-list"></i>
+        Commercial & Authorization Details
+      </div>
+
+      <div class="project-pi-card__details-grid">
+
+        <div>
+          <span>Bank Account</span>
+          <strong>
+            <%= pi.account&.display_name_with_bank.presence ||
+                pi.bank_account.presence || "—" %>
+          </strong>
+        </div>
+
+        <div>
+          <span>Agent</span>
+          <strong><%= pi.agent.presence || "—" %></strong>
+        </div>
+
+        <div>
+          <span>Commission</span>
+          <strong>
+            <%= pi.commission.present? ?
+              "#{currency} #{number_with_delimiter(pi.commission)} / MT" : "—" %>
+          </strong>
+        </div>
+
+        <div>
+          <span>Sales Representative</span>
+          <strong><%= pi.sales_by.presence || "—" %></strong>
+        </div>
+
+        <div>
+          <span>CTTD</span>
+          <strong><%= pi.cttd.presence || "—" %></strong>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- INTERNAL FORECAST -->
+
+    <div class="project-pi-forecast">
+
+      <div class="project-pi-forecast__header">
+
+        <div>
+          <div class="project-pi-forecast__eyebrow">
+            INTERNAL MANAGEMENT
+          </div>
+
+          <h3>
+            <i class="fa-solid fa-chart-pie"></i>
+            Cost & Profit Forecast
+          </h3>
+
+          <p>
+            Estimated figures for internal management purposes only.
+          </p>
+        </div>
+
+        <span class="project-pi-forecast__private">
+          <i class="fa-solid fa-lock"></i>
+          Internal
+        </span>
+
+      </div>
+
+
+      <% if forecast_available %>
+
+        <div class="project-pi-forecast__cost-grid">
+
+          <% forecast_items.each do |label, value| %>
+
+            <div class="project-pi-forecast__cost-item">
+
+              <span><%= label %></span>
+
+              <strong>
+                <%= currency %>
+                <%= number_with_precision(
+                  value,
+                  precision: 2,
+                  delimiter: ",",
+                  strip_insignificant_zeros: true
+                ) %>
+              </strong>
+
+              <small>/ MT</small>
+
             </div>
 
           <% end %>
 
         </div>
-      </details>
 
-    <% end %>
 
-  </div>
+        <div class="project-pi-forecast__summary">
+
+          <div>
+            <span>Forecast Cost / MT</span>
+            <strong>
+              <%= currency %>
+              <%= number_with_precision(
+                forecast_cost_per_mt,
+                precision: 2,
+                delimiter: ",",
+                strip_insignificant_zeros: true
+              ) %>
+            </strong>
+          </div>
+
+          <div>
+            <span>Forecast Selling Price / MT</span>
+            <strong>
+              <%= currency %>
+              <%= number_with_delimiter(pi.unit_price) %>
+            </strong>
+          </div>
+
+          <div class="is-profit">
+            <span>Forecast Profit / MT</span>
+            <strong>
+              <%= currency %>
+              <%= number_with_precision(
+                forecast_profit_per_mt,
+                precision: 2,
+                delimiter: ",",
+                strip_insignificant_zeros: true
+              ) %>
+            </strong>
+          </div>
+
+        </div>
+
+
+        <div class="project-pi-forecast__totals">
+
+          <div>
+            <span>Total Sales Value</span>
+            <strong>
+              <%= currency %>
+              <%= number_with_delimiter(pi.total_price) %>
+            </strong>
+          </div>
+
+          <div>
+            <span>Total Forecast Cost</span>
+            <strong>
+              <%= currency %>
+              <%= number_with_precision(
+                forecast_total_cost,
+                precision: 2,
+                delimiter: ",",
+                strip_insignificant_zeros: true
+              ) %>
+            </strong>
+          </div>
+
+          <div class="is-profit">
+            <span>Total Forecast Profit</span>
+            <strong>
+              <%= currency %>
+              <%= number_with_precision(
+                forecast_profit_total,
+                precision: 2,
+                delimiter: ",",
+                strip_insignificant_zeros: true
+              ) %>
+            </strong>
+          </div>
+
+          <div class="is-margin">
+            <span>Profit Margin</span>
+            <strong>
+              <%= forecast_margin.present? ?
+                "#{number_with_precision(forecast_margin, precision: 2)}%" : "—" %>
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="project-pi-forecast__note">
+          Forecast totals use the entered cost components and PI quantity.
+          They are estimates, not actual project expenses.
+        </div>
+
+      <% else %>
+
+        <div class="project-pi-forecast__empty">
+          No forecast cost information has been entered yet.
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+  <% else %>
+
+    <div class="project-pi-card__empty">
+
+      <div class="project-pi-card__empty-icon">
+        <i class="fa-solid fa-file-circle-plus"></i>
+      </div>
+
+      <h3>Proforma Invoice not created</h3>
+
+      <p>
+        Create the PI to establish the project's commercial terms,
+        customer, product and forecast.
+      </p>
+
+    </div>
+
+  <% end %>
+
+
+  <!-- =====================================================
+       PI EDITOR
+       Opened from the Project Actions menu.
+       ===================================================== -->
+
+  <% if can_manage %>
+
+    <details id="project-pi-editor"
+      class="project-editor project-pi-editor"
+      data-project-workspace-target="piEditor"
+      <%= "open" if pi.errors.any? %>>
+
+      <div class="project-editor__inner">
+
+        <div class="project-editor__heading">
+
+          <div>
+            <span>
+              <%= pi.persisted? ? "UPDATE COMMERCIAL AGREEMENT" : "CREATE COMMERCIAL AGREEMENT" %>
+            </span>
+
+            <h3>
+              <%= pi.persisted? ? "Edit Proforma Invoice" : "New Proforma Invoice" %>
+            </h3>
+          </div>
+
+          <span class="project-editor__reference">
+            Project <%= project.number %>
+          </span>
+
+        </div>
+
+
+        <%= form_with model: [project, pi],
+          multipart: true,
+          data: { turbo: false },
+          class: "erp-form project-pi-form" do |form| %>
+
+          <%= render "shared/forms/errors", object: pi %>
+
+
+          <!-- INVOICE AND CUSTOMER -->
+
+          <%= render "shared/forms/section_heading",
+            title: "Invoice & Customer",
+            description: "Invoice reference, seller, buyer and banking details.",
+            icon: "fa-file-invoice" %>
+
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :number,
+                label: "PI Number",
+                required: true %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :issue_date,
+                label: "Issue Date",
+                type: :date_field,
+                required: true %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :seller,
+                label: "Seller",
+                required: true %>
+            </div>
+
+            <div class="col-md-6">
+
+              <%= form.label :customer_id,
+                "Customer",
+                class: "form-label" %>
+
+              <%= form.collection_select :customer_id,
+                customers,
+                :id,
+                :nickname,
+                { prompt: "Select customer" },
+                { class: "form-select", required: true } %>
+
+            </div>
+
+            <div class="col-md-6">
+
+              <%= form.label :account_id,
+                "Bank Account",
+                class: "form-label" %>
+
+              <%= form.collection_select :account_id,
+                accounts,
+                :id,
+                :display_name_with_bank,
+                { include_blank: "Select account" },
+                { class: "form-select" } %>
+
+            </div>
+
+            <div class="col-md-6">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :bank_account,
+                label: "Bank Account Details" %>
+            </div>
+
+            <div class="col-md-6">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :currency,
+                type: :select,
+                choices: Pi::CURRENCY,
+                select_options: { prompt: "Select currency" },
+                required: true %>
+            </div>
+
+          </div>
+
+
+          <div class="erp-form__divider"></div>
+
+
+          <!-- PRODUCT AND PRICING -->
+
+          <%= render "shared/forms/section_heading",
+            title: "Product & Pricing",
+            description: "Specification, quantity, price and packing.",
+            icon: "fa-box-open" %>
+
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-6">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :product,
+                type: :select,
+                choices: Pi::PRODUCT,
+                select_options: { prompt: "Select product" },
+                required: true %>
+            </div>
+
+            <div class="col-md-6">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :packing_type,
+                label: "Packing Type",
+                type: :select,
+                choices: Pi::PACKING_TYPE,
+                select_options: { prompt: "Select packing" },
+                required: true %>
+            </div>
+
+            <div class="col-md-3">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :quantity,
+                label: "Quantity (MT)",
+                type: :number_field,
+                required: true,
+                input_options: { min: 0, step: "any" } %>
+            </div>
+
+            <div class="col-md-3">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :packing_count,
+                label: "Packing Count",
+                type: :number_field,
+                input_options: { min: 0 } %>
+            </div>
+
+            <div class="col-md-3">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :unit_price,
+                label: "Unit Price",
+                type: :number_field,
+                required: true,
+                input_options: { min: 0, step: "0.0001" } %>
+            </div>
+
+            <div class="col-md-3">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :total_price,
+                label: "Total Invoice Value",
+                type: :number_field,
+                required: true,
+                input_options: { min: 0, step: "0.0001" } %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :tolerance,
+                label: "Tolerance (%)",
+                type: :number_field,
+                input_options: {
+                  min: 0,
+                  step: "any",
+                  value: pi.tolerance.presence || 10
+                } %>
+            </div>
+
+            <div class="col-md-8">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :payment_term,
+                label: "Payment Terms",
+                hint: "For example: 20% advance.",
+                required: true %>
+            </div>
+
+          </div>
+
+
+          <div class="erp-form__divider"></div>
+
+
+          <!-- ROUTE AND DELIVERY -->
+
+          <%= render "shared/forms/section_heading",
+            title: "Shipment & Delivery",
+            description: "Incoterm, ports and delivery conditions.",
+            icon: "fa-route" %>
+
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :incoterm,
+                label: "Incoterm",
+                input_options: {
+                  value: pi.incoterm.presence || "CFR"
+                } %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :pol,
+                label: "Port of Loading (POL)" %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :pod,
+                label: "Port of Discharge (POD)",
+                required: true %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :delivery_time,
+                label: "Delivery Time (Days)",
+                type: :number_field,
+                input_options: { min: 0 } %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :validity,
+                label: "Validity (Days)",
+                type: :number_field,
+                input_options: { min: 0 } %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :shipment_rate,
+                label: "Shipment Rate",
+                type: :number_field,
+                input_options: { min: 0, step: "any" } %>
+            </div>
+
+          </div>
+
+
+          <div class="erp-form__divider"></div>
+
+
+          <!-- COST FORECAST -->
+
+          <%= render "shared/forms/section_heading",
+            title: "Internal Cost Forecast",
+            description: "Enter estimated cost per metric ton.",
+            icon: "fa-chart-pie" %>
+
+          <div class="project-pi-form__forecast-fields">
+
+            <div class="row g-3">
+
+              <% [
+                [:purchase, "Purchase Cost"],
+                [:freight, "Freight"],
+                [:transport, "Transportation"],
+                [:packing_cost, "Packing Cost"],
+                [:custom_cost, "Customs Cost"],
+                [:other_cost, "Other Costs"],
+                [:insurance, "Insurance"],
+                [:inspection, "Inspection"],
+                [:internal_commission, "Internal Commission"],
+                [:foreign_commission, "Foreign Commission"]
+              ].each do |attribute, label| %>
+
+                <div class="col-6 col-md-4">
+
+                  <%= render "shared/forms/field",
+                    form: form,
+                    attribute: attribute,
+                    label: label,
+                    type: :number_field,
+                    required: true,
+                    input_options: {
+                      min: 0,
+                      step: "any"
+                    } %>
+
+                </div>
+
+              <% end %>
+
+            </div>
+
+          </div>
+
+
+          <div class="erp-form__divider"></div>
+
+
+          <!-- SALES AUTHORIZATION -->
+
+          <%= render "shared/forms/section_heading",
+            title: "Sales Authorization",
+            description: "Sales representative, agent and internal reference.",
+            icon: "fa-user-check" %>
+
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :sales_by,
+                label: "Sales Representative",
+                required: true %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :agent,
+                label: "Agent",
+                type: :select,
+                choices: Pi::AGENT,
+                select_options: { prompt: "Select agent" } %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :commission,
+                label: "Commission per MT",
+                type: :number_field,
+                input_options: { min: 0, step: "any" } %>
+            </div>
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+                form: form,
+                attribute: :cttd,
+                label: "CTTD",
+                required: true,
+                type: :number_field %>
+            </div>
+
+          </div>
+
+
+          <!-- DOCUMENT -->
+
+          <%= render "shared/forms/section_heading",
+            title: "PI Document",
+            description: "Attach or replace the signed Proforma Invoice.",
+            icon: "fa-paperclip" %>
+
+          <div class="mb-4">
+
+            <%= form.label :document,
+              "Proforma Invoice Document",
+              class: "form-label" %>
+
+            <%= form.file_field :document,
+              class: "form-control",
+              accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png",
+              required: !pi.document.attached? %>
+
+            <% if pi.document.attached? %>
+              <small class="text-body-secondary d-block mt-2">
+                Current file:
+                <%= link_to pi.document.filename,
+                  rails_blob_path(pi.document, disposition: "attachment"),
+                  target: "_blank",
+                  rel: "noopener" %>
+              </small>
+            <% end %>
+
+          </div>
+
+
+          <div class="d-flex justify-content-end">
+
+            <%= form.submit(
+              pi.persisted? ? "Save PI Changes" : "Create Proforma Invoice",
+              class: "btn btn-primary project-editor__save"
+            ) %>
+
+          </div>
+
+        <% end %>
+
+      </div>
+
+    </details>
+
+  <% end %>
+
 </div>

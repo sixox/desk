@@ -1,0 +1,276 @@
+
+<%
+  pi = project.pi
+  customer = pi&.customer
+
+  cis = project.cis.to_a
+  bookings = project.bookings.to_a
+
+  # All distinct SWIFTs directly connected to the project
+  # or indirectly connected through its CIs.
+  project_swifts = (
+    project.swifts.to_a +
+    cis.filter_map(&:swift)
+  ).uniq(&:id)
+
+  # Direct project Payment Orders plus booking-linked orders.
+  project_payment_orders = (
+    project.payment_orders.to_a +
+    bookings.flat_map { |booking| booking.payment_orders.to_a }
+  ).uniq(&:id)
+
+  total_net_weight = cis.sum { |ci| ci.net_weight.to_f }
+
+  paid_ci_count = cis.count do |ci|
+    ci.swift&.confirmed == true &&
+      ci.swift&.rejected != true
+  end
+
+  if cis.empty?
+    ci_status = "No CI"
+    ci_status_class = "is-empty"
+  elsif paid_ci_count == cis.size
+    ci_status = "Paid"
+    ci_status_class = "is-paid"
+  elsif paid_ci_count.positive?
+    ci_status = "Partly paid"
+    ci_status_class = "is-partial"
+  else
+    ci_status = "Not paid"
+    ci_status_class = "is-unpaid"
+  end
+
+  tone = project.id.to_i % 5
+%>
+
+<article class="project-directory__card project-directory__card--tone-<%= tone %>">
+
+  <!-- HEADER -->
+  <div class="project-directory__card-header">
+
+    <div class="project-directory__project-identity">
+
+      <%= link_to project.number,
+        project_path(project),
+        class: "project-directory__number" %>
+
+      <div class="project-directory__customer">
+
+        <i class="fa-solid fa-user"></i>
+
+        <% if customer.present? %>
+
+          <%= link_to customer.nickname.presence || "Customer",
+            customer_path(customer) %>
+
+        <% else %>
+
+          <span>Customer not assigned</span>
+
+        <% end %>
+
+      </div>
+
+    </div>
+
+    <%= link_to project_path(project),
+      class: "project-directory__open-icon",
+      title: "Open project",
+      aria: { label: "Open project" } do %>
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    <% end %>
+
+  </div>
+
+
+  <!-- PRODUCT -->
+  <div class="project-directory__product">
+
+    <% if pi.present? %>
+
+      <div class="project-directory__product-name"
+        title="<%= pi.product %>">
+        <%= pi.product.presence || "Product not specified" %>
+      </div>
+
+      <div class="project-directory__quantity">
+        <i class="fa-solid fa-boxes-stacked"></i>
+
+        <strong>
+          <%= number_with_precision(
+            pi.quantity.to_f,
+            precision: 2,
+            strip_insignificant_zeros: true
+          ) %>
+        </strong>
+
+        <span>MT</span>
+      </div>
+
+    <% else %>
+
+      <div class="project-directory__product-name">
+        Product not assigned
+      </div>
+
+      <div class="project-directory__quantity project-directory__muted">
+        No PI
+      </div>
+
+    <% end %>
+
+  </div>
+
+
+  <!-- DESTINATION -->
+  <div class="project-directory__route">
+
+    <div class="project-directory__route-item">
+
+      <i class="fa-solid fa-anchor"></i>
+
+      <span>
+        <%= pi&.pod.presence || "POD pending" %>
+      </span>
+
+    </div>
+
+    <div class="project-directory__route-item">
+
+      <i class="fa-solid fa-truck-fast"></i>
+
+      <span>
+        <%= pi&.incoterm.presence || "Incoterm pending" %>
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- COMMERCIAL / CI SUMMARY -->
+  <div class="project-directory__ci">
+
+    <div class="project-directory__ci-main">
+
+      <div class="project-directory__ci-weight">
+
+        <i class="fa-solid fa-weight-hanging"></i>
+
+        <strong>
+          <%= number_with_precision(
+            total_net_weight,
+            precision: 2,
+            strip_insignificant_zeros: true
+          ) %>
+        </strong>
+
+        <span>MT</span>
+
+      </div>
+
+      <span class="project-directory__ci-count">
+        <%= cis.size %> <%= "CI".pluralize(cis.size) %>
+      </span>
+
+    </div>
+
+    <span class="project-directory__ci-status <%= ci_status_class %>">
+
+      <% if ci_status_class == "is-paid" %>
+        <i class="fa-solid fa-circle-check"></i>
+      <% elsif ci_status_class == "is-partial" %>
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      <% elsif ci_status_class == "is-unpaid" %>
+        <i class="fa-solid fa-clock"></i>
+      <% else %>
+        <i class="fa-regular fa-circle"></i>
+      <% end %>
+
+      <%= ci_status %>
+
+      <% if ci_status_class == "is-partial" %>
+        <small><%= paid_ci_count %>/<%= cis.size %></small>
+      <% end %>
+
+    </span>
+
+  </div>
+
+
+  <!-- COUNTS -->
+  <div class="project-directory__metrics">
+
+    <div class="project-directory__metric">
+
+      <div class="project-directory__metric-icon">
+        <i class="fa-solid fa-money-bill-transfer"></i>
+      </div>
+
+      <div>
+        <strong><%= project_swifts.size %></strong>
+        <span>Swifts</span>
+      </div>
+
+    </div>
+
+
+    <div class="project-directory__metric">
+
+      <div class="project-directory__metric-icon">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+      </div>
+
+      <div>
+        <strong><%= project_payment_orders.size %></strong>
+        <span>Payment Orders</span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- WORKFLOW STATUS -->
+  <div class="project-directory__statuses">
+
+    <span class="project-directory__status <%= project.sales_done? ? 'is-done' : 'is-open' %>">
+
+      <% if project.sales_done? %>
+        <i class="fa-solid fa-circle-check"></i>
+        Sales done
+      <% else %>
+        <i class="fa-solid fa-clock"></i>
+        Sales open
+      <% end %>
+
+    </span>
+
+
+    <span class="project-directory__status <%= project.logistics_done? ? 'is-done' : 'is-open' %>">
+
+      <% if project.logistics_done? %>
+        <i class="fa-solid fa-circle-check"></i>
+        Logistics done
+      <% else %>
+        <i class="fa-solid fa-clock"></i>
+        Logistics open
+      <% end %>
+
+    </span>
+
+  </div>
+
+
+  <!-- FOOTER -->
+  <div class="project-directory__card-footer">
+
+    <%= link_to project_path(project),
+      class: "project-directory__open-link" do %>
+      Open project
+      <i class="fa-solid fa-arrow-right"></i>
+    <% end %>
+
+  </div>
+
+</article>

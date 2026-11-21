@@ -1,46 +1,109 @@
-<%= form_with model: [@project, @booking, @release_request], local: true do |f| %>
+<%= form_with model: [project, booking, release_request],
+  data: { turbo_stream: true } do |form| %>
+
   <div class="modal-body">
-    <div class="row">
-      <!-- Display Errors -->
-      <% if @release_request.errors.any? %>
-        <div class="error-area text-danger mb-3">
-          <h5><%= pluralize(@release_request.errors.count, 'error') %> prohibited this release request from being saved:</h5>
-          <ul>
-            <% @release_request.errors.full_messages.each do |error| %>
-              <li><%= error %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
 
-      <!-- Form Header -->
-      <div class="row mb-3">
-        <div class="col-lg-6">
-          <h3>Release Request</h3>
+    <%= render "shared/forms/errors",
+      object: release_request %>
+
+
+    <div class="border rounded-3 p-3 mb-3">
+
+      <div class="row g-3">
+
+        <div class="col-6">
+          <small class="text-body-secondary">Project</small>
+          <div class="fw-semibold">
+            <%= project.number %>
+          </div>
         </div>
-        <div class="col-lg-6 d-flex justify-content-end">
-          <h6>Project: <%= @project.number %></h6>
-          <h6>Booking: <%= @booking.number %></h6>
+
+        <div class="col-6">
+          <small class="text-body-secondary">Booking</small>
+          <div class="fw-semibold">
+            <%= booking.number %>
+          </div>
         </div>
+
+        <div class="col-6">
+          <small class="text-body-secondary">Customer</small>
+          <div class="fw-semibold">
+            <%= project.pi&.customer&.nickname || "—" %>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <small class="text-body-secondary">Destination</small>
+          <div class="fw-semibold">
+            <%= booking.pod.presence || "—" %>
+          </div>
+        </div>
+
+        <div class="col-4">
+          <small class="text-body-secondary">Containers</small>
+          <div class="fw-semibold">
+            <%= booking.quantity.to_i %>
+          </div>
+        </div>
+
+        <div class="col-4">
+          <small class="text-body-secondary">Picked Up</small>
+          <div class="fw-semibold">
+            <%= booking.picked_up.to_i %>
+          </div>
+        </div>
+
+        <div class="col-4">
+          <small class="text-body-secondary">Stuffed</small>
+          <div class="fw-semibold">
+            <%= booking.filled.to_i %>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <small class="text-body-secondary">Weight</small>
+          <div class="fw-semibold">
+            <%= booking.weight.presence || "—" %>
+            <%= booking.weight.present? ? "MT" : "" %>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Note -->
-      <div class="col-lg-12 mb-3">
-        <div class="form-group">
-          <label class="form-label fw-bold">
-            Note
-            <small class="text-muted">(Optional)</small>
-          </label>
-          <%= f.text_area :note, class: 'form-control', rows: 5, placeholder: 'Enter additional information or notes here...' %>
-        </div>
-      </div>
     </div>
+
+
+    <div class="mb-2">
+
+      <%= form.label :note,
+        "Request Note",
+        class: "form-label fw-semibold" %>
+
+      <span class="small text-body-secondary">
+        Optional
+      </span>
+
+      <%= form.text_area :note,
+        rows: 4,
+        class: "form-control",
+        placeholder: "Add the reason or additional information for this release request..." %>
+
+    </div>
+
   </div>
+
 
   <div class="modal-footer">
-    <!-- Submit Button -->
-    <%= f.submit 'Save Release Request', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-    <!-- Close Button -->
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+    <button type="button"
+      class="btn btn-light border"
+      data-bs-dismiss="modal">
+      Cancel
+    </button>
+
+    <%= form.submit "Submit Release Request",
+      class: "btn btn-primary" %>
+
   </div>
+
 <% end %>

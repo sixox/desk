@@ -11,62 +11,29 @@ class ProjectsController < ApplicationController
 		
 	end
 
-	def index
+  def index
     @q = Project.ransack(params[:q])
 
-    projects = @q.result
-      .includes(
-        { pi: :customer },
-        { cis: [:pi, :swift] },
-        :bookings,
-        { swifts: :bank },
-        {
-          ballance_projects: {
-            ballance: [:supplier, :spi]
-          }
-        }
-      )
+    @sort = %w[id updated_at].include?(params[:sort].to_s) ?
+              params[:sort].to_s : "id"
 
-    case params[:stage].to_s
-    when "sales_open"
-      projects = projects.where(sales_done: [nil, false])
+    projects = @q.result.includes(
+      { pi: :customer },
+      { cis: :swift },
+      { bookings: :payment_orders },
+      :swifts,
+      :payment_orders
+    )
 
-    when "logistics_open"
-      projects = projects.where(logistics_done: [nil, false])
-
-    when "completed"
-      projects = projects.where(
-        sales_done: true,
-        logistics_done: true
-      )
-
-    when "at_risk"
-      projects = projects.where("projects.risk >= ?", 26)
-
-    when "without_pi"
-      projects = projects
-        .left_outer_joins(:pi)
-        .where(pis: { id: nil })
-    end
-
-    @project_stats = {
-      total: Project.count,
-
-      sales_open: Project
-        .where(sales_done: [nil, false])
-        .count,
-
-      logistics_open: Project
-        .where(logistics_done: [nil, false])
-        .count,
-
-      high_risk: Project
-        .where("projects.risk >= ?", 26)
-        .count
-    }
+    sort_order =
+      if @sort == "updated_at"
+        { updated_at: :desc, id: :desc }
+      else
+        { id: :desc }
+      end
 
     @projects = projects
-      .order(updated_at: :desc)
+      .reorder(sort_order)
       .page(params[:page])
       .per(18)
 

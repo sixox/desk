@@ -1,268 +1,128 @@
-<div class="page-header mb-3">
 
-  <div>
-    <h1>Projects</h1>
+<div class="project-directory">
 
-    <p class="subtitle mb-0">
-      Commercial, financial and logistics overview of all projects.
-    </p>
-  </div>
+  <!-- TOP TOOLBAR -->
+  <header class="project-directory__toolbar">
 
-  <div class="d-flex flex-wrap gap-2">
+    <h1 class="project-directory__title">Project</h1>
 
-    <%= link_to list_projects_path,
-      class: "btn btn-light border btn-sm" do %>
-      <i class="fa-solid fa-table-list me-1"></i>
-      Detailed List / Export
-    <% end %>
+    <%= form_with url: projects_path,
+      method: :get,
+      local: true,
+      class: "project-directory__search" do %>
 
-    <%= link_to release_requests_path,
-      class: "btn btn-light border btn-sm" do %>
-      <i class="fa-solid fa-file-signature me-1"></i>
-      Release Requests
-    <% end %>
+      <div class="project-directory__search-field">
 
-    <%= link_to turnovers_projects_path,
-      class: "btn btn-light border btn-sm" do %>
-      <i class="fa-solid fa-chart-line me-1"></i>
-      DSO Report
-    <% end %>
+        <i class="fa-solid fa-magnifying-glass"></i>
 
-    <% if current_user.sales? || current_user.logistics? %>
-
-      <%= link_to new_project_path,
-        class: "btn btn-primary btn-sm",
-        data: { controller: "bs-modal-form" } do %>
-        <i class="fa-solid fa-plus me-1"></i>
-        New Project
-      <% end %>
-
-    <% end %>
-
-  </div>
-
-</div>
-
-
-<!-- PROJECT COUNTS -->
-
-<div class="row g-2 mb-3">
-
-  <% [
-    ["Total Projects", @project_stats[:total], "fa-folder-open", "c1"],
-    ["Sales Pending", @project_stats[:sales_open], "fa-handshake", "c2"],
-    ["Logistics Pending", @project_stats[:logistics_open], "fa-truck-fast", "c3"],
-    ["High / Extreme Risk", @project_stats[:high_risk], "fa-triangle-exclamation", "c4"]
-  ].each do |label, value, icon, color| %>
-
-    <div class="col-6 col-xl-3">
-
-      <div class="stat-card h-100">
-
-        <div class="stat-card__head">
-
-          <p class="stat-card__label">
-            <%= label %>
-          </p>
-
-          <span class="stat-card__icon stat-card__icon--<%= color %>">
-            <i class="fa-solid <%= icon %>"></i>
-          </span>
-
-        </div>
-
-        <p class="stat-card__value">
-          <%= number_with_delimiter(value) %>
-        </p>
+        <%= text_field_tag "q[name_or_number_cont]",
+          params.dig(:q, :name_or_number_cont),
+          class: "project-directory__search-input",
+          placeholder: "Search project number or keywords...",
+          autocomplete: "off" %>
 
       </div>
 
+      <%= select_tag :sort,
+        options_for_select(
+          [
+            ["Newest ID", "id"],
+            ["Last updated", "updated_at"]
+          ],
+          @sort
+        ),
+        class: "project-directory__sort",
+        aria: { label: "Sort projects" } %>
+
+      <button type="submit"
+        class="project-directory__search-button"
+        title="Search"
+        aria-label="Search projects">
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+
+    <% end %>
+
+
+    <!-- QUICK LINKS -->
+    <div class="project-directory__actions">
+
+      <%= link_to release_requests_path,
+        class: "project-directory__action project-directory__action--release" do %>
+        <i class="fa-solid fa-file-signature"></i>
+        <span>Release Requests</span>
+      <% end %>
+
+      <%= link_to turnovers_projects_path,
+        class: "project-directory__action project-directory__action--dso" do %>
+        <i class="fa-solid fa-chart-line"></i>
+        <span>DSO Report</span>
+      <% end %>
+
+      <% if current_user.sales? || current_user.logistics? %>
+
+        <%= link_to new_project_path,
+          class: "project-directory__action project-directory__action--new",
+          data: { controller: "bs-modal-form" } do %>
+          <i class="fa-solid fa-plus"></i>
+          <span>New Project</span>
+        <% end %>
+
+      <% end %>
+
+    </div>
+
+  </header>
+
+
+  <!-- PROJECT CARDS -->
+  <div class="row g-3">
+
+    <% @projects.each do |project| %>
+
+      <div class="col-12 col-md-6 col-xl-4">
+        <%= render "project_card", project: project %>
+      </div>
+
+    <% end %>
+
+
+    <% if @projects.empty? %>
+
+      <div class="col-12">
+
+        <div class="project-directory__empty">
+
+          <div class="project-directory__empty-icon">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+
+          <h3>No projects found</h3>
+
+          <p>
+            No matching projects. Try another search.
+          </p>
+
+          <%= link_to "Clear search",
+            projects_path,
+            class: "btn btn-light border btn-sm" %>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+
+  <!-- PAGINATION -->
+  <% if @projects.total_pages > 1 %>
+
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @projects %>
     </div>
 
   <% end %>
 
 </div>
-
-
-<!-- DIRECTORY -->
-
-<section class="m-card">
-
-  <div class="m-card__header">
-
-    <div>
-      <h2 class="m-card__title">Project Directory</h2>
-
-      <p class="m-card__subtitle">
-        <%= number_with_delimiter(@project_total_count) %>
-        matching projects
-      </p>
-    </div>
-
-  </div>
-
-
-  <div class="p-3">
-
-
-    <!-- SEARCH -->
-
-    <%= form_with url: projects_path,
-      method: :get,
-      local: true,
-      class: "row g-2 align-items-end mb-3" do %>
-
-      <div class="col-12 col-lg-7">
-
-        <label class="form-label small">
-          Search project
-        </label>
-
-        <%= text_field_tag "q[name_or_number_cont]",
-          params.dig(:q, :name_or_number_cont),
-          class: "form-control",
-          placeholder: "Project number or name..." %>
-
-      </div>
-
-      <div class="col-8 col-lg-3">
-
-        <label class="form-label small">
-          Stage
-        </label>
-
-        <%= select_tag :stage,
-          options_for_select(
-            [
-              ["All projects", ""],
-              ["Sales pending", "sales_open"],
-              ["Logistics pending", "logistics_open"],
-              ["Completed", "completed"],
-              ["High / extreme risk", "at_risk"],
-              ["Without PI", "without_pi"]
-            ],
-            params[:stage]
-          ),
-          class: "form-select" %>
-
-      </div>
-
-      <div class="col-4 col-lg-2 d-flex gap-2">
-
-        <%= submit_tag "Search",
-          class: "btn btn-primary flex-grow-1" %>
-
-        <%= link_to projects_path,
-          class: "btn btn-light border",
-          title: "Reset filters" do %>
-          <i class="fa-solid fa-rotate-left"></i>
-        <% end %>
-
-      </div>
-
-    <% end %>
-
-
-    <!-- QUICK FILTERS -->
-
-    <div class="d-flex flex-wrap gap-2 mb-3">
-
-      <% [
-        ["All", ""],
-        ["Sales pending", "sales_open"],
-        ["Logistics pending", "logistics_open"],
-        ["Completed", "completed"],
-        ["At risk", "at_risk"],
-        ["Without PI", "without_pi"]
-      ].each do |label, value| %>
-
-        <%= link_to label,
-          projects_path(
-            q: params[:q]&.to_unsafe_h,
-            stage: value
-          ),
-          class: "btn btn-sm #{params[:stage].to_s == value ? 'btn-primary' : 'btn-light border'}" %>
-
-      <% end %>
-
-    </div>
-
-
-    <!-- PROJECT TABLE -->
-
-    <div class="table-responsive">
-
-      <table class="table table-hover align-middle">
-
-        <thead class="table-light">
-
-          <tr>
-            <th>Project</th>
-            <th>Customer</th>
-            <th>PI / Product</th>
-            <th>CIs</th>
-            <th>Logistics</th>
-            <th>Receipts</th>
-            <th>Workflow</th>
-            <th>Updated</th>
-            <th></th>
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          <% @projects.each do |project| %>
-
-            <%= render "projects/project_row",
-              project: project %>
-
-          <% end %>
-
-
-          <% if @projects.empty? %>
-
-            <tr>
-
-              <td colspan="9">
-
-                <div class="text-center py-5">
-
-                  <i class="fa-solid fa-folder-open fs-2 text-body-secondary"></i>
-
-                  <h3 class="h6 mt-3">
-                    No projects found
-                  </h3>
-
-                  <p class="small text-body-secondary mb-0">
-                    Try changing the search or filters.
-                  </p>
-
-                </div>
-
-              </td>
-
-            </tr>
-
-          <% end %>
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-
-    <!-- PAGINATION -->
-
-    <% if @projects.total_pages > 1 %>
-
-      <div class="d-flex justify-content-center mt-3">
-        <%= paginate @projects %>
-      </div>
-
-    <% end %>
-
-  </div>
-
-</section>

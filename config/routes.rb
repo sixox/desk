@@ -71,7 +71,6 @@ Rails.application.routes.draw do
       end
       resources :release_requests do
         member do
-          get :confirm
           patch :confirm
         end
       end
@@ -84,7 +83,6 @@ Rails.application.routes.draw do
   end
   resources :release_requests do
     member do
-      get :confirm
       patch :confirm
     end
     collection do
