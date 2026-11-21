@@ -1,4 +1,3 @@
-
 <%
   pi = @pi || @project.pi
 
@@ -15,10 +14,6 @@
   allocations = @allocates || @project.ballance_projects
     .includes(ballance: :supplier)
     .to_a
-
-  project_swifts = @project_swifts || (
-    @project.swifts.to_a + cis.filter_map(&:swift)
-  ).uniq(&:id)
 
   customer = pi&.customer
 
@@ -41,144 +36,78 @@
 
 <div class="project-show" data-controller="project-workspace">
 
-  <!-- =====================================================
-       PROJECT HEADER
-       ===================================================== -->
-
-  <header class="project-show__hero">
-
-    <div class="project-show__hero-main">
-
-      <div class="project-show__eyebrow">
-        PROJECT WORKSPACE
-      </div>
-
-      <div class="project-show__title-row">
-
-        <h1>
-          <%= @project.number %>
-        </h1>
-
-        <span class="project-show__risk">
-          <%= risk_level_tag(@project) %>
-        </span>
-
-      </div>
-
-      <div class="project-show__subtitle">
-
-        <% if customer.present? %>
-          <%= link_to customer.nickname,
-            customer_path(customer) %>
-        <% else %>
-          Customer not assigned
-        <% end %>
-
-        <% if pi.present? %>
-          <span>·</span>
-          PI <%= pi.number %>
-          <span>·</span>
-          <%= pi.product %>
-          <% if pi.pod.present? %>
-            <span>·</span>
-            <%= pi.pod %>
-          <% end %>
-        <% end %>
-
-      </div>
-
-      <div class="project-show__status-row">
-
-        <% if @project.started? %>
-          <span class="project-show__status is-started">
-            <i class="fa-solid fa-play"></i>
-            Started
-          </span>
-        <% else %>
-          <span class="project-show__status is-muted">
-            <i class="fa-regular fa-circle"></i>
-            Not started
-          </span>
-        <% end %>
-
-        <% if @project.sales_done? %>
-          <span class="project-show__status is-done">
-            <i class="fa-solid fa-circle-check"></i>
-            Sales completed
-          </span>
-        <% else %>
-          <span class="project-show__status is-open">
-            <i class="fa-solid fa-clock"></i>
-            Sales open
-          </span>
-        <% end %>
-
-        <% if @project.logistics_done? %>
-          <span class="project-show__status is-done">
-            <i class="fa-solid fa-circle-check"></i>
-            Logistics completed
-          </span>
-        <% else %>
-          <span class="project-show__status is-open">
-            <i class="fa-solid fa-clock"></i>
-            Logistics open
-          </span>
-        <% end %>
-
-      </div>
-
-    </div>
+  <!-- TOP ROW: PROJECT IDENTITY + ACTIONS -->
 
 
-    <div class="project-show__hero-meta">
 
-      <div>
-        <span>Created</span>
-        <strong>
-          <%= @project.created_at&.strftime("%d %b %Y") || "—" %>
-        </strong>
-      </div>
+   <!-- PROJECT TOP BAR — PLAIN, FULL WIDTH -->
 
-      <div>
-        <span>Last updated</span>
-        <strong>
-          <%= @project.updated_at&.strftime("%d %b %Y") || "—" %>
-        </strong>
-      </div>
+<header class="project-show__hero">
 
-    </div>
+  <div class="project-show__identity-line">
 
-  </header>
+    <h1><%= @project.number %></h1>
 
+    <span class="project-show__risk">
+      <%= risk_level_tag(@project) %>
+    </span>
 
-  <!-- =====================================================
-       PROJECT ACTIONS & USEFUL LINKS
-       ===================================================== -->
+    <% if customer.present? %>
+      <%= link_to customer.nickname,
+        customer_path(customer),
+        class: "project-show__identity-item project-show__identity-item--customer" %>
+    <% else %>
+      <span class="project-show__identity-item">No customer</span>
+    <% end %>
 
-  <section class="project-action-dock">
-
-    <div class="project-action-dock__heading">
-      <div>
-        <i class="fa-solid fa-bolt"></i>
-        Project Actions
-      </div>
-
-      <span>
-        Operations and useful links
+    <% if pi&.product.present? %>
+      <span class="project-show__identity-item">
+        <i class="fa-solid fa-box"></i>
+        <%= pi.product %>
       </span>
-    </div>
+    <% end %>
+
+    <% if pi&.pod.present? %>
+      <span class="project-show__identity-item">
+        <i class="fa-solid fa-location-dot"></i>
+        <%= pi.pod %>
+      </span>
+    <% end %>
+
+    <nav class="project-show__hero-nav">
+
+      <%= link_to projects_path do %>
+        <i class="fa-solid fa-arrow-left"></i>
+        Projects
+      <% end %>
+
+      <%= link_to time_line_project_path(@project) do %>
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        Timeline
+      <% end %>
+
+    </nav>
+
+  </div>
+
+</header>
 
 
-    <div class="project-action-dock__groups">
+<!-- ACTIONS -->
 
-      <!-- OPERATIONS -->
+<aside class="project-action-dock">
 
-      <div class="project-action-dock__group">
+      <aside class="project-action-dock">
 
-        <span class="project-action-dock__label">
-          Manage
-        </span>
+      <div class="project-action-dock__heading">
+        <div>
+          <i class="fa-solid fa-bolt"></i>
+          Project Actions
+        </div>
+      </div>
 
+
+      <div class="project-action-dock__actions">
 
         <% if can_manage_project %>
 
@@ -187,13 +116,12 @@
             data-action="project-workspace#togglePi">
 
             <i class="fa-solid fa-file-invoice"></i>
-
             <%= pi&.persisted? ? "Edit PI" : "Create PI" %>
 
           </button>
 
 
-          <% if pi.present? %>
+          <% if @project.pi.present? %>
 
             <button type="button"
               class="project-action"
@@ -231,14 +159,14 @@
             class: "project-action" do %>
 
             <i class="fa-solid fa-warehouse"></i>
-            Inventory Allocation
+            Allocate
 
           <% end %>
 
         <% end %>
 
 
-        <% if can_add_swift && (pi.present? || current_user.id == 5) %>
+        <% if can_add_swift && (@project.pi.present? || current_user.id == 5) %>
 
           <%= link_to new_project_swift_path(@project),
             class: "project-action project-action--receipt",
@@ -258,7 +186,7 @@
             method: :patch,
             class: "project-action project-action--success",
             form: {
-              class: "d-inline",
+              class: "project-action-dock__form",
               data: {
                 turbo_confirm: "Finish the sales stage?"
               }
@@ -278,13 +206,13 @@
             method: :patch,
             class: "project-action project-action--success",
             form: {
-              class: "d-inline",
+              class: "project-action-dock__form",
               data: {
                 turbo_confirm: "This will mark all bookings as payment done. Continue?"
               }
             } do %>
 
-            <i class="fa-solid fa-check"></i>
+            <i class="fa-solid fa-truck-fast"></i>
             Finish Logistics
 
           <% end %>
@@ -294,93 +222,96 @@
       </div>
 
 
-      <!-- NAVIGATION -->
+      <!-- PROJECT STATUS -->
 
-      <div class="project-action-dock__group">
+      <div class="project-action-dock__status">
 
-        <span class="project-action-dock__label">
-          Navigate
+        <span class="<%= @project.sales_done? ? 'is-done' : 'is-open' %>">
+          <i class="fa-solid <%= @project.sales_done? ? 'fa-circle-check' : 'fa-clock' %>"></i>
+          Sales <%= @project.sales_done? ? "Complete" : "Open" %>
         </span>
 
-        <%= link_to projects_path,
-          class: "project-action" do %>
-          <i class="fa-solid fa-arrow-left"></i>
-          Projects
-        <% end %>
+        <span class="<%= @project.logistics_done? ? 'is-done' : 'is-open' %>">
+          <i class="fa-solid <%= @project.logistics_done? ? 'fa-circle-check' : 'fa-clock' %>"></i>
+          Logistics <%= @project.logistics_done? ? "Complete" : "Open" %>
+        </span>
 
-        <%= link_to time_line_project_path(@project),
-          class: "project-action" do %>
-          <i class="fa-solid fa-clock-rotate-left"></i>
-          Timeline
-        <% end %>
+      </div>
+
+
+      <!-- SECONDARY LINKS -->
+
+      <div class="project-action-dock__quick-links">
 
         <% if @show_turnover_report %>
-          <%= link_to turnover_project_path(@project),
-            class: "project-action" do %>
+          <%= link_to turnover_project_path(@project) do %>
             <i class="fa-solid fa-chart-line"></i>
-            DSO Report
+            DSO
           <% end %>
         <% end %>
 
-        <%= link_to payment_orders_path,
-          class: "project-action" do %>
+        <%= link_to payment_orders_path do %>
           <i class="fa-solid fa-file-invoice-dollar"></i>
           Payment Orders
         <% end %>
 
-        <%= link_to swifts_path,
-          class: "project-action" do %>
+        <%= link_to swifts_path do %>
           <i class="fa-solid fa-money-bill-transfer"></i>
-          All Swifts
+          Swifts
         <% end %>
 
-        <%= link_to release_requests_path,
-          class: "project-action" do %>
+        <%= link_to release_requests_path do %>
           <i class="fa-solid fa-file-signature"></i>
           Release Requests
         <% end %>
 
       </div>
 
-    </div>
+    </aside>
 
-  </section>
-
-
-  <!-- =====================================================
-       1. PI
-       ===================================================== -->
-
-  <section id="project-pi" class="project-show__section">
-
-    <%= render "projects/workspace_pi",
-      project: @project,
-      pi: pi,
-      can_manage: can_manage_project %>
-
-  </section>
+</aside>
 
 
-  <!-- =====================================================
-       2. FINANCE
-       ===================================================== -->
-
-  <section id="project-finance" class="project-show__section">
-
-    <%= render "projects/workspace_finance",
-      project: @project,
-      cis: cis,
-      allocations: allocations,
-      can_manage: can_manage_project %>
-
-  </section>
+    <!-- ACTIONS -->
 
 
-  <!-- =====================================================
-       3. LOGISTICS
-       ===================================================== -->
 
-  <section id="project-logistics" class="project-show__section">
+  
+
+
+  <!-- PI + FINANCE -->
+
+  <div class="project-show__commercial-grid">
+
+    <section id="project-pi"
+      class="project-show__section">
+
+      <%= render "projects/workspace_pi",
+        project: @project,
+        pi: pi,
+        can_manage: can_manage_project %>
+
+    </section>
+
+
+    <section id="project-finance"
+      class="project-show__section">
+
+      <%= render "projects/workspace_finance",
+        project: @project,
+        cis: cis,
+        allocations: allocations,
+        can_manage: can_manage_project %>
+
+    </section>
+
+  </div>
+
+
+  <!-- LOGISTICS: FULL WIDTH -->
+
+  <section id="project-logistics"
+    class="project-show__section project-show__section--logistics">
 
     <%= render "projects/workspace_logistics",
       project: @project,

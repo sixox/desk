@@ -1,11 +1,14 @@
-
 <%
-  cis ||= project.cis
-    .includes(:swift)
-    .order(issue_date: :desc)
-    .to_a
+cis ||= project.cis
+.includes(:swift)
+.order(issue_date: :desc)
+.to_a
 
-  new_ci = @new_ci || project.cis.build
+new_ci = @new_ci || project.cis.build
+
+pi = project.pi
+customer = pi&.customer
+currency = pi&.currency.to_s.upcase
 %>
 
 <div class="m-card project-finance__ci-workspace">
@@ -34,322 +37,364 @@
          EXISTING COMMERCIAL INVOICES
          ===================================================== -->
 
-    <% cis.each do |ci| %>
+         <% cis.each do |ci| %>
 
-      <% ci_swift = ci.swift %>
+         <% ci_swift = ci.swift %>
 
-      <div
-        id="ci-<%= ci.id %>"
-        class="project-ci-card mb-3">
+         <div
+         id="ci-<%= ci.id %>"
+         class="project-ci-card mb-3">
 
 
-        <!-- CI HEADER -->
+         <!-- CI HEADER -->
 
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+         <!-- COMMERCIAL INVOICE PAPER -->
 
-          <div>
+         <div class="project-ci-paper">
 
-            <div class="d-flex align-items-center flex-wrap gap-2">
+          <!-- INVOICE HEADER -->
 
-              <span class="project-ci-card__number">
-                CI <%= ci.number.presence || "Not numbered" %>
-              </span>
+          <div class="project-ci-paper__header">
 
-              <% if ci.issue_date.present? %>
-                <span class="project-ci-card__date">
-                  <i class="fa-regular fa-calendar me-1"></i>
-                  <%= ci.issue_date.strftime("%d %b %Y") %>
-                </span>
-              <% end %>
+            <div>
+              <div class="project-ci-paper__eyebrow">
+                COMMERCIAL INVOICE
+              </div>
 
+              <h3>
+                <span>CI</span>
+                <%= ci.number.presence || "Not numbered" %>
+              </h3>
+
+              <div class="project-ci-paper__date">
+                <i class="fa-regular fa-calendar me-1"></i>
+                <%= ci.issue_date&.strftime("%d %B %Y") || "—" %>
+              </div>
             </div>
 
-            <div class="project-ci-card__weight mt-2">
 
-              <span>
-                <i class="fa-solid fa-weight-hanging"></i>
+            <div class="project-ci-paper__header-right">
 
-                <strong>
-                  <%= number_with_precision(
-                    ci.net_weight,
-                    precision: 2,
-                    strip_insignificant_zeros: true
-                  ) %>
-                </strong>
+              <% if ci_swift.blank? %>
 
-                MT net
-              </span>
-
-              <span>
-                <i class="fa-solid fa-box"></i>
-
-                <%= number_with_precision(
-                  ci.gross_weight,
-                  precision: 2,
-                  strip_insignificant_zeros: true
-                ) %>
-                MT gross
-              </span>
-
-            </div>
-
-          </div>
-
-
-          <!-- PAYMENT STATUS -->
-
-          <div class="d-flex flex-wrap gap-2 align-items-center">
-
-            <% if ci_swift.blank? %>
-
-              <span class="project-ci-card__payment is-unpaid">
+              <span class="project-ci-paper__status is-unpaid">
                 <i class="fa-solid fa-clock"></i>
                 Not paid
               </span>
 
-            <% elsif ci_swift.rejected? %>
+              <% elsif ci_swift.rejected? %>
 
-              <span class="project-ci-card__payment is-rejected">
+              <span class="project-ci-paper__status is-rejected">
                 <i class="fa-solid fa-circle-xmark"></i>
-                Swift rejected
+                Rejected
               </span>
 
-            <% elsif ci_swift.confirmed? %>
+              <% elsif ci_swift.confirmed? %>
 
-              <span class="project-ci-card__payment is-paid">
+              <span class="project-ci-paper__status is-paid">
                 <i class="fa-solid fa-circle-check"></i>
                 Paid
               </span>
 
-            <% else %>
+              <% else %>
 
-              <span class="project-ci-card__payment is-pending">
+              <span class="project-ci-paper__status is-pending">
                 <i class="fa-solid fa-hourglass-half"></i>
                 Awaiting confirmation
               </span>
 
-            <% end %>
+              <% end %>
 
 
-            <% if ci.sent? %>
-
-              <span class="badge bg-info-subtle text-info">
-                Sent
+              <span class="project-ci-paper__sent <%= ci.sent? ? '' : 'is-not-sent' %>">
+                <i class="fa-solid fa-paper-plane"></i>
+                <%= ci.sent? ? "Sent" : "Not sent" %>
               </span>
 
-            <% else %>
 
-              <span class="badge bg-light text-secondary border">
-                Not sent
-              </span>
-
-            <% end %>
-
-
-            <% if ci.document.attached? %>
+              <% if ci.document.attached? %>
 
               <%= link_to rails_blob_path(
-                    ci.document,
-                    disposition: "attachment"
-                  ),
-                target: "_blank",
-                rel: "noopener",
-                class: "btn btn-sm btn-light border" do %>
+                ci.document,
+                disposition: "attachment"
+                ),
+              target: "_blank",
+              rel: "noopener",
+              class: "project-ci-paper__document" do %>
 
-                <i class="fa-solid fa-file-pdf text-danger"></i>
-                CI Document
+              <i class="fa-solid fa-file-pdf"></i>
+              Invoice PDF
 
               <% end %>
 
-            <% end %>
-
-          </div>
-
-        </div>
-
-
-        <!-- CI FINANCIAL SUMMARY -->
-
-        <div class="project-ci-card__financials">
-
-          <div>
-
-            <span>Advance</span>
-
-            <strong>
-              <%= number_with_delimiter(ci.advance_payment) %>
-              <small><%= project.pi&.currency.to_s.upcase %></small>
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span>Balance</span>
-
-            <strong>
-              <%= number_with_delimiter(ci.balance_payment) %>
-              <small><%= project.pi&.currency.to_s.upcase %></small>
-            </strong>
-
-          </div>
-
-
-          <div>
-
-            <span>Total</span>
-
-            <strong>
-              <%= number_with_delimiter(ci.total_price) %>
-              <small><%= project.pi&.currency.to_s.upcase %></small>
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <!-- =================================================
-             ASSOCIATED SWIFT RECEIPT
-             ================================================= -->
-
-        <% if ci_swift.present? %>
-
-          <div class="project-ci-card__receipt">
-
-            <div class="project-ci-card__receipt-heading">
-
-              <span>
-                <i class="fa-solid fa-money-bill-transfer"></i>
-                Receipt #<%= ci_swift.id %>
-              </span>
-
-              <span>
-                <%= ci_swift.confirm_at&.strftime("%d %b %Y") ||
-                    ci_swift.created_at&.strftime("%d %b %Y") %>
-              </span>
+              <% end %>
 
             </div>
 
+          </div>
 
-            <div class="project-ci-card__receipt-amounts">
 
-              <div>
+          <!-- SELLER / BUYER / DESTINATION -->
 
-                <span>
-                  <i class="fa-solid fa-arrow-down"></i>
-                  Customer sent
-                </span>
+          <div class="project-ci-paper__parties">
 
-                <strong>
-                  <%= number_with_delimiter(ci_swift.amount) %>
+            <div class="project-ci-paper__party">
+              <span>SELLER</span>
+              <strong><%= pi&.seller.presence || "—" %></strong>
+            </div>
 
-                  <small>
-                    <%= ci_swift.currency.to_s.upcase %>
-                  </small>
-                </strong>
+
+            <div class="project-ci-paper__party">
+              <span>BILL TO</span>
+
+              <strong>
+                <% if customer.present? %>
+                <%= link_to customer.nickname, customer_path(customer) %>
+                <% else %>
+                —
+                <% end %>
+              </strong>
+            </div>
+
+
+            <div class="project-ci-paper__party">
+              <span>DESTINATION</span>
+              <strong><%= pi&.pod.presence || "—" %></strong>
+            </div>
+
+
+            <div class="project-ci-paper__party">
+              <span>INCOTERM</span>
+              <strong><%= pi&.incoterm.presence || "—" %></strong>
+            </div>
+
+          </div>
+
+
+          <!-- INVOICE ITEMS -->
+
+          <div class="project-ci-paper__table-wrap">
+
+            <table class="project-ci-paper__table">
+
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Net Weight</th>
+                  <th>Gross Weight</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+
+
+              <tbody>
+                <tr>
+
+                  <td>
+                    <strong>
+                      <%= pi&.product.presence || "—" %>
+                    </strong>
+
+                    <small>
+                      <%= pi&.packing_type.presence || "—" %>
+                    </small>
+                  </td>
+
+
+                  <td>
+                    <%= number_with_precision(
+                      ci.net_weight,
+                      precision: 2,
+                      strip_insignificant_zeros: true
+                      ) %>
+                      <small>MT</small>
+                    </td>
+
+
+                    <td>
+                      <%= number_with_precision(
+                        ci.gross_weight,
+                        precision: 2,
+                        strip_insignificant_zeros: true
+                        ) %>
+                        <small>MT</small>
+                      </td>
+
+
+                      <td>
+                        <strong>
+                          <%= number_with_delimiter(ci.total_price) %>
+                        </strong>
+
+                        <small><%= currency %></small>
+                      </td>
+
+                    </tr>
+                  </tbody>
+
+                </table>
 
               </div>
 
 
-              <div>
+              <!-- INVOICE TOTALS -->
+
+              <div class="project-ci-paper__totals">
+
+                <div class="project-ci-paper__total">
+                  <span>ADVANCE</span>
+                  <strong>
+                    <%= number_with_delimiter(ci.advance_payment) %>
+                    <small><%= currency %></small>
+                  </strong>
+                </div>
+
+
+                <div class="project-ci-paper__total">
+                  <span>BALANCE</span>
+                  <strong>
+                    <%= number_with_delimiter(ci.balance_payment) %>
+                    <small><%= currency %></small>
+                  </strong>
+                </div>
+
+
+                <div class="project-ci-paper__total is-grand">
+                  <span>INVOICE TOTAL</span>
+                  <strong>
+                    <%= number_with_delimiter(ci.total_price) %>
+                    <small><%= currency %></small>
+                  </strong>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- ASSOCIATED BALANCE RECEIPT -->
+
+            <% if ci_swift.present? %>
+
+            <div class="project-ci-card__receipt">
+
+              <div class="project-ci-card__receipt-heading">
+
+                <span>
+                  <i class="fa-solid fa-money-bill-transfer"></i>
+                  Balance Receipt
+                </span>
+
+                <span>
+                  <%= ci_swift.confirm_at&.strftime("%d %b %Y") ||
+                  ci_swift.created_at&.strftime("%d %b %Y") %>
+                </span>
+
+              </div>
+
+
+              <div class="project-ci-card__receipt-amounts">
+
+                <div>
+                  <span>
+                    <i class="fa-solid fa-arrow-down"></i>
+                    Customer sent
+                  </span>
+
+                  <strong>
+                    <%= number_with_delimiter(ci_swift.amount) %>
+                    <small><%= ci_swift.currency.to_s.upcase %></small>
+                  </strong>
+                </div>
+
+
+                <div>
+                  <span>
+                    <i class="fa-solid fa-building-columns"></i>
+                    Bank credited
+                  </span>
+
+                  <strong>
+                    <%= number_with_delimiter(ci_swift.deposited_amount) %>
+                    <small>
+                      <%= ci_swift.bank&.currency.to_s.upcase.presence || "—" %>
+                    </small>
+                  </strong>
+                </div>
+
+              </div>
+
+
+              <div class="project-ci-card__receipt-footer">
 
                 <span>
                   <i class="fa-solid fa-building-columns"></i>
-                  Bank credited
+                  <%= ci_swift.bank&.name || "Bank not specified" %>
                 </span>
 
-                <strong>
-                  <%= number_with_delimiter(ci_swift.deposited_amount) %>
-
-                  <small>
-                    <%= ci_swift.bank&.currency.to_s.upcase.presence || "—" %>
-                  </small>
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            <div class="project-ci-card__receipt-footer">
-
-              <span>
-                <i class="fa-solid fa-building-columns"></i>
-                <%= ci_swift.bank&.name || "Bank not specified" %>
-              </span>
-
-              <% if ci_swift.documents.attached? %>
-
+                <% if ci_swift.documents.attached? %>
                 <span>
                   <i class="fa-solid fa-paperclip"></i>
                   <%= ci_swift.documents.size %> document(s)
                 </span>
+                <% end %>
 
-              <% end %>
-
-            </div>
+              </div>
 
 
-            <% if ci_swift.note.present? %>
-
+              <% if ci_swift.note.present? %>
               <div class="project-ci-card__receipt-note">
                 <%= ci_swift.note %>
               </div>
+              <% end %>
 
-            <% end %>
 
-
-            <% if ci_swift.documents.attached? %>
+              <% if ci_swift.documents.attached? %>
 
               <div class="project-ci-card__receipt-documents">
 
                 <% ci_swift.documents.each_with_index do |document, index| %>
 
-                  <%= link_to rails_blob_path(
-                        document,
-                        disposition: "attachment"
-                      ),
-                    target: "_blank",
-                    rel: "noopener" do %>
+                <%= link_to rails_blob_path(
+                  document,
+                  disposition: "attachment"
+                  ),
+                target: "_blank",
+                rel: "noopener" do %>
 
-                    <i class="fa-solid fa-paperclip"></i>
-                    Document <%= index + 1 %>
+                <i class="fa-solid fa-paperclip"></i>
+                Document <%= index + 1 %>
 
-                  <% end %>
+                <% end %>
 
                 <% end %>
 
               </div>
 
+              <% end %>
+
+            </div>
+
+            <% else %>
+
+            <div class="project-ci-card__receipt-empty">
+              <i class="fa-regular fa-file-lines"></i>
+              Awaiting balance receipt
+            </div>
+
             <% end %>
-
-          </div>
-
-        <% else %>
-
-          <div class="project-ci-card__receipt-empty">
-
-            <i class="fa-regular fa-file-lines"></i>
-
-            Awaiting balance receipt
-
-          </div>
-
-        <% end %>
 
 
         <!-- =================================================
              CI ACTIONS & EDITOR
              ================================================= -->
 
-        <% if can_manage %>
+             <% if can_manage %>
 
-          <details class="project-ci-card__editor"
-            <%= "open" if @editing_ci_id.to_i == ci.id || ci.errors.any? %>>
+             <details class="project-ci-card__editor"
+             <%= "open" if @editing_ci_id.to_i == ci.id || ci.errors.any? %>>
 
-            <summary>
+             <summary>
 
               <i class="fa-solid fa-pen-to-square"></i>
               Edit Commercial Invoice
@@ -360,197 +405,197 @@
             <div class="pt-3">
 
               <%= form_with model: [project, ci],
-                multipart: true,
-                data: { turbo: false },
-                class: "erp-form" do |form| %>
+              multipart: true,
+              data: { turbo: false },
+              class: "erp-form" do |form| %>
 
-                <%= render "shared/forms/errors", object: ci %>
-
-
-                <%= render "shared/forms/section_heading",
-                  title: "Invoice Details",
-                  description: "Invoice reference and issue information.",
-                  icon: "fa-file-invoice" %>
+              <%= render "shared/forms/errors", object: ci %>
 
 
-                <div class="row g-3 mb-4">
-
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :number,
-                      label: "CI Number",
-                      required: true %>
-                  </div>
+              <%= render "shared/forms/section_heading",
+              title: "Invoice Details",
+              description: "Invoice reference and issue information.",
+              icon: "fa-file-invoice" %>
 
 
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :issue_date,
-                      label: "Issue Date",
-                      type: :date_field,
-                      required: true %>
-                  </div>
+              <div class="row g-3 mb-4">
 
-
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :validity,
-                      label: "Validity",
-                      type: :number_field %>
-                  </div>
-
+                <div class="col-md-4">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :number,
+                  label: "CI Number",
+                  required: true %>
                 </div>
 
 
-                <div class="erp-form__divider"></div>
-
-
-                <%= render "shared/forms/section_heading",
-                  title: "Cargo & Weight",
-                  description: "Net and gross invoice weight.",
-                  icon: "fa-weight-hanging" %>
-
-
-                <div class="row g-3 mb-4">
-
-                  <div class="col-md-6">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :net_weight,
-                      label: "Net Weight (MT)",
-                      type: :number_field,
-                      required: true,
-                      input_options: {
-                        min: 0,
-                        step: "0.0001"
-                      } %>
-                  </div>
-
-
-                  <div class="col-md-6">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :gross_weight,
-                      label: "Gross Weight (MT)",
-                      type: :number_field,
-                      required: true,
-                      input_options: {
-                        min: 0,
-                        step: "0.0001"
-                      } %>
-                  </div>
-
+                <div class="col-md-4">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :issue_date,
+                  label: "Issue Date",
+                  type: :date_field,
+                  required: true %>
                 </div>
 
 
-                <div class="erp-form__divider"></div>
+                <div class="col-md-4">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :validity,
+                  label: "Validity",
+                  type: :number_field %>
+                </div>
+
+              </div>
 
 
-                <%= render "shared/forms/section_heading",
-                  title: "Payment",
-                  description: "Advance and balance invoice amounts.",
-                  icon: "fa-wallet" %>
+              <div class="erp-form__divider"></div>
 
 
-                <div class="row g-3 mb-4">
-
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :advance_payment,
-                      label: "Advance Payment",
-                      type: :number_field,
-                      required: true,
-                      input_options: {
-                        min: 0,
-                        step: "any"
-                      } %>
-                  </div>
+              <%= render "shared/forms/section_heading",
+              title: "Cargo & Weight",
+              description: "Net and gross invoice weight.",
+              icon: "fa-weight-hanging" %>
 
 
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :balance_payment,
-                      label: "Balance Payment",
-                      type: :number_field,
-                      required: true,
-                      input_options: {
-                        min: 0,
-                        step: "any"
-                      } %>
-                  </div>
+              <div class="row g-3 mb-4">
 
-
-                  <div class="col-md-4">
-                    <%= render "shared/forms/field",
-                      form: form,
-                      attribute: :total_price,
-                      label: "Total Price",
-                      type: :number_field,
-                      required: true,
-                      input_options: {
-                        min: 0,
-                        step: "any"
-                      } %>
-                  </div>
-
-
-                  <div class="col-md-6">
-
-                    <%= form.label :account_id,
-                      "Bank Account",
-                      class: "form-label" %>
-
-                    <%= form.collection_select :account_id,
-                      Account.includes(:bank).order(:id),
-                      :id,
-                      :display_name_with_bank,
-                      { include_blank: "Select account" },
-                      { class: "form-select" } %>
-
-                  </div>
-
+                <div class="col-md-6">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :net_weight,
+                  label: "Net Weight (MT)",
+                  type: :number_field,
+                  required: true,
+                  input_options: {
+                    min: 0,
+                    step: "0.0001"
+                  } %>
                 </div>
 
 
-                <div class="erp-form__divider"></div>
+                <div class="col-md-6">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :gross_weight,
+                  label: "Gross Weight (MT)",
+                  type: :number_field,
+                  required: true,
+                  input_options: {
+                    min: 0,
+                    step: "0.0001"
+                  } %>
+                </div>
+
+              </div>
 
 
-                <%= render "shared/forms/section_heading",
-                  title: "Invoice Document",
-                  description: "Attach or replace the commercial invoice.",
-                  icon: "fa-paperclip" %>
+              <div class="erp-form__divider"></div>
 
 
-                <div class="mb-4">
+              <%= render "shared/forms/section_heading",
+              title: "Payment",
+              description: "Advance and balance invoice amounts.",
+              icon: "fa-wallet" %>
 
-                  <%= form.label :document,
-                    "CI Document",
-                    class: "form-label" %>
 
-                  <%= form.file_field :document,
-                    class: "form-control",
-                    accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png" %>
+              <div class="row g-3 mb-4">
+
+                <div class="col-md-4">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :advance_payment,
+                  label: "Advance Payment",
+                  type: :number_field,
+                  required: true,
+                  input_options: {
+                    min: 0,
+                    step: "any"
+                  } %>
+                </div>
+
+
+                <div class="col-md-4">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :balance_payment,
+                  label: "Balance Payment",
+                  type: :number_field,
+                  required: true,
+                  input_options: {
+                    min: 0,
+                    step: "any"
+                  } %>
+                </div>
+
+
+                <div class="col-md-4">
+                  <%= render "shared/forms/field",
+                  form: form,
+                  attribute: :total_price,
+                  label: "Total Price",
+                  type: :number_field,
+                  required: true,
+                  input_options: {
+                    min: 0,
+                    step: "any"
+                  } %>
+                </div>
+
+
+                <div class="col-md-6">
+
+                  <%= form.label :account_id,
+                  "Bank Account",
+                  class: "form-label" %>
+
+                  <%= form.collection_select :account_id,
+                  Account.includes(:bank).order(:id),
+                  :id,
+                  :display_name_with_bank,
+                  { include_blank: "Select account" },
+                  { class: "form-select" } %>
+
+                </div>
+
+              </div>
+
+
+              <div class="erp-form__divider"></div>
+
+
+              <%= render "shared/forms/section_heading",
+              title: "Invoice Document",
+              description: "Attach or replace the commercial invoice.",
+              icon: "fa-paperclip" %>
+
+
+              <div class="mb-4">
+
+                <%= form.label :document,
+                "CI Document",
+                class: "form-label" %>
+
+                <%= form.file_field :document,
+                class: "form-control",
+                  accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png" %>
 
                   <% if ci.document.attached? %>
 
-                    <small class="d-block mt-2 text-body-secondary">
+                  <small class="d-block mt-2 text-body-secondary">
 
-                      Current document:
+                    Current document:
 
-                      <%= link_to ci.document.filename,
-                        rails_blob_path(
-                          ci.document,
-                          disposition: "attachment"
-                        ),
-                        target: "_blank",
-                        rel: "noopener" %>
+                    <%= link_to ci.document.filename,
+                    rails_blob_path(
+                      ci.document,
+                      disposition: "attachment"
+                      ),
+                    target: "_blank",
+                    rel: "noopener" %>
 
-                    </small>
+                  </small>
 
                   <% end %>
 
@@ -566,35 +611,35 @@
 
                     <% if ci.swift.present? %>
 
-                      <span class="small text-success align-self-center">
-                        <i class="fa-solid fa-circle-check me-1"></i>
-                        Receipt already attached
-                      </span>
+                    <span class="small text-success align-self-center">
+                      <i class="fa-solid fa-circle-check me-1"></i>
+                      Receipt already attached
+                    </span>
 
                     <% else %>
 
-                      <%= link_to new_ci_swift_path(ci),
-                        data: { controller: "bs-modal-form" },
-                        class: "btn btn-light border btn-sm" do %>
+                    <%= link_to new_ci_swift_path(ci),
+                    data: { controller: "bs-modal-form" },
+                    class: "btn btn-light border btn-sm" do %>
 
-                        <i class="fa-solid fa-money-bill-transfer me-1"></i>
-                        Add Balance Swift
+                    <i class="fa-solid fa-money-bill-transfer me-1"></i>
+                    Add Balance Swift
 
-                      <% end %>
+                    <% end %>
 
                     <% end %>
 
 
                     <%= link_to toggle_sent_ci_path(ci),
-                      data: {
-                        turbo_method: :patch,
-                        turbo_confirm: "Change CI sent status?"
-                      },
-                      class: "btn btn-light border btn-sm" do %>
+                    data: {
+                      turbo_method: :patch,
+                      turbo_confirm: "Change CI sent status?"
+                    },
+                    class: "btn btn-light border btn-sm" do %>
 
-                      <i class="fa-solid fa-paper-plane me-1"></i>
+                    <i class="fa-solid fa-paper-plane me-1"></i>
 
-                      <%= ci.sent? ? "Mark Not Sent" : "Mark Sent" %>
+                    <%= ci.sent? ? "Mark Not Sent" : "Mark Sent" %>
 
                     <% end %>
 
@@ -602,37 +647,37 @@
 
 
                   <%= form.submit "Save CI",
-                    class: "btn btn-primary project-editor__save" %>
+                  class: "btn btn-primary project-editor__save" %>
 
                 </div>
 
-              <% end %>
+                <% end %>
 
-            </div>
+              </div>
 
-          </details>
+            </details>
 
-        <% end %>
+            <% end %>
 
-      </div>
+          </div>
 
-    <% end %>
+          <% end %>
 
 
     <!-- =====================================================
          CREATE NEW CI
          ===================================================== -->
 
-    <% if project.pi.present? && can_manage %>
+         <% if project.pi.present? && can_manage %>
 
-      <details
-        id="project-ci-create"
-        class="project-editor project-ci-create"
-        data-project-workspace-target="ciCreate"
-        <%= "open" if new_ci.errors.any? || (!new_ci.persisted? && @new_ci.present?) %>>
+         <details
+         id="project-ci-create"
+         class="project-editor project-ci-create"
+         data-project-workspace-target="ciCreate"
+         <%= "open" if new_ci.errors.any? || (!new_ci.persisted? && @new_ci.present?) %>>
 
 
-        <summary class="project-ci-create__summary">
+         <summary class="project-ci-create__summary">
 
           <i class="fa-solid fa-plus"></i>
           Create Commercial Invoice
@@ -657,171 +702,171 @@
 
 
           <%= form_with model: [project, new_ci],
-            multipart: true,
-            data: { turbo: false },
-            class: "erp-form" do |form| %>
+          multipart: true,
+          data: { turbo: false },
+          class: "erp-form" do |form| %>
 
-            <%= render "shared/forms/errors", object: new_ci %>
-
-
-            <%= render "shared/forms/section_heading",
-              title: "Invoice Details",
-              description: "Invoice reference and issue information.",
-              icon: "fa-file-invoice" %>
+          <%= render "shared/forms/errors", object: new_ci %>
 
 
-            <div class="row g-3 mb-4">
-
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :number,
-                  label: "CI Number",
-                  required: true %>
-              </div>
+          <%= render "shared/forms/section_heading",
+          title: "Invoice Details",
+          description: "Invoice reference and issue information.",
+          icon: "fa-file-invoice" %>
 
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :issue_date,
-                  label: "Issue Date",
-                  type: :date_field,
-                  required: true %>
-              </div>
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :number,
+              label: "CI Number",
+              required: true %>
+            </div>
 
 
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :validity,
-                  label: "Validity",
-                  type: :number_field %>
-              </div>
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :issue_date,
+              label: "Issue Date",
+              type: :date_field,
+              required: true %>
+            </div>
+
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :validity,
+              label: "Validity",
+              type: :number_field %>
+            </div>
+
+          </div>
+
+
+          <div class="erp-form__divider"></div>
+
+
+          <%= render "shared/forms/section_heading",
+          title: "Cargo & Weight",
+          description: "Net and gross invoice weight.",
+          icon: "fa-weight-hanging" %>
+
+
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-6">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :net_weight,
+              label: "Net Weight (MT)",
+              type: :number_field,
+              required: true,
+              input_options: {
+                min: 0,
+                step: "0.0001"
+              } %>
+            </div>
+
+
+            <div class="col-md-6">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :gross_weight,
+              label: "Gross Weight (MT)",
+              type: :number_field,
+              required: true,
+              input_options: {
+                min: 0,
+                step: "0.0001"
+              } %>
+            </div>
+
+          </div>
+
+
+          <div class="erp-form__divider"></div>
+
+
+          <%= render "shared/forms/section_heading",
+          title: "Payment",
+          description: "Advance and balance invoice amounts.",
+          icon: "fa-wallet" %>
+
+
+          <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :advance_payment,
+              label: "Advance Payment",
+              type: :number_field,
+              required: true,
+              input_options: {
+                min: 0,
+                step: "any"
+              } %>
+            </div>
+
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :balance_payment,
+              label: "Balance Payment",
+              type: :number_field,
+              required: true,
+              input_options: {
+                min: 0,
+                step: "any"
+              } %>
+            </div>
+
+
+            <div class="col-md-4">
+              <%= render "shared/forms/field",
+              form: form,
+              attribute: :total_price,
+              label: "Total Price",
+              type: :number_field,
+              required: true,
+              input_options: {
+                min: 0,
+                step: "any"
+              } %>
+            </div>
+
+
+            <div class="col-md-6">
+
+              <%= form.label :account_id,
+              "Bank Account",
+              class: "form-label" %>
+
+              <%= form.collection_select :account_id,
+              Account.includes(:bank).order(:id),
+              :id,
+              :display_name_with_bank,
+              { include_blank: "Select account" },
+              { class: "form-select" } %>
 
             </div>
 
 
-            <div class="erp-form__divider"></div>
+            <div class="col-md-6">
 
+              <%= form.label :document,
+              "Invoice Document",
+              class: "form-label" %>
 
-            <%= render "shared/forms/section_heading",
-              title: "Cargo & Weight",
-              description: "Net and gross invoice weight.",
-              icon: "fa-weight-hanging" %>
-
-
-            <div class="row g-3 mb-4">
-
-              <div class="col-md-6">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :net_weight,
-                  label: "Net Weight (MT)",
-                  type: :number_field,
-                  required: true,
-                  input_options: {
-                    min: 0,
-                    step: "0.0001"
-                  } %>
-              </div>
-
-
-              <div class="col-md-6">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :gross_weight,
-                  label: "Gross Weight (MT)",
-                  type: :number_field,
-                  required: true,
-                  input_options: {
-                    min: 0,
-                    step: "0.0001"
-                  } %>
-              </div>
-
-            </div>
-
-
-            <div class="erp-form__divider"></div>
-
-
-            <%= render "shared/forms/section_heading",
-              title: "Payment",
-              description: "Advance and balance invoice amounts.",
-              icon: "fa-wallet" %>
-
-
-            <div class="row g-3 mb-4">
-
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :advance_payment,
-                  label: "Advance Payment",
-                  type: :number_field,
-                  required: true,
-                  input_options: {
-                    min: 0,
-                    step: "any"
-                  } %>
-              </div>
-
-
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :balance_payment,
-                  label: "Balance Payment",
-                  type: :number_field,
-                  required: true,
-                  input_options: {
-                    min: 0,
-                    step: "any"
-                  } %>
-              </div>
-
-
-              <div class="col-md-4">
-                <%= render "shared/forms/field",
-                  form: form,
-                  attribute: :total_price,
-                  label: "Total Price",
-                  type: :number_field,
-                  required: true,
-                  input_options: {
-                    min: 0,
-                    step: "any"
-                  } %>
-              </div>
-
-
-              <div class="col-md-6">
-
-                <%= form.label :account_id,
-                  "Bank Account",
-                  class: "form-label" %>
-
-                <%= form.collection_select :account_id,
-                  Account.includes(:bank).order(:id),
-                  :id,
-                  :display_name_with_bank,
-                  { include_blank: "Select account" },
-                  { class: "form-select" } %>
-
-              </div>
-
-
-              <div class="col-md-6">
-
-                <%= form.label :document,
-                  "Invoice Document",
-                  class: "form-label" %>
-
-                <%= form.file_field :document,
-                  class: "form-control",
-                  required: true,
-                  accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png" %>
+              <%= form.file_field :document,
+              class: "form-control",
+                required: true,
+                accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png" %>
 
               </div>
 
@@ -831,29 +876,29 @@
             <div class="d-flex justify-content-end">
 
               <%= form.submit "Create CI",
-                class: "btn btn-primary project-editor__save" %>
+              class: "btn btn-primary project-editor__save" %>
 
             </div>
 
-          <% end %>
+            <% end %>
+
+          </div>
+
+        </details>
+
+
+        <% elsif project.pi.blank? %>
+
+        <div class="project-ci-create__notice">
+
+          <i class="fa-solid fa-circle-info"></i>
+
+          Create a Proforma Invoice before adding Commercial Invoices.
 
         </div>
 
-      </details>
-
-
-    <% elsif project.pi.blank? %>
-
-      <div class="project-ci-create__notice">
-
-        <i class="fa-solid fa-circle-info"></i>
-
-        Create a Proforma Invoice before adding Commercial Invoices.
+        <% end %>
 
       </div>
 
-    <% end %>
-
-  </div>
-
-</div>
+    </div>
