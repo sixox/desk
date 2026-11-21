@@ -235,16 +235,18 @@ class CardexController < ApplicationController
     # A CI without an associated Swift.
     # ------------------------------------------
 
-    unpaid_ci_project_ids = Ci
-      .left_outer_joins(:swift)
-      .where(
-        project_id: project_ids,
-        swifts: { id: nil }
-      )
-      .distinct
-      .pluck(:project_id)
+   unpaid_ci_project_ids = Ci
+    .left_outer_joins(:swift)
+    .where(project_id: project_ids)
+    .where(
+      "swifts.id IS NULL
+       OR COALESCE(swifts.confirmed, 0) = 0
+       OR COALESCE(swifts.rejected, 0) = 1"
+    )
+    .distinct
+    .pluck(:project_id)
 
-    @cardex_unpaid_ci_count = unpaid_ci_project_ids.size
+  @cardex_unpaid_ci_count = unpaid_ci_project_ids.size
 
     # ------------------------------------------
     # PROJECT / BOOKING / INVENTORY RELATIONSHIPS
@@ -414,7 +416,9 @@ class CardexController < ApplicationController
       .includes(
         { pi: :customer },
         { cis: :swift },
-        :bookings
+        { bookings: :payment_orders },
+        :swifts,
+        :payment_orders
       )
       .order(updated_at: :desc)
       .to_a
@@ -422,7 +426,8 @@ class CardexController < ApplicationController
     rows = projects.map do |project|
 
       pending_cis = project.cis.count do |ci|
-        ci.swift.nil?
+        ci.swift&.confirmed != true ||
+          ci.swift&.rejected == true
       end
 
       pending_bookings = project.bookings.count do |booking|
@@ -464,6 +469,6 @@ class CardexController < ApplicationController
     end
 
     @cardex_project_rows_total = rows.size
-    @cardex_project_rows = rows.first(10)
+    @cardex_project_rows = rows.first(6)
   end
 end

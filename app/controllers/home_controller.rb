@@ -344,9 +344,13 @@ load_project_dashboard
     # CI without an associated Swift.
     # ------------------------------------------
 
-    unpaid_ci_scope = Ci
-      .left_outer_joins(:swift)
-      .where(swifts: { id: nil })
+   unpaid_ci_scope = Ci
+    .left_outer_joins(:swift)
+    .where(
+      "swifts.id IS NULL
+       OR COALESCE(swifts.confirmed, 0) = 0
+       OR COALESCE(swifts.rejected, 0) = 1"
+    )
 
     # ------------------------------------------
     # DASHBOARD SUMMARY
@@ -385,36 +389,18 @@ load_project_dashboard
     @dashboard_recent_projects = Project
       .includes(
         { pi: :customer },
-        :bookings,
-        { cis: :swift }
+        { cis: :swift },
+        { bookings: :payment_orders },
+        :swifts,
+        :payment_orders
       )
       .order(updated_at: :desc)
-      .limit(8)
+      .limit(3)
       .to_a
 
-    recent_project_ids = @dashboard_recent_projects.map(&:id)
+    
 
-    if recent_project_ids.any?
-
-      @dashboard_recent_unpaid_ci_counts = unpaid_ci_scope
-        .where(project_id: recent_project_ids)
-        .group(:project_id)
-        .count
-
-      @dashboard_recent_pending_booking_counts = Booking
-        .where(
-          project_id: recent_project_ids,
-          payment_done: [nil, false]
-        )
-        .group(:project_id)
-        .count
-
-    else
-
-      @dashboard_recent_unpaid_ci_counts = {}
-      @dashboard_recent_pending_booking_counts = {}
-
-    end
+    
   end
 
 end

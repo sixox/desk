@@ -770,3 +770,377 @@
   }
 
 }
+
+/* =========================================================
+   TRADING OVERVIEW — DASHBOARD
+   ========================================================= */
+
+.project-trading-overview {
+  margin-bottom: 24px;
+}
+
+.project-trading-overview__header,
+.cardex-project-operations__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 15px;
+}
+
+.project-trading-overview__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.project-trading-overview__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  border: 1px solid #dfe4fb;
+  border-radius: 13px;
+  background: #f0f2ff;
+  color: #5664c7;
+  font-size: 17px;
+}
+
+.project-trading-overview__title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.project-trading-overview__title-line h2,
+.project-trading-overview__identity h2 {
+  margin: 0;
+  color: #293244;
+  font-size: 16px;
+  font-weight: 850;
+  letter-spacing: -.025em;
+}
+
+.project-trading-overview__identity p {
+  margin: 4px 0 0;
+  color: #929baa;
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.project-trading-overview__total {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid #e6e9f1;
+  border-radius: 20px;
+  background: #fff;
+  color: #818b9c;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.project-trading-overview__actions,
+.cardex-project-operations__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.project-trading-overview__actions .m-btn,
+.cardex-project-operations__actions .m-btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.project-trading-overview__stats {
+  margin-bottom: 19px;
+}
+
+.project-trading-overview__stats .stat-card {
+  min-height: 112px;
+  padding: 12px 13px;
+  border-radius: 12px;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+
+.project-trading-overview__stats .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px rgba(35, 45, 75, .07);
+}
+
+.project-trading-overview__stats .stat-card__label {
+  font-size: 9px;
+}
+
+.project-trading-overview__stats .stat-card__value {
+  margin-top: 7px;
+  font-size: 23px;
+  line-height: 1.1;
+}
+
+.project-trading-overview__stats .stat-card__delta {
+  margin-top: 5px;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.project-trading-overview__recent-header,
+.cardex-project-operations__list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 1px 11px;
+}
+
+.project-trading-overview__recent-header h3,
+.cardex-project-operations__list-header h3 {
+  margin: 0;
+  color: #374154;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.project-trading-overview__recent-header p,
+.cardex-project-operations__list-header p {
+  margin: 3px 0 0;
+  color: #9aa2af;
+  font-size: 9px;
+}
+
+.project-trading-overview__recent-header > span,
+.cardex-project-operations__list-header > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid #e8ebf1;
+  border-radius: 20px;
+  background: #fff;
+  color: #858e9d;
+  font-size: 8px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.project-trading-overview__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  padding: 26px 18px;
+  border: 1px dashed #dce2eb;
+  border-radius: 13px;
+  background: #fbfcfe;
+  color: #98a2b1;
+}
+
+.project-trading-overview__empty > i {
+  font-size: 22px;
+  color: #8794bd;
+}
+
+.project-trading-overview__empty strong,
+.project-trading-overview__empty span {
+  display: block;
+}
+
+.project-trading-overview__empty strong {
+  color: #576276;
+  font-size: 11px;
+}
+
+.project-trading-overview__empty span {
+  margin-top: 3px;
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   CARDEX PROJECT OPERATIONS
+   ========================================================= */
+
+.cardex-project-operations {
+  margin-bottom: 24px;
+}
+
+.cardex-project-operations__stats {
+  margin-bottom: 18px;
+}
+
+.cardex-project-operations__stats .stat-card {
+  min-height: 108px;
+  padding: 12px 13px;
+  border-radius: 12px;
+}
+
+.cardex-project-operations__stats .stat-card__label {
+  font-size: 9px;
+}
+
+.cardex-project-operations__stats .stat-card__value {
+  margin-top: 7px;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.cardex-project-operations__stats .stat-card__delta {
+  margin-top: 5px;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.cardex-project-operations .project-directory__card {
+  min-height: 350px;
+  padding: 16px;
+}
+
+.cardex-project-operations__footer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 13px;
+  padding-top: 10px;
+  border-top: 1px solid #edf0f4;
+  color: #9aa2af;
+  font-size: 8px;
+}
+
+.cardex-project-operations__footer i {
+  color: #8794bd;
+}
+
+
+/* =========================================================
+   PROJECT CARD — CARDEX ATTENTION
+   ========================================================= */
+
+.project-directory__attention {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(130, 140, 165, .13);
+}
+
+.project-directory__attention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 5px 7px;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.project-directory__attention-chip i {
+  font-size: 8px;
+}
+
+.project-directory__attention-chip--logistics {
+  background: #fff5e6;
+  color: #a66c12;
+}
+
+.project-directory__attention-chip--payment {
+  background: #eef4ff;
+  color: #4d70b5;
+}
+
+.project-directory__attention-chip--invoice {
+  background: #fff0ed;
+  color: #b65342;
+}
+
+.project-directory__attention-chip--shared {
+  border: 1px solid #e5e8ee;
+  background: #fff;
+  color: #8791a0;
+}
+
+.project-directory__attention-chip--recent {
+  background: #f0f6f2;
+  color: #54846b;
+}
+
+.project-directory__card-footer--cardex {
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.project-directory__updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #9aa2af;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.project-directory__open-link--secondary {
+  color: #768296;
+}
+
+.project-directory__open-link--secondary:hover {
+  color: var(--project-accent);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+  .project-trading-overview__header,
+  .cardex-project-operations__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .project-trading-overview__actions,
+  .cardex-project-operations__actions {
+    width: 100%;
+  }
+
+  .project-trading-overview__actions .m-btn,
+  .cardex-project-operations__actions .m-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .project-trading-overview__stats .stat-card,
+  .cardex-project-operations__stats .stat-card {
+    min-height: 100px;
+    padding: 10px;
+  }
+
+  .project-trading-overview__stats .stat-card__value,
+  .cardex-project-operations__stats .stat-card__value {
+    font-size: 19px;
+  }
+
+  .project-trading-overview__recent-header,
+  .cardex-project-operations__list-header {
+    align-items: flex-start;
+  }
+
+  .cardex-project-operations .project-directory__card {
+    min-height: 0;
+  }
+}

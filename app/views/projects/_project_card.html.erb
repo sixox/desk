@@ -1,4 +1,3 @@
-
 <%
   pi = project.pi
   customer = pi&.customer
@@ -6,14 +5,11 @@
   cis = project.cis.to_a
   bookings = project.bookings.to_a
 
-  # All distinct SWIFTs directly connected to the project
-  # or indirectly connected through its CIs.
   project_swifts = (
     project.swifts.to_a +
     cis.filter_map(&:swift)
   ).uniq(&:id)
 
-  # Direct project Payment Orders plus booking-linked orders.
   project_payment_orders = (
     project.payment_orders.to_a +
     bookings.flat_map { |booking| booking.payment_orders.to_a }
@@ -41,11 +37,15 @@
   end
 
   tone = project.id.to_i % 5
+
+  attention = local_assigns[:attention]
+  cardex = local_assigns[:cardex] == true
 %>
 
 <article class="project-directory__card project-directory__card--tone-<%= tone %>">
 
   <!-- HEADER -->
+
   <div class="project-directory__card-header">
 
     <div class="project-directory__project-identity">
@@ -73,27 +73,34 @@
 
     </div>
 
+
     <%= link_to project_path(project),
       class: "project-directory__open-icon",
       title: "Open project",
       aria: { label: "Open project" } do %>
+
       <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
     <% end %>
 
   </div>
 
 
   <!-- PRODUCT -->
+
   <div class="project-directory__product">
 
     <% if pi.present? %>
 
       <div class="project-directory__product-name"
         title="<%= pi.product %>">
+
         <%= pi.product.presence || "Product not specified" %>
+
       </div>
 
       <div class="project-directory__quantity">
+
         <i class="fa-solid fa-boxes-stacked"></i>
 
         <strong>
@@ -105,6 +112,7 @@
         </strong>
 
         <span>MT</span>
+
       </div>
 
     <% else %>
@@ -123,6 +131,7 @@
 
 
   <!-- DESTINATION -->
+
   <div class="project-directory__route">
 
     <div class="project-directory__route-item">
@@ -148,7 +157,8 @@
   </div>
 
 
-  <!-- COMMERCIAL / CI SUMMARY -->
+  <!-- CI SUMMARY -->
+
   <div class="project-directory__ci">
 
     <div class="project-directory__ci-main">
@@ -175,16 +185,25 @@
 
     </div>
 
+
     <span class="project-directory__ci-status <%= ci_status_class %>">
 
       <% if ci_status_class == "is-paid" %>
+
         <i class="fa-solid fa-circle-check"></i>
+
       <% elsif ci_status_class == "is-partial" %>
+
         <i class="fa-solid fa-circle-half-stroke"></i>
+
       <% elsif ci_status_class == "is-unpaid" %>
+
         <i class="fa-solid fa-clock"></i>
+
       <% else %>
+
         <i class="fa-regular fa-circle"></i>
+
       <% end %>
 
       <%= ci_status %>
@@ -198,7 +217,8 @@
   </div>
 
 
-  <!-- COUNTS -->
+  <!-- SWIFT / PAYMENT ORDER COUNTS -->
+
   <div class="project-directory__metrics">
 
     <div class="project-directory__metric">
@@ -232,16 +252,21 @@
 
 
   <!-- WORKFLOW STATUS -->
+
   <div class="project-directory__statuses">
 
     <span class="project-directory__status <%= project.sales_done? ? 'is-done' : 'is-open' %>">
 
       <% if project.sales_done? %>
+
         <i class="fa-solid fa-circle-check"></i>
         Sales done
+
       <% else %>
+
         <i class="fa-solid fa-clock"></i>
         Sales open
+
       <% end %>
 
     </span>
@@ -250,11 +275,15 @@
     <span class="project-directory__status <%= project.logistics_done? ? 'is-done' : 'is-open' %>">
 
       <% if project.logistics_done? %>
+
         <i class="fa-solid fa-circle-check"></i>
         Logistics done
+
       <% else %>
+
         <i class="fa-solid fa-clock"></i>
         Logistics open
+
       <% end %>
 
     </span>
@@ -262,13 +291,127 @@
   </div>
 
 
+  <!-- CARDEX ATTENTION ITEMS -->
+
+  <% if cardex && attention.present? %>
+
+    <% show_attention =
+      attention[:pending_logistics] ||
+      attention[:pending_payment_count].to_i.positive? ||
+      attention[:unpaid_ci_count].to_i.positive? %>
+
+    <% if show_attention %>
+
+      <div class="project-directory__attention">
+
+        <% if attention[:pending_logistics] %>
+
+          <span class="project-directory__attention-chip project-directory__attention-chip--logistics">
+
+            <i class="fa-solid fa-truck-fast"></i>
+
+            <% if attention[:pending_booking_count].to_i.positive? %>
+              <%= attention[:pending_booking_count] %> bookings
+            <% else %>
+              Logistics open
+            <% end %>
+
+          </span>
+
+        <% end %>
+
+
+        <% if attention[:pending_payment_count].to_i.positive? %>
+
+          <span class="project-directory__attention-chip project-directory__attention-chip--payment">
+
+            <i class="fa-solid fa-money-bill-transfer"></i>
+
+            PO · <%= attention[:pending_payment_count] %>
+
+          </span>
+
+          <% if attention[:shared_payment_count].to_i.positive? %>
+
+            <span class="project-directory__attention-chip project-directory__attention-chip--shared">
+
+              <%= attention[:shared_payment_count] %> shared
+
+            </span>
+
+          <% end %>
+
+        <% end %>
+
+
+        <% if attention[:unpaid_ci_count].to_i.positive? %>
+
+          <span class="project-directory__attention-chip project-directory__attention-chip--invoice">
+
+            <i class="fa-solid fa-file-invoice"></i>
+
+            CI · <%= attention[:unpaid_ci_count] %>
+
+          </span>
+
+        <% end %>
+
+      </div>
+
+    <% elsif attention[:recently_updated] %>
+
+      <div class="project-directory__attention">
+
+        <span class="project-directory__attention-chip project-directory__attention-chip--recent">
+
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          Recently updated
+
+        </span>
+
+      </div>
+
+    <% end %>
+
+  <% end %>
+
+
   <!-- FOOTER -->
-  <div class="project-directory__card-footer">
+
+  <div class="project-directory__card-footer <%= 'project-directory__card-footer--cardex' if cardex %>">
+
+    <% if cardex %>
+
+      <span class="project-directory__updated">
+
+        <i class="fa-regular fa-clock"></i>
+
+        <%= time_ago_in_words(project.updated_at) %> ago
+
+      </span>
+
+
+      <% if bookings.any? %>
+
+        <%= link_to project_bookings_path(project),
+          class: "project-directory__open-link project-directory__open-link--secondary" do %>
+
+          Bookings
+          <i class="fa-solid fa-truck"></i>
+
+        <% end %>
+
+      <% end %>
+
+    <% end %>
+
 
     <%= link_to project_path(project),
       class: "project-directory__open-link" do %>
+
       Open project
       <i class="fa-solid fa-arrow-right"></i>
+
     <% end %>
 
   </div>
