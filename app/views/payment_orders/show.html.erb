@@ -1,162 +1,628 @@
+<%
+  can_view_payment_order =
+    !@payment_order.mahramane ||
+    @payment_order.user == current_user ||
+    @access_to_secret
 
-<div class="col-lg-10 mx-auto mt-5">
- <% if !@payment_order.mahramane || @payment_order.user == current_user || @access_to_secret %>
+  designated_user_can_confirm =
+    user_signed_in? &&
+    [29, 47].include?(current_user.id) &&
+    !@payment_order.rejected_at &&
+    (
+      (@payment_order.coo_confirm && !@payment_order.accounting_confirm) ||
+      (
+        !@payment_order.department_confirm &&
+        current_user.role == @payment_order.user.role
+      )
+    )
 
+  manager_can_confirm =
+    user_signed_in? &&
+    current_user.is_manager &&
+    !@payment_order.rejected_at &&
+    (
+      (
+        current_user.ceo? &&
+        !@payment_order.ceo_confirm &&
+        @payment_order.coo_confirm &&
+        @payment_order.accounting_confirm &&
+        @payment_order.department_confirm
+      ) ||
+      (
+        current_user.accounting? &&
+        !@payment_order.accounting_confirm &&
+        @payment_order.coo_confirm
+      ) ||
+      (
+        current_user.procurement? &&
+        !@payment_order.coo_confirm &&
+        @payment_order.department_confirm
+      ) ||
+      (
+        !@payment_order.department_confirm &&
+        current_user.role == @payment_order.user.role
+      ) ||
+      (
+        current_user.cob? &&
+        !@payment_order.cob_confirm &&
+        @payment_order.coo_confirm &&
+        @payment_order.accounting_confirm &&
+        @payment_order.department_confirm
+      )
+    )
 
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<% if @payment_order.errors.any? %>
-				<div class="error-area" style="color:red;">
-					<h3><%= pluralize(@payment_order.errors.count, 'error') %> prohibited your payment_order from being saved.</h3>
-					<ul>
-						<% @payment_order.errors.each do |error|%>
-						<li>
-							<%= error.full_message%>
-						</li>
-						<% end %>
-					</ul>
-				</div>
-				<% end %>
-			</div>
+  can_hamed_confirm =
+    current_user.id == 15 &&
+    @payment_order.user&.id.in?([25, 30, 31]) &&
+    @payment_order.rejected_at.nil? &&
+    @payment_order.coo_confirm.blank? &&
+    @payment_order.hamed_confirm.blank?
 
-			<ul class="list-group" id="payment_order_items">
-
-
-				<%= render 'payment_orders/payment_order', payment_order: @payment_order %>
-
-				<li class="list-group-item mt-1 <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %> <%= @payment_order.mahramane.present? ? 'secret_payment_order' : '' %>" >
-					<div class="row">
-						<div class="col-lg">
-							<p>to: <span class="fw-bold"><%= @payment_order.to %></span></p>
-						</div>
-						<div class="col-lg">
-							<p>from: <span class="fw-bold"><%= @payment_order.bank ? @payment_order.bank.name : @payment_order.from %></span></p>
-						</div>
-						<div class="col-lg">
-							<p>receiver: <span class="fw-bold"><%= @payment_order.receiver %></span></p>
-						</div>
-						<div class="col-lg">
-							<p>receiver account: <span class="fw-bold"><%= @payment_order.receiver_account %></span></p>
-						</div>
-					</div>
-					<% if @payment_order.exchange_rate && @payment_order.exchange_amount  %>
-					<div class="row">
-						<div class="col-lg">
-							<p>exchange rate: <span class="fw-bold"><%= @payment_order.exchange_rate %></span></p>
-						</div>
-						<div class="col-lg">
-							<p>exchange amount: <span class="fw-bold"><%= @payment_order.exchange_amount %></span></p>
-						</div>
-					</div>
-					<% end %>
-					<% if @payment_order.document.attached? %>
-					<div class="row">
-						<div class="col">
-							<%= link_to 'View Document', url_for(@payment_order.document), target: '_blank' %>
-						</div>
-						<div class="col">
-							<p>have factor: <span class="fw-bold"> <%= @payment_order.have_factor ? 'yes' : 'no' %></span></p>
-						</div>
-					</div>
-					<% end %>
-					<% if @payment_order.receipt.attached? %>
-					<div class="col">
-						<%= link_to 'View receipt', url_for(@payment_order.receipt), target: '_blank' %>
-					</div>
-					
-
-					<% end %>
-
-
-					<% if user_signed_in? && [29, 47].include?(current_user.id) && !@payment_order.rejected_at %>
-
-					<% if (@payment_order.coo_confirm && !@payment_order.accounting_confirm ) || (!@payment_order.department_confirm && current_user.role == @payment_order.user.role ) %>
-
-						<div class="text-center mt-3">
-							
-
-							<%= link_to "Confirm", confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undone!' }, class: "btn btn-success text-center" %>
-							<%= link_to "Reject", reject_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this payment order, this action can not be undone!' }, class: "btn btn-danger text-center" %>
-							
-						</div>
-
-					<% end %>
-					<% end %>
+  can_mark_delivered =
+    user_signed_in? &&
+    @payment_order.status == "wait for delivery" &&
+    (
+      (current_user.is_manager && current_user.procurement?) ||
+      current_user == @payment_order.user
+    )
+%>
 
 
-					<% if user_signed_in? && current_user.is_manager && !@payment_order.rejected_at %>
-					<% if (current_user.ceo? && !@payment_order.ceo_confirm && @payment_order.coo_confirm && @payment_order.accounting_confirm && @payment_order.department_confirm) ||
-						(current_user.accounting? && !@payment_order.accounting_confirm && @payment_order.coo_confirm) ||
-						(current_user.procurement? && !@payment_order.coo_confirm) ||
-						(!@payment_order.department_confirm && current_user.role == @payment_order.user.role) || (current_user.cob? && !@payment_order.cob_confirm && @payment_order.coo_confirm && @payment_order.accounting_confirm && @payment_order.department_confirm) %>
-						<div class="text-center mt-3">
-							
+<% if can_view_payment_order %>
 
-							<%= link_to "Confirm", confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undone!' }, class: "btn btn-success text-center" %>
-							<%= link_to "Reject", reject_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this payment order, this action can not be undone!' }, class: "btn btn-danger text-center" %>
-							
-						</div>
+  <div class="po-show">
 
 
-						<% end %>
-						<% end %>
-						<!-- emran & gelare confirmation begin -->
-							<% if current_user.id == 15 && @payment_order.user.id.in?([25, 30, 31]) && @payment_order.rejected_at.nil? && @payment_order.coo_confirm.blank? && @payment_order.hamed_confirm.blank? %>
-							<%= link_to "Hamed confirm", hamed_confirm_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm payment order, this action can not be undone!' }, class: "btn btn-warning text-center" %>
-							<% end %>
-						<!-- emran &gelare confirmation end -->
-						<% if user_signed_in? && @payment_order.status == "wait for delivery"  %>
-						<% if (current_user.is_manager && current_user.procurement?) || current_user == @payment_order.user %>
-						<div class="text-center mt-3">
-							<%= link_to "Delivered", delivered_payment_order_path(@payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to change this payment order status to DELIVERED, this action can not be undone!' }, class: "btn btn-info text-center" %>
-						</div>
-						<% end %>
-						<% end %>
-					</li>
-					<% if (current_user.accounting? || current_user.admin?) && @payment_order.cob_confirm.present? && @payment_order.ceo_confirm.present? %>
+    <!-- HEADER -->
 
-					<li class=" <%= @payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %> list-group-item mt-1 <%= @payment_order.mahramane.present? ? 'secret_payment_order' : '' %>" >
-						<%= render 'payment_orders/accounting_form', payment_order: @payment_order %>
-					</li>
-					<% end %>
-				</ul>
-				
-			</div>
-		</div>
-		<div class="card mb-5">
-			<div class="card-body">
-				<div class="row">
-					<div class="col-lg-6">
-						<div class="d-flex justify-content-start">
-							<h5>Comments</h5>
-						</div>
-					</div>
-					<div class="col-lg-6">
-						<div class="d-flex justify-content-end">
-							<%= link_to new_payment_order_comment_path(@payment_order), data: { controller: "bs-modal-form", payment_order_id: @payment_order.id }, class: "btn btn-primary" do %>
-							Add Comment
-							<% end %>
-						</div>
-					</div>
-				</div>
-				
-				<ul class="list-group mt-1" id="comment_items">
-					<% if @payment_order.comments.present? %>
-					<% @payment_order.comments.reverse.each do |comment| %>
-					<%= render 'comments/comment', comment: comment %>
-					<% end %>
-					
-					<% else %>
-					<p>no comments</p>
-					<% end %>
-				</ul>
-			</div>
-		</div>
-	<% else %>
-	<h5>You don't have permission to see this Payment Order</h5>
-	<% end %>
+    <header class="po-show__header">
 
-	</div>
+      <div>
+
+        <div class="po-index__eyebrow">
+          ACCOUNTING / PAYMENT ORDERS
+        </div>
+
+        <h1>
+          Payment Order #<%= @payment_order.id %>
+        </h1>
+
+        <p>
+          Full payment request, beneficiary information and approval history
+        </p>
+
+      </div>
 
 
+      <%= link_to payment_orders_path,
+        class: "po-index__button po-index__button--secondary" do %>
+
+        <i class="fa-solid fa-arrow-left"></i>
+        All Payment Orders
+
+      <% end %>
+
+    </header>
+
+
+    <%= render "shared/forms/errors", object: @payment_order %>
+
+
+    <!-- PAYMENT SUMMARY -->
+
+    <section class="po-show__summary">
+
+      <ul class="po-show__summary-list">
+
+        <%= render "payment_orders/payment_order",
+          payment_order: @payment_order %>
+
+      </ul>
+
+    </section>
+
+
+    <!-- PAYMENT DETAILS -->
+
+    <section class="po-show__details">
+
+      <div class="po-show__section-heading">
+
+        <div class="po-show__section-icon">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i>
+        </div>
+
+        <div>
+          <h2>Payment Details</h2>
+          <p>Beneficiary, source and bank information</p>
+        </div>
+
+      </div>
+
+
+      <div class="po-show__detail-grid">
+
+        <% if @payment_order.to.present? %>
+
+          <div class="po-show__detail">
+            <span>Payment Destination</span>
+            <strong><%= @payment_order.to %></strong>
+          </div>
+
+        <% end %>
+
+
+        <% from_value =
+          @payment_order.bank&.name.presence ||
+          @payment_order.from.presence %>
+
+        <% if from_value.present? %>
+
+          <div class="po-show__detail">
+            <span>From</span>
+            <strong><%= from_value %></strong>
+          </div>
+
+        <% end %>
+
+
+        <% if @payment_order.receiver.present? %>
+
+          <div class="po-show__detail">
+            <span>Receiver</span>
+            <strong><%= @payment_order.receiver %></strong>
+          </div>
+
+        <% end %>
+
+
+        <% if @payment_order.receiver_account.present? %>
+
+          <div class="po-show__detail">
+            <span>Receiver Account</span>
+            <strong><%= @payment_order.receiver_account %></strong>
+          </div>
+
+        <% end %>
+
+
+        <% if @payment_order.exchange_rate.present? %>
+
+          <div class="po-show__detail">
+            <span>Exchange Rate</span>
+            <strong>
+              <%= number_with_delimiter(@payment_order.exchange_rate, delimiter: ",") %>
+            </strong>
+          </div>
+
+        <% end %>
+
+
+        <% if @payment_order.exchange_amount.present? %>
+
+          <div class="po-show__detail">
+            <span>Exchange Amount</span>
+            <strong>
+              <%= number_with_delimiter(@payment_order.exchange_amount, delimiter: ",") %>
+            </strong>
+          </div>
+
+        <% end %>
+
+
+        <div class="po-show__detail">
+          <span>Factor</span>
+          <strong>
+            <%= @payment_order.have_factor? ? "Yes" : "No" %>
+          </strong>
+        </div>
+
+
+        <% if @payment_order.inserted.present? %>
+
+          <div class="po-show__detail">
+            <span>Inserted</span>
+            <strong>Yes</strong>
+          </div>
+
+        <% end %>
+
+      </div>
+
+    </section>
+
+
+    <!-- RELATED RECORDS -->
+
+    <% if @payment_order.project.present? ||
+          @payment_order.booking.present? ||
+          @payment_order.ballance.present? ||
+          @payment_order.spi.present? ||
+          @payment_order.sci.present? %>
+
+      <section class="po-show__details">
+
+        <div class="po-show__section-heading">
+
+          <div class="po-show__section-icon is-blue">
+            <i class="fa-solid fa-link"></i>
+          </div>
+
+          <div>
+            <h2>Related Records</h2>
+            <p>Business records associated with this payment</p>
+          </div>
+
+        </div>
+
+
+        <div class="po-show__relations">
+
+          <% if @payment_order.project.present? %>
+
+            <%= link_to project_path(@payment_order.project),
+              class: "po-show__relation" do %>
+
+              <i class="fa-solid fa-folder-open"></i>
+
+              <span>
+                Project
+                <strong><%= @payment_order.project.number %></strong>
+              </span>
+
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if @payment_order.booking.present? %>
+
+            <%= link_to project_path(@payment_order.booking.project),
+              class: "po-show__relation" do %>
+
+              <i class="fa-solid fa-boxes-stacked"></i>
+
+              <span>
+                Booking
+                <strong><%= @payment_order.booking.number %></strong>
+              </span>
+
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if @payment_order.ballance.present? %>
+
+            <%= link_to ballance_path(@payment_order.ballance),
+              class: "po-show__relation" do %>
+
+              <i class="fa-solid fa-warehouse"></i>
+
+              <span>
+                Inventory
+                <strong><%= @payment_order.ballance.number %></strong>
+              </span>
+
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if @payment_order.spi.present? %>
+
+            <div class="po-show__relation">
+              <i class="fa-solid fa-file-invoice"></i>
+              <span>
+                Inventory PI
+                <strong><%= @payment_order.spi.number %></strong>
+              </span>
+            </div>
+
+          <% end %>
+
+
+          <% if @payment_order.sci.present? %>
+
+            <div class="po-show__relation">
+              <i class="fa-solid fa-file-invoice"></i>
+              <span>
+                Inventory CI
+                <strong><%= @payment_order.sci.number %></strong>
+              </span>
+            </div>
+
+          <% end %>
+
+        </div>
+
+      </section>
+
+    <% end %>
+
+
+    <!-- DOCUMENTS -->
+
+    <section class="po-show__details">
+
+      <div class="po-show__section-heading">
+
+        <div class="po-show__section-icon is-red">
+          <i class="fa-solid fa-paperclip"></i>
+        </div>
+
+        <div>
+          <h2>Documents</h2>
+          <p>Payment request and receipt documents</p>
+        </div>
+
+      </div>
+
+
+      <div class="po-show__documents">
+
+        <% if @payment_order.document.attached? %>
+
+          <%= link_to rails_blob_path(
+                @payment_order.document,
+                disposition: "attachment"
+              ),
+            class: "po-show__document",
+            target: "_blank",
+            rel: "noopener" do %>
+
+            <i class="fa-solid fa-file-pdf"></i>
+
+            <span>
+              <strong>Supporting Document</strong>
+              <small><%= @payment_order.document.filename %></small>
+            </span>
+
+            <i class="fa-solid fa-download"></i>
+
+          <% end %>
+
+        <% end %>
+
+
+        <% if @payment_order.receipt.attached? %>
+
+          <%= link_to rails_blob_path(
+                @payment_order.receipt,
+                disposition: "attachment"
+              ),
+            class: "po-show__document",
+            target: "_blank",
+            rel: "noopener" do %>
+
+            <i class="fa-solid fa-receipt"></i>
+
+            <span>
+              <strong>Payment Receipt</strong>
+              <small><%= @payment_order.receipt.filename %></small>
+            </span>
+
+            <i class="fa-solid fa-download"></i>
+
+          <% end %>
+
+        <% end %>
+
+
+        <% unless @payment_order.document.attached? ||
+                  @payment_order.receipt.attached? %>
+
+          <div class="po-show__no-documents">
+            <i class="fa-regular fa-folder-open"></i>
+            No documents attached.
+          </div>
+
+        <% end %>
+
+      </div>
+
+    </section>
+
+
+    <!-- ACTIONS -->
+
+    <% if designated_user_can_confirm ||
+          manager_can_confirm ||
+          can_hamed_confirm ||
+          can_mark_delivered %>
+
+      <section class="po-show__actions">
+
+        <div class="po-show__section-heading">
+
+          <div class="po-show__section-icon is-green">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+
+          <div>
+            <h2>Available Actions</h2>
+            <p>Actions available to your current role</p>
+          </div>
+
+        </div>
+
+
+        <div class="po-show__action-buttons">
+
+          <% if designated_user_can_confirm || manager_can_confirm %>
+
+            <%= link_to confirm_payment_order_path(@payment_order),
+              data: {
+                turbo_method: :patch,
+                turbo_confirm: "Confirm this Payment Order? This action cannot be undone."
+              },
+              class: "po-show__action po-show__action--confirm" do %>
+
+              <i class="fa-solid fa-check"></i>
+              Confirm
+
+            <% end %>
+
+
+            <%= link_to reject_payment_order_path(@payment_order),
+              data: {
+                turbo_method: :patch,
+                turbo_confirm: "Reject this Payment Order? This action cannot be undone."
+              },
+              class: "po-show__action po-show__action--reject" do %>
+
+              <i class="fa-solid fa-xmark"></i>
+              Reject
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if can_hamed_confirm %>
+
+            <%= link_to hamed_confirm_payment_order_path(@payment_order),
+              data: {
+                turbo_method: :patch,
+                turbo_confirm: "Confirm this Payment Order?"
+              },
+              class: "po-show__action po-show__action--special" do %>
+
+              <i class="fa-solid fa-check-double"></i>
+              Hamed Confirm
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if can_mark_delivered %>
+
+            <%= link_to delivered_payment_order_path(@payment_order),
+              data: {
+                turbo_method: :patch,
+                turbo_confirm: "Mark this Payment Order as delivered?"
+              },
+              class: "po-show__action po-show__action--delivery" do %>
+
+              <i class="fa-solid fa-truck-fast"></i>
+              Mark Delivered
+
+            <% end %>
+
+          <% end %>
+
+        </div>
+
+      </section>
+
+    <% end %>
+
+
+    <!-- ACCOUNTING -->
+
+    <% if (current_user.accounting? || current_user.admin?) &&
+          @payment_order.cob_confirm.present? &&
+          @payment_order.ceo_confirm.present? %>
+
+      <section class="po-show__accounting">
+
+        <div class="po-show__section-heading">
+
+          <div class="po-show__section-icon is-green">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+
+          <div>
+            <h2>Accounting & Payment</h2>
+            <p>Bank payment, exchange and receipt entry</p>
+          </div>
+
+        </div>
+
+        <%= render "payment_orders/accounting_form",
+          payment_order: @payment_order %>
+
+      </section>
+
+    <% end %>
+
+
+    <!-- COMMENTS -->
+
+    <section class="po-show__comments">
+
+      <header class="po-show__comments-header">
+
+        <div>
+          <h2>Comments</h2>
+          <p>Discussion and supporting notes</p>
+        </div>
+
+        <%= link_to new_payment_order_comment_path(@payment_order),
+          data: {
+            controller: "bs-modal-form",
+            payment_order_id: @payment_order.id
+          },
+          class: "po-index__button po-index__button--primary" do %>
+
+          <i class="fa-solid fa-plus"></i>
+          Add Comment
+
+        <% end %>
+
+      </header>
+
+
+      <% if @payment_order.comments.any? %>
+
+        <ul class="po-show__comment-list" id="comment_items">
+
+          <% @payment_order.comments.reverse.each do |comment| %>
+
+            <%= render "comments/comment",
+              comment: comment %>
+
+          <% end %>
+
+        </ul>
+
+      <% else %>
+
+        <div class="po-index__empty">
+          <i class="fa-regular fa-comments"></i>
+          <strong>No comments yet</strong>
+          <span>Use comments to keep the payment discussion together.</span>
+        </div>
+
+      <% end %>
+
+    </section>
+
+  </div>
+
+<% else %>
+
+  <div class="po-show__forbidden">
+
+    <i class="fa-solid fa-lock"></i>
+
+    <h2>Restricted Payment Order</h2>
+
+    <p>
+      You do not have permission to view this confidential Payment Order.
+    </p>
+
+    <%= link_to "Back to Payment Orders",
+      payment_orders_path,
+      class: "po-index__button po-index__button--secondary" %>
+
+  </div>
+
+<% end %>

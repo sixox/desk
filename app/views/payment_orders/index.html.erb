@@ -1,311 +1,438 @@
-<div class="col-lg-10 mx-auto mt-5">
+<%
+  page_title =
+    case @in_page
+    when "mine"
+      "My Payment Orders"
+    when "not confirmed"
+      "Awaiting Confirmation"
+    when "notp"
+      "Awaiting Payment"
+    when "notd"
+      "Awaiting Delivery"
+    when "pending"
+      "Pending Payment Orders"
+    when "finished"
+      "Completed Payment Orders"
+    when "rejected"
+      "Rejected Payment Orders"
+    when "confirmable"
+      "Payment Orders to Confirm"
+    else
+      "Payment Orders"
+    end
+
+  page_subtitle =
+    case @in_page
+    when "mine"
+      "Payment requests created by you"
+    when "confirmable"
+      "Requests requiring your approval"
+    else
+      "Company payment requests and approval progress"
+    end
+%>
+
+<% order_total =
+  @payment_orders.respond_to?(:total_count) ?
+    @payment_orders.total_count :
+    @payment_orders&.size.to_i %>
 
 
-	<% if @pis.present? %>
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<h3>Confirm PIs</h3>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm">
-				<table class="table">
-					<thead>
-						<tr>
-							<th scope="col">#</th>
-							<th scope="col">Customer</th>
-							<th scope="col">Product</th>
-							<th scope="col">Unit Price</th>
-							<th scope="col">POD</th>
-							<th scope="col">Issue Date</th>
-
-							<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
-
-						</tr>
-					</thead>
-					<tbody>
-						<% @pis.each do |pi| %>
-						<tr style="font-size: 12px;">
-							<th scope="row">
-								<%= pi.number %>
-							</th>
-							<td><%= pi.customer.nickname.titleize %></td>
-							<td><span class="text-danger fw-bold"><%= pi.quantity.to_i %> MT</span>  <%= pi.product.titleize %> <span class="text-primary"><%= pi.packing_type %></span> </td>
-							<td> <span class="bg-warning"><%= pi.unit_price.to_i %></span> <span class="timeline-small"><%= pi.currency %></span></td>
-							
-							<td><%= pi.pod.titleize %></td>
-							<td><%= pi.issue_date&.strftime('%B/%e') %></td>
-							
-
-							
-
-							<td style="text-align: right;">
-								<span class="text-info"><%= link_to "Show", pi_path(pi), data: { controller: "bs-modal-form" }, class: "" %></span>
-							</td>
-						</tr>
-						<% end %>
-					</tbody>
-				</table>
-			</div>
-
-		</div>
-	</div>
-	<% end %>
-
-	<% if @release_requests.present? %>
-	<div class="card mb-5">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="d-flex justify-content-start">
-						<h3>Release Requests</h3>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm">
-				<table class="table">
-					<thead>
-						<tr>
-							<th scope="col">#</th>
-							<th scope="col">Project</th>
-							<th scope="col">Booking</th>
-							<th scope="col">Weight</th>
-							<th scope="col">Note</th>
-							<th scope="col">Requested at</th>
-							<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
-
-						</tr>
-					</thead>
-					<tbody>
-						<% @release_requests.each do |request| %>
-						<tr style="font-size: 12px;">
-							<th scope="row">
-								<%= request.id %>
-							</th>
-							<td><%= request.booking.project.number %></td>
-							<td><%= request.booking.number %></td>
-							<td><%= request.booking.weight %> <%= request.booking.weight.present? ? "MT" : "" %></td>
-							
-							<td>
-								<% if request.note.present? %>
-								<div class="accordion" id="accordionNote<%= request.id %>">
-									<div class="accordion-item">
-										<h2 class="accordion-header" id="headingNote<%= request.id %>">
-											<button class="accordion-button collapsed my-custom-accordion-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNote<%= request.id %>" aria-expanded="false" aria-controls="collapseNote<%= request.id %>">
-												Note
-											</button>
-										</h2>
-										<div id="collapseNote<%= request.id %>" class="accordion-collapse collapse" aria-labelledby="headingNote<%= request.id %>" data-bs-parent="#accordionNote<%= request.id %>">
-											<div class="accordion-body">
-												<%= request.note %>
-											</div>
-										</div>
-									</div>
-								</div>
-								<% else %>
-								-
-								<% end %>
-							</td>
-							<td><%= request.created_at&.strftime('%b %d') %></td>
-							
-
-							
-
-							<td style="text-align: right;">
-								<%= button_to confirm_release_request_path(request),
-								method: :patch,
-								class: "btn btn-success btn-sm",
-									form: {
-										data: {
-											turbo_confirm: "Confirm this request and grant release permission?"
-										}
-									} do %>
-
-									<i class="fa-solid fa-check me-1"></i>
-									Confirm Release
-
-									<% end %>
+<div class="po-index">
 
 
+  <!-- HEADER -->
 
-								</td>
-							</tr>
-							<% end %>
-						</tbody>
-					</table>
-				</div>
+  <header class="po-index__header">
 
-			</div>
-		</div>
-		<% end %>
+    <div>
 
+      <div class="po-index__eyebrow">
+        ACCOUNTING
+      </div>
 
+      <h1><%= page_title %></h1>
 
-		<% if @transfers.present? %>
-		<div class="card mb-5">
-			<div class="card-body">
-				<div class="row">
-					<div class="col-lg-6">
-						<div class="d-flex justify-content-start">
-							<h3>Transfers</h3>
-						</div>
-					</div>
-				</div>
-				<div class="col-sm">
-					<table class="table">
-						<thead>
-							<tr>
-								<th scope="col">#</th>
-								<th scope="col">From</th>
-								<th scope="col">To</th>
-								<th scope="col"> Withdraw amount</th>
+      <p><%= page_subtitle %></p>
+
+    </div>
 
 
+    <div class="po-index__header-actions">
 
-								<th scope="col">Deposite amount</th>
-								<th scope="col">Wage</th>
-								<th scope="col">Status</th>
-								<th scope="col">Document</th>
+      <%= link_to reports_payment_orders_path,
+        class: "po-index__button po-index__button--secondary" do %>
 
-								<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
+        <i class="fa-solid fa-chart-column"></i>
+        Reports
 
-							</tr>
-						</thead>
-						<tbody>
-							<% @transfers.each do |transfer| %>
-							<tr style="font-size: 12px;" class="<%= 
-							if transfer.confirmed.present?
-								'table-success'
-							elsif transfer.rejected.present?
-								'table-danger'
-							else
-								'table-warning'
-							end
-
-						%>">
-						<th scope="row">
-							<%= transfer.id %>
-						</th>
-						<td><%= transfer.withdraw_from_bank.name %></td>
-						<td><%= transfer.deposited_to_bank.name %></td>
-						<td class="fw-bold text-danger"><%= number_with_delimiter(transfer.withdraw_amount, delimiter: ',') %> <small>	<%= transfer.withdraw_from_bank.currency %></small></td>
-						<td class="fw-bold text-success"><%= number_with_delimiter(transfer.deposited_amount, delimiter: ',') %> <small>	<%= transfer.deposited_to_bank.currency %></small></td>
-						<td><%= transfer.wage.to_i %></td>
-
-						<td><%= 
-						if transfer.coo_confirmed.present?
-							"Confirmed by COO at #{transfer.coo_confirmed_at&.strftime('%b %d')}" 
-						else
-							'Wait for COO Confirm'
-						end
-					%></td>
-					<td>
-						<% if transfer.document.attached? %>
-						<%= link_to 'View Document', url_for(transfer.document), target: '_blank' %>
-						<% else %>
-						no document
-						<% end %>
-					</td>
-					<td style="text-align: right;">
-						<% if !transfer.confirmed && !transfer.rejected %>
-						<%= link_to confirm_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this transfer, this action can not be undo!' } do %>
-						<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-						<% end %>
-						|
-						<%= link_to reject_transfer_path(transfer), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this transfer, this action can not be undo!' } do %>
-						<i class="bi bi-calendar-x-fill" style="color: red;"></i>
-						<% end %>
-
-						<% end %>
+      <% end %>
 
 
-					</td>
-				</tr>
-				<% end %>
-			</tbody>
-		</table>
-	</div>
+      <%= link_to new_payment_order_path,
+        data: { controller: "bs-modal-form" },
+        class: "po-index__button po-index__button--primary" do %>
 
-</div>
-</div>
-<% end %>
-<div class="card mb-5">
-	<div class="card-body">
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h3>Payment Orders</h3>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<div class="hide-on-desktop">
-						<%= render 'filter' %>
-					</div>
-					<div class="hide-on-mobile">
-						<div class="btn-group" role="group" aria-label="Page Toggle">
-							<% if @in_page == "mine" %>
-							<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary active" %>
-							<%= link_to "All", payment_orders_path, class: "btn btn-primary" %>
-							<% else %>
-							<%= link_to "Mine", mine_payment_orders_path, class: "btn btn-primary" %>
-							<%= link_to "All", payment_orders_path, class: "btn btn-primary active" %>
-							<% end %>
-						</div>
-						<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
-						<i class="bi bi-bar-chart"></i> Reports
-						<% end %>
-					</div>
+        <i class="fa-solid fa-plus"></i>
+        New Payment Order
 
-					<%= link_to new_payment_order_path, data: { controller: "bs-modal-form" }, class: "btn btn-success" do %>
-					<i class="bi bi-plus"></i> Create Payment order
-					<% end %>
-				</div>
-			</div>
-		</div>
-		<div class="row mt-3">
-			<%= search_form_for @q, url: request.path do |f| %>
+      <% end %>
 
-			<div class="input-group mb-3">
-				<%= f.search_field :id_or_details_or_amount_or_project_number_or_ballance_number_cont, 
-				class: "form-control", 
-					placeholder: "Search by Details, Project Number or Inventory Number" %>
-					<%= f.submit "Search", class: "btn btn-primary" %>
-				</div>
-				<% end %>
-			</div>
-			<div class="hide-on-mobile">
-				<%= render 'filter_not_mobile' %>
-			</div>
-			<div class="hide-on-desktop">
-				<% if current_user.is_manager || current_user.accounting? %>
-				<%= link_to reports_payment_orders_path, class: "btn btn-warning mr-2", style: "margin-right: 10px;" do %>
-				<i class="bi bi-bar-chart"></i> Reports
-				<% end %>
-				<% end %>
-			</div>
+    </div>
+
+  </header>
 
 
-			<ul class="list-group" id="payment_order_items">
-				<% @payment_orders.each do |payment_order| %>
-				<% if !payment_order.mahramane || payment_order.user == current_user || @access_to_secret %>
-				<%= render 'payment_orders/payment_order', payment_order: payment_order %>
-				<% end %>
-				<% end %>
+  <!-- SPECIAL APPROVAL QUEUES -->
 
-			</ul>
-			<div class="row mt-1">
-				<div class="col-sm">
-					<nav aria-label="Page navigation">
-						<ul class="pagination justify-content-center">
-							<%= paginate @payment_orders, remote: true %>
-						</ul>
-					</nav>
-				</div>
-			</div>
-		</div>
-	</div>
+  <% if @pis.present? %>
+
+    <section class="po-special-section">
+
+      <header class="po-special-section__header">
+        <div>
+          <h2>
+            <i class="fa-solid fa-file-invoice"></i>
+            PIs Awaiting Confirmation
+          </h2>
+        </div>
+
+        <span><%= @pis.size %></span>
+      </header>
+
+      <div class="po-special-section__list">
+
+        <% @pis.each do |pi| %>
+
+          <article class="po-special-item">
+
+            <div class="po-special-item__main">
+
+              <strong><%= pi.number %></strong>
+
+              <span>
+                <%= pi.customer&.nickname || "Customer not assigned" %>
+              </span>
+
+              <small>
+                <%= pi.product %>
+                ·
+                <%= pi.quantity.to_i %> MT
+                ·
+                <%= pi.pod %>
+              </small>
+
+            </div>
+
+            <div class="po-special-item__side">
+
+              <strong>
+                <%= number_with_delimiter(pi.unit_price, delimiter: ",") %>
+                <small><%= pi.currency %></small>
+              </strong>
+
+              <%= link_to pi_path(pi),
+                data: { controller: "bs-modal-form" },
+                class: "po-special-item__action" do %>
+
+                Review
+                <i class="fa-solid fa-arrow-right"></i>
+
+              <% end %>
+
+            </div>
+
+          </article>
+
+        <% end %>
+
+      </div>
+
+    </section>
+
+  <% end %>
+
+
+  <% if @release_requests.present? %>
+
+    <section class="po-special-section">
+
+      <header class="po-special-section__header">
+        <div>
+          <h2>
+            <i class="fa-solid fa-file-signature"></i>
+            Release Requests
+          </h2>
+        </div>
+
+        <span><%= @release_requests.size %></span>
+      </header>
+
+      <div class="po-special-section__list">
+
+        <% @release_requests.each do |request| %>
+
+          <article class="po-special-item">
+
+            <div class="po-special-item__main">
+
+              <strong>
+                <%= link_to request.booking.project.number,
+                  project_path(request.booking.project) %>
+              </strong>
+
+              <span>
+                Booking <%= request.booking.number %>
+              </span>
+
+              <small>
+                <%= request.booking.weight %> MT
+                <% if request.note.present? %>
+                  · <%= truncate(request.note, length: 90) %>
+                <% end %>
+              </small>
+
+            </div>
+
+            <div class="po-special-item__side">
+
+              <%= button_to confirm_release_request_path(request),
+                method: :patch,
+                class: "po-special-item__confirm",
+                form: {
+                  data: {
+                    turbo_confirm: "Confirm this request and grant release permission?"
+                  }
+                } do %>
+
+                <i class="fa-solid fa-check"></i>
+                Confirm Release
+
+              <% end %>
+
+            </div>
+
+          </article>
+
+        <% end %>
+
+      </div>
+
+    </section>
+
+  <% end %>
+
+
+  <% if @transfers.present? %>
+
+    <section class="po-special-section">
+
+      <header class="po-special-section__header">
+        <div>
+          <h2>
+            <i class="fa-solid fa-right-left"></i>
+            Bank Transfers
+          </h2>
+        </div>
+
+        <span><%= @transfers.size %></span>
+      </header>
+
+      <div class="po-special-section__list">
+
+        <% @transfers.each do |transfer| %>
+
+          <article class="po-special-item">
+
+            <div class="po-special-item__main">
+
+              <strong>
+                <%= transfer.withdraw_from_bank.name %>
+                <i class="fa-solid fa-arrow-right mx-1"></i>
+                <%= transfer.deposited_to_bank.name %>
+              </strong>
+
+              <small>
+                <span class="text-danger">
+                  -<%= number_with_delimiter(transfer.withdraw_amount, delimiter: ",") %>
+                  <%= transfer.withdraw_from_bank.currency %>
+                </span>
+
+                <span class="mx-1">·</span>
+
+                <span class="text-success">
+                  +<%= number_with_delimiter(transfer.deposited_amount, delimiter: ",") %>
+                  <%= transfer.deposited_to_bank.currency %>
+                </span>
+
+              </small>
+
+              <% if transfer.document.attached? %>
+
+                <%= link_to rails_blob_path(
+                      transfer.document,
+                      disposition: "attachment"
+                    ),
+                  target: "_blank",
+                  rel: "noopener",
+                  class: "po-special-item__document" do %>
+
+                  <i class="fa-solid fa-paperclip"></i>
+                  View document
+
+                <% end %>
+
+              <% end %>
+
+            </div>
+
+
+            <div class="po-special-item__side">
+
+              <% if !transfer.confirmed && !transfer.rejected %>
+
+                <%= link_to confirm_transfer_path(transfer),
+                  data: {
+                    turbo_method: :patch,
+                    turbo_confirm: "Confirm this transfer?"
+                  },
+                  class: "po-special-item__confirm" do %>
+
+                  <i class="fa-solid fa-check"></i>
+                  Confirm
+
+                <% end %>
+
+                <%= link_to reject_transfer_path(transfer),
+                  data: {
+                    turbo_method: :patch,
+                    turbo_confirm: "Reject this transfer?"
+                  },
+                  class: "po-special-item__reject" do %>
+
+                  <i class="fa-solid fa-xmark"></i>
+                  Reject
+
+                <% end %>
+
+              <% else %>
+
+                <span class="po-special-item__status">
+                  <%= transfer.rejected? ? "Rejected" : "Confirmed" %>
+                </span>
+
+              <% end %>
+
+            </div>
+
+          </article>
+
+        <% end %>
+
+      </div>
+
+    </section>
+
+  <% end %>
+
+
+  <!-- PAYMENT ORDER DIRECTORY -->
+
+  <section class="po-index__directory">
+
+    <div class="po-index__directory-heading">
+
+      <div>
+        <h2>Payment Order Directory</h2>
+        <p>Search, review and manage payment requests</p>
+      </div>
+
+      <span class="po-index__count">
+        <%= number_with_delimiter(order_total) %> 
+        records
+      </span>
+
+    </div>
+
+
+    <!-- FILTERS -->
+
+    <%= render "payment_orders/filter_not_mobile" %>
+
+
+    <!-- SEARCH -->
+
+    <%= search_form_for @q,
+      url: request.path,
+      html: { class: "po-index__search" } do |f| %>
+
+      <div class="po-index__search-field">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <%= f.search_field :id_eq_or_details_cont_or_amount_cont_or_project_number_cont_or_ballance_number_cont,
+  class: "form-control",
+  placeholder: "Search PO number, details, amount, project or inventory" %>
+
+      </div>
+
+      <%= f.submit "Search",
+        class: "po-index__search-submit" %>
+
+    <% end %>
+
+
+    <!-- PAYMENT ORDER CARDS -->
+
+    <% if @payment_orders.present? %>
+
+      <ul class="po-index__list" id="payment_order_items">
+
+        <% @payment_orders.each do |payment_order| %>
+
+          <% if !payment_order.mahramane ||
+                payment_order.user == current_user ||
+                @access_to_secret %>
+
+            <%= render "payment_orders/payment_order",
+              payment_order: payment_order %>
+
+          <% end %>
+
+        <% end %>
+
+      </ul>
+
+    <% else %>
+
+      <div class="po-index__empty">
+
+        <div>
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+
+        <strong>No Payment Orders found</strong>
+
+        <span>
+          Try another filter or search term.
+        </span>
+
+      </div>
+
+    <% end %>
+
+
+    <!-- PAGINATION -->
+
+    <% if @payment_orders.respond_to?(:total_pages) &&
+          @payment_orders.total_pages > 1 %>
+
+      <div class="po-index__pagination">
+        <%= paginate @payment_orders, remote: true %>
+      </div>
+
+    <% end %>
+
+  </section>
+
 </div>

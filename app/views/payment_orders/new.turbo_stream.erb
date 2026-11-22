@@ -1,3 +1,10 @@
 <%= turbo_stream.replace "remote_modal" do %>
-	<%= render 'shared/turbo_modal', modal_title: 'Create Payment order', form_partial: "payment_orders/form" %>
+
+  <%= render "shared/turbo_modal",
+    modal_title: "New Payment Order",
+    modal_subtitle: "Create a company payment request",
+    modal_icon: "fa-money-bill-transfer",
+    modal_size: "modal-xl",
+    form_partial: "payment_orders/form" %>
+
 <% end %>

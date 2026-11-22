@@ -1,191 +1,148 @@
-<%= form_with model: @payment_order do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @payment_order.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@payment_order.errors.count, 'error') %> prohibited your payment_order from being saved.</h3>
-			<ul>
-				<% @payment_order.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h3>Payment order</h3>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<%= form.check_box :mahramane, class: 'form-check-input' %>
-					<label class="fw-bold form-check-label text-success" style="margin-right: 46px;" for="secret">
-						Secret
-					</label>
-				</div>
-				<div class="d-flex justify-content-end">
-					<%= form.check_box :is_rahkarsazan, class: 'form-check-input' %>
-					<label class="form-check-label" for="hourly">
-						Rahkar sazan
-					</label>
-				</div>
-				
-			</div>
-		</div>
+<%= form_with model: @payment_order, class: "po-form" do |form| %>
 
-		<div class="col-lg-12">
+  <div class="modal-body po-form__body">
 
+    <% if @payment_order.errors.any? %>
+      <div class="po-form__errors">
+        <% @payment_order.errors.full_messages.each do |message| %>
+          <div><%= message %></div>
+        <% end %>
+      </div>
+    <% end %>
 
-			<div class="row">
-				<div class="col-lg-9">
-					<div class="form-group mt-3">
-						<label for="amount" class="form-label">
-							Amount
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.number_field :amount, class: "form-control" %>
-					</div>
-				</div>
-				<div class="col-lg-3">
-					<div class="form-group mt-3">
-						<label for="amount" class="form-label">
-							Currency
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select" } %>
-					</div>
-				</div>
+    <div class="po-form__flags">
+      <label class="po-form__flag">
+        <%= form.check_box :mahramane, class: "form-check-input" %>
+        <span><i class="fa-solid fa-lock"></i> Secret</span>
+      </label>
 
+      <label class="po-form__flag">
+        <%= form.check_box :is_rahkarsazan, class: "form-check-input" %>
+        <span><i class="fa-solid fa-building"></i> Rahkarsazan</span>
+      </label>
+    </div>
 
-				<div class="col-lg-12">
-					<div class="form-group">
-						<label for="amount" class="form-label">
-							Bank
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>					</div>
-					</div>
+    <div class="po-form__grid">
 
-				</div>
+      <div class="po-form__field po-form__field--amount">
+        <%= form.label :amount %>
+        <%= form.number_field :amount,
+          class: "form-control",
+          step: "any",
+          required: true %>
+      </div>
 
-				<div class="row mt-4">
-					<div class="col-lg-6 mb-2">	
-						<label for="to" class="form-label">
-							To
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_field :to, class: "form-control" %>
-					</div>
-					<div class="col-lg-6 mb-2">
-						<label for="receiver" class="form-label">
-							Receiver
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_field :receiver, class: "form-control" %>
-					</div>
-					<div class="col-lg-12">
-						<label for="receiverAccount" class="form-label">
-							Receiver account
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_field :receiver_account, class: "form-control" %>
-					</div>
-				</div>
+      <div class="po-form__field">
+        <%= form.label :currency %>
+        <%= form.select :currency,
+          options_for_select(Pi::CURRENCY, selected: form.object.currency),
+          { prompt: "Currency" },
+          { class: "form-select", required: true } %>
+      </div>
 
-				<div class="row mt-4">
-					<div class="col-lg-6 mb-2">	
-						<label for="to" class="form-label">
-							Project
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.collection_select :project_id, @projects, :id, :number, { prompt: 'Select Project'}, { class: "form-select" } %>
-					</div>
-					<div class="col-lg-6 mb-2">	
-						<label for="to" class="form-label">
-							Booking
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.collection_select :booking_id, @bookings, :id, :number, { prompt: 'Select Booking'}, { class: "form-select" } %>
-					</div>
+      <div class="po-form__field po-form__field--wide">
+        <%= form.label :bank_id, "Bank" %>
+        <%= form.collection_select :bank_id, @banks, :id, :name,
+          { prompt: "Select bank" },
+          { class: "form-select" } %>
+      </div>
 
-					<div class="col-lg-4 mb-2">
-						<label for="receiver" class="form-label">
-							Inventory
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.collection_select :ballance_id, @ballances, :id, :number, { prompt: 'Select Inventory'}, { class: "form-select" } %>
-					</div>
-					<div class="col-lg-4 mb-2">
-						<label for="receiver" class="form-label">
-							Inventory PI
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.collection_select :spi_id, @spis, :id, :number, { prompt: 'Select PI'}, { class: "form-select" } %>
-					</div>
-					<div class="col-lg-4 mb-2">
-						<label for="receiver" class="form-label">
-							Inventory CI
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.collection_select :sci_id, @scis, :id, :number, { prompt: 'Select CI'}, { class: "form-select" } %>
-					</div>	
+      <div class="po-form__field">
+        <%= form.label :to, "Payment to" %>
+        <%= form.text_field :to, class: "form-control" %>
+      </div>
 
-					<div class="col-lg-6 mb-2">
-						<label for="receiver" class="form-label">
-							Detail
-							<span class="text-danger">*</span>
-							<%= form.text_area :details, class: "form-control" %>
+      <div class="po-form__field">
+        <%= form.label :receiver %>
+        <%= form.text_field :receiver, class: "form-control" %>
+      </div>
 
-						</label>
+      <div class="po-form__field po-form__field--wide">
+        <%= form.label :receiver_account %>
+        <%= form.text_field :receiver_account, class: "form-control" %>
+      </div>
 
-					</div>
-					<div class="col-lg-6 mb-2">
-						<div class="row mb-1">
-						<%= form.label :cost_type, class: "form-label" %>
+      <div class="po-form__field">
+        <%= form.label :project_id, "Project" %>
+        <%= form.collection_select :project_id, @projects, :id, :number,
+          { prompt: "Select project" },
+          { class: "form-select" } %>
+      </div>
 
-						<%= form.select :cost_type,
-						PaymentOrder::COST_TYPES,
-						{ include_blank: "Select Cost Type" },
-						class: "form-control" %>
-						</div>
-						
-						<%= form.check_box :have_factor, class: 'form-check-input' %>
-						<label class="form-check-label" for="hourly">
-							have factor?
-						</label>
-						
-					</div>	
-							
+      <div class="po-form__field">
+        <%= form.label :booking_id, "Booking" %>
+        <%= form.collection_select :booking_id, @bookings, :id, :number,
+          { prompt: "Select booking" },
+          { class: "form-select" } %>
+      </div>
 
-				</div>
-				<div class="row mt-4">
-					<div class="col-lg-12 mb-2">
-						<div class="form-group">
-							<label class="mb-2 mt-1">
-								Upload Document
-								<span class="text-danger">*</span>
-								<%= form.file_field :document, class: "form-control custom-file-input mt-2" %>
-							</label>
-						</div>
-					</div>
-				</div>
+      <div class="po-form__field">
+        <%= form.label :ballance_id, "Inventory" %>
+        <%= form.collection_select :ballance_id, @ballances, :id, :number,
+          { prompt: "Select inventory" },
+          { class: "form-select" } %>
+      </div>
 
+      <div class="po-form__field">
+        <%= form.label :spi_id, "Inventory PI" %>
+        <%= form.collection_select :spi_id, @spis, :id, :number,
+          { prompt: "Select PI" },
+          { class: "form-select" } %>
+      </div>
 
+      <div class="po-form__field">
+        <%= form.label :sci_id, "Inventory CI" %>
+        <%= form.collection_select :sci_id, @scis, :id, :number,
+          { prompt: "Select CI" },
+          { class: "form-select" } %>
+      </div>
 
+      <div class="po-form__field">
+        <%= form.label :cost_type %>
+        <%= form.select :cost_type,
+          PaymentOrder::COST_TYPES,
+          { include_blank: "Select cost type" },
+          { class: "form-select" } %>
+      </div>
 
+      <div class="po-form__field po-form__field--wide">
+        <%= form.label :details, "Details" %>
+        <%= form.text_area :details,
+          class: "form-control",
+          rows: 2 %>
+      </div>
 
+      <div class="po-form__field po-form__field--wide">
+        <label class="po-form__upload">
+          <span><i class="fa-solid fa-paperclip"></i> Document</span>
+          <%= form.file_field :document, class: "form-control" %>
+          <% if @payment_order.document.attached? %>
+            <small>Current: <%= @payment_order.document.filename %></small>
+          <% end %>
+        </label>
+      </div>
 
+      <div class="po-form__field po-form__field--wide">
+        <label class="po-form__factor">
+          <%= form.check_box :have_factor, class: "form-check-input" %>
+          <span>Has factor</span>
+        </label>
+      </div>
 
+    </div>
 
+  </div>
 
-			</div>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<%= form.submit 'Save Payment order', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-	</div>
-	<% end %>
+  <div class="modal-footer po-form__footer">
+    <button type="button"
+      class="btn btn-light"
+      data-bs-dismiss="modal">
+      Cancel
+    </button>
+
+    <%= form.submit "Save Payment Order",
+      class: "btn btn-primary",
+      data: { action: "click->bs-modal#submitEnd" } %>
+  </div>
+
+<% end %>

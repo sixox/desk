@@ -141,12 +141,12 @@ class PaymentOrder < ApplicationRecord
   end
 
   def self.ransackable_attributes(auth_object = nil)
-    ['id', 'details', 'amount'] # Attributes of PaymentOrder to search on
-  end
+  %w[id details amount]
+end
 
-  def self.ransackable_associations(auth_object = nil)
-    ['project', 'ballance'] # Associations to allow search on
-  end
+def self.ransackable_associations(auth_object = nil)
+  %w[project ballance]
+end
 
 
   def self.to_csv

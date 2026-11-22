@@ -1,278 +1,307 @@
-<% if payment_order.rejected_at %>
-<div class="stamp-content">
-	<div class="content">
-		<!-- Your main content here -->
-		
-	</div>
-	<%= image_tag("rejected.png", alt: "Rejected Stamp", class: "stamp-image") %>
-</div>
-<% else %>
-<% if payment_order.delivered_at  %>
-<div class="stamp-content">
-	<div class="content">
-		<!-- Your main content here -->
-		
-	</div>
-	<%= image_tag("finished12.png", alt: "Finished Image", class: "stamp-image") %>
-</div>
+<%
+  rejected = payment_order.rejected_at.present?
+  delivered = payment_order.delivered_at.present?
+  status = payment_order.status
 
-<% end %>
-<% end %>
-<li class="shadow-lg mb-2 bg-body <%= payment_order.is_rahkarsazan ? 'rahkarsazan_payment_order' : '' %> rounded <%= payment_order.mahramane ? 'secret_payment_order' : '' %> list-group-item" id="payment_order_item_<%= payment_order.id %>">
-	<div class="row">
-		
-		<div class="col-sm-2">
-			<div class="d-flex justify-content-start">
-				<%= link_to(payment_order_path(payment_order), class: 'link-nodecor-po') do %>
+  approval_state = rejected ? :rejected : (status == "wait for confirm" ? :waiting : :done)
+  payment_state =
+    if rejected || status == "wait for confirm"
+      :waiting
+    elsif status == "wait for payment"
+      :active
+    else
+      :done
+    end
+  delivery_state =
+    if rejected || ["wait for confirm", "wait for payment"].include?(status)
+      :waiting
+    elsif status == "wait for delivery"
+      :active
+    else
+      :done
+    end
+%>
 
-				<h4 class="link-nodecor-po">P.O <span class="text-danger"><%= payment_order.id%></span>
-					<% if  payment_order.announce.present? && payment_order.status == 'wait for payment' %>
-						<i class="bi bi-megaphone-fill text-success" style="font-size: 16px;"></i>
-					<% end %>
-				</h4>
-				<% end %>
+<li
+  id="payment_order_item_<%= payment_order.id %>"
+  class="po-card
+    <%= "po-card--#{status.to_s.parameterize}" %>
+    <%= "po-card--secret" if payment_order.mahramane? %>
+    <%= "po-card--rahkarsazan" if payment_order.is_rahkarsazan? %>
+    <%= "po-card--rejected" if rejected %>">
 
-			</div>
-		</div>
-		<% if payment_order.rejected_at %>
-		<div class="col-sm-7">
-			<div class="text-center">
-				<span class="fw-bold text-danger">REJECTED</span>
-				<span class="text-secondary">by <%= payment_order.reject_by %></span>
-				<p class="confirmation-date"><%= payment_order.rejected_at&.strftime('%b %d') %></p>
-			</div>
-		</div>
-		<% else %>
-		<div class="col-sm-7" style="font-size: 14px;">
-			<div class="text-center">
-				<span class="<%= payment_order.status == 'wait for confirm' ? 'text-danger fw-bold' : 'text-success small fw-bold' %>">
-					<%= payment_order.status == 'wait for confirm' ? 'Wait for Confirm' : 'Confirmed' %>
-				</span>
-				<span class="<%= payment_order.status == 'wait for payment' ? 'text-danger fw-bold' : (payment_order.status == 'wait for confirm' ? 'text-muted small' : 'text-success fw-bold small') %> mx-3">
-					<%= payment_order.status == 'wait for payment' ? 'Wait for Payment' : (payment_order.status == 'wait for confirm' ? 'Not paid' : 'Paid') %>
-				</span>
+  <% if rejected %>
+    <%= image_tag "rejected.png",
+      alt: "Rejected",
+      class: "po-card__stamp" %>
+  <% elsif delivered %>
+    <%= image_tag "finished12.png",
+      alt: "Finished",
+      class: "po-card__stamp" %>
+  <% end %>
 
-				<span class="<%= payment_order.status == 'wait for delivery' ? 'text-danger fw-bold' : (payment_order.status == 'delivered' ? 'text-success small fw-bold' : 'text-muted small') %>">
-					<%= payment_order.status == 'wait for delivery' ? 'Wait for Delivery' : (payment_order.status == 'delivered' ? "Delivered at #{payment_order.delivered_at&.strftime('%b %d')}" : 'Not delivered') %>
-				</span>
+  <div class="po-card__top">
 
-			</div>
-		</div>
-		<% end %>
-		<div class="col-sm-3">
-			<div class="d-flex justify-content-end">
-				<%= payment_order.created_at.strftime('%A %d %B')  %>
-			</div>
-		</div>
-	</div>
-	<div class="row mt-2">
-		<div class="col-lg">
-			<span class="fw-bold bg-warning"> <%= number_with_delimiter(payment_order.amount, delimiter: ',') %></span>
-			<small> <%= payment_order.currency %> </small>
-			<small>requested by</small>
-			<small class="fw-bold"><%= payment_order.user.name %></small>
-		</div>
-		<% if payment_order.project.present? %>
-		<div class="col-lg">project: 
-			<span class="fw-bold">  <%= link_to payment_order.project.number, project_path(payment_order.project) %></span>
+    <div class="po-card__identity">
 
+      <%= link_to payment_order_path(payment_order),
+        class: "po-card__number" do %>
+        <span>P.O</span>
+        <strong>#<%= payment_order.id %></strong>
+      <% end %>
 
-		</div>
-		<% end %>
-		<% if payment_order.ballance.present? %>
-		<div class="col-lg">Inventory: 
-			<span class="fw-bold">  <%= link_to payment_order.ballance.number, ballance_path(payment_order.ballance) %>
-			</span> 
+      <% if payment_order.announce? && status == "wait for payment" %>
+        <span class="po-card__announcement" title="Payment announced">
+          <i class="fa-solid fa-bullhorn"></i>
+        </span>
+      <% end %>
 
-		</div>
-		<% end %>
-		<% if payment_order.spi.present? %>
-		<div class="col-lg">PI: 
+      <% if payment_order.mahramane? %>
+        <span class="po-card__type po-card__type--secret">
+          <i class="fa-solid fa-lock"></i> Secret
+        </span>
+      <% end %>
 
-			<span class="fw-bold"><%= payment_order.spi.number %></span> 
+      <% if payment_order.is_rahkarsazan? %>
+        <span class="po-card__type po-card__type--rahkar">
+          <i class="fa-solid fa-building"></i> Rahkarsazan
+        </span>
+      <% end %>
 
-		</div>
-		<% end %>
-		<% if payment_order.sci.present? %>
-		<div class="col-lg">CI: 
+    </div>
 
-			<span class="fw-bold"><%= payment_order.sci.number %></span> 
+    <div class="po-card__date">
+      <i class="fa-regular fa-calendar"></i>
+      <%= payment_order.created_at&.strftime("%d %b %Y") %>
+    </div>
 
-		</div>
-		<% end %>
-	</div>
-	<div class="row mt-1">
-		<div class="col-lg-10 mb-2">
-			<div class="d-flex justify-content-start">
-				detail: <span class="fw-bold"><%= payment_order.details %>  </span>
-	
-			</div>
-			<% if payment_order.cost_type.present? %>
-			<div class="d-flex justify-content-start">
-				
+  </div>
 
-				 Cost Type:  <span class="fw-bold"> <%= payment_order.cost_type %> </span>
-					
-			</div>
-			<% end %>
-			<% if payment_order.hamed_confirm.present? %>
-			<div class="text-danger fw-bold"><small> Confirmed by Mr.Iranshahy</small></div>
-			<% end %>
-			<% if payment_order.shaghayegh_confirm.present? %>
-			<div class="text-danger fw-bold"><small> Confirmed by Accounting Dep. </small></div>
-			<% end %>
-		</div>
+  <% if rejected %>
 
-		<% if action_name != 'show' %>
+    <div class="po-card__rejected">
+      <i class="fa-solid fa-circle-xmark"></i>
+      Rejected
+      <% if payment_order.reject_by.present? %>
+        by <strong><%= payment_order.reject_by %></strong>
+      <% end %>
+      <span><%= payment_order.rejected_at&.strftime("%d %b %Y") %></span>
+    </div>
 
-		<div class="col-lg-2 mb-2">
-			<div class="d-flex justify-content-end">
+  <% else %>
 
-				<button 
-				data-controller="clipboard" 
-				data-action="click->clipboard#copy" 
-				data-clipboard-text="PO.<%= payment_order.id %> - <%= number_with_delimiter(payment_order.amount, delimiter: ',') %> <%= payment_order.currency %>" 
-				class="me-1 btn btn-outline-secondary btn-sm"
-				style="font-size: 9px;"
+    <div class="po-card__workflow">
 
-				>
-				Copy
-			</button>
+      <div class="po-card__stage <%= "is-done" if approval_state == :done %> <%= "is-active" if approval_state == :waiting %>">
+        <span class="po-card__stage-icon">
+          <i class="fa-solid <%= approval_state == :done ? "fa-check" : "fa-user-check" %>"></i>
+        </span>
+        <span class="po-card__stage-label">Confirmation</span>
+        <strong><%= approval_state == :done ? "Confirmed" : "Wait for confirm" %></strong>
+      </div>
 
-			<% if user_signed_in? && [29, 47].include?(current_user.id) && !payment_order.rejected_at %>
+      <div class="po-card__stage <%= "is-done" if payment_state == :done %> <%= "is-active" if payment_state == :active %>">
+        <span class="po-card__stage-icon">
+          <i class="fa-solid <%= payment_state == :done ? "fa-check" : "fa-money-bill-transfer" %>"></i>
+        </span>
+        <span class="po-card__stage-label">Payment</span>
+        <strong>
+          <%= payment_state == :done ? "Paid" : (payment_state == :active ? "Wait for payment" : "Not paid") %>
+        </strong>
+      </div>
 
-			<% if (payment_order.coo_confirm && !payment_order.accounting_confirm ) || (!payment_order.department_confirm && current_user.role == payment_order.user.role ) %>
+      <div class="po-card__stage <%= "is-done" if delivery_state == :done %> <%= "is-active" if delivery_state == :active %>">
+        <span class="po-card__stage-icon">
+          <i class="fa-solid <%= delivery_state == :done ? "fa-check" : "fa-truck-fast" %>"></i>
+        </span>
+        <span class="po-card__stage-label">Delivery</span>
+        <strong>
+          <%= delivery_state == :done ? "Delivered" : (delivery_state == :active ? "Wait for delivery" : "Not delivered") %>
+        </strong>
+        <% if delivery_state == :done && payment_order.delivered_at.present? %>
+          <small><%= payment_order.delivered_at.strftime("%d %b") %></small>
+        <% end %>
+      </div>
 
-			<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
-			<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-			<% end %>
+    </div>
 
-			<% end %>
-			<% end %>
+  <% end %>
 
+  <div class="po-card__main">
 
-			<% if user_signed_in? && current_user.is_manager && !payment_order.rejected_at  %>
-			<% if (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
-				(current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
-				(current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||
-				(!payment_order.department_confirm && current_user.role == payment_order.user.role) || (current_user.cob? && !payment_order.cob_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) %>
+    <div class="po-card__amount">
+      <span class="po-card__caption">AMOUNT</span>
+      <strong><%= number_with_delimiter(payment_order.amount, delimiter: ",") %></strong>
+      <span><%= payment_order.currency.to_s.upcase %></span>
+    </div>
 
-				<%= link_to confirm_payment_order_path(payment_order), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to confirm this payment order, this action can not be undo!' } do %>
-				<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-				<% end %>
+    <div class="po-card__requester">
+      <span class="po-card__caption">REQUESTED BY</span>
+      <strong><%= payment_order.user&.name %></strong>
+    </div>
 
-				<% end %>
-				<% end %>
-				<% if !payment_order.coo_confirm.present? %>
-				<% if (current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?) %>
-				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
-				<i class="bi bi-pencil-fill"></i>
-				<% end %>
+    <% if payment_order.project.present? %>
+      <div class="po-card__reference">
+        <span class="po-card__caption">PROJECT</span>
+        <%= link_to payment_order.project.number, project_path(payment_order.project) %>
+      </div>
+    <% end %>
 
+    <% if payment_order.booking.present? %>
+      <div class="po-card__reference">
+        <span class="po-card__caption">BOOKING</span>
+        <%= link_to payment_order.booking.number, project_path(payment_order.booking.project, anchor: "booking-#{payment_order.booking_id}") %>
+      </div>
+    <% end %>
 
+    <% if payment_order.ballance.present? %>
+      <div class="po-card__reference">
+        <span class="po-card__caption">INVENTORY</span>
+        <%= link_to payment_order.ballance.number, ballance_path(payment_order.ballance) %>
+      </div>
+    <% end %>
 
+    <% if payment_order.spi.present? %>
+      <div class="po-card__reference">
+        <span class="po-card__caption">PI</span>
+        <strong><%= payment_order.spi.number %></strong>
+      </div>
+    <% end %>
 
+    <% if payment_order.sci.present? %>
+      <div class="po-card__reference">
+        <span class="po-card__caption">CI</span>
+        <strong><%= payment_order.sci.number %></strong>
+      </div>
+    <% end %>
 
-				<%= link_to payment_order_path(payment_order), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this payment_order, this action can not be undo!' } do %>
-				<i class="bi bi-trash text-danger"></i>
-				<% end %>
+  </div>
 
-				<% end %>
-				<% end %>
+  <% if payment_order.details.present? || payment_order.cost_type.present? %>
+    <div class="po-card__description">
+      <% if payment_order.details.present? %>
+        <span><%= payment_order.details %></span>
+      <% end %>
+      <% if payment_order.cost_type.present? %>
+        <small><%= payment_order.cost_type %></small>
+      <% end %>
+    </div>
+  <% end %>
 
-				<% if current_user.admin? %>
-				<%= link_to edit_payment_order_path(payment_order), data: { controller: "bs-modal-form" } do %>
-				<i class="bi bi-pencil-fill"></i>
-				<% end %>
-				<% end %>
+  <% if payment_order.hamed_confirm? || payment_order.shaghayegh_confirm? %>
+    <div class="po-card__special-approvals">
+      <% if payment_order.hamed_confirm? %>
+        <span><i class="fa-solid fa-check-circle"></i> Mr. Iranshahy</span>
+      <% end %>
+      <% if payment_order.shaghayegh_confirm? %>
+        <span><i class="fa-solid fa-check-circle"></i> Accounting</span>
+      <% end %>
+    </div>
+  <% end %>
 
-				<%= link_to payment_order_path(payment_order) do %>
-				<i class="bi bi-eye-fill"></i>
-				<% end %>
+  <div class="po-card__approval-history">
 
+    <% unless payment_order.mahramane? %>
+      <% [
+        ["Manager", payment_order.department_confirm, payment_order.department_confirmed_at],
+        ["COO", payment_order.coo_confirm, payment_order.coo_confirmed_at],
+        ["Accounting", payment_order.accounting_confirm, payment_order.accounting_confirmed_at]
+      ].each do |label, confirmed, confirmed_at| %>
+        <div class="po-card__approval <%= confirmed ? "is-approved" : "is-pending" %>">
+          <i class="fa-solid <%= confirmed ? "fa-circle-check" : "fa-circle" %>"></i>
+          <span><%= label %></span>
+          <% if confirmed_at.present? %>
+            <small><%= confirmed_at.strftime("%d %b") %></small>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
 
+    <% [
+      ["CEO", payment_order.ceo_confirm, payment_order.ceo_confirmed_at],
+      ["COB", payment_order.cob_confirm, payment_order.cob_confirmed_at]
+    ].each do |label, confirmed, confirmed_at| %>
+      <div class="po-card__approval <%= confirmed ? "is-approved" : "is-pending" %>">
+        <i class="fa-solid <%= confirmed ? "fa-circle-check" : "fa-circle" %>"></i>
+        <span><%= label %></span>
+        <% if confirmed_at.present? %>
+          <small><%= confirmed_at.strftime("%d %b") %></small>
+        <% end %>
+      </div>
+    <% end %>
 
+  </div>
 
-			</div>
+  <div class="po-card__footer">
 
-		</div>
-		<% else %>
-		<div class="col-lg-2 mb-2">
-			<div class="d-flex justify-content-end">
-				<button 
-				data-controller="clipboard" 
-				data-action="click->clipboard#copy" 
-				data-clipboard-text="PO.<%= payment_order.id %> - <%= number_with_delimiter(payment_order.amount, delimiter: ',') %> <%= payment_order.currency %>" 
-				class="me-1 btn btn-outline-secondary btn-sm"
-				style="font-size: 9px;"
+    <button
+      type="button"
+      class="po-card__action"
+      data-controller="clipboard"
+      data-action="click->clipboard#copy"
+      data-clipboard-text="PO.<%= payment_order.id %> - <%= number_with_delimiter(payment_order.amount, delimiter: ",") %> <%= payment_order.currency %>">
+      <i class="fa-regular fa-copy"></i> Copy
+    </button>
 
-				>
-				Copy
-			</button>
-		</div>
-	</div>
-	
-	<% end %>
-</div>
-<hr>
-<div class="row text-center">
-	<% if !payment_order.mahramane %>
-	<div class="col">
-		<p class="confirm-job">Manager</p>
-		<p class="confirmation-date"><%= payment_order.department_confirmed_at&.strftime('%b %d') %></p>
-		<i class="<%= payment_order.department_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-	</div>
+    <% if action_name != "show" %>
 
-	<div class="col">
-		<p class="confirm-job">COO</p>
-		<p class="confirmation-date"><%= payment_order.coo_confirmed_at&.strftime('%b %d') %></p>
-		<i class="<%= payment_order.coo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-	</div>
+      <% if user_signed_in? && [29, 47].include?(current_user.id) && !payment_order.rejected_at %>
+        <% if (payment_order.coo_confirm && !payment_order.accounting_confirm) ||
+              (!payment_order.department_confirm && current_user.role == payment_order.user.role) %>
+          <%= link_to confirm_payment_order_path(payment_order),
+            data: { turbo_method: :patch, turbo_confirm: "Confirm this Payment Order?" },
+            class: "po-card__action po-card__action--confirm" do %>
+            <i class="fa-solid fa-check"></i> Confirm
+          <% end %>
+        <% end %>
+      <% end %>
 
-	<div class="col">
-		<p class="confirm-job">Accounting</p>
-		<p class="confirmation-date"><%= payment_order.accounting_confirmed_at&.strftime('%b %d') %></p>
-		<i class="<%= payment_order.accounting_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-	</div>
-	<% end %>
+      <% if user_signed_in? && current_user.is_manager && !payment_order.rejected_at %>
+        <% can_confirm =
+          (current_user.ceo? && !payment_order.ceo_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) ||
+          (current_user.accounting? && payment_order.coo_confirm && !payment_order.accounting_confirm) ||
+          (current_user.procurement? && !payment_order.coo_confirm && payment_order.department_confirm) ||
+          (!payment_order.department_confirm && current_user.role == payment_order.user.role) ||
+          (current_user.cob? && !payment_order.cob_confirm && payment_order.coo_confirm && payment_order.accounting_confirm && payment_order.department_confirm) %>
 
-	<div class="col">
-		<p class="confirm-job">CEO</p>
-		<p class="confirmation-date"><%= payment_order.ceo_confirmed_at&.strftime('%b %d') %></p>
-		<i class="<%= payment_order.ceo_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-	</div>
+        <% if can_confirm %>
+          <%= link_to confirm_payment_order_path(payment_order),
+            data: { turbo_method: :patch, turbo_confirm: "Confirm this Payment Order?" },
+            class: "po-card__action po-card__action--confirm" do %>
+            <i class="fa-solid fa-check"></i> Confirm
+          <% end %>
+        <% end %>
+      <% end %>
 
-	<div class="col">
-		<p class="confirm-job">COB</p>
-		<p class="confirmation-date"><%= payment_order.cob_confirmed_at&.strftime('%b %d') %></p>
-		<i class="<%= payment_order.cob_confirm ? 'bi bi-check-circle text-success confirm-size' : 'bi bi-slash-circle text-danger confirm-size' %>"></i>
-	</div>
+      <% if !payment_order.coo_confirm? && ((current_user == payment_order.user) || (current_user.is_manager && current_user.procurement?)) %>
+        <%= link_to edit_payment_order_path(payment_order),
+          data: { controller: "bs-modal-form" },
+          class: "po-card__action" do %>
+          <i class="fa-solid fa-pen"></i>
+        <% end %>
 
-</div>
+        <%= link_to payment_order_path(payment_order),
+          data: { turbo_method: :delete, turbo_confirm: "Delete this Payment Order?" },
+          class: "po-card__action po-card__action--delete" do %>
+          <i class="fa-solid fa-trash"></i>
+        <% end %>
+      <% end %>
+
+      <% if current_user.admin? %>
+        <%= link_to edit_payment_order_path(payment_order),
+          data: { controller: "bs-modal-form" },
+          class: "po-card__action" do %>
+          <i class="fa-solid fa-pen"></i>
+        <% end %>
+      <% end %>
+
+      <%= link_to payment_order_path(payment_order),
+        class: "po-card__action po-card__action--open" do %>
+        <i class="fa-solid fa-arrow-right"></i> Open
+      <% end %>
+
+    <% end %>
+
+  </div>
 
 </li>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

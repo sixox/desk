@@ -2,68 +2,107 @@
 <div class="row row-tight">
 
   <!-- PAYMENT ORDERS -->
-  <div class="col-12 col-xl-6">
+<div class="col-12 col-xl-6">
 
-    <section class="m-card mb-3 h-100">
+  <section class="m-card mb-3 h-100 po-dashboard-card">
 
-      <header class="m-card__header">
-        <div>
-          <h2 class="m-card__title">Latest Payment Orders</h2>
-          <p class="m-card__subtitle">Recent payment activity</p>
-        </div>
+    <header class="m-card__header">
 
-        <%= link_to "View all", payment_orders_path, class: "m-btn m-btn--ghost" %>
-      </header>
+      <div>
+        <h2 class="m-card__title">
+          <i class="fa-solid fa-money-bill-transfer me-2"></i>
+          Latest Payment Orders
+        </h2>
 
-      <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0">
-
-          <thead>
-            <tr>
-              <th>PO</th>
-              <th>Amount</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <% @latest_payment_orders.first(6).each do |payment_order| %>
-              <tr>
-                <td>
-                  <%= link_to payment_order.id, payment_order_path(payment_order) %>
-                </td>
-
-                <td class="fw-semibold text-nowrap">
-                  <%= number_with_delimiter(payment_order.amount, delimiter: ",") %>
-                  <small class="text-body-secondary">
-                    <%= payment_order.currency %>
-                  </small>
-                </td>
-
-                <td class="text-body-secondary small">
-                  <span title="<%= payment_order.details %>">
-                    <%= truncate(payment_order.details, length: 35) %>
-                  </span>
-                </td>
-              </tr>
-            <% end %>
-
-            <% if @latest_payment_orders.empty? %>
-              <tr>
-                <td colspan="3" class="text-center text-body-secondary py-3">
-                  No payment orders.
-                </td>
-              </tr>
-            <% end %>
-
-          </tbody>
-
-        </table>
+        <p class="m-card__subtitle">
+          Recent company payment requests
+        </p>
       </div>
 
-    </section>
+      <%= link_to "View all",
+        payment_orders_path,
+        class: "m-btn m-btn--ghost" %>
 
-  </div>
+    </header>
+
+
+    <div class="po-dashboard-list">
+
+      <% @latest_payment_orders.first(6).each do |payment_order| %>
+
+        <%
+          label, status_class =
+            case payment_order.status
+            when "wait for confirm"
+              ["Confirmation", "is-confirmation"]
+            when "wait for payment"
+              ["Payment pending", "is-payment"]
+            when "wait for delivery"
+              ["Delivery pending", "is-delivery"]
+            when "delivered"
+              ["Delivered", "is-delivered"]
+            when "rejected"
+              ["Rejected", "is-rejected"]
+            else
+              [payment_order.status.to_s.humanize, "is-pending"]
+            end
+        %>
+
+        <%= link_to payment_order_path(payment_order),
+          class: "po-dashboard-item" do %>
+
+          <div class="po-dashboard-item__icon">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+
+          <div class="po-dashboard-item__main">
+
+            <strong>
+              PO #<%= payment_order.id %>
+            </strong>
+
+            <small>
+              <%= truncate(payment_order.details, length: 48) %>
+            </small>
+
+          </div>
+
+          <div class="po-dashboard-item__side">
+
+            <strong>
+              <%= number_with_delimiter(payment_order.amount, delimiter: ",") %>
+            </strong>
+
+            <small>
+              <%= payment_order.currency.to_s.upcase %>
+            </small>
+
+            <span class="po-card__status <%= status_class %>">
+              <%= label %>
+            </span>
+
+          </div>
+
+        <% end %>
+
+      <% end %>
+
+
+      <% if @latest_payment_orders.empty? %>
+
+        <div class="po-index__empty">
+          <i class="fa-regular fa-folder-open"></i>
+          <strong>No Payment Orders</strong>
+          <span>Recent payment activity will appear here.</span>
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </section>
+
+</div>
 
   <!-- TRANSACTIONS -->
   <div class="col-12 col-xl-6">

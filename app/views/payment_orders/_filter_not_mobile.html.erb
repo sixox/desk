@@ -1,39 +1,54 @@
-<% if @in_page == "mine" %>
+<%
+  if @in_page == "mine"
 
+    filters = [
+      ["All My Orders", mine_payment_orders_path, params[:status].blank?],
+      ["Awaiting Confirmation", mine_payment_orders_path(status: "wait for confirm"), params[:status] == "wait for confirm"],
+      ["Awaiting Payment", mine_payment_orders_path(status: "wait for payment"), params[:status] == "wait for payment"],
+      ["Awaiting Delivery", mine_payment_orders_path(status: "wait for delivery"), params[:status] == "wait for delivery"],
+      ["Delivered", mine_payment_orders_path(status: "delivered"), params[:status] == "delivered"],
+      ["Rejected", mine_payment_orders_path(status: "rejected"), params[:status] == "rejected"]
+    ]
 
-<div class="row m-4 mb-1">
-	<div class="col-lg-10 mx-auto">
-		<%= link_to "Wait for Confirm", mine_payment_orders_path(status: "wait for confirm"), class: "btn btn-primary#{' active' if params[:status] == 'wait for confirm'}" %>
-		<%= link_to "Wait for Payment", mine_payment_orders_path(status: "wait for payment"), class: "btn btn-primary#{' active' if params[:status] == 'wait for payment'}" %>
-		<%= link_to "Delivered", mine_payment_orders_path(status: "delivered"), class: "btn btn-primary#{' active' if params[:status] == 'delivered'}" %>
-		<%= link_to "Wait for Delivery", mine_payment_orders_path(status: "wait for delivery"), class: "btn btn-primary#{' active' if params[:status] == 'wait for delivery'}" %>
-		<%= link_to "Rejected", mine_payment_orders_path(status: "rejected"), class: "btn btn-primary#{' active' if params[:status] == 'rejected'}" %>
+  else
 
-	</div>
+    filters = [
+      ["All", payment_orders_path, @in_page == "index"],
+      ["Awaiting Confirmation", not_confirmed_payment_orders_path, @in_page == "not confirmed"],
+      ["Awaiting Payment", not_paid_payment_orders_path, @in_page == "notp"],
+      ["Awaiting Delivery", not_delivered_payment_orders_path, @in_page == "notd"],
+      ["Pending", pending_payment_orders_path, @in_page == "pending"],
+      ["Finished", finished_payment_orders_path, @in_page == "finished"],
+      ["Rejected", rejected_payment_orders_path, @in_page == "rejected"]
+    ]
 
-</div>
-<% else %>
-		<div class="row mt-2 mb-1">
-	<div class="col-lg-12">
-		<div class="btn-group btn-group-sm">
-			<%= link_to "All", payment_orders_path, class: "btn btn-primary #{@in_page == "index"  ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Not Confirmed', not_confirmed_payment_orders_path, class: "btn btn-primary #{@in_page == "not confirmed" ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Not Paid', not_paid_payment_orders_path, class: "btn btn-primary #{@in_page == "notp" ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Not Delivered', not_delivered_payment_orders_path, class: "btn btn-primary #{@in_page == "notd" ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Pending', pending_payment_orders_path, class: "btn btn-primary #{@in_page == "pending" ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Finished', finished_payment_orders_path, class: "btn btn-primary #{@in_page == "finished" ? 'text-dark' : ''}" %>
-			<% if current_user.is_manager || current_user.id == 29 || current_user.id == 47 %>
-			<%= link_to 'Need My Confirm', confirmable_payment_orders_path, class: "btn btn-primary #{@in_page == "confirmable" ? 'text-dark' : ''}" %>
-			<% end %>
-			<%= link_to 'Rejected', rejected_payment_orders_path, class: "btn btn-primary #{@in_page == "rejected" ? 'text-dark' : ''}" %>
-			
-			<%= link_to 'Mine', mine_payment_orders_path, class: "btn btn-primary #{@in_page == "mine" ? 'text-dark' : ''}" %>
-		</div>
-	</div>
-</div>
-<% end %>
+    if current_user.is_manager || [29, 47].include?(current_user.id)
+      filters.insert(
+        6,
+        ["Need My Confirmation", confirmable_payment_orders_path, @in_page == "confirmable"]
+      )
+    end
+
+    filters << ["Mine", mine_payment_orders_path, false]
+
+  end
+%>
+
+<nav class="po-filter-nav" aria-label="Payment Order filters">
+
+  <% filters.each do |label, path, active| %>
+
+    <%= link_to path,
+      class: "po-filter-nav__link #{'is-active' if active}" do %>
+
+      <%= label %>
+
+      <% if active %>
+        <i class="fa-solid fa-check"></i>
+      <% end %>
+
+    <% end %>
+
+  <% end %>
+
+</nav>
