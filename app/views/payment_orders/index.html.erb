@@ -362,23 +362,21 @@
 
     <!-- SEARCH -->
 
-    <%= search_form_for @q,
-      url: request.path,
+    <%= form_with url: request.path,
+      method: :get,
+      local: true,
       html: { class: "po-index__search" } do |f| %>
 
       <div class="po-index__search-field">
-
         <i class="fa-solid fa-magnifying-glass"></i>
 
-        <%= f.search_field :id_eq_or_details_cont_or_amount_cont_or_project_number_cont_or_ballance_number_cont,
-  class: "form-control",
-  placeholder: "Search PO number, details, amount, project or inventory" %>
-
+        <%= f.search_field :search,
+          value: params[:search],
+          class: "form-control",
+          placeholder: "Search PO number, details, amount, project or inventory" %>
       </div>
 
-      <%= f.submit "Search",
-        class: "po-index__search-submit" %>
-
+      <%= f.submit "Search", class: "po-index__search-submit" %>
     <% end %>
 
 

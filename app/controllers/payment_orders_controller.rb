@@ -39,10 +39,10 @@ class PaymentOrdersController < ApplicationController
 	  @q = PaymentOrder.ransack(params[:q])
 
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? || cu.cob?
-	  	@payment_orders = @q.result.order(created_at: :desc).page(params[:page]).per(6)
+	  	@payment_orders = apply_directory_search(@q.result).order(created_at: :desc).page(params[:page]).per(6)
 	  	
 	  elsif cu.logistics?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.joins(:user)
 	  	.where(users: { role: ['sales', 'procurement', 'logistics'] })
 	  	.where.not(user_id: 9)
@@ -51,7 +51,7 @@ class PaymentOrdersController < ApplicationController
 	  	.per(6)
 
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.filtered_by_role(cu)
 	  	.where.not(user_id: 9)
 	  	.order(created_at: :desc)
@@ -201,13 +201,13 @@ class PaymentOrdersController < ApplicationController
 	  @q = PaymentOrder.ransack(params[:q])
 	  
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? ||cu.cob?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.where(status: 'wait for payment')
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.joins(:user)
 	  	.where(users: { role: cu.role })
 	  	.where(status: 'wait for payment')
@@ -226,7 +226,7 @@ class PaymentOrdersController < ApplicationController
 	  # Initialize Ransack search object
 	  @q = PaymentOrder.ransack(params[:q])
 
-	  base_query = @q.result.where(status: 'wait for confirm', reject_by: nil).order(created_at: :desc)
+	  base_query = apply_directory_search(@q.result).where(status: 'wait for confirm', reject_by: nil).order(created_at: :desc)
 
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.ceo? || cu.cob?
 	  	@payment_orders = base_query.page(params[:page]).per(6)
@@ -244,13 +244,13 @@ class PaymentOrdersController < ApplicationController
 	  @q = PaymentOrder.ransack(params[:q])
 
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.accounting? || cu.cob? || cu.ceo?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.where(status: 'delivered')
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.joins(:user)
 	  	.where(users: { role: cu.role })
 	  	.where.not(user_id: 9)
@@ -270,13 +270,13 @@ class PaymentOrdersController < ApplicationController
 	  @q = PaymentOrder.ransack(params[:q])
 
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.cob? || cu.accounting? || cu.ceo?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.where(status: 'rejected')
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.joins(:user)
 	  	.where(users: { role: cu.role })
 	  	.where.not(user_id: 9)
@@ -296,13 +296,13 @@ class PaymentOrdersController < ApplicationController
 	  @q = PaymentOrder.ransack(params[:q])
 
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.cob? || cu.accounting? || cu.ceo?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.where.not(status: 'delivered')
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.joins(:user)
 	  	.where(users: { role: cu.role })
 	  	.where.not(user_id: 9)
@@ -322,13 +322,13 @@ class PaymentOrdersController < ApplicationController
 	  @q = PaymentOrder.ransack(params[:q])
 
 	  if (cu.is_manager && cu.procurement?) || cu.admin? || cu.cob? || cu.accounting? || cu.ceo?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.where(status: 'wait for delivery')
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.joins(:user)
 	  	.where(users: { role: cu.role })
 	  	.where.not(user_id: 9)
@@ -349,13 +349,13 @@ class PaymentOrdersController < ApplicationController
 	  @q = cu.payment_orders.ransack(params[:q])
 
 	  if status.present?
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.by_status(status)
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
 	  else
-	  	@payment_orders = @q.result
+	  	@payment_orders = apply_directory_search(@q.result)
 	  	.order(created_at: :desc)
 	  	.page(params[:page])
 	  	.per(6)
@@ -369,9 +369,9 @@ class PaymentOrdersController < ApplicationController
 
 		if cu.accounting?
 			@release_requests = ReleaseRequest
-				  .where(confirmed: [false, nil])
-				  .includes(booking: { project: { pi: :customer } })
-				  .order(created_at: :desc)
+			.where(confirmed: [false, nil])
+			.includes(booking: { project: { pi: :customer } })
+			.order(created_at: :desc)
 		end
 
 	  # Initialize Ransack search object
@@ -379,21 +379,21 @@ class PaymentOrdersController < ApplicationController
 
 	  if cu.is_manager || cu.id == 29 || cu.id == 47
 	  	if cu.ceo?
-	  		@payment_orders = @q.result
+	  		@payment_orders = apply_directory_search(@q.result)
 	  		.not_confirmed_by_ceo_but_by_coo_and_accounting
 	  		.order(created_at: :desc)
 	  	elsif cu.cob?
-	  		@payment_orders = @q.result
+	  		@payment_orders = apply_directory_search(@q.result)
 	  		.not_confirmed_by_cob_but_by_ceo_and_accounting
 	  		.order(created_at: :desc)
 
 	  	elsif cu.procurement?
-	  		@payment_orders = @q.result
+	  		@payment_orders = apply_directory_search(@q.result)
 	  		.not_confirmed_by_coo
 	  		.order(created_at: :desc)
 	  	elsif cu.accounting?
 	  		accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
-	  		@payment_orders = @q.result
+	  		@payment_orders = apply_directory_search(@q.result)
 	  		.not_confirmed_by_accounting
 	  		.order(created_at: :desc)
 	  		@payment_orders += accounting_pos
@@ -519,7 +519,7 @@ class PaymentOrdersController < ApplicationController
 		      	new_amount = @bank.account_balance - @payment_order.amount.to_f
 		      	withdrawal_amount = @payment_order.amount.to_i
 		      end
-		    elsif @payment_order.currency != @bank.currency && (@payment_order.exchange_amount.present? || params[:payment_order][:exchange_amount].present?)
+		  elsif @payment_order.currency != @bank.currency && (@payment_order.exchange_amount.present? || params[:payment_order][:exchange_amount].present?)
 		      # Scenario 2: Currencies don't match, but exchange_amount is provided
 		      if @payment_order.valid?
 		      	@payment_order.save
@@ -528,134 +528,154 @@ class PaymentOrdersController < ApplicationController
 		      else
 		      	render :show and return
 		      end
-		    else
+		  else
 		      # Scenario 3: Currencies don't match and no exchange_amount is provided
 		      @payment_order.errors.add(:currency, "does not match with the bank's currency and no exchange amount provided")
 		      @p_mas = "does not match with the bank's currency and no exchange amount provided"
 		      render :show and return
-		    end
-		    if @bank.update(account_balance: new_amount)
-		    	transaction = @payment_order.transactions.create(
-		    		withdrawal_amount: withdrawal_amount , 
-		    		bank: @bank,
-		    		balance_before_transaction: current_balance.to_i,
-		    		balance_after_transaction: new_amount.to_i
-		    		)
-		    else
-		    	format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
+		  end
+		  if @bank.update(account_balance: new_amount)
+		  	transaction = @payment_order.transactions.create(
+		  		withdrawal_amount: withdrawal_amount , 
+		  		bank: @bank,
+		  		balance_before_transaction: current_balance.to_i,
+		  		balance_after_transaction: new_amount.to_i
+		  		)
+		  else
+		  	format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
 		      # Handle error
-		    end
-		  end
-
-		  respond_to do |format|
-		  	if @payment_order.update(payment_order_params)
-		  		redirect_to @payment_order, notice: 'Payment order was successfully updated.'
-		  	else
-		  		format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
-		  	end
 		  end
 		end
 
-
-
-		def toggle_announce
-			@payment_order.update(announce: !@payment_order.announce)
-			
-			respond_to do |format|
-				format.html { redirect_back fallback_location: @payment_order, notice: "Announce status updated." }
-		    format.turbo_stream # For Turbo updates (if using Turbo)
-		  end
-		end
-
-		def destroy
-			respond_to do |format|
-				@payment_order.destroy
-				format.turbo_stream { render turbo_stream: turbo_stream.remove("payment_order_item_#{@payment_order.id}") }
+		respond_to do |format|
+			if @payment_order.update(payment_order_params)
+				redirect_to @payment_order, notice: 'Payment order was successfully updated.'
+			else
+				format.turbo_stream { render turbo_stream: turbo_stream.replace('remote_modal', partial: 'shared/turbo_modal', locals: { form_partial: 'payment_orders/form', modal_title: 'Edit payment_order ' })}
 			end
 		end
-
-
-
-
-		private
-
-		def parse_selected_date(selected_year_param, selected_month_param)
-			if selected_year_param.present? && selected_month_param.present?
-				selected_year = selected_year_param.to_i
-				selected_month = selected_month_param.to_i
-				Date.new(selected_year, selected_month)
-			else
-	    nil # Handle the case when no year and month are selected
-	  end
 	end
 
 
-	def set_payment_order
-		@payment_order = PaymentOrder.find(params[:id])	
-		@banks = Bank.all
 
+	def toggle_announce
+		@payment_order.update(announce: !@payment_order.announce)
+		
+		respond_to do |format|
+			format.html { redirect_back fallback_location: @payment_order, notice: "Announce status updated." }
+		    format.turbo_stream # For Turbo updates (if using Turbo)
+		end
 	end
 
-	def set_form_items
-		@ballances = Ballance.all.reverse
-		@projects = Project.all.reverse
-		@bookings = Booking.all.reverse
-		@spis = Spi.all.reverse
-		@scis = Sci.all.reverse
-		@banks = Bank.all
-
-
-	end
-
-	def set_access_to_secret
-		if current_user.ceo? || current_user.cob? || current_user.admin? || (current_user.accounting? && current_user.is_manager )
-			@access_to_secret = true
+	def destroy
+		respond_to do |format|
+			@payment_order.destroy
+			format.turbo_stream { render turbo_stream: turbo_stream.remove("payment_order_item_#{@payment_order.id}") }
 		end
 	end
 
 
-	def payment_order_params
-		params.require(:payment_order).permit(
-			:reference,
-			:amount,
-			:from,
-			:to,
-			:receiver,
-			:receiver_account,
-			:details,
-			:exchange_rate,
-			:exchange_amount,
-			:have_factor,
-			:inserted,
-			:payment_type,
-			:department_confirm,
-			:accounting_confirm,
-			:ceo_confirm,
-			:status,
-			:currency,
-			:user_id,
-			:project_id,
-			:sci_id,
-			:spi_id,
-			:ballance_id,
-			:booking_id,
-			:is_rahkarsazan,
-			:document,
-			:coo_confirm,
-			:receipt,
-			:delivery_confirm,
-			:ceo_confirmed_at,
-			:coo_confirmed_at,
-			:department_confirmed_at,
-			:accounting_confirmed_at,
-			:delivered_at,
-			:reject_by,
-			:rejected_at,
-			:bank_id,
-			:mahramane,
-			:cost_type
+
+
+	private
+
+	def apply_directory_search(relation)
+		term = params[:search].to_s.strip
+		return relation if term.blank?
+
+		search_term = "%#{ActiveRecord::Base.sanitize_sql_like(term)}%"
+
+		relation
+		.left_joins(:project, :ballance)
+		.where(
+			<<~SQL,
+			CAST(payment_orders.id AS CHAR) LIKE :term
+			OR payment_orders.details LIKE :term
+			OR CAST(payment_orders.amount AS CHAR) LIKE :term
+			OR projects.number LIKE :term
+			OR ballances.number LIKE :term
+			SQL
+			term: search_term
 			)
 	end
+
+	def parse_selected_date(selected_year_param, selected_month_param)
+		if selected_year_param.present? && selected_month_param.present?
+			selected_year = selected_year_param.to_i
+			selected_month = selected_month_param.to_i
+			Date.new(selected_year, selected_month)
+		else
+	    nil # Handle the case when no year and month are selected
+	end
+end
+
+
+def set_payment_order
+	@payment_order = PaymentOrder.find(params[:id])	
+	@banks = Bank.all
+
+end
+
+def set_form_items
+	@ballances = Ballance.all.reverse
+	@projects = Project.all.reverse
+	@bookings = Booking.all.reverse
+	@spis = Spi.all.reverse
+	@scis = Sci.all.reverse
+	@banks = Bank.all
+
+
+end
+
+def set_access_to_secret
+	if current_user.ceo? || current_user.cob? || current_user.admin? || (current_user.accounting? && current_user.is_manager )
+		@access_to_secret = true
+	end
+end
+
+
+def payment_order_params
+	params.require(:payment_order).permit(
+		:reference,
+		:amount,
+		:from,
+		:to,
+		:receiver,
+		:receiver_account,
+		:details,
+		:exchange_rate,
+		:exchange_amount,
+		:have_factor,
+		:inserted,
+		:payment_type,
+		:department_confirm,
+		:accounting_confirm,
+		:ceo_confirm,
+		:status,
+		:currency,
+		:user_id,
+		:project_id,
+		:sci_id,
+		:spi_id,
+		:ballance_id,
+		:booking_id,
+		:is_rahkarsazan,
+		:document,
+		:coo_confirm,
+		:receipt,
+		:delivery_confirm,
+		:ceo_confirmed_at,
+		:coo_confirmed_at,
+		:department_confirmed_at,
+		:accounting_confirmed_at,
+		:delivered_at,
+		:reject_by,
+		:rejected_at,
+		:bank_id,
+		:mahramane,
+		:cost_type
+		)
+end
 
 
 end
