@@ -1319,3 +1319,592 @@
     flex: 1 1 100%;
   }
 }
+
+
+
+/* ==========================================================
+   PAYMENT ORDERS — COMPACT COOLADMIN DIRECTORY
+   ========================================================== */
+
+.po-index__list {
+  display: flex !important;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.po-card {
+  --po-accent: #6675d9;
+  --po-soft: #f1f3ff;
+  --po-line: #e2e6f1;
+
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 15px 18px 12px;
+  overflow: hidden;
+  border: 1px solid var(--po-line);
+  border-left: 5px solid var(--po-accent);
+  border-radius: 13px;
+  background:
+    linear-gradient(115deg, var(--po-soft) 0%, #fff 36%, #fff 100%);
+  box-shadow: 0 4px 15px rgba(35, 48, 85, .055);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.po-card::after {
+  position: absolute;
+  top: -42px;
+  right: -30px;
+  width: 145px;
+  height: 145px;
+  border-radius: 50%;
+  background: var(--po-soft);
+  content: "";
+  opacity: .65;
+  pointer-events: none;
+}
+
+.po-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 24px rgba(35, 48, 85, .1);
+}
+
+/* Workflow colors */
+
+.po-card--wait-for-confirm {
+  --po-accent: #d28a38;
+  --po-soft: #fff6e9;
+  --po-line: #f0dfc6;
+}
+
+.po-card--wait-for-payment {
+  --po-accent: #d29a2f;
+  --po-soft: #fff8e8;
+  --po-line: #f0e2c6;
+}
+
+.po-card--wait-for-delivery {
+  --po-accent: #438bc5;
+  --po-soft: #edf6ff;
+  --po-line: #d7e7f6;
+}
+
+.po-card--delivered {
+  --po-accent: #299568;
+  --po-soft: #eaf8f0;
+  --po-line: #d2ebdc;
+}
+
+.po-card--rejected {
+  --po-accent: #d34e5a;
+  --po-soft: #fff0f0;
+  --po-line: #f1d4d6;
+}
+
+/* Special card identities */
+
+.po-card--secret {
+  --po-soft: #f2eafd;
+  --po-line: #dfcbed;
+  border-color: #dfcbed;
+  border-left-color: #9562bd;
+  background: linear-gradient(110deg, #f1e8fb 0%, #fff 58%);
+}
+
+.po-card--rahkarsazan {
+  --po-soft: #fff2d9;
+  --po-line: #efdbb3;
+  border-color: #efdbb3;
+  border-left-color: #c18b32;
+  background: linear-gradient(110deg, #fff1d5 0%, #fff 58%);
+}
+
+.po-card--secret.po-card--rahkarsazan {
+  --po-soft: #f4e9f4;
+  border-color: #e7d4dc;
+  border-left-color: #a16a9d;
+  background: linear-gradient(110deg, #f0e7f8 0%, #fff3dc 52%, #fff 100%);
+}
+
+/* Header */
+
+.po-card__top,
+.po-card__identity {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.po-card__top {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.po-card__number {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: #748098;
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.po-card__number strong {
+  color: var(--po-accent);
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: -.04em;
+}
+
+.po-card__number:hover {
+  color: var(--po-accent);
+}
+
+.po-card__date {
+  color: #8d97aa;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.po-card__date i {
+  margin-right: 4px;
+}
+
+.po-card__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .035em;
+}
+
+.po-card__type--secret {
+  background: #eadcf7;
+  color: #75439e;
+}
+
+.po-card__type--rahkar {
+  background: #ffebc5;
+  color: #98671b;
+}
+
+.po-card__announcement {
+  color: #238d60;
+  font-size: 15px;
+}
+
+/* Workflow: three compact colored pills */
+
+.po-card__workflow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.po-card__stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 29px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.po-card__stage--done {
+  border-color: #cce9d8;
+  background: #e5f6ec;
+  color: #21814e;
+}
+
+.po-card__stage--active {
+  border-color: #f0dfb8;
+  background: #fff2d9;
+  color: #a46d17;
+}
+
+.po-card__stage--waiting {
+  border-color: #e1e6ef;
+  background: #f0f2f7;
+  color: #778299;
+}
+
+.po-card__stage--rejected {
+  border-color: #f1c9ce;
+  background: #ffe8eb;
+  color: #bd3f4d;
+}
+
+/* Rejection */
+
+.po-card__rejected {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 8px 11px;
+  border: 1px solid #f0c9cd;
+  border-radius: 8px;
+  background: #fff0f1;
+  color: #b53d4b;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.po-card__rejected span {
+  margin-left: auto;
+  color: #a77d82;
+  font-size: 9px;
+}
+
+/* Main information */
+
+.po-card__main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 11px 23px;
+  min-height: 47px;
+  padding: 2px 0;
+}
+
+.po-card__amount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 4px 13px 4px 0;
+  border-right: 1px solid rgba(110, 125, 155, .2);
+}
+
+.po-card__amount strong {
+  color: #263653;
+  font-size: clamp(21px, 2vw, 27px);
+  font-weight: 950;
+  letter-spacing: -.045em;
+  line-height: 1.1;
+}
+
+.po-card__amount > span {
+  color: var(--po-accent);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.po-card__requester,
+.po-card__reference {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: #56647c;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.po-card__requester i,
+.po-card__reference i {
+  color: var(--po-accent);
+  font-size: 11px;
+}
+
+.po-card__reference a {
+  color: #5266bc;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.po-card__reference a:hover {
+  text-decoration: underline;
+}
+
+.po-card__cost-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .75);
+  color: #7b8496;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.po-card__cost-type i {
+  color: var(--po-accent);
+}
+
+/* Description */
+
+.po-card__description {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .68);
+  color: #69758b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.po-card__description i {
+  margin-top: 2px;
+  color: var(--po-accent);
+}
+
+.po-card__description span {
+  overflow-wrap: anywhere;
+}
+
+/* Hamed / Shaghayegh alerts */
+
+.po-card__special-alerts {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.po-card__special-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.po-card__special-alert small {
+  font-size: 9px;
+  font-weight: 700;
+  opacity: .8;
+}
+
+.po-card__special-alert--hamed {
+  border-color: #bce6d0;
+  background: #e3f8ed;
+  color: #18794a;
+}
+
+.po-card__special-alert--shaghayegh {
+  border-color: #f0c7d4;
+  background: #fff0f5;
+  color: #b33d69;
+}
+
+/* Five signatures — one horizontal row */
+
+.po-card__approval-history {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  margin-top: 11px;
+  padding: 10px 0 2px;
+  border-top: 1px solid rgba(110, 125, 155, .18);
+}
+
+.po-card__approval {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 3px 8px;
+  border-right: 1px solid rgba(110, 125, 155, .15);
+  color: #a0a8b6;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.po-card__approval:last-child {
+  border-right: 0;
+}
+
+.po-card__approval strong {
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.po-card__approval i {
+  font-size: 12px;
+}
+
+.po-card__approval.is-approved {
+  color: #258451;
+}
+
+.po-card__approval.is-pending {
+  color: #a0a8b6;
+}
+
+.po-card__approval small {
+  color: #8d98a9;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+/* Actions */
+
+.po-card__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(110, 125, 155, .13);
+}
+
+.po-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 29px;
+  padding: 0 10px;
+  border: 1px solid #e1e6ef;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .85);
+  color: #68758c;
+  font-size: 9px;
+  font-weight: 850;
+  text-decoration: none;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.po-card__action:hover {
+  transform: translateY(-1px);
+  border-color: #c5cdec;
+  color: #4d60b8;
+}
+
+.po-card__action--confirm {
+  min-height: 35px;
+  padding: 0 17px;
+  border-color: #23834f;
+  background: linear-gradient(135deg, #2eaa6b, #21814f);
+  color: #fff;
+  box-shadow: 0 3px 9px rgba(35, 135, 80, .18);
+  font-size: 11px;
+}
+
+.po-card__action--confirm:hover {
+  border-color: #176b40;
+  background: #176b40;
+  color: #fff;
+}
+
+.po-card__action--open {
+  border-color: #d8def8;
+  background: #eef0ff;
+  color: #4f61b9;
+}
+
+.po-card__action--delete {
+  color: #bd4c57;
+}
+
+/* Stamp */
+
+.po-card__stamp {
+  position: absolute;
+  top: 45px;
+  right: 25px;
+  z-index: 2;
+  width: 75px;
+  opacity: .55;
+  pointer-events: none;
+}
+
+/* Responsive */
+
+@media (max-width: 850px) {
+  .po-card__top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .po-card__approval-history {
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .po-card__approval {
+    flex: 0 0 auto;
+    min-width: 105px;
+  }
+}
+
+@media (max-width: 560px) {
+  .po-card {
+    padding: 13px;
+  }
+
+  .po-card__main {
+    gap: 10px 14px;
+  }
+
+  .po-card__amount {
+    flex-basis: 100%;
+    border-right: 0;
+    border-bottom: 1px solid rgba(110, 125, 155, .16);
+    padding: 0 0 9px;
+  }
+
+  .po-card__amount strong {
+    font-size: 24px;
+  }
+
+  .po-card__workflow {
+    gap: 5px;
+  }
+
+  .po-card__stage {
+    min-height: 26px;
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+
+  .po-card__footer {
+    justify-content: flex-start;
+  }
+
+  .po-card__action--confirm {
+    flex: 1 1 100%;
+  }
+}
