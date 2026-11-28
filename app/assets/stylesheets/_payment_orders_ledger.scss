@@ -1,0 +1,886 @@
+/* ==========================================================
+   PAYMENT ORDERS — LEDGER DESIGN
+   ========================================================== */
+
+.payment_orders-controller ul.po-index__list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+
+/* ==========================================================
+   BASE CARD
+   ========================================================== */
+
+.po-ledger {
+  --ledger-bg: #ffffff;
+  --ledger-line: #e2e7ee;
+  --ledger-accent: #94a3b8;
+  --ledger-state: #64748b;
+  --ledger-ink: #25344d;
+  --ledger-muted: #65748b;
+  --ledger-surface: rgba(100, 116, 139, .035);
+
+  position: relative;
+  container-type: inline-size;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  list-style: none;
+  color: var(--ledger-ink);
+  background: var(--ledger-bg);
+
+  border: 1px solid var(--ledger-line);
+  border-left: 5px solid var(--ledger-accent);
+  border-radius: 12px;
+
+  box-shadow:
+    0 2px 5px rgba(25, 40, 65, .025),
+    0 6px 18px rgba(25, 40, 65, .035);
+
+  transition: box-shadow .18s ease;
+}
+
+.po-ledger:hover {
+  box-shadow:
+    0 3px 8px rgba(25, 40, 65, .05),
+    0 10px 25px rgba(25, 40, 65, .06);
+}
+
+.po-ledger * {
+  box-sizing: border-box;
+}
+
+.po-ledger a {
+  text-decoration: none;
+}
+
+.po-ledger a:focus-visible,
+.po-ledger button:focus-visible {
+  outline: 2px solid #5279cd;
+  outline-offset: 2px;
+}
+
+
+/* ==========================================================
+   WORKFLOW STATUS — LEFT BORDER ONLY
+   ========================================================== */
+
+/* Waiting for confirmation */
+
+.po-ledger--confirmation {
+  --ledger-accent: #e3a02c;
+  --ledger-state: #a66c12;
+}
+
+/* Confirmed, waiting for payment */
+
+.po-ledger--payment {
+  --ledger-accent: #3678df;
+  --ledger-state: #2865c3;
+}
+
+/* Paid, waiting for delivery */
+
+.po-ledger--delivery {
+  --ledger-accent: #22a06b;
+  --ledger-state: #16834f;
+}
+
+/* Delivered */
+
+.po-ledger--completed {
+  --ledger-accent: #16834f;
+  --ledger-state: #12683e;
+}
+
+/* Rejected at any stage */
+
+.po-ledger--rejected {
+  --ledger-accent: #dc3545;
+  --ledger-state: #c12d40;
+}
+
+/* Unknown status */
+
+.po-ledger--neutral {
+  --ledger-accent: #94a3b8;
+  --ledger-state: #64748b;
+}
+
+
+/* ==========================================================
+   CATEGORY — BACKGROUND ONLY
+
+   These classes must NEVER change --ledger-accent.
+   ========================================================== */
+
+/* Rahkarsazan — Yellow */
+
+.po-ledger--rahkar {
+  --ledger-bg: #fff4d1;
+  --ledger-line: #e9d8a3;
+  --ledger-ink: #403a2b;
+  --ledger-muted: #827044;
+  --ledger-surface: rgba(180, 133, 30, .045);
+}
+
+/* Mahramane — Green
+   Also takes priority if both categories are selected.
+*/
+
+.po-ledger--secret {
+  --ledger-bg: #e3f5e9;
+  --ledger-line: #c3e3ce;
+  --ledger-ink: #244536;
+  --ledger-muted: #527561;
+  --ledger-surface: rgba(22, 131, 79, .045);
+}
+
+
+/* ==========================================================
+   TOP BAR
+   ========================================================== */
+
+.po-ledger__top {
+  display: grid;
+
+  grid-template-columns:
+    minmax(max-content, 1fr)
+    max-content
+    minmax(max-content, 1fr);
+
+  align-items: center;
+  column-gap: 13px;
+
+  min-height: 43px;
+  padding: 8px 17px;
+
+  border-bottom: 1px solid var(--ledger-line);
+  background: var(--ledger-surface);
+}
+
+.po-ledger__number {
+  display: inline-flex;
+  align-items: baseline;
+  justify-self: start;
+  gap: 5px;
+
+  white-space: nowrap;
+  color: var(--ledger-ink);
+}
+
+.po-ledger__number small {
+  color: var(--ledger-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.po-ledger__number strong {
+  color: var(--ledger-ink);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -.9px;
+  line-height: 1;
+}
+
+.po-ledger__number:hover strong {
+  color: var(--ledger-state);
+}
+
+
+/* ==========================================================
+   INLINE WORKFLOW STATUSES
+   ========================================================== */
+
+.po-ledger__workflow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.po-ledger__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 0 10px;
+
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  color: #7c8798;
+}
+
+.po-ledger__status:not(:last-child) {
+  border-right: 1px solid var(--ledger-line);
+}
+
+.po-ledger__status:first-child {
+  padding-left: 0;
+}
+
+.po-ledger__status:last-child {
+  padding-right: 0;
+}
+
+.po-ledger__status > i {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.po-ledger__status--done {
+  color: #16834f;
+}
+
+.po-ledger__status--active {
+  color: var(--ledger-state);
+  font-weight: 800;
+}
+
+.po-ledger__status--waiting {
+  color: #7c8798;
+}
+
+.po-ledger__status--rejected {
+  color: #c12d40;
+  font-weight: 800;
+}
+
+
+/* Creation date */
+
+.po-ledger__date {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+
+  color: var(--ledger-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.po-ledger__date i {
+  font-size: 11px;
+}
+
+
+/* ==========================================================
+   AMOUNT & REQUESTER
+   ========================================================== */
+
+.po-ledger__main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 12px 18px;
+  min-width: 0;
+  padding: 15px 17px;
+}
+
+.po-ledger__amount {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.po-ledger__amount strong {
+  color: var(--ledger-ink);
+  font-size: 31px;
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -1.25px;
+
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.po-ledger__amount > span {
+  color: var(--ledger-state);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+
+.po-ledger__requester {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 0 6px 18px;
+
+  border-left: 1px solid var(--ledger-line);
+
+  font-size: 12px;
+  color: var(--ledger-muted);
+}
+
+.po-ledger__requester i {
+  color: var(--ledger-state);
+  margin-right: 3px;
+  font-size: 13px;
+}
+
+.po-ledger__requester strong {
+  color: var(--ledger-ink);
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================
+   CATEGORY INDICATORS
+   ========================================================== */
+
+.po-ledger__categories {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin-left: auto;
+}
+
+.po-ledger__categories:empty {
+  display: none;
+}
+
+.po-ledger__category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 5px 8px;
+
+  border: 1px solid currentColor;
+  border-radius: 5px;
+
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.po-ledger__category.is-secret {
+  color: #18794e;
+  background: #d1ecdb;
+  border-color: #a6d3b8;
+}
+
+.po-ledger__category.is-rahkar {
+  color: #94701c;
+  background: #f9e8ae;
+  border-color: #e3ca80;
+}
+
+.po-ledger__category.is-announced {
+  color: #3467b7;
+}
+
+
+/* ==========================================================
+   RELATED INFORMATION
+   ========================================================== */
+
+.po-ledger__relations {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px 16px;
+  padding: 0 17px 12px;
+}
+
+.po-ledger__reference {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--ledger-ink);
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.po-ledger__reference > i {
+  color: var(--ledger-state);
+  font-size: 12px;
+}
+
+a.po-ledger__reference {
+  color: #3c609c;
+}
+
+a.po-ledger__reference:hover {
+  text-decoration: underline;
+}
+
+
+/* ==========================================================
+   DESCRIPTION
+   ========================================================== */
+
+.po-ledger__description {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  margin: 0 17px 13px;
+  padding: 9px 12px;
+
+  border-radius: 6px;
+
+  background: var(--ledger-surface);
+  color: var(--ledger-ink);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.po-ledger__description > i {
+  flex-shrink: 0;
+  margin-top: 4px;
+
+  color: var(--ledger-state);
+  font-size: 12px;
+}
+
+.po-ledger__description > div {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================
+   REJECTION
+   ========================================================== */
+
+.po-ledger__rejection {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px 9px;
+  margin: 0 17px 12px;
+  padding: 9px 11px;
+
+  border: 1px solid rgba(190, 57, 75, .23);
+  border-radius: 6px;
+
+  background: rgba(208, 63, 82, .08);
+  color: #b63246;
+
+  font-size: 12px;
+}
+
+.po-ledger__rejection > i {
+  font-size: 13px;
+}
+
+.po-ledger__rejection > strong {
+  font-weight: 800;
+}
+
+.po-ledger__rejection > time {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.po-ledger__rejection > small {
+  font-size: 9px;
+  opacity: .85;
+}
+
+
+/* ==========================================================
+   SPECIAL CONFIRMATIONS
+   ========================================================== */
+
+.po-ledger__special {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+
+  padding: 0 17px 11px;
+}
+
+.po-ledger__special > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #18784d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* ==========================================================
+   APPROVAL SIGNATURE STRIP
+   ========================================================== */
+
+.po-ledger__approvals {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  padding: 10px 12px;
+
+  border-top: 1px dashed var(--ledger-line);
+  border-bottom: 1px solid var(--ledger-line);
+
+  background: var(--ledger-surface);
+}
+
+.po-ledger__approvals--secret {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.po-ledger__approval {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+  min-width: 0;
+  min-height: 34px;
+
+  text-align: center;
+}
+
+.po-ledger__approval:not(:last-child) {
+  border-right: 1px solid var(--ledger-line);
+}
+
+.po-ledger__approval > strong {
+  color: var(--ledger-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.po-ledger__approval > small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.po-ledger__approval.is-approved > strong {
+  color: var(--ledger-ink);
+}
+
+.po-ledger__approval.is-approved > small {
+  color: #18784d;
+}
+
+.po-ledger__approval.is-rejected > strong,
+.po-ledger__approval.is-rejected > small {
+  color: #b63246;
+}
+
+.po-ledger__pending {
+  color: var(--ledger-muted);
+  opacity: .55;
+}
+
+
+/* ==========================================================
+   ACTION BAR
+   ========================================================== */
+
+.po-ledger__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: 10px;
+  padding: 8px 17px;
+
+  background: var(--ledger-surface);
+}
+
+.po-ledger__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 5px;
+  margin-left: auto;
+}
+
+.po-ledger__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+  min-height: 29px;
+  padding: 6px 10px;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  background: transparent;
+  color: var(--ledger-muted);
+
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    color .15s ease;
+}
+
+.po-ledger__button:hover {
+  background: rgba(120, 135, 155, .10);
+  color: var(--ledger-ink);
+}
+
+.po-ledger__button.is-delete {
+  color: #b93b4d;
+}
+
+.po-ledger__button.is-delete:hover {
+  background: rgba(190, 57, 75, .10);
+}
+
+.po-ledger__button.is-confirm {
+  padding-left: 13px;
+  padding-right: 13px;
+
+  background: #1b8056;
+  color: #fff;
+}
+
+.po-ledger__button.is-confirm:hover {
+  background: #146b47;
+  color: #fff;
+}
+
+.po-ledger__button.is-open {
+  min-width: 77px;
+  margin-left: 5px;
+
+  background: #293b53;
+  color: #fff;
+}
+
+.po-ledger__button.is-open:hover {
+  background: #17293e;
+  color: #fff;
+}
+
+.po-ledger__button.is-open > i {
+  font-size: 9px;
+}
+
+.po-ledger__required {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #a16b16;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+
+/* ==========================================================
+   NEED MY CONFIRMATION — FILTER
+   ========================================================== */
+
+.payment_orders-controller .po-filter-nav__link.is-confirmation {
+  gap: 7px;
+
+  background: #293b53;
+  border-color: #293b53;
+  color: #fff;
+
+  font-weight: 800;
+}
+
+.payment_orders-controller
+.po-filter-nav__link.is-confirmation > i {
+  color: #ffd479;
+}
+
+.payment_orders-controller
+.po-filter-nav__link.is-confirmation:hover,
+.payment_orders-controller
+.po-filter-nav__link.is-confirmation.is-active {
+  background: #b7802a;
+  border-color: #b7802a;
+  color: #fff;
+}
+
+.payment_orders-controller
+.po-filter-nav__link.is-confirmation.is-active > i {
+  color: #fff;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@container (max-width: 700px) {
+
+  .po-ledger__top {
+    padding-left: 12px;
+    padding-right: 12px;
+    column-gap: 8px;
+  }
+
+  .po-ledger__status {
+    font-size: 10px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .po-ledger__date {
+    font-size: 10px;
+  }
+
+  .po-ledger__number strong {
+    font-size: 19px;
+  }
+
+  .po-ledger__main {
+    gap: 10px 14px;
+  }
+
+  .po-ledger__amount strong {
+    font-size: 28px;
+  }
+
+}
+
+@container (max-width: 520px) {
+
+  .po-ledger__top {
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+  }
+
+  .po-ledger__workflow {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+  }
+
+  .po-ledger__date {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .po-ledger__status {
+    font-size: 10px;
+  }
+
+  .po-ledger__main {
+    padding: 13px 12px;
+  }
+
+  .po-ledger__amount strong {
+    font-size: 27px;
+  }
+
+  .po-ledger__requester {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .po-ledger__requester span {
+    font-size: 11px;
+  }
+
+  .po-ledger__categories {
+    margin-left: 0;
+  }
+
+  .po-ledger__description,
+  .po-ledger__rejection {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .po-ledger__relations,
+  .po-ledger__special {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .po-ledger__approval > strong {
+    font-size: 10px;
+  }
+
+  .po-ledger__approval > small {
+    font-size: 9px;
+  }
+
+  .po-ledger__footer {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .po-ledger__rejection > time {
+    margin-left: 0;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .po-ledger,
+  .po-ledger__button {
+    transition: none;
+  }
+
+}

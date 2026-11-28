@@ -1,50 +1,134 @@
 <%
+  cu = current_user
+
+  can_access_confirmable =
+    cu.is_manager ||
+    cu.accounting? ||
+    cu.ceo? ||
+    [19, 29, 47].include?(cu.id)
+
   if @in_page == "mine"
 
     filters = [
-      ["All My Orders", mine_payment_orders_path, params[:status].blank?],
-      ["Awaiting Confirmation", mine_payment_orders_path(status: "wait for confirm"), params[:status] == "wait for confirm"],
-      ["Awaiting Payment", mine_payment_orders_path(status: "wait for payment"), params[:status] == "wait for payment"],
-      ["Awaiting Delivery", mine_payment_orders_path(status: "wait for delivery"), params[:status] == "wait for delivery"],
-      ["Delivered", mine_payment_orders_path(status: "delivered"), params[:status] == "delivered"],
-      ["Rejected", mine_payment_orders_path(status: "rejected"), params[:status] == "rejected"]
+      [
+        "All My Orders",
+        mine_payment_orders_path,
+        params[:status].blank?
+      ],
+      [
+        "Confirmation",
+        mine_payment_orders_path(status: "wait for confirm"),
+        params[:status] == "wait for confirm"
+      ],
+      [
+        "Payment",
+        mine_payment_orders_path(status: "wait for payment"),
+        params[:status] == "wait for payment"
+      ],
+      [
+        "Delivery",
+        mine_payment_orders_path(status: "wait for delivery"),
+        params[:status] == "wait for delivery"
+      ],
+      [
+        "Delivered",
+        mine_payment_orders_path(status: "delivered"),
+        params[:status] == "delivered"
+      ],
+      [
+        "Rejected",
+        mine_payment_orders_path(status: "rejected"),
+        params[:status] == "rejected"
+      ],
+      [
+        "All Orders",
+        payment_orders_path,
+        false
+      ]
     ]
 
   else
 
     filters = [
-      ["All", payment_orders_path, @in_page == "index"],
-      ["Awaiting Confirmation", not_confirmed_payment_orders_path, @in_page == "not confirmed"],
-      ["Awaiting Payment", not_paid_payment_orders_path, @in_page == "notp"],
-      ["Awaiting Delivery", not_delivered_payment_orders_path, @in_page == "notd"],
-      ["Pending", pending_payment_orders_path, @in_page == "pending"],
-      ["Finished", finished_payment_orders_path, @in_page == "finished"],
-      ["Rejected", rejected_payment_orders_path, @in_page == "rejected"]
+      [
+        "All",
+        payment_orders_path,
+        @in_page == "index"
+      ],
+      [
+        "Confirmation",
+        not_confirmed_payment_orders_path,
+        @in_page == "not confirmed"
+      ],
+      [
+        "Payment",
+        not_paid_payment_orders_path,
+        @in_page == "notp"
+      ],
+      [
+        "Delivery",
+        not_delivered_payment_orders_path,
+        @in_page == "notd"
+      ],
+      [
+        "Pending",
+        pending_payment_orders_path,
+        @in_page == "pending"
+      ],
+      [
+        "Finished",
+        finished_payment_orders_path,
+        @in_page == "finished"
+      ],
+      [
+        "Rejected",
+        rejected_payment_orders_path,
+        @in_page == "rejected"
+      ],
+      [
+        "Mine",
+        mine_payment_orders_path,
+        false
+      ]
     ]
-
-    if current_user.is_manager || [29, 47].include?(current_user.id)
-      filters.insert(
-        6,
-        ["Need My Confirmation", confirmable_payment_orders_path, @in_page == "confirmable"]
-      )
-    end
-
-    filters << ["Mine", mine_payment_orders_path, false]
 
   end
 %>
 
-<nav class="po-filter-nav" aria-label="Payment Order filters">
+
+<nav class="po-filter-nav"
+     aria-label="Payment Order filters">
+
+  <% if can_access_confirmable %>
+
+    <%= link_to confirmable_payment_orders_path,
+      class: "po-filter-nav__link is-confirmation
+        #{'is-active' if @in_page == 'confirmable'}",
+      aria: {
+        current: @in_page == "confirmable" ? "page" : nil
+      } do %>
+
+      <i class="fa-solid fa-bolt"></i>
+
+      Need My Confirmation
+
+    <% end %>
+
+  <% end %>
+
 
   <% filters.each do |label, path, active| %>
 
     <%= link_to path,
-      class: "po-filter-nav__link #{'is-active' if active}" do %>
+      class: "po-filter-nav__link #{'is-active' if active}",
+      aria: { current: active ? "page" : nil } do %>
 
       <%= label %>
 
       <% if active %>
+
         <i class="fa-solid fa-check"></i>
+
       <% end %>
 
     <% end %>
