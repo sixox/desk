@@ -1,59 +1,452 @@
 <% if current_user.car_access? %>
+
   <%
     snapshot = local_assigns[:snapshot] || CarImportRecord.snapshot
     compact = local_assigns[:compact]
+
     cars = snapshot.fetch('Cars', [])
     pis = snapshot.fetch('PIs', [])
     trucks = snapshot.fetch('Trucks', [])
     incidents = snapshot.fetch('Incidents', [])
-    counts = cars.group_by { |r| r.fields['Status'].presence || 'Unknown' }.transform_values(&:size)
+
+    counts = cars.group_by do |record|
+      record.fields['Status'].presence || 'Unknown'
+    end.transform_values(&:size)
+
     total = cars.size
     delivered = counts.fetch('Delivered', 0)
-    percent = total.zero? ? 0 : (delivered * 100.0 / total).round(1)
-    opened = incidents.count { |r| !r.fields['Status'].to_s.casecmp('Closed').zero? }
-    colors = {'Delivered'=>'#15976b', 'Waiting for pickup'=>'#d89b34', 'To destination'=>'#4672ca', 'Docs in process'=>'#9373c6', 'To Sarakhs'=>'#168e9d', 'In Khorgos queue'=>'#c76b45'}
+
+    opened = incidents.count do |record|
+      !record.fields['Status'].to_s.casecmp('Closed').zero?
+    end
+
+    colors = {
+      'Delivered'          => '#15976b',
+      'Waiting for pickup' => '#d89b34',
+      'To destination'     => '#4672ca',
+      'Docs in process'    => '#9373c6',
+      'In Khorgos queue'   => '#c76b45',
+      'To Sarakhs'         => '#168e9d'
+    }
+
+    outstanding_statuses = [
+      'Waiting for pickup',
+      'To destination',
+      'Docs in process',
+      'In Khorgos queue',
+      'To Sarakhs'
+    ]
+
+    status_order = ['Delivered'] + outstanding_statuses
+
+    ordered_statuses =
+      status_order.select { |status| counts.key?(status) } +
+      (counts.keys - status_order).sort_by do |status|
+        -counts.fetch(status, 0)
+      end
+
+    outstanding_total = outstanding_statuses.sum do |status|
+      counts.fetch(status, 0)
+    end
+
+    other_outstanding = total - delivered - outstanding_total
+
+    gradient_segments = []
+    cumulative = 0.0
+
+    if outstanding_total.positive?
+
+      outstanding_statuses.each do |status|
+
+        quantity = counts.fetch(status, 0)
+
+        next if quantity.zero?
+
+        start_percent = cumulative
+
+        cumulative += quantity * 100.0 / outstanding_total
+
+        end_percent = [cumulative, 100.0].min
+
+        gradient_segments << [
+          colors.fetch(status),
+          "#{start_percent.round(4)}%",
+          "#{end_percent.round(4)}%"
+        ].join(' ')
+
+      end
+
+    end
+
+    chart_background =
+      if gradient_segments.any?
+        "conic-gradient(#{gradient_segments.join(', ')})"
+      else
+        '#e9edf3'
+      end
+
     meta = snapshot.fetch('meta', []).first&.fields || {}
   %>
+
+
   <section class="carops mb-3">
+
     <div class="carops-panel">
+
+
+      <!-- HEADER -->
+
       <header class="carops-heading">
-        <div><div class="carops-kicker">AUTOMOTIVE · OPERATIONS</div><h2>Vehicle operations</h2>
-          <small><%= meta['imported_at'] ? "Last import #{Time.iso8601(meta['imported_at']).in_time_zone.strftime('%d %b %Y, %H:%M')}" : 'No CSV snapshot imported' %></small></div>
-        <%= link_to cars_path, class: 'carops-button' do %><i class="fa-solid fa-car-side"></i> Open Cars <% end %>
-      </header>
-      <div class="carops-kpis">
-        <% [['Vehicles',total,'fa-car-side','blue'],['Delivered',delivered,'fa-circle-check','green'],['Outstanding',total-delivered,'fa-truck-fast','amber'],['Trucks',trucks.size,'fa-truck','blue'],['Projects',pis.map { |r| r.fields['Project No.'] }.compact.uniq.size,'fa-layer-group','blue'],['Open incidents',opened,'fa-triangle-exclamation','red']].each do |label,value,icon,tone| %>
-          <div class="carops-kpi"><i class="fa-solid <%= icon %> carops-<%= tone %>"></i><strong><%= number_with_delimiter(value) %></strong><span><%= label %></span></div>
-        <% end %>
-      </div>
-      <% unless compact %>
-        <div class="carops-charts">
-          <div class="carops-chart"><h3>Delivery progress</h3><div class="carops-ring" style="--progress:<%= percent %>%"><div><strong><%= percent %>%</strong><span><%= delivered %> / <%= total %></span></div></div><div class="text-center small text-muted">Delivered vehicles</div></div>
-          <div class="carops-chart"><h3>Vehicle status</h3>
-            <% counts.sort_by { |_, n| -n }.each do |status,n| %>
-              <%= link_to cars_path(tab: 'Cars', status: status), class: 'carops-bar-link' do %>
-                <div class="carops-bar-label"><span><%= status %></span><strong><%= n %></strong></div>
-                <div class="carops-track"><div style="width:<%= total.zero? ? 0 : (n * 100.0 / total).round(2) %>%;background:<%= colors.fetch(status,'#8695ad') %>"></div></div>
-              <% end %>
-            <% end %>
+
+        <div>
+
+          <div class="carops-kicker">
+            AUTOMOTIVE · OPERATIONS
           </div>
-          <div class="carops-chart"><h3>Truck status</h3>
-            <% trucks.group_by { |r| r.fields['Status'].presence || 'Unknown' }.sort_by { |_, rows| -rows.size }.each do |status,rows| %>
-              <%= link_to cars_path(tab: 'Trucks', status: status), class: 'carops-bar-link' do %>
-                <div class="carops-bar-label"><span><%= status %></span><strong><%= rows.size %></strong></div><div class="carops-track"><div style="width:<%= (rows.size * 100.0 / trucks.size).round(2) %>%;background:#5680c5"></div></div>
-              <% end %>
-            <% end %>
-          </div>
+
+          <h2>Vehicle operations</h2>
+
+          <small>
+
+            <%= meta['imported_at'] ?
+              "Last import #{Time.iso8601(meta['imported_at']).in_time_zone.strftime('%d %b %Y, %H:%M')}" :
+              'No CSV snapshot imported' %>
+
+          </small>
+
         </div>
-      <% end %>
-      <div class="carops-followups"><h3>Next actions</h3>
-        <% actionable = pis.reject { |r| r.fields['Next Step'].blank? || r.fields['Next Step'].to_s.start_with?('Done') } %>
-        <% actionable.first(5).each do |r| %>
-          <%= link_to cars_path(project: r.fields['Project No.'], pi: r.external_key, tab: 'PIs'), class: 'carops-followup' do %><strong><%= r.fields['Project No.'] %></strong><span><%= r.fields['Next Step'] %></span><i class="fa-solid fa-arrow-right"></i><% end %>
+
+        <%= link_to cars_path, class: 'carops-button' do %>
+
+          <i class="fa-solid fa-car-side"></i>
+
+          Open Cars
+
         <% end %>
-        <% if actionable.empty? %><small class="text-muted">No next actions recorded.</small><% end %>
-        <% if current_user.id == 15 %><%= link_to 'Need My Confirmation →', confirmable_payment_orders_path, class: 'carops-button mt-2' %><% end %>
+
+      </header>
+
+
+      <!-- KEY PERFORMANCE INDICATORS -->
+
+      <div class="carops-kpis">
+
+        <% [
+          ['Vehicles', total, 'fa-car-side', 'blue'],
+          ['Delivered', delivered, 'fa-circle-check', 'green'],
+          ['Outstanding', total - delivered, 'fa-truck-fast', 'amber'],
+          ['Trucks', trucks.size, 'fa-truck', 'blue'],
+          [
+            'Projects',
+            pis.map { |r| r.fields['Project No.'] }.compact.uniq.size,
+            'fa-layer-group',
+            'blue'
+          ],
+          ['Open incidents', opened, 'fa-triangle-exclamation', 'red']
+        ].each do |label, value, icon, tone| %>
+
+          <div class="carops-kpi">
+
+            <i class="fa-solid <%= icon %> carops-<%= tone %>"></i>
+
+            <strong><%= number_with_delimiter(value) %></strong>
+
+            <span><%= label %></span>
+
+          </div>
+
+        <% end %>
+
       </div>
+
+
+      <% unless compact %>
+
+        <div class="carops-charts">
+
+
+          <!-- OUTSTANDING VEHICLES DOUGHNUT CHART -->
+
+          <div class="carops-chart">
+
+            <h3>Outstanding vehicles</h3>
+
+            <div class="carops-ring"
+                 role="img"
+                 aria-label="<%= outstanding_total %> vehicles across the five outstanding statuses"
+                 style="background: <%= chart_background %>;">
+
+              <div>
+
+                <strong>
+                  <%= number_with_delimiter(outstanding_total) %>
+                </strong>
+
+                <span>Outstanding</span>
+
+              </div>
+
+            </div>
+
+
+            <!-- CHART LEGEND -->
+
+            <div class="mt-3">
+
+              <% outstanding_statuses.each do |status| %>
+
+                <%
+                  quantity = counts.fetch(status, 0)
+
+                  percentage =
+                    if outstanding_total.positive?
+                      (quantity * 100.0 / outstanding_total).round(1)
+                    else
+                      0.0
+                    end
+                %>
+
+                <%= link_to cars_path(
+                  tab: 'Cars',
+                  status: status
+                ), class: 'carops-bar-link' do %>
+
+                  <div class="d-flex align-items-center gap-2">
+
+                    <span style="
+                      width: 9px;
+                      height: 9px;
+                      border-radius: 3px;
+                      flex-shrink: 0;
+                      background: <%= colors.fetch(status) %>;
+                    "></span>
+
+                    <span class="flex-grow-1"
+                          style="
+                            font-size: 11px;
+                            color: var(--co-muted);
+                            line-height: 1.5;
+                          ">
+
+                      <%= status %>
+
+                    </span>
+
+                    <span style="
+                      font-size: 11px;
+                      color: var(--co-muted);
+                    ">
+
+                      <%= quantity %>
+
+                    </span>
+
+                    <strong style="
+                      min-width: 42px;
+                      text-align: right;
+                      font-size: 12px;
+                      font-variant-numeric: tabular-nums;
+                      color: <%= colors.fetch(status) %>;
+                    ">
+
+                      <%= format('%.1f', percentage) %>%
+
+                    </strong>
+
+                  </div>
+
+                <% end %>
+
+              <% end %>
+
+            </div>
+
+            <% if outstanding_total.zero? %>
+
+              <div class="text-center small text-muted mt-2">
+                No vehicles in these statuses
+              </div>
+
+            <% end %>
+
+            <% if other_outstanding.positive? %>
+
+              <div class="small text-muted mt-2">
+
+                <%= other_outstanding %> other outstanding
+                vehicles excluded from this chart.
+
+              </div>
+
+            <% end %>
+
+          </div>
+
+
+          <!-- VEHICLE STATUS -->
+
+          <div class="carops-chart">
+
+            <h3>Vehicle status</h3>
+
+            <% ordered_statuses.each do |status| %>
+
+              <%
+                quantity = counts.fetch(status, 0)
+
+                percentage =
+                  if total.positive?
+                    (quantity * 100.0 / total).round(2)
+                  else
+                    0
+                  end
+              %>
+
+              <%= link_to cars_path(
+                tab: 'Cars',
+                status: status
+              ), class: 'carops-bar-link' do %>
+
+                <div class="carops-bar-label">
+
+                  <span><%= status %></span>
+
+                  <strong><%= quantity %></strong>
+
+                </div>
+
+                <div class="carops-track">
+
+                  <div style="
+                    width: <%= percentage %>%;
+                    background: <%= colors.fetch(status, '#8695ad') %>;
+                  "></div>
+
+                </div>
+
+              <% end %>
+
+            <% end %>
+
+            <% if counts.empty? %>
+
+              <small class="text-muted">
+                No vehicle data available.
+              </small>
+
+            <% end %>
+
+          </div>
+
+
+          <!-- TRUCK STATUS -->
+
+          <div class="carops-chart">
+
+            <h3>Truck status</h3>
+
+            <% trucks.group_by { |record|
+              record.fields['Status'].presence || 'Unknown'
+            }.sort_by { |_, rows|
+              -rows.size
+            }.each do |status, rows| %>
+
+              <%= link_to cars_path(
+                tab: 'Trucks',
+                status: status
+              ), class: 'carops-bar-link' do %>
+
+                <div class="carops-bar-label">
+
+                  <span><%= status %></span>
+
+                  <strong><%= rows.size %></strong>
+
+                </div>
+
+                <div class="carops-track">
+
+                  <div style="
+                    width: <%= (rows.size * 100.0 / trucks.size).round(2) %>%;
+                    background: #5680c5;
+                  "></div>
+
+                </div>
+
+              <% end %>
+
+            <% end %>
+
+            <% if trucks.empty? %>
+
+              <small class="text-muted">
+                No truck data available.
+              </small>
+
+            <% end %>
+
+          </div>
+
+        </div>
+
+      <% end %>
+
+
+      <!-- NEXT ACTIONS -->
+
+      <div class="carops-followups">
+
+        <h3>Next actions</h3>
+
+        <%
+          actionable = pis.reject do |record|
+            record.fields['Next Step'].blank? ||
+              record.fields['Next Step'].to_s.start_with?('Done')
+          end
+        %>
+
+        <% actionable.first(5).each do |record| %>
+
+          <%= link_to cars_path(
+            project: record.fields['Project No.'],
+            pi: record.external_key,
+            tab: 'PIs'
+          ), class: 'carops-followup' do %>
+
+            <strong>
+              <%= record.fields['Project No.'] %>
+            </strong>
+
+            <span>
+              <%= record.fields['Next Step'] %>
+            </span>
+
+            <i class="fa-solid fa-arrow-right"></i>
+
+          <% end %>
+
+        <% end %>
+
+        <% if actionable.empty? %>
+
+          <small class="text-muted">
+            No next actions recorded.
+          </small>
+
+        <% end %>
+
+        <% if current_user.id == 15 %>
+
+          <%= link_to 'Need My Confirmation →',
+            confirmable_payment_orders_path,
+            class: 'carops-button mt-2' %>
+
+        <% end %>
+
+      </div>
+
     </div>
+
   </section>
+
 <% end %>
