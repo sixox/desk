@@ -58,7 +58,7 @@ class CarsController < ApplicationController
         ([name] + records.flat_map { |r| r.fields.values }).join(' ').downcase.include?(@query.downcase) ||
           vehicles.any? { |v| v.fields['Project No.'] == name && v.fields.values.join(' ').downcase.include?(@query.downcase) }
       end if @query.present?
-      @projects = Kaminari.paginate_array(projects.sort_by { |name, _| name.to_s }).page(params[:page]).per(12)
+      @projects = Kaminari.paginate_array(projects.sort_by { |name, _| name.to_s }.reverse).page(params[:page]).per(12)
     else
       @columns = COLUMNS.fetch(@tab)
       records = @filtered.fetch(@tab, [])
