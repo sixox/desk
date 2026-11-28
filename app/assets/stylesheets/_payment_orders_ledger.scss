@@ -44,7 +44,7 @@
 
   border: 1px solid var(--ledger-line);
   border-left: 5px solid var(--ledger-accent);
-  border-radius: 12px;
+  border-radius: 10px;
 
   box-shadow:
     0 2px 5px rgba(25, 40, 65, .025),
@@ -75,45 +75,33 @@
 
 
 /* ==========================================================
-   WORKFLOW STATUS — LEFT BORDER ONLY
+   WORKFLOW STATUS — LEFT BORDER
    ========================================================== */
-
-/* Waiting for confirmation */
 
 .po-ledger--confirmation {
   --ledger-accent: #e3a02c;
   --ledger-state: #a66c12;
 }
 
-/* Confirmed, waiting for payment */
-
 .po-ledger--payment {
   --ledger-accent: #3678df;
   --ledger-state: #2865c3;
 }
-
-/* Paid, waiting for delivery */
 
 .po-ledger--delivery {
   --ledger-accent: #22a06b;
   --ledger-state: #16834f;
 }
 
-/* Delivered */
-
 .po-ledger--completed {
   --ledger-accent: #16834f;
   --ledger-state: #12683e;
 }
 
-/* Rejected at any stage */
-
 .po-ledger--rejected {
   --ledger-accent: #dc3545;
   --ledger-state: #c12d40;
 }
-
-/* Unknown status */
 
 .po-ledger--neutral {
   --ledger-accent: #94a3b8;
@@ -122,9 +110,7 @@
 
 
 /* ==========================================================
-   CATEGORY — BACKGROUND ONLY
-
-   These classes must NEVER change --ledger-accent.
+   CATEGORY BACKGROUNDS
    ========================================================== */
 
 /* Rahkarsazan — Yellow */
@@ -137,9 +123,8 @@
   --ledger-surface: rgba(180, 133, 30, .045);
 }
 
-/* Mahramane — Green
-   Also takes priority if both categories are selected.
-*/
+
+/* Mahramane — Green */
 
 .po-ledger--secret {
   --ledger-bg: #e3f5e9;
@@ -165,40 +150,53 @@
   align-items: center;
   column-gap: 13px;
 
-  min-height: 43px;
-  padding: 8px 17px;
+  min-height: 38px;
+  padding: 8px 16px;
 
   border-bottom: 1px solid var(--ledger-line);
+
   background: var(--ledger-surface);
 }
+
+
+/* PO number */
 
 .po-ledger__number {
   display: inline-flex;
   align-items: baseline;
   justify-self: start;
+
   gap: 5px;
 
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.3;
   white-space: nowrap;
-  color: var(--ledger-ink);
+
+  color: #111111;
 }
 
 .po-ledger__number small {
-  color: var(--ledger-muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .04em;
+  color: #111111;
+
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .po-ledger__number strong {
-  color: var(--ledger-ink);
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -.9px;
-  line-height: 1;
+  color: #d12d40;
+
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.3;
 }
 
 .po-ledger__number:hover strong {
-  color: var(--ledger-state);
+  color: #a61e30;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 
@@ -219,12 +217,12 @@
 .po-ledger__status {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
 
+  gap: 5px;
   padding: 0 10px;
 
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.4;
   white-space: nowrap;
 
@@ -254,16 +252,17 @@
 
 .po-ledger__status--active {
   color: var(--ledger-state);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .po-ledger__status--waiting {
   color: #7c8798;
+  font-weight: 400;
 }
 
 .po-ledger__status--rejected {
   color: #c12d40;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 
@@ -273,11 +272,13 @@
   display: inline-flex;
   align-items: center;
   justify-self: end;
+
   gap: 6px;
 
   color: var(--ledger-muted);
+
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -287,73 +288,220 @@
 
 
 /* ==========================================================
-   AMOUNT & REQUESTER
+   AMOUNT, REQUESTER & ACTIONS
    ========================================================== */
 
 .po-ledger__main {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
 
-  gap: 12px 18px;
+  gap: 10px 15px;
   min-width: 0;
-  padding: 15px 17px;
+
+  padding: 12px 16px;
 }
+
+.po-ledger__identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  min-width: 0;
+  gap: 7px 10px;
+}
+
+
+/* Yellow amount highlight */
 
 .po-ledger__amount {
   display: inline-flex;
   align-items: baseline;
   flex-wrap: wrap;
 
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
   max-width: 100%;
+
+  padding: 5px 10px;
+
+  background: #ffeb91;
+  border: 1px solid #f1db7e;
+  border-radius: 5px;
+
+  color: #262626;
 }
 
 .po-ledger__amount strong {
-  color: var(--ledger-ink);
-  font-size: 31px;
-  font-weight: 850;
-  line-height: 1.1;
-  letter-spacing: -1.25px;
+  color: #262626;
+
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -.3px;
 
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 
 .po-ledger__amount > span {
-  color: var(--ledger-state);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .03em;
+  color: #49432c;
+
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: lowercase;
 }
+
+
+/* Requester */
 
 .po-ledger__requester {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   flex-wrap: wrap;
 
-  gap: 6px;
   min-width: 0;
-  padding: 6px 0 6px 18px;
+  gap: 5px;
 
-  border-left: 1px solid var(--ledger-line);
+  padding: 0;
+  border: 0;
 
-  font-size: 12px;
-  color: var(--ledger-muted);
-}
-
-.po-ledger__requester i {
-  color: var(--ledger-state);
-  margin-right: 3px;
   font-size: 13px;
+  font-weight: 400;
+
+  color: var(--ledger-muted);
 }
 
 .po-ledger__requester strong {
   color: var(--ledger-ink);
+
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 400;
   overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================
+   ACTION LINKS
+   ========================================================== */
+
+.po-ledger__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 2px;
+  margin-left: auto;
+}
+
+.po-ledger__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+  min-height: 30px;
+
+  padding: 5px 9px;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+  color: #42649d;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    color .15s ease;
+}
+
+.po-ledger__button > i {
+  font-size: 11px;
+}
+
+.po-ledger__button:hover {
+  color: #244c90;
+  background: rgba(66, 100, 157, .08);
+}
+
+.po-ledger__button.is-delete {
+  color: #ba394c;
+}
+
+.po-ledger__button.is-delete:hover {
+  color: #a02537;
+  background: rgba(190, 57, 75, .09);
+}
+
+.po-ledger__button.is-confirm {
+  color: #16834f;
+}
+
+.po-ledger__button.is-confirm:hover {
+  color: #0d653a;
+  background: rgba(22, 131, 79, .10);
+}
+
+
+/* ==========================================================
+   RELATED RECORDS
+   ========================================================== */
+
+.po-ledger__relations {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px 18px;
+
+  padding: 0 16px 10px;
+}
+
+.po-ledger__reference {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+
+  gap: 4px;
+  min-width: 0;
+
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  color: var(--ledger-muted);
+  overflow-wrap: anywhere;
+}
+
+.po-ledger__reference > span:first-child {
+  color: var(--ledger-muted);
+}
+
+.po-ledger__reference > a {
+  color: #315da6;
+  font-weight: 500;
+}
+
+.po-ledger__reference > a:hover {
+  color: #204785;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.po-ledger__reference-value {
+  color: var(--ledger-ink);
+  font-weight: 400;
 }
 
 
@@ -365,8 +513,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 7px;
 
+  gap: 6px;
   margin-left: auto;
 }
 
@@ -377,18 +525,16 @@
 .po-ledger__category {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
 
-  padding: 5px 8px;
+  gap: 5px;
+  padding: 4px 7px;
 
   border: 1px solid currentColor;
-  border-radius: 5px;
+  border-radius: 4px;
 
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: .05em;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .po-ledger__category.is-secret {
@@ -405,85 +551,44 @@
 
 .po-ledger__category.is-announced {
   color: #3467b7;
+  background: rgba(52, 103, 183, .06);
 }
 
 
 /* ==========================================================
-   RELATED INFORMATION
-   ========================================================== */
-
-.po-ledger__relations {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-
-  gap: 6px 16px;
-  padding: 0 17px 12px;
-}
-
-.po-ledger__reference {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  color: var(--ledger-ink);
-  font-size: 12px;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.po-ledger__reference > i {
-  color: var(--ledger-state);
-  font-size: 12px;
-}
-
-a.po-ledger__reference {
-  color: #3c609c;
-}
-
-a.po-ledger__reference:hover {
-  text-decoration: underline;
-}
-
-
-/* ==========================================================
-   DESCRIPTION
+   PAYMENT DESCRIPTION
    ========================================================== */
 
 .po-ledger__description {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
+  display: block;
 
-  margin: 0 17px 13px;
-  padding: 9px 12px;
+  margin: 0 16px 12px;
+  padding: 10px 12px;
 
-  border-radius: 6px;
-
+  border-radius: 5px;
   background: var(--ledger-surface);
+
   color: var(--ledger-ink);
 
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.po-ledger__description > i {
-  flex-shrink: 0;
-  margin-top: 4px;
-
-  color: var(--ledger-state);
-  font-size: 12px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.8;
 }
 
 .po-ledger__description > div {
   min-width: 0;
+
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 
 /* ==========================================================
-   REJECTION
+   REJECTION INFORMATION
    ========================================================== */
 
 .po-ledger__rejection {
@@ -492,7 +597,8 @@ a.po-ledger__reference:hover {
   flex-wrap: wrap;
 
   gap: 6px 9px;
-  margin: 0 17px 12px;
+
+  margin: 0 16px 12px;
   padding: 9px 11px;
 
   border: 1px solid rgba(190, 57, 75, .23);
@@ -509,57 +615,64 @@ a.po-ledger__reference:hover {
 }
 
 .po-ledger__rejection > strong {
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .po-ledger__rejection > time {
   margin-left: auto;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .po-ledger__rejection > small {
-  font-size: 9px;
+  font-size: 10px;
   opacity: .85;
 }
 
 
 /* ==========================================================
-   SPECIAL CONFIRMATIONS
+   HAMED & SHAGHAYEGH CONFIRMATIONS
    ========================================================== */
 
 .po-ledger__special {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 16px;
 
-  padding: 0 17px 11px;
+  gap: 8px 16px;
+  padding: 0 16px 10px;
 }
 
 .po-ledger__special > span {
   display: inline-flex;
   align-items: center;
+
   gap: 6px;
 
   color: #18784d;
-  font-size: 11px;
-  font-weight: 700;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.po-ledger__special > .po-ledger__required {
+  color: #a16b16;
+  font-weight: 600;
+  margin-left: auto;
 }
 
 
 /* ==========================================================
-   APPROVAL SIGNATURE STRIP
+   APPROVAL HISTORY
    ========================================================== */
 
 .po-ledger__approvals {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
 
-  padding: 10px 12px;
+  padding: 8px 12px;
 
-  border-top: 1px dashed var(--ledger-line);
-  border-bottom: 1px solid var(--ledger-line);
+  border-top: 1px solid var(--ledger-line);
 
   background: var(--ledger-surface);
 }
@@ -576,9 +689,10 @@ a.po-ledger__reference:hover {
   align-items: center;
   justify-content: center;
 
-  gap: 4px;
+  gap: 3px;
+
   min-width: 0;
-  min-height: 34px;
+  min-height: 30px;
 
   text-align: center;
 }
@@ -589,9 +703,10 @@ a.po-ledger__reference:hover {
 
 .po-ledger__approval > strong {
   color: var(--ledger-muted);
+
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .04em;
+  font-weight: 600;
+  letter-spacing: .03em;
 }
 
 .po-ledger__approval > small {
@@ -601,8 +716,9 @@ a.po-ledger__reference:hover {
   flex-wrap: wrap;
 
   gap: 4px;
-  font-size: 10px;
-  font-weight: 650;
+
+  font-size: 11px;
+  font-weight: 400;
   line-height: 1.4;
 }
 
@@ -622,113 +738,6 @@ a.po-ledger__reference:hover {
 .po-ledger__pending {
   color: var(--ledger-muted);
   opacity: .55;
-}
-
-
-/* ==========================================================
-   ACTION BAR
-   ========================================================== */
-
-.po-ledger__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-
-  gap: 10px;
-  padding: 8px 17px;
-
-  background: var(--ledger-surface);
-}
-
-.po-ledger__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-
-  gap: 5px;
-  margin-left: auto;
-}
-
-.po-ledger__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 6px;
-  min-height: 29px;
-  padding: 6px 10px;
-
-  border: 1px solid transparent;
-  border-radius: 6px;
-
-  background: transparent;
-  color: var(--ledger-muted);
-
-  font-size: 11px;
-  font-weight: 650;
-  line-height: 1.2;
-
-  white-space: nowrap;
-  cursor: pointer;
-
-  transition:
-    background .15s ease,
-    color .15s ease;
-}
-
-.po-ledger__button:hover {
-  background: rgba(120, 135, 155, .10);
-  color: var(--ledger-ink);
-}
-
-.po-ledger__button.is-delete {
-  color: #b93b4d;
-}
-
-.po-ledger__button.is-delete:hover {
-  background: rgba(190, 57, 75, .10);
-}
-
-.po-ledger__button.is-confirm {
-  padding-left: 13px;
-  padding-right: 13px;
-
-  background: #1b8056;
-  color: #fff;
-}
-
-.po-ledger__button.is-confirm:hover {
-  background: #146b47;
-  color: #fff;
-}
-
-.po-ledger__button.is-open {
-  min-width: 77px;
-  margin-left: 5px;
-
-  background: #293b53;
-  color: #fff;
-}
-
-.po-ledger__button.is-open:hover {
-  background: #17293e;
-  color: #fff;
-}
-
-.po-ledger__button.is-open > i {
-  font-size: 9px;
-}
-
-.po-ledger__required {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  color: #a16b16;
-  font-size: 11px;
-  font-weight: 750;
 }
 
 
@@ -788,31 +797,50 @@ a.po-ledger__reference:hover {
     font-size: 10px;
   }
 
-  .po-ledger__number strong {
-    font-size: 19px;
-  }
-
   .po-ledger__main {
-    gap: 10px 14px;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    gap: 8px;
   }
 
   .po-ledger__amount strong {
-    font-size: 28px;
+    font-size: 20px;
+  }
+
+  .po-ledger__button {
+    font-size: 11px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .po-ledger__relations {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .po-ledger__description {
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
 }
+
 
 @container (max-width: 520px) {
 
   .po-ledger__top {
     grid-template-columns: 1fr auto;
-    row-gap: 10px;
+    row-gap: 9px;
   }
 
   .po-ledger__workflow {
     grid-column: 1 / -1;
     grid-row: 2;
+
     justify-content: space-between;
+    flex-wrap: wrap;
+    row-gap: 6px;
   }
 
   .po-ledger__date {
@@ -824,28 +852,39 @@ a.po-ledger__reference:hover {
     font-size: 10px;
   }
 
-  .po-ledger__main {
-    padding: 13px 12px;
+  .po-ledger__identity {
+    width: 100%;
+    gap: 8px;
   }
 
   .po-ledger__amount strong {
-    font-size: 27px;
+    font-size: 20px;
   }
 
-  .po-ledger__requester {
-    padding: 0;
-    border-left: 0;
+  .po-ledger__amount > span {
+    font-size: 12px;
   }
 
-  .po-ledger__requester span {
-    font-size: 11px;
+  .po-ledger__requester,
+  .po-ledger__requester strong {
+    font-size: 12px;
+  }
+
+  .po-ledger__actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
   }
 
   .po-ledger__categories {
     margin-left: 0;
   }
 
-  .po-ledger__description,
+  .po-ledger__description {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
   .po-ledger__rejection {
     margin-left: 12px;
     margin-right: 12px;
@@ -865,16 +904,16 @@ a.po-ledger__reference:hover {
     font-size: 9px;
   }
 
-  .po-ledger__footer {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
   .po-ledger__rejection > time {
     margin-left: 0;
   }
 
+  .po-ledger__special > .po-ledger__required {
+    margin-left: 0;
+  }
+
 }
+
 
 @media (prefers-reduced-motion: reduce) {
 

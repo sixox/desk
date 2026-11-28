@@ -4,13 +4,7 @@
   status = po.status.to_s
   rejected = po.rejected_at.present? || status == "rejected"
 
-  can_view =
-    !po.mahramane? ||
-    po.user_id == cu.id ||
-    cu.ceo? ||
-    cu.cob? ||
-    cu.admin? ||
-    (cu.accounting? && cu.is_manager)
+  can_view = po.car_payment_visible_to?(cu)
 %>
 
 <% if can_view %>
@@ -184,6 +178,8 @@
       !rejected &&
       (special_can_confirm || manager_can_confirm)
 
+    can_hamed_confirm = po.hamed_confirmable_by?(cu)
+
     can_modify =
       !po.coo_confirm? && (
         cu == po.user ||
@@ -195,23 +191,108 @@
       "po-ledger--#{tone}",
       ("po-ledger--secret" if po.mahramane?),
       ("po-ledger--rahkar" if po.is_rahkarsazan?),
-      ("po-ledger--attention" if can_confirm && action_name != "show")
+      (
+        "po-ledger--attention" if
+        (can_confirm || can_hamed_confirm) &&
+        action_name != "show"
+      )
     ].compact.join(" ")
+
+    references = []
+
+    if po.project.present?
+      references << [
+        "Project",
+        po.project.number,
+        project_path(po.project)
+      ]
+    end
+
+    if po.booking.present?
+      references << [
+        "Booking",
+        po.booking.number,
+        po.booking.project.present? ?
+          project_path(
+            po.booking.project,
+            anchor: "booking-#{po.booking_id}"
+          ) : nil
+      ]
+    end
+
+    if po.ballance.present?
+      references << [
+        "Inventory",
+        po.ballance.number,
+        ballance_path(po.ballance)
+      ]
+    end
+
+    if po.spi.present?
+      references << [
+        "SPI",
+        po.spi.number,
+        nil
+      ]
+    end
+
+    if po.sci.present?
+      references << [
+        "SCI",
+        po.sci.number,
+        nil
+      ]
+    end
+
+    if po.car_pi.present?
+
+      car_path =
+        if cu.car_access? && po.car_pi.active?
+          cars_path(
+            tab: "PIs",
+            pi: po.car_pi.external_key
+          )
+        end
+
+      references << [
+        "Car Project",
+        po.car_pi.fields["Project No."],
+        car_path
+      ]
+
+      references << [
+        "PI",
+        "#{po.car_pi.external_key}#{' (archived)' unless po.car_pi.active?}",
+        car_path
+      ]
+
+    end
+
+    if po.cost_type.present?
+      references << [
+        "Cost Type",
+        po.cost_type,
+        nil
+      ]
+    end
   %>
 
 
   <li id="payment_order_item_<%= po.id %>"
       class="<%= classes %>">
 
+
     <!-- TOP BAR -->
 
     <div class="po-ledger__top">
 
       <%= link_to payment_order_path(po),
-        class: "po-ledger__number" do %>
+        class: "po-ledger__number",
+        title: "View Payment Order #{po.id}" do %>
 
         <small>PO</small>
-        <strong>#<%= po.id %></strong>
+
+        <strong><%= po.id %></strong>
 
       <% end %>
 
@@ -248,70 +329,129 @@
     </div>
 
 
-    <!-- AMOUNT & REQUESTER -->
+    <!-- AMOUNT, REQUESTER & ACTIONS -->
 
     <div class="po-ledger__main">
 
-      <div class="po-ledger__amount">
+      <div class="po-ledger__identity">
 
-        <strong>
-          <%= number_with_delimiter(po.amount, delimiter: ",") %>
-        </strong>
+        <div class="po-ledger__amount">
 
-        <span><%= po.currency.to_s.upcase %></span>
+          <strong>
+            <%= number_with_delimiter(po.amount, delimiter: ",") %>
+          </strong>
+
+          <span><%= po.currency.to_s.downcase %></span>
+
+        </div>
+
+
+        <% if po.user.present? %>
+
+          <div class="po-ledger__requester">
+
+            <span>requested by</span>
+
+            <strong><%= po.user.name %></strong>
+
+          </div>
+
+        <% end %>
 
       </div>
 
 
-      <% if po.user.present? %>
-
-        <div class="po-ledger__requester">
-
-          <i class="fa-regular fa-user"></i>
-
-          <span>Requested by</span>
-
-          <strong><%= po.user.name %></strong>
-
-        </div>
-
-      <% end %>
+      <div class="po-ledger__actions">
 
 
-      <div class="po-ledger__categories">
+        <% unless action_name == "show" %>
 
-        <% if po.mahramane? %>
+          <% if can_modify || cu.admin? %>
 
-          <span class="po-ledger__category is-secret">
+            <%= link_to edit_payment_order_path(po),
+              data: {
+                controller: "bs-modal-form"
+              },
+              class: "po-ledger__button" do %>
 
-            <i class="fa-solid fa-lock"></i>
-            Secret
+              <i class="fa-solid fa-pen"></i>
 
-          </span>
+              Edit
+
+            <% end %>
+
+          <% end %>
 
         <% end %>
 
 
-        <% if po.is_rahkarsazan? %>
+        <button type="button"
+                class="po-ledger__button"
+                data-controller="clipboard"
+                data-action="click->clipboard#copy"
+                data-clipboard-text="PO.<%= po.id %> - <%= number_with_delimiter(po.amount, delimiter: ',') %> <%= po.currency %>">
 
-          <span class="po-ledger__category is-rahkar">
+          <i class="fa-regular fa-copy"></i>
 
-            <i class="fa-solid fa-building"></i>
-            Rahkarsazan
+          Copy
 
-          </span>
-
-        <% end %>
+        </button>
 
 
-        <% if po.announce? && status == "wait for payment" %>
+        <% unless action_name == "show" %>
 
-          <span class="po-ledger__category is-announced">
+          <% if can_modify %>
 
-            <i class="fa-solid fa-bullhorn"></i>
-            Announced
+            <%= link_to payment_order_path(po),
+              data: {
+                turbo_method: :delete,
+                turbo_confirm: "Delete this Payment Order?"
+              },
+              class: "po-ledger__button is-delete" do %>
 
-          </span>
+              <i class="fa-regular fa-trash-can"></i>
+
+              Delete
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if can_hamed_confirm %>
+
+            <%= link_to hamed_confirm_payment_order_path(po),
+              data: {
+                turbo_method: :patch,
+                turbo_confirm: "Save Hamed confirmation?"
+              },
+              class: "po-ledger__button is-confirm" do %>
+
+              <i class="fa-solid fa-check-double"></i>
+
+              Hamed Confirm
+
+            <% end %>
+
+          <% end %>
+
+
+          <% if can_confirm %>
+
+            <%= link_to confirm_payment_order_path(po),
+              data: {
+                turbo_method: :patch,
+                turbo_confirm: "Confirm this Payment Order?"
+              },
+              class: "po-ledger__button is-confirm" do %>
+
+              <i class="fa-solid fa-check"></i>
+
+              Confirm
+
+            <% end %>
+
+          <% end %>
 
         <% end %>
 
@@ -320,159 +460,92 @@
     </div>
 
 
-    <!-- RELATED INFORMATION -->
+    <!-- RELATED RECORDS & CATEGORY INDICATORS -->
 
-    <% if [
-      po.project,
-      po.booking,
-      po.ballance,
-      po.spi,
-      po.sci,
-      po.bank,
-      po.receiver,
-      po.cost_type
-    ].any?(&:present?) %>
+    <% if references.any? ||
+          po.mahramane? ||
+          po.is_rahkarsazan? ||
+          (po.announce? && status == "wait for payment") %>
 
       <div class="po-ledger__relations">
 
-        <% if po.project.present? %>
+        <% references.each do |label, value, path| %>
 
-          <%= link_to project_path(po.project),
-            class: "po-ledger__reference" do %>
+          <% next if value.blank? %>
 
-            <i class="fa-solid fa-diagram-project"></i>
+          <div class="po-ledger__reference">
 
-            <strong><%= po.project.number %></strong>
+            <span><%= label %>:</span>
 
-          <% end %>
+            <% if path.present? %>
+
+              <%= link_to value, path %>
+
+            <% else %>
+
+              <span class="po-ledger__reference-value">
+                <%= value %>
+              </span>
+
+            <% end %>
+
+          </div>
 
         <% end %>
 
 
-        <% if po.booking.present? %>
+        <div class="po-ledger__categories">
 
-          <% if po.booking.project.present? %>
+          <% if po.mahramane? %>
 
-            <%= link_to project_path(
-              po.booking.project,
-              anchor: "booking-#{po.booking_id}"
-            ), class: "po-ledger__reference" do %>
+            <span class="po-ledger__category is-secret">
 
-              <i class="fa-solid fa-box"></i>
+              <i class="fa-solid fa-lock"></i>
 
-              <strong><%= po.booking.number %></strong>
-
-            <% end %>
-
-          <% else %>
-
-            <span class="po-ledger__reference">
-
-              <i class="fa-solid fa-box"></i>
-              <%= po.booking.number %>
+              Secret
 
             </span>
 
           <% end %>
 
-        <% end %>
 
+          <% if po.is_rahkarsazan? %>
 
-        <% if po.ballance.present? %>
+            <span class="po-ledger__category is-rahkar">
 
-          <%= link_to ballance_path(po.ballance),
-            class: "po-ledger__reference" do %>
+              <i class="fa-solid fa-building"></i>
 
-            <i class="fa-solid fa-warehouse"></i>
+              Rahkarsazan
 
-            <strong><%= po.ballance.number %></strong>
+            </span>
 
           <% end %>
 
-        <% end %>
 
+          <% if po.announce? && status == "wait for payment" %>
 
-        <% if po.spi.present? %>
+            <span class="po-ledger__category is-announced">
 
-          <span class="po-ledger__reference">
+              <i class="fa-solid fa-bullhorn"></i>
 
-            <i class="fa-solid fa-file-invoice"></i>
-            <%= po.spi.number %>
+              Announced
 
-          </span>
+            </span>
 
-        <% end %>
+          <% end %>
 
-
-        <% if po.sci.present? %>
-
-          <span class="po-ledger__reference">
-
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-            <%= po.sci.number %>
-
-          </span>
-
-        <% end %>
-
-
-        <% if po.bank.present? %>
-
-          <span class="po-ledger__reference">
-
-            <i class="fa-solid fa-building-columns"></i>
-            <%= po.bank.name %>
-
-          </span>
-
-        <% end %>
-
-
-        <% if po.receiver.present? %>
-
-          <span class="po-ledger__reference">
-
-            <i class="fa-solid fa-hand-holding-dollar"></i>
-            <%= po.receiver %>
-
-          </span>
-
-        <% end %>
-
-
-        <% if po.cost_type.present? %>
-
-          <span class="po-ledger__reference">
-
-            <i class="fa-solid fa-tag"></i>
-            <%= po.cost_type %>
-
-          </span>
-
-        <% end %>
+        </div>
 
       </div>
 
     <% end %>
-<% if po.car_pi.present? %>
-  <div class="po-ledger__relations">
-    <% if current_user.car_access? && po.car_pi.active? %>
-      <%= link_to cars_path(tab: 'PIs', pi: po.car_pi.external_key), class: 'po-ledger__reference' do %>
-        <i class="fa-solid fa-car-side"></i> <strong><%= po.car_pi.pi_label %><%= ' (archived)' unless po.car_pi.active? %></strong>
-      <% end %>
-    <% else %>
-      <span class="po-ledger__reference"><i class="fa-solid fa-car-side"></i> Car payment · <%= po.car_pi.pi_label %></span>
-    <% end %>
-  </div>
-<% end %>
-<!-- DESCRIPTION -->
 
+
+    <!-- DESCRIPTION -->
 
     <% if po.details.present? %>
 
       <div class="po-ledger__description">
-
-        <i class="fa-regular fa-note-sticky"></i>
 
         <div dir="auto"><%= po.details %></div>
 
@@ -498,7 +571,9 @@
         </strong>
 
         <span>
+
           by <b><%= po.reject_by.presence || "Unknown" %></b>
+
         </span>
 
         <time>
@@ -521,7 +596,12 @@
 
     <!-- SPECIAL CONFIRMATIONS -->
 
-    <% if po.hamed_confirm? || po.shaghayegh_confirm? %>
+    <% if po.hamed_confirm? ||
+          po.shaghayegh_confirm? ||
+          (
+            (can_confirm || can_hamed_confirm) &&
+            action_name != "show"
+          ) %>
 
       <div class="po-ledger__special">
 
@@ -539,6 +619,7 @@
 
         <% end %>
 
+
         <% if po.shaghayegh_confirm? %>
 
           <span>
@@ -551,12 +632,26 @@
 
         <% end %>
 
+
+        <% if (can_confirm || can_hamed_confirm) &&
+              action_name != "show" %>
+
+          <span class="po-ledger__required">
+
+            <i class="fa-solid fa-bolt"></i>
+
+            Needs your confirmation
+
+          </span>
+
+        <% end %>
+
       </div>
 
     <% end %>
 
 
-    <!-- APPROVAL SIGNATURES -->
+    <!-- APPROVAL HISTORY -->
 
     <div class="po-ledger__approvals
                 <%= 'po-ledger__approvals--secret' if po.mahramane? %>">
@@ -620,107 +715,6 @@
         </div>
 
       <% end %>
-
-    </div>
-
-
-    <!-- ACTIONS -->
-
-    <div class="po-ledger__footer">
-
-      <% if (can_confirm || po.hamed_confirmable_by?(current_user)) && action_name != "show" %>
-
-        <span class="po-ledger__required">
-
-          <i class="fa-solid fa-bolt"></i>
-
-          Needs your confirmation
-
-        </span>
-
-      <% end %>
-
-
-      <div class="po-ledger__actions">
-
-        <button type="button"
-                class="po-ledger__button"
-                data-controller="clipboard"
-                data-action="click->clipboard#copy"
-                data-clipboard-text="PO.<%= po.id %> - <%= number_with_delimiter(po.amount, delimiter: ',') %> <%= po.currency %>">
-
-          <i class="fa-regular fa-copy"></i>
-          Copy
-
-        </button>
-
-
-        <% unless action_name == "show" %>
-
-          <% if can_modify || cu.admin? %>
-
-            <%= link_to edit_payment_order_path(po),
-              data: { controller: "bs-modal-form" },
-              class: "po-ledger__button" do %>
-
-              <i class="fa-solid fa-pen"></i>
-              Edit
-
-            <% end %>
-
-          <% end %>
-
-
-          <% if can_modify %>
-
-            <%= link_to payment_order_path(po),
-              data: {
-                turbo_method: :delete,
-                turbo_confirm: "Delete this Payment Order?"
-              },
-              class: "po-ledger__button is-delete" do %>
-
-              <i class="fa-regular fa-trash-can"></i>
-              Delete
-
-            <% end %>
-
-          <% end %>
-
-
-          <% if po.hamed_confirmable_by?(current_user) %>
-  <%= link_to hamed_confirm_payment_order_path(po), data: {turbo_method: :patch, turbo_confirm: 'Save Hamed confirmation?'}, class: 'po-ledger__button is-confirm' do %>
-    <i class="fa-solid fa-check-double"></i> Hamed Confirm
-  <% end %>
-<% end %>
-<% if can_confirm %>
-<%= link_to confirm_payment_order_path(po),
-              data: {
-                turbo_method: :patch,
-                turbo_confirm: "Confirm this Payment Order?"
-              },
-              class: "po-ledger__button is-confirm" do %>
-
-              <i class="fa-solid fa-check"></i>
-              Confirm
-
-            <% end %>
-
-          <% end %>
-
-
-          <%= link_to payment_order_path(po),
-            class: "po-ledger__button is-open" do %>
-
-            Open
-
-            <i class="fa-solid fa-arrow-up-right-from-square"></i>
-
-          <% end %>
-
-        <% end %>
-
-      </div>
 
     </div>
 
