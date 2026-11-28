@@ -112,6 +112,10 @@ Rails.application.routes.draw do
     end
   end
   resources :suppliers
+  resources :cars, only: [:index] do
+    collection { post :import }
+  end
+
   resources :payment_orders do
     member do
       patch "confirm", to: "payment_orders#confirm"

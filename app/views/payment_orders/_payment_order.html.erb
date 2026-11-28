@@ -454,9 +454,19 @@
       </div>
 
     <% end %>
+<% if po.car_pi.present? %>
+  <div class="po-ledger__relations">
+    <% if current_user.car_access? && po.car_pi.active? %>
+      <%= link_to cars_path(tab: 'PIs', pi: po.car_pi.external_key), class: 'po-ledger__reference' do %>
+        <i class="fa-solid fa-car-side"></i> <strong><%= po.car_pi.pi_label %><%= ' (archived)' unless po.car_pi.active? %></strong>
+      <% end %>
+    <% else %>
+      <span class="po-ledger__reference"><i class="fa-solid fa-car-side"></i> Car payment · <%= po.car_pi.pi_label %></span>
+    <% end %>
+  </div>
+<% end %>
+<!-- DESCRIPTION -->
 
-
-    <!-- DESCRIPTION -->
 
     <% if po.details.present? %>
 
@@ -618,7 +628,7 @@
 
     <div class="po-ledger__footer">
 
-      <% if can_confirm && action_name != "show" %>
+      <% if (can_confirm || po.hamed_confirmable_by?(current_user)) && action_name != "show" %>
 
         <span class="po-ledger__required">
 
@@ -678,9 +688,13 @@
           <% end %>
 
 
-          <% if can_confirm %>
-
-            <%= link_to confirm_payment_order_path(po),
+          <% if po.hamed_confirmable_by?(current_user) %>
+  <%= link_to hamed_confirm_payment_order_path(po), data: {turbo_method: :patch, turbo_confirm: 'Save Hamed confirmation?'}, class: 'po-ledger__button is-confirm' do %>
+    <i class="fa-solid fa-check-double"></i> Hamed Confirm
+  <% end %>
+<% end %>
+<% if can_confirm %>
+<%= link_to confirm_payment_order_path(po),
               data: {
                 turbo_method: :patch,
                 turbo_confirm: "Confirm this Payment Order?"

@@ -21,6 +21,10 @@
 <%= render "home/project_overview" %>
 
 
+<% if current_user.car_access? && (current_user.is_manager || current_user.ceo? || current_user.cob? || current_user.admin?) %>
+  <%= render 'cars/overview' %>
+<% end %>
+
 <%= render "home/paid_pos" %>
 
 <%= render "home/pos_diagram" %>

@@ -1,7 +1,8 @@
 class PaymentOrdersController < ApplicationController
 	before_action :authenticate_user!
 	before_action :set_payment_order, only: %i[ show edit reject confirm update destroy hamed_confirm toggle_announce]
-	before_action :set_form_items, only: %i[ new edit create ] 
+  before_action :set_form_items, only: %i[new edit create update]
+  before_action :check_car_pi_submission, only: %i[create update]
 	before_action :set_access_to_secret, only: %i[ show index not_paid not_confirmed finished rejected pending not_delivered mine confirmable reports]
 	
 
@@ -64,6 +65,9 @@ class PaymentOrdersController < ApplicationController
 
 	def new	
 		@payment_order = current_user.payment_orders.new
+if current_user.car_access? && params[:car_pi_id].present?
+  @payment_order.car_pi = CarImportRecord.pis.current.find(params[:car_pi_id])
+end
 	end
 
 
@@ -97,20 +101,15 @@ class PaymentOrdersController < ApplicationController
 
 	end
 
-	def hamed_confirm
-		@payment_order.hamed_confirm = true
-		@payment_order.hamed_confirmed_at = Time.now
-		respond_to do |format|
-			if @payment_order.save
-				format.html { redirect_to payment_orders_path, notice: 'Payment order confirmed successfully' }
-			else
-				format.html { render :show, status: :unprocessable_entity }
-				format.json { render json: @payment.errors, status: :unprocessable_entity }
-
-			end
-		end
-	end
-
+def hamed_confirm
+  @payment_order.with_lock do
+    unless @payment_order.hamed_confirmable_by?(current_user)
+      return head :forbidden
+    end
+    @payment_order.update!(hamed_confirm: true, hamed_confirmed_at: Time.current)
+  end
+  redirect_to confirmable_payment_orders_path, notice: 'Hamed confirmation saved.', status: :see_other
+end
 	def confirm
 		link_to_action = "/payment_orders/#{params[:id]}"
 		coo = User.find(9)
@@ -363,65 +362,44 @@ class PaymentOrdersController < ApplicationController
 	  render 'index'
 	end
 
-	def confirmable
-		@in_page = "confirmable"
-		cu = current_user
-
-		if cu.accounting?
-			@release_requests = ReleaseRequest
-			.where(confirmed: [false, nil])
-			.includes(booking: { project: { pi: :customer } })
-			.order(created_at: :desc)
-		end
-
-	  # Initialize Ransack search object
-	  @q = PaymentOrder.ransack(params[:q])
-
-	  if cu.is_manager || cu.id == 29 || cu.id == 47
-	  	if cu.ceo?
-	  		@payment_orders = apply_directory_search(@q.result)
-	  		.not_confirmed_by_ceo_but_by_coo_and_accounting
-	  		.order(created_at: :desc)
-	  	elsif cu.cob?
-	  		@payment_orders = apply_directory_search(@q.result)
-	  		.not_confirmed_by_cob_but_by_ceo_and_accounting
-	  		.order(created_at: :desc)
-
-	  	elsif cu.procurement?
-	  		@payment_orders = apply_directory_search(@q.result)
-	  		.not_confirmed_by_coo
-	  		.order(created_at: :desc)
-	  	elsif cu.accounting?
-	  		accounting_pos = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
-	  		@payment_orders = apply_directory_search(@q.result)
-	  		.not_confirmed_by_accounting
-	  		.order(created_at: :desc)
-	  		@payment_orders += accounting_pos
-	  		@payment_orders.sort_by!(&:created_at).reverse!
-	  	else
-	  		@payment_orders = PaymentOrder.filtered_by_role_and_dep_confirm(cu)
-	  		.order(created_at: :desc)
-	  	end
-
-	  	@payment_orders = Kaminari.paginate_array(@payment_orders).page(params[:page]).per(6)
-	  end
-
-	  if cu.ceo?
-	  	@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [true])
-	  end
-
-	  if cu.is_manager && cu.procurement?
-	  	@transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [nil, false])
-	  end
-
-	  if cu.id == 19
-	  	@pis = Pi.where(confirmed: [nil, false], rejected: [nil, false])
-	  end
-
-	  render 'index'
-	end
-
-
+def confirmable
+  @in_page = 'confirmable'
+  cu = current_user
+  @q = PaymentOrder.ransack(params[:q])
+  base = apply_directory_search(@q.result)
+  ids = PaymentOrder.none
+  if cu.is_manager || [29, 47].include?(cu.id)
+    role_scope = if cu.ceo?
+      PaymentOrder.not_confirmed_by_ceo_but_by_coo_and_accounting
+    elsif cu.cob?
+      PaymentOrder.not_confirmed_by_cob_but_by_ceo_and_accounting
+    elsif cu.procurement?
+      PaymentOrder.not_confirmed_by_coo
+    elsif cu.accounting?
+      PaymentOrder.where(id: PaymentOrder.not_confirmed_by_accounting.select(:id))
+        .or(PaymentOrder.where(id: PaymentOrder.filtered_by_role_and_dep_confirm(cu).select(:id)))
+    else
+      PaymentOrder.filtered_by_role_and_dep_confirm(cu)
+    end
+    ids = PaymentOrder.where(id: role_scope.select(:id))
+  end
+  if cu.id == 15
+    ids = ids.or(PaymentOrder.where(id: PaymentOrder.hamed_queue_for(cu).select(:id)))
+  end
+  @payment_orders = base.where(id: ids.select(:id))
+    .where(id: PaymentOrder.car_payment_visible_scope(cu).select(:id))
+    .includes(:user, :car_pi).order(created_at: :desc).page(params[:page]).per(6)
+  if cu.accounting?
+    @release_requests = ReleaseRequest.where(confirmed: [false, nil]).includes(booking: { project: { pi: :customer } }).order(created_at: :desc)
+  end
+  if cu.ceo?
+    @transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: true)
+  elsif cu.is_manager && cu.procurement?
+    @transfers = Transfer.where(confirmed: [nil, false], rejected: [nil, false], coo_confirmed: [nil, false])
+  end
+  @pis = Pi.where(confirmed: [nil, false], rejected: [nil, false]) if cu.id == 19
+  render 'index'
+end
 	def reports
 		if ActiveRecord::Base.connection.adapter_name.downcase == 'sqlite'
 			@distinct_years = PaymentOrder.distinct.pluck(Arel.sql("strftime('%Y', created_at)")).map(&:to_i)
@@ -616,6 +594,20 @@ def set_payment_order
 
 end
 
+def check_car_pi_submission
+  submitted = params[:payment_order]
+  return unless submitted.respond_to?(:key?) && submitted.key?(:car_pi_id)
+  return head :forbidden unless current_user.car_access?
+  value = submitted[:car_pi_id].presence
+  return if @payment_order && value.to_s == @payment_order.car_pi_id.to_s
+  if @payment_order
+    permitted = @payment_order.user_id == current_user.id || current_user.admin? || (current_user.is_manager && current_user.procurement?)
+    return head :forbidden unless permitted && @payment_order.car_payment_visible_to?(current_user)
+    return head :unprocessable_entity if @payment_order.car_pi_locked? || @payment_order.receipt.attached? || submitted.key?(:receipt)
+  end
+  return head :unprocessable_entity if value && !CarImportRecord.pis.current.exists?(id: value)
+end
+
 def set_form_items
 	@ballances = Ballance.all.reverse
 	@projects = Project.all.reverse
@@ -673,7 +665,8 @@ def payment_order_params
 		:rejected_at,
 		:bank_id,
 		:mahramane,
-		:cost_type
+    :cost_type,
+    *(current_user.car_access? ? [:car_pi_id] : [])
 		)
 end
 

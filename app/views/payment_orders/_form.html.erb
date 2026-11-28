@@ -24,6 +24,20 @@
 
     <div class="po-form__grid">
 
+<% if current_user.car_access? %>
+  <div class="po-form__field po-form__field--wide">
+    <%= form.label :car_pi_id, 'Car Project / PI' %>
+    <% if form.object.car_pi_locked? || (form.object.persisted? && form.object.receipt.attached?) %>
+      <div class="form-control"><%= form.object.car_pi&.pi_label || 'Not assigned' %> · Locked after approval</div>
+    <% else %>
+      <% car_pis = CarImportRecord.pis.current.to_a %>
+      <% car_pis |= [form.object.car_pi] if form.object.car_pi.present? %>
+      <% groups = car_pis.group_by { |r| r.fields['Project No.'].presence || 'Unassigned' }.sort_by(&:first).map { |project, rows| [project, rows.sort_by(&:external_key).map { |r| ["#{r.external_key}#{' (archived)' unless r.active?}", r.id] }] } %>
+      <%= form.select :car_pi_id, grouped_options_for_select(groups, form.object.car_pi_id), {include_blank: 'Not a car payment'}, class: 'form-select' %>
+      <small class="text-muted">Select a car PI instead of an ordinary project or inventory reference.</small>
+    <% end %>
+  </div>
+<% end %>
       <div class="po-form__field po-form__field--amount">
         <%= form.label :amount %>
         <%= form.number_field :amount,

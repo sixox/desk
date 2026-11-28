@@ -55,6 +55,14 @@
           </li>
 
           <li class="nav-group-label">Business</li>
+<% if current_user.car_access? %>
+  <li class="<%= 'active' if controller_name == 'cars' %>">
+    <%= link_to cars_path, data: { action: 'click->cooladmin-sidebar#closeOnMobile' } do %>
+      <i class="fa-solid fa-car-side"></i> Cars
+    <% end %>
+  </li>
+<% end %>
+
 
           <!-- Sales & Marketing -->
           <li class="has-sub <%= 'active open' if sales_active %>">

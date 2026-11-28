@@ -90,6 +90,10 @@
 </div>
 
 <%= render "cardex/projects" %>
+<% if current_user.car_access? %>
+  <%= render 'cars/overview', compact: true %>
+<% end %>
+
 
 <!-- MY WORK -->
 <section class="m-card mb-3">

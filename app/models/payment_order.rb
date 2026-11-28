@@ -4,7 +4,54 @@ class PaymentOrder < ApplicationRecord
   before_save :handle_secret_confirmations
   before_save :set_status
 
-  belongs_to :user
+belongs_to :user
+belongs_to :car_pi, class_name: 'CarImportRecord', optional: true
+validate :validate_car_pi_assignment
+
+def car_payment_visible_to?(user)
+  !mahramane? || user_id == user.id || user.ceo? || user.cob? || user.admin? || (user.accounting? && user.is_manager)
+end
+
+def self.car_payment_visible_scope(user)
+  return all if user.ceo? || user.cob? || user.admin? || (user.accounting? && user.is_manager)
+  where(mahramane: [nil, false]).or(where(user_id: user.id))
+end
+
+def hamed_confirmable_by?(user)
+  return false unless user&.id == 15 && car_payment_visible_to?(user)
+  return false if rejected_at.present? || status == 'rejected' || hamed_confirm?
+  if car_pi_id.present?
+    ['wait for confirm', 'wait for payment'].include?(status) && !receipt.attached?
+  else
+    [25, 30, 31].include?(user_id) && !coo_confirm?
+  end
+end
+
+def self.hamed_queue_for(user)
+  return none unless user.id == 15
+  base = car_payment_visible_scope(user).where(hamed_confirm: [nil, false], rejected_at: nil)
+  base = base.where.not(status: 'rejected').or(base.where(status: nil))
+  legacy = base.where(car_pi_id: nil, user_id: [25, 30, 31], coo_confirm: [nil, false])
+  cars = base.where.not(car_pi_id: nil).where(status: ['wait for confirm', 'wait for payment'])
+  legacy.or(cars.where.not(id: ActiveStorage::Attachment.where(record_type: 'PaymentOrder', name: 'receipt').select(:record_id)))
+end
+
+def car_pi_locked?
+  persisted? && %w[hamed_confirm coo_confirm ceo_confirm cob_confirm delivery_confirm].any? { |name| attribute_in_database(name) == true }
+end
+
+def validate_car_pi_assignment
+  changing = will_save_change_to_car_pi_id?
+  if changing && (car_pi_locked? || (persisted? && receipt.attached?))
+    errors.add(:car_pi_id, 'cannot be changed after approval or payment')
+    return
+  end
+  return if car_pi_id.blank?
+  errors.add(:car_pi_id, 'must be an active car PI') if changing && !(car_pi&.dataset == 'PIs' && car_pi.active?)
+  if [project_id, booking_id, ballance_id, spi_id, sci_id].any?(&:present?)
+    errors.add(:car_pi_id, 'cannot be combined with ordinary project or inventory references')
+  end
+end
   belongs_to :project, optional: true
   belongs_to :sci, optional: true
   belongs_to :spi, optional: true

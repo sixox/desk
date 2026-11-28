@@ -51,12 +51,8 @@
       )
     )
 
-  can_hamed_confirm =
-    current_user.id == 15 &&
-    @payment_order.user&.id.in?([25, 30, 31]) &&
-    @payment_order.rejected_at.nil? &&
-    @payment_order.coo_confirm.blank? &&
-    @payment_order.hamed_confirm.blank?
+  can_hamed_confirm = @payment_order.hamed_confirmable_by?(current_user)
+
 
   can_mark_delivered =
     user_signed_in? &&

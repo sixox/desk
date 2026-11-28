@@ -9014,3 +9014,65 @@
 .xt-transfer-flow .xt-flow-line {
   flex: 0 0 auto;
 }
+
+/* CAROPS START */
+.carops { --co-ink:#26364c; --co-muted:#68788f; --co-line:#e1e7ee; --co-blue:#3c66bd; color:var(--co-ink); }
+.carops * { box-sizing:border-box; }
+.carops h1,.carops h2,.carops h3,.carops p { margin:0; }
+.carops a { text-decoration:none; }
+.carops a:focus-visible,.carops button:focus-visible,.carops summary:focus-visible { outline:2px solid #4772ca; outline-offset:3px; }
+.carops-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:18px; }
+.carops-page-header { margin:0 0 22px; }
+.carops-heading h1 { font-size:30px; font-weight:800; letter-spacing:-1px; color:var(--co-ink); }
+.carops-heading h2 { font-size:21px; font-weight:750; color:var(--co-ink); }
+.carops-heading p,.carops-heading small { color:var(--co-muted); font-size:12px; margin-top:5px; }
+.carops-kicker { font-size:10px; color:var(--co-muted); font-weight:750; letter-spacing:1.15px; margin-bottom:5px; }
+.carops-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid #293d59; background:#293d59; color:#fff!important; border-radius:8px; padding:10px 14px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.carops-button:hover { background:#172b44; }
+.carops-panel { border:1px solid var(--co-line); border-radius:14px; padding:20px; background:#fff; box-shadow:0 4px 18px rgba(33,49,72,.04); }
+.carops-upload summary { cursor:pointer; color:var(--co-ink); font-weight:750; }
+.carops-upload p { margin:12px 0; color:var(--co-muted); font-size:13px; }
+.carops-upload-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+.carops-upload-grid strong { display:block; font-size:12px; margin-bottom:5px; }
+.carops-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(124px,1fr)); gap:10px; }
+.carops-kpi { position:relative; border:1px solid var(--co-line); border-radius:10px; background:#f8fafc; padding:14px; display:flex; flex-direction:column; gap:6px; }
+.carops-kpi i { position:absolute; top:13px; right:13px; font-size:15px; }
+.carops-kpi strong { font-size:27px; font-weight:800; letter-spacing:-.7px; font-variant-numeric:tabular-nums; }
+.carops-kpi span { font-size:11px; color:var(--co-muted); font-weight:600; }
+.carops-blue { color:#3d6ccb; } .carops-green { color:#16865a; } .carops-amber { color:#a8751b; } .carops-red { color:#bc4052; }
+.carops-charts { display:grid; grid-template-columns:minmax(150px,.8fr) minmax(0,1.4fr) minmax(0,1fr); gap:12px; margin-top:16px; }
+.carops-chart { border:1px solid var(--co-line); border-radius:11px; padding:16px; min-width:0; }
+.carops-chart h3,.carops-followups h3 { font-size:14px; font-weight:750; margin-bottom:14px; color:var(--co-ink); }
+.carops-ring { display:grid; place-items:center; width:136px; height:136px; border-radius:50%; margin:15px auto 12px; background:conic-gradient(#15976b var(--progress),#e9edf3 0); }
+.carops-ring>div { width:106px; height:106px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+.carops-ring strong { font-size:25px; font-weight:800; } .carops-ring span { font-size:11px; color:var(--co-muted); }
+.carops-bar-link { display:block; color:inherit; margin:0 0 10px; }
+.carops-bar-link:hover .carops-bar-label { color:var(--co-blue); }
+.carops-bar-label { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11px; color:var(--co-muted); margin-bottom:5px; }
+.carops-bar-label strong { color:var(--co-ink); font-weight:750; }
+.carops-track { height:7px; background:#e8edf3; border-radius:10px; overflow:hidden; }
+.carops-track>div { height:100%; border-radius:10px; }
+.carops-followups { margin-top:18px; }
+.carops-followup { display:flex; align-items:center; gap:12px; border-top:1px solid var(--co-line); padding:9px 0; color:var(--co-ink); font-size:12px; }
+.carops-followup strong { color:var(--co-blue); min-width:70px; }.carops-followup span { flex:1; }.carops-followup i { color:var(--co-muted); }
+.carops-tabs { display:flex; overflow-x:auto; gap:6px; border-bottom:1px solid var(--co-line); padding-bottom:12px; margin-bottom:16px; }
+.carops-tabs a { display:flex; align-items:center; gap:7px; color:var(--co-muted); padding:8px 11px; border-radius:7px; font-size:12px; font-weight:650; white-space:nowrap; }
+.carops-tabs a span { font-size:10px; background:#e9edf4; padding:2px 5px; border-radius:4px; }
+.carops-tabs a.active,.carops-tabs a:hover { color:var(--co-blue); background:#edf2fe; }
+.carops-filters { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:18px; }
+.carops-filters select { width:auto; min-width:150px; }.carops-filters input[type=search] { flex:1; min-width:190px; }.carops-filters .form-control,.carops-filters .form-select { font-size:12px; border-color:var(--co-line); }
+.carops-selection { background:#edf2fe; color:var(--co-blue); border-radius:7px; font-size:12px; padding:9px 12px; margin-bottom:12px; }.carops-selection a { margin-left:10px; }
+.carops-project-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:14px; }
+.carops-project { display:flex; flex-direction:column; gap:12px; min-width:0; border:1px solid var(--co-line); border-left:4px solid #4e77c8; border-radius:11px; padding:16px; background:#fff; }
+.carops-project.complete { border-left-color:#15976b; }.carops-project header { display:flex; justify-content:space-between; align-items:center; gap:12px; }.carops-project h3 { font-size:20px; font-weight:800; color:var(--co-ink); }.carops-project small { color:var(--co-muted); font-size:11px; }
+.carops-project-number { display:flex; flex-direction:column; text-align:right; }.carops-project-number strong { font-size:25px; font-weight:800; }.carops-project-number span { font-size:11px; color:var(--co-muted); }
+.carops-project-pi { display:flex; flex-direction:column; gap:4px; padding-top:10px; border-top:1px solid var(--co-line); overflow-wrap:anywhere; }.carops-project-pi a { font-weight:700; color:var(--co-blue); font-size:12px; }
+.carops-project-link { display:flex; align-items:center; justify-content:space-between; gap:8px; font-weight:700; color:var(--co-blue); font-size:12px; margin-top:auto; padding-top:8px; }
+.carops-table-wrap { overflow-x:auto; }.carops-table { width:100%; border-collapse:collapse; font-size:12px; }.carops-table th { background:#f0f4f8; font-size:10px; text-transform:uppercase; letter-spacing:.4px; color:var(--co-muted); padding:12px 10px; white-space:nowrap; text-align:left; }.carops-table td { padding:13px 10px; border-bottom:1px solid var(--co-line); vertical-align:top; color:var(--co-ink); min-width:70px; }.carops-table td a { color:var(--co-blue); font-weight:700; }.carops-table tr:hover td { background:#f8fafc; }
+.carops-status { display:inline-block; padding:5px 7px; border-radius:5px; font-size:10px; font-weight:700; }.carops-status.is-done { background:#e1f3e9; color:#14734c; }.carops-status.is-pending { background:#fff1d0; color:#986717; }
+.carops-estimate { display:inline-block; margin-left:4px; padding:2px 5px; border-radius:4px; background:#fff0ce; color:#94631a; font-size:9px; font-weight:750; }
+.carops-record-details summary { cursor:pointer; font-weight:700; color:var(--co-blue); white-space:nowrap; }.carops-record-details dl { width:240px; margin:10px 0 0; }.carops-record-details dt { color:var(--co-muted); font-size:10px; }.carops-record-details dd { margin:0 0 8px; overflow-wrap:anywhere; white-space:pre-wrap; }
+.carops-empty { text-align:center; padding:38px; color:var(--co-muted); font-size:13px; }.carops .pagination { margin-top:16px; flex-wrap:wrap; }
+@media(max-width:1100px) { .carops-charts { grid-template-columns:repeat(2,minmax(0,1fr)); }.carops-chart:last-child { grid-column:1/-1; } }
+@media(max-width:640px) { .carops-panel { padding:13px; }.carops-charts { grid-template-columns:1fr; }.carops-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }.carops-filters select { width:100%; }.carops-heading h1 { font-size:25px; } }
+/* CAROPS END */
