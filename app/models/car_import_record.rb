@@ -35,6 +35,21 @@ class CarImportRecord < ApplicationRecord
 
   scope :current, -> { where(active: true) }
   scope :pis, -> { where(dataset: 'PIs') }
+  scope :car_projects, -> { where(dataset: 'CarProjects') }
+  has_many :project_swifts, class_name: 'Swift', foreign_key: :car_project_id,
+           inverse_of: :car_project, dependent: :restrict_with_error
+
+  def self.sync_car_projects!(parsed)
+    numbers = %w[PIs Cars].flat_map do |name|
+      parsed.fetch(name).filter_map { |_, fields| fields['Project No.'].presence }
+    end.uniq
+    existing = car_projects.index_by(&:external_key)
+    numbers.each do |number|
+      record = existing.delete(number) || car_projects.new(external_key: number)
+      record.update!(payload: JSON.generate('Project No.' => number), active: true)
+    end
+    car_projects.where(id: existing.values.map(&:id)).update_all(active: false, updated_at: Time.current)
+  end
 
   def fields
     JSON.parse(payload)
@@ -116,6 +131,11 @@ class CarImportRecord < ApplicationRecord
         raise ImportError, "Cars #{key}: project differs from PI project"
       end
     end
+    project_numbers = %w[PIs Cars].flat_map do |name|
+      parsed.fetch(name).filter_map { |_, fields| fields['Project No.'] }
+    end.uniq
+    raise ImportError, 'Project No. exceeds 191 characters' if project_numbers.any? { |n| n.length > 191 }
+    raise ImportError, 'Conflicting project number capitalization' if project_numbers.map(&:downcase).uniq.size != project_numbers.size
     parsed
   end
 
@@ -138,6 +158,7 @@ class CarImportRecord < ApplicationRecord
           rows.each { |key, fields| scope.create!(external_key: key, payload: JSON.generate(fields), active: true) }
         end
       end
+      sync_car_projects!(parsed)
       meta.update!(payload: JSON.generate({ 'imported_at' => Time.current.iso8601, 'user_id' => user.id, 'counts' => parsed.transform_values(&:size) }))
     end
     parsed.transform_values(&:size)

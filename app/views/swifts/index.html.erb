@@ -1,185 +1,60 @@
-<div class="col-lg-10 mx-auto mt-5">
-
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h3>Swifts</h3>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<div class="hide-on-desktop">
-						
-					</div>
-					<div class="hide-on-mobile">
-						<div class="btn-group" role="group" aria-label="Page Toggle">
-							<% if @in_page == "unconfirmed" %>
-							<%= link_to "Pending", unconfirmed_swifts_path, class: "btn btn-primary active" %>
-							<%= link_to "All", swifts_path, class: "btn btn-primary" %>
-							<% else %>
-							<%= link_to "Pending", unconfirmed_swifts_path, class: "btn btn-primary" %>
-							<%= link_to "All", swifts_path, class: "btn btn-primary active" %>
-							<% end %>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-
-
-
-	<div class="row mt-3">
-<%= search_form_for @q, url: request.path do |f| %>
-  <div class="input-group mb-3">
-    <%= f.search_field :amount_or_from_or_project_number_cont, class: "form-control", placeholder: "Search by Amount, From, or Project Number" %>
-    <%= f.submit "Search", class: "btn btn-primary" %>
-  </div>
-<% end %>
-
-</div>
-
-	<row class="m-2">
-		<div class="col-sm">
-			<table class="table">
-				<thead>
-					<tr>
-						<th scope="col" class="col-sm-1">#</th>
-						<th scope="col" class="col-sm-2">Amount</th>
-						<th scope="col" class="col-sm-2">Deposited Amount</th>
-						<th scope="col" class="col-sm-2">From</th>
-
-						<th scope="col" class="col-sm-2">To</th>
-						<th scope="col" class="col-sm-2">Currency</th>
-						<th scope="col" class="col-sm-2">Project</th>
-						<th scope="col" class="col-sm-2">Documents</th>
-						<th scope="col" class="col-sm-2">Type</th>
-
-
-
-
-
-						<th scope="col" class="col-sm-2">Status</th>
-						<th scope="col" class="col-sm-2">Note</th>
-						<th scope="col" class="col-sm-2">Created at</th>
-
-
-						<th scope="col" style="text-align: right;" class="col-sm-3 text-right">Actions</th>
-
-					</tr>
-				</thead>
-				<tbody>
-					<% @swifts.order(created_at: :desc).each do |swift| %>
-					<tr style="font-size: 12px;" class="<%= 
-					if swift.confirmed.present?
-						'table-success'
-					elsif swift.rejected.present?
-						'table-danger'
-					else
-						'table-warning'
-					end
-
-					 %>">
-					<th scope="row">
-						<%= swift.id %> 
-						<% if swift.announce %>
-							<i class="bi bi-megaphone-fill text-success"></i>
-						<% end %>
-					</th>
-					<td class="fw-bold"><%= number_with_delimiter(swift.amount, delimiter: ',') %></td>
-					<td class="fw-bold"><%= number_with_delimiter(swift.deposited_amount, delimiter: ',') %></td>
-					<td><%= swift.from %></td>
-
-					<td><%= swift.bank.name %></td>
-					<td><%= swift.currency %></td>
-					<% if swift.ci.present? %>
-					<td><%= link_to swift.ci.project.number, project_path(swift.ci.project) %></td>
-					<% else %>
-					<td><%= link_to swift.project.number, project_path(swift.project) %></td>
-					<% end %>
-					<td><% swift.documents.each do |file| %>
-						<small> 
-							<%= link_to file.filename, rails_blob_path(file, disposition: 'attachment') %> 
-						</small>
-						<% end %>
-					</td>
-					<td><%= swift.advance ? "Advance" : "Balance" %></td>
-
-					<td><%= 
-					if swift.confirmed.present?
-						"Confirmed at #{swift.confirm_at&.strftime('%b %d')}"
-					elsif swift.rejected.present?
-						"Rejected at #{swift.rejected_at&.strftime('%b %d')}" 
-					else
-						'Wait for deposite'
-					end
-				%></td>
-				<td>
-					<% if swift.note.present? %>
-				  <div class="accordion" id="accordionNote<%= swift.id %>">
-				    <div class="accordion-item">
-				      <h2 class="accordion-header" id="headingNote<%= swift.id %>">
-				       <button class="accordion-button collapsed my-custom-accordion-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNote<%= swift.id %>" aria-expanded="false" aria-controls="collapseNote<%= swift.id %>">
-						  Note
-						</button>
-				      </h2>
-				      <div id="collapseNote<%= swift.id %>" class="accordion-collapse collapse" aria-labelledby="headingNote<%= swift.id %>" data-bs-parent="#accordionNote<%= swift.id %>">
-				        <div class="accordion-body">
-				          <%= swift.note %>
-				        </div>
-				      </div>
-				    </div>
-				  </div>
-				  <% else %>
-				  -
-				  <% end %>
-				</td>
-				<td>
-					<%= swift.created_at&.strftime('%b %d') %>
-				</td>
-				<td style="text-align: right;">
-					<% if !swift.confirmed && !swift.rejected && (current_user.accounting? || current_user.admin?) %>
-					<span><%= link_to edit_amount_before_confirm_swift_path(swift), data: { controller: "bs-modal-form" } do %>
-							<i class="bi bi-calendar2-check-fill" style="color: green;"></i>
-							<% end %></span>
-					|
-					<%= link_to reject_swift_path(swift), data: { turbo_method: :patch, turbo_confirm: 'Are you sure you want to reject this swift, this action can not be undo!' } do %>
-					<i class="bi bi-calendar-x-fill" style="color: red;"></i>
-					<% end %>
-					|
-					
-
-            <%= link_to toggle_announce_swift_path(swift), data: { turbo: false, turbo_method: :patch, turbo_confirm: 'Are you sure?' } do %>
-					<i class="bi bi-megaphone-fill" style="color: red;"></i>
-					<% end %>
-
-					
-					<% end %>
-					<% if !swift.confirmed && !swift.rejected && (current_user.sales? || current_user.admin?) %>
-						<%= link_to edit_swift_path(swift), data: { controller: "bs-modal-form" } do %>
-							<i class="bi bi-pencil-fill" style="color: red;"></i>
-							<% end %>
-							<%= link_to swift_path(swift), data: { turbo_method: :delete, turbo_confirm: 'Are you sure you want to delete this Swift , this action can not be undo!' } do %>
-					<i class="bi bi-trash text-danger"></i>
-					<% end %>
-					<% end %>
-
-					
-				</td>
-				</tr>
-				<% end %>
-			</tbody>
-		</table>
-
-	</div>
-</row>
-<div class="row mt-3">
-            <div class="col-sm">
-              <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                  <%= paginate @swifts, remote: true %>
-                </ul>
-              </nav>
-            </div>
-          </div>
+<div class="carops pb-4">
+  <header class="carops-heading carops-page-header">
+    <div><div class="carops-kicker">FINANCE / BANK TRANSFERS</div><h1>SWIFTs</h1><p>Incoming transfers and deposit confirmations.</p></div>
+    <div class="btn-group" role="group" aria-label="SWIFT filters">
+      <%= link_to 'Pending', unconfirmed_swifts_path, class: "btn btn-sm #{@in_page == 'unconfirmed' ? 'btn-primary' : 'btn-outline-primary'}" %>
+      <%= link_to 'All', swifts_path, class: "btn btn-sm #{@in_page == 'index' ? 'btn-primary' : 'btn-outline-primary'}" %>
+    </div>
+  </header>
+  <section class="carops-panel">
+    <%= search_form_for @q, url: request.path, html: {class: 'carops-filters'} do |f| %>
+      <%= f.search_field :amount_or_from_or_project_number_cont, class: 'form-control', placeholder: 'Amount, sender, project number' %>
+      <%= f.submit 'Search', class: 'carops-button' %>
+      <%= link_to 'Reset', request.path, class: 'btn btn-light btn-sm' %>
+    <% end %>
+    <div class="carops-table-wrap">
+      <table class="carops-table">
+        <thead><tr><% ['SWIFT', 'Amount', 'Deposited', 'From / Bank', 'Project', 'Type / Status', 'Documents / Note', 'Actions'].each do |label| %><th scope="col"><%= label %></th><% end %></tr></thead>
+        <tbody>
+          <% @swifts.each do |swift| %>
+            <% rejected = swift.rejected?; confirmed = swift.confirmed? && !rejected; color = rejected ? '#c12d40' : confirmed ? '#16834f' : '#c08a28' %>
+            <tr>
+              <td style="border-left:4px solid <%= color %>;" class="text-nowrap"><strong>#<%= swift.id %></strong> <% if swift.announce? %><i class="fa-solid fa-bullhorn text-success"></i><% end %><div class="small text-muted"><%= swift.created_at&.strftime('%d %b %Y') %></div></td>
+              <td class="text-nowrap"><strong><%= number_with_delimiter(swift.amount) %></strong> <small><%= swift.currency.to_s.upcase %></small></td>
+              <td class="text-nowrap"><%= swift.deposited_amount.nil? ? '—' : number_with_delimiter(swift.deposited_amount) %> <small><%= swift.bank&.currency.to_s.upcase %></small></td>
+              <td><strong><%= swift.from.presence || '—' %></strong><div class="small text-muted"><%= swift.bank&.name || '—' %></div></td>
+              <td>
+                <% if swift.car_project %>
+                  <%= link_to car_path(swift.car_project) do %><i class="fa-solid fa-car-side"></i> <%= swift.car_project.external_key %><% end %>
+                  <% unless swift.car_project.active? %><div class="small text-muted">Archived</div><% end %>
+                <% elsif (project = swift.ci&.project || swift.project) %>
+                  <%= link_to project.number, project_path(project) %>
+                <% else %>—<% end %>
+              </td>
+              <td><strong><%= swift.advance? ? 'Advance' : 'Balance' %></strong><div class="small mt-1" style="color:<%= color %>;"><%= rejected ? 'Rejected' : confirmed ? 'Confirmed' : 'Awaiting deposit' %></div><small class="text-muted"><%= (rejected ? swift.rejected_at : confirmed ? swift.confirm_at : nil)&.strftime('%d %b %Y, %H:%M') %></small></td>
+              <td>
+                <% swift.documents.each do |file| %><div class="mb-1"><%= link_to file.filename, rails_blob_path(file, disposition: 'attachment'), class: 'small' %></div><% end %>
+                <% if swift.note.present? %><details><summary class="small text-muted">Note</summary><div class="small text-break"><%= swift.note %></div></details><% end %>
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  <% if swift.confirmable_by?(current_user) %>
+                    <%= link_to 'Confirm', edit_amount_before_confirm_swift_path(swift), data: {controller: 'bs-modal-form'}, class: 'btn btn-sm btn-outline-success' %>
+                    <%= button_to 'Reject', reject_swift_path(swift), method: :patch, form: {class: 'm-0', data: {turbo_confirm: 'Reject this SWIFT?'}}, class: 'btn btn-sm btn-outline-danger' %>
+                    <%= button_to(swift.announce? ? 'Unannounce' : 'Announce', toggle_announce_swift_path(swift), method: :patch, form: {class: 'm-0'}, class: 'btn btn-sm btn-outline-secondary') %>
+                  <% end %>
+                  <% if swift.editable_by?(current_user) %>
+                    <%= link_to 'Edit', edit_swift_path(swift), data: {controller: 'bs-modal-form'}, class: 'btn btn-sm btn-outline-primary' %>
+                    <%= button_to 'Delete', swift_path(swift), method: :delete, form: {class: 'm-0', data: {turbo_confirm: 'Delete this SWIFT?'}}, class: 'btn btn-sm btn-outline-danger' %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <% if @swifts.empty? %><div class="carops-empty">No matching SWIFTs.</div><% end %>
+    <div class="mt-3"><%= paginate @swifts %></div>
+  </section>
 </div>

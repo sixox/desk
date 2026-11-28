@@ -1,69 +1,26 @@
 <%= form_with model: @swift, url: confirm_swift_path(@swift), method: :patch do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @swift.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@swift.errors.count, 'error') %> prohibited your swift from being saved.</h3>
-			<ul>
-				<% @swift.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h3>Swift</h3>
-				</div>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="col mt-1">
-				<h6>Project: <%= @swift.project.present? ? @swift.project.number : @swift.ci.project.number %></h6>
-				
-			</div>
-			<div class="col">
-				<p>amount: <span class="fw-bold bg-warning"><%= @swift.amount %></span> <small>	<%= @swift.currency %></small></p>
-			</div>
-
-		</div>
-		<div class="row">
-			<div class="col">
-				<div class="form-group">
-							<label class="mb-2 mt-3">
-								To bank:
-								<span class="text-danger">*</span>
-							</label>
-							
-							<%= form.collection_select :bank_id, 
-							  @banks.map { |bank| [ "#{bank.name}-#{bank.currency}", bank.id ] }, 
-							  :second,  # This corresponds to `bank.id`
-							  :first,   # This corresponds to `"bank.name-bank.currency"`
-							  { prompt: 'Select Bank' }, 
-							  { class: "form-select" } 
-							%>
-
-				</div>
-			</div>
-
-			<div class="col">
-				<div class="form-group">
-						<label class="mb-2 mt-3">
-							Deposited amount
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.number_field :deposited_amount, class: 'form-control', value: @swift.amount %>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Confirm', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
+  <div class="modal-body carops">
+    <%= render 'shared/forms/errors', object: @swift %>
+    <div class="p-3 rounded-3 mb-3" style="background:#e8f4ec;color:#17673f;">
+      <div class="carops-kicker">CONFIRM INCOMING SWIFT #<%= @swift.id %></div>
+      <h3 class="fs-4 fw-bold"><%= number_with_delimiter(@swift.amount) %> <small class="fs-6"><%= @swift.currency.to_s.upcase %></small></h3>
+      <div class="small mt-1">Project <%= @swift.car_project&.external_key || @swift.project&.number || @swift.ci&.project&.number || '—' %></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <%= form.label :bank_id, 'Receiving bank', class: 'form-label small fw-bold' %>
+        <%= form.collection_select :bank_id, @banks.map { |bank| ["#{bank.name} – #{bank.currency}", bank.id] }, :second, :first, {prompt: 'Select bank'}, {class: 'form-select', required: true} %>
+      </div>
+      <div class="col-md-6">
+        <%= form.label :deposited_amount, 'Deposited amount', class: 'form-label small fw-bold' %>
+        <%= form.number_field :deposited_amount, value: @swift.deposited_amount.presence || @swift.amount, step: 'any', min: 0, required: true, class: 'form-control' %>
+        <small class="text-muted">Enter amount in the receiving bank's currency.</small>
+      </div>
+    </div>
+    <div class="small text-muted mt-3"><i class="fa-solid fa-shield-halved"></i> Confirmation credits the selected bank and creates a transaction.</div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+    <%= form.submit 'Confirm deposit', class: 'btn btn-success' %>
+  </div>
 <% end %>

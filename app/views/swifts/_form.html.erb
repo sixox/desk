@@ -1,251 +1,70 @@
-<% if @object == 1 %>
-<%= form_for [@ci, @swift] do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @swift.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@swift.errors.count, 'error') %> prohibited your swift from being saved.</h3>
-			<ul>
-				<% @swift.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h4>Swift</h4>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<% if @ci.project.pi %>
-					<small class="text-secondary">Project: <%= @ci.project.number %></small><br>
-					<small class="text-secondary">PI number: <%= @ci.project.pi.number %></small><br>
-					
-					<% end %>
-				</div>
-			</div>
-		</div>
-		<div class="col-lg-12">
-			<div class="row">
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Amount
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.number_field :amount, class: 'form-control' %>
-					</div>
-				</div>
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							From
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_field :from, class: 'form-control' %>
-					</div>
-				</div>
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							To bank:
-							<span class="text-danger">*</span>
-						</label>
-						
-						<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
-					</div>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col-sm-8">
-
-					<div class="form-group">
-						<%= form.label :documents, class: 'mb-2 mt-3' do %>
-						Attach Documents
-						<span class="text-danger">*</span>
-						<% end %>
-						<%= form.file_field :documents, multiple: true, class: 'form-control' %>
-					</div>
-				</div>	
-				<div class="col-sm-4">
-					<div class="form-group mt-3">
-						<label for="amount" class="form-label">
-							Currency
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select" } %>
-					</div>
-					
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Note
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_area :note, class: 'form-control', rows: 5 %>
-					</div>
-					<div class="form-group mb-2 mt-3">
-						<%= form.check_box :advance, class: 'form-check-input' %>
-						<label class="form-check-label" for="hourly">
-							Advance? unchek if it is balance payment
-						</label>
-					</div>
-
-				</div>
-			</div>
-		
-			
-		
-			
-		</div>
-
-
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Add swift to CI', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
-<% end %>
-<% else %>
-
-<%= form_for [@project, @swift] do |form| %>
-<div class="modal-body">
-	<div class="row">
-		<% if @swift.errors.any? %>
-		<div class="error-area" style="color:red;">
-			<h3><%= pluralize(@swift.errors.count, 'error') %> prohibited your swift from being saved.</h3>
-			<ul>
-				<% @swift.errors.each do |error|%>
-				<li>
-					<%= error.full_message%>
-				</li>
-				<% end %>
-			</ul>
-		</div>
-		<% end %>
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-start">
-					<h4>Swift</h4>
-				</div>
-			</div>
-			<div class="col-lg-6">
-				<div class="d-flex justify-content-end">
-					<% if @project.pi %>
-					<small class="text-secondary">Project: <%= @project.number %></small><br>
-					<small class="text-secondary">PI number: <%= @project.pi.number %></small><br>
-					
-					<% end %>
-				</div>
-			</div>
-		</div>
-		<div class="col-lg-12">
-			<div class="row">
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Amount
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.number_field :amount, class: 'form-control' %>
-					</div>
-				</div>
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							From
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_field :from, class: 'form-control' %>
-					</div>
-				</div>
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							To bank:
-							<span class="text-danger">*</span>
-						</label>
-						
-						<%= form.collection_select :bank_id, @banks, :id, :name, { prompt: 'Select Bank'}, { class: "form-select" } %>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-sm-8">
-
-					<div class="form-group">
-						<%= form.label :documents, class: 'mb-2 mt-3' do %>
-						Attach Documents
-						<span class="text-danger">*</span>
-						<% end %>
-						<%= form.file_field :documents, multiple: true, class: 'form-control' %>
-					</div>
-				</div>	
-				<div class="col-sm-4">
-					<div class="form-group mt-3">
-						<label for="amount" class="form-label">
-							Currency
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.select :currency, options_for_select(Pi::CURRENCY, selected: form.object.currency), { prompt: '' }, { class:"form-select" } %>
-					</div>
-					
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="form-group">
-						<label class="mb-2 mt-3">
-							Note
-							<span class="text-danger">*</span>
-						</label>
-						<%= form.text_area :note, class: 'form-control', rows: 5 %>
-					</div>
-					<div class="form-group mb-2 mt-3">
-						<%= form.check_box :advance, class: 'form-check-input' %>
-						<label class="form-check-label" for="hourly">
-							Advance? unchek if it is balance payment
-						</label>
-					</div>
-
-				</div>
-			</div>
-			<% if action_name == 'edit' %>
-
-			<div class="row">
-				<div class="col-lg-6">
-					<div class="form-group">
-						<label for="amount" class="form-label">
-							Project
-							<span class="text-danger">*</span>
-						</label>
-					<%= form.collection_select :project_id, @projects, :id, :number, { prompt: 'Select Project'}, { class: "form-select" } %>		
-					</div>
-				</div>
-			</div>
-			<% end %>
-			
-		</div>
-
-
-	</div>
-</div>
-<div class="modal-footer">
-	<%= form.submit 'Add swift to Project', class: 'btn btn-primary', data: { action: 'click->bs-modal#submitEnd' } %>
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
-<% end %>
-
-
-
+<%
+  editing = @swift.persisted?
+  endpoint = if editing
+    swift_path(@swift)
+  elsif @object == 3
+    car_swifts_path(@car_project)
+  elsif @object == 1
+    ci_swifts_path(@ci)
+  else
+    project_swifts_path(@project)
+  end
+%>
+<%= form_with model: @swift, url: endpoint, method: editing ? :patch : :post, multipart: true do |form| %>
+  <div class="modal-body carops">
+    <%= render 'shared/forms/errors', object: @swift %>
+    <div class="rounded-3 bg-light p-3 mb-3">
+      <div class="carops-kicker"><%= @object == 3 ? 'AUTOMOTIVE / PROJECT' : 'PROJECT / SWIFT' %></div>
+      <h3 class="fw-bold fs-5"><%= @car_project&.external_key || @project&.number || 'Unassigned' %></h3>
+      <% if @object != 3 && @project&.pi %>
+        <small class="text-muted">PI <%= @project.pi.number %></small>
+      <% end %>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <%= form.label :amount, 'Amount', class: 'form-label small fw-bold' %>
+        <%= form.number_field :amount, step: 'any', required: true, class: 'form-control' %>
+      </div>
+      <div class="col-md-6">
+        <%= form.label :currency, class: 'form-label small fw-bold' %>
+        <%= form.select :currency, Pi::CURRENCY, {prompt: 'Select currency'}, {class: 'form-select', required: true} %>
+      </div>
+      <div class="col-md-6">
+        <%= form.label :from, 'From', class: 'form-label small fw-bold' %>
+        <%= form.text_field :from, class: 'form-control' %>
+      </div>
+      <div class="col-md-6">
+        <%= form.label :bank_id, 'To bank', class: 'form-label small fw-bold' %>
+        <%= form.collection_select :bank_id, @banks, :id, :name, {prompt: 'Select bank'}, {class: 'form-select', required: true} %>
+      </div>
+      <% if editing && @object == 2 %>
+        <div class="col-12">
+          <%= form.label :project_id, 'Project', class: 'form-label small fw-bold' %>
+          <%= form.collection_select :project_id, @projects, :id, :number, {prompt: 'Select project'}, {class: 'form-select'} %>
+        </div>
+      <% end %>
+      <div class="col-12">
+        <%= form.label :documents, 'Supporting documents', class: 'form-label small fw-bold' %>
+        <% @swift.documents.each do |document| %>
+          <% if document.blob.persisted? %><div class="small mb-1"><i class="fa-solid fa-paperclip"></i> <%= link_to document.filename, rails_blob_path(document, disposition: 'attachment') %></div><% end %>
+        <% end %>
+        <%= form.file_field :documents, multiple: true, class: 'form-control', required: !@swift.documents.attached? %>
+        <% if editing %><small class="text-muted">Leave empty to retain existing documents. Selecting new files replaces them.</small><% end %>
+      </div>
+      <div class="col-12">
+        <%= form.label :note, class: 'form-label small fw-bold' %>
+        <%= form.text_area :note, class: 'form-control', rows: 4 %>
+      </div>
+      <div class="col-12">
+        <div class="form-check form-switch bg-light rounded-3 py-3 ps-5">
+          <%= form.check_box :advance, class: 'form-check-input' %>
+          <%= form.label :advance, 'Advance payment (off = balance payment)', class: 'form-check-label small fw-semibold' %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+    <%= form.submit(editing ? 'Save SWIFT' : 'Add SWIFT', class: 'btn btn-primary') %>
+  </div>
 <% end %>

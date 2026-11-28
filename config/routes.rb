@@ -112,8 +112,12 @@ Rails.application.routes.draw do
     end
   end
   resources :suppliers
-  resources :cars, only: [:index] do
-    collection { post :import }
+  resources :cars, only: [:index, :show] do
+    collection do
+      post :import
+    end
+
+    resources :swifts, only: [:new, :create]
   end
 
   resources :payment_orders do

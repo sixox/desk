@@ -21,7 +21,7 @@
     <nav class="carops-tabs" aria-label="Cars datasets">
       <% (['Projects'] + CarImportRecord::HEADERS.keys).each do |tab| %>
         <%= link_to cars_path(tab: tab, project: @project, pi: @pi), class: (@tab == tab ? 'active' : nil), aria: {current: (@tab == tab ? 'page' : nil)} do %>
-          <%= tab == 'Cars' ? 'Vehicles' : tab %><span><%= tab == 'Projects' ? @filtered.fetch('PIs', []).map { |r| r.fields['Project No.'] }.uniq.size : @filtered.fetch(tab, []).size %></span>
+          <%= tab == 'Cars' ? 'Vehicles' : tab %><span><%= tab == 'Projects' ? (@project ? @project_names.count { |n| n == @project } : @project_names.size) : @filtered.fetch(tab, []).size %></span>
         <% end %>
       <% end %>
     </nav>
@@ -42,7 +42,7 @@
             <header><div><div class="carops-kicker">PROJECT</div><h3><%= project.presence || 'Unassigned' %></h3><small><%= pis.size %> PI(s) · <%= pis.map { |p| p.fields['Owner'] }.compact.uniq.join(', ') %></small></div><div class="carops-project-number"><strong><%= total %></strong><span>Cars</span></div></header>
             <div class="carops-bar-label"><span>Delivered</span><strong><%= delivered %> / <%= total %></strong></div><div class="carops-track"><div style="width:<%= percent %>%;background:#15976b"></div></div>
             <% pis.each do |pi| %><div class="carops-project-pi"><%= link_to pi.external_key, cars_path(tab: 'PIs', project: project, pi: pi.external_key) %><small><%= pi.fields['Supplier'] %> · <%= pi.fields['Next Step'] %></small></div><% end %>
-            <%= link_to cars_path(tab: 'PIs', project: project), class: 'carops-project-link' do %>Open project <i class="fa-solid fa-arrow-right"></i><% end %>
+            <%= link_to(@project_records[project] ? car_path(@project_records[project]) : cars_path(tab: 'PIs', project: project), class: 'carops-project-link') do %>Open project <i class="fa-solid fa-arrow-right"></i><% end %>
           </article>
         <% end %>
       </div>
@@ -60,7 +60,7 @@
                     <% value = record.fields[column] %>
                     <% if column == 'Status' && value.present? %><span class="carops-status <%= %w[Delivered Closed].include?(value) || value == 'Customs released' ? 'is-done' : 'is-pending' %>"><%= value %></span>
                     <% elsif column == 'PI No.' && value.present? %><%= link_to value, cars_path(tab: 'PIs', pi: value) %>
-                    <% elsif column == 'Project No.' && value.present? %><%= link_to value, cars_path(project: value) %>
+                    <% elsif column == 'Project No.' && value.present? %><%= link_to value, (@project_records[value] ? car_path(@project_records[value]) : cars_path(project: value)) %>
                     <% else %><%= value.nil? ? '—' : value %><% end %>
                     <% if value.present? && record.estimated?(column) %><span class="carops-estimate" title="Estimated date">Est.</span><% end %>
                   </td>

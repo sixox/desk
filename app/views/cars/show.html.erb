@@ -1,0 +1,194 @@
+<%
+  planned = @project_pis.sum { |r| r.fields['Cars'].to_i }
+  total = @vehicles.size
+  statuses = @vehicles.group_by { |r| r.fields['Status'].presence || 'Unknown' }.transform_values(&:size)
+  delivered = statuses.fetch('Delivered', 0)
+  colors = {
+    'Delivered' => '#15976b', 'Waiting for pickup' => '#d89b34',
+    'To destination' => '#4672ca', 'Docs in process' => '#9373c6',
+    'In Khorgos queue' => '#c76b45', 'To Sarakhs' => '#168e9d'
+  }
+  ordered_statuses = colors.keys.select { |s| statuses.key?(s) } + (statuses.keys - colors.keys).sort
+  cursor = 0.0
+  segments = ordered_statuses.map.with_index do |status, index|
+    start = cursor
+    cursor += statuses[status] * 100.0 / total
+    finish = index == ordered_statuses.size - 1 ? 100.0 : cursor
+    "#{colors.fetch(status, '#8795aa')} #{start.round(4)}% #{finish.round(4)}%"
+  end
+  chart = segments.empty? ? '#e9edf3' : "conic-gradient(#{segments.join(', ')})"
+  open_incidents = @incidents.count { |r| !r.fields['Status'].to_s.casecmp('Closed').zero? }
+  active_pos = @payment_orders.reject { |po| po.rejected_at.present? || po.status == 'rejected' }
+  paid_pos = active_pos.select { |po| po.status == 'delivered' || po.status == 'wait for delivery' }
+  pending_pos = active_pos.select { |po| ['wait for confirm', 'wait for payment'].include?(po.status) }
+  confirmed_swifts = @swifts.select { |s| s.confirmed? && !s.rejected? }
+  pending_swifts = @swifts.select(&:pending?)
+  currencies = (active_pos.map(&:currency) + @swifts.map(&:currency)).compact.uniq.sort
+  owners = @project_pis.filter_map { |r| r.fields['Owner'].presence }.uniq
+  suppliers = @project_pis.filter_map { |r| r.fields['Supplier'].presence }.uniq
+%>
+<div class="carops pb-4">
+  <div class="small mb-3"><%= link_to cars_path, class: 'text-secondary' do %><i class="fa-solid fa-arrow-left me-1"></i> Cars<% end %> <span class="text-muted mx-1">/</span> <%= @project_number %></div>
+  <section class="rounded-3 p-3 p-md-4 mb-3 text-white" style="background:linear-gradient(120deg,#1d3046,#2e4f67);box-shadow:0 6px 22px rgba(30,49,70,.15);">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div>
+        <div class="small fw-semibold mb-2" style="color:#a7c0d8;letter-spacing:1.4px;">AUTOMOTIVE / PROJECT FILE</div>
+        <h1 class="text-white fw-bold" style="font-size:34px;letter-spacing:-1px;"><%= @project_number %></h1>
+        <div class="small mt-2" style="color:#c4d6e5;"><%= @project_pis.map(&:external_key).join(' · ').presence || 'No active PIs' %></div>
+        <div class="small mt-2" style="color:#c4d6e5;">Owner: <%= owners.join(', ').presence || '—' %> <span class="mx-2">·</span> Supplier: <%= suppliers.join(', ').presence || '—' %></div>
+      </div>
+      <div class="text-end"><i class="fa-solid fa-car-side fa-2x" style="color:#91abc2;"></i><div class="small mt-2"><%= @car_project.active? ? 'Current snapshot' : 'Archived project' %></div></div>
+    </div>
+    <div class="row g-2 mt-3">
+      <% [['PI quantity',planned,'#fff'],['VIN records',total,'#fff'],['Delivered',delivered,'#91e4bf'],['Outstanding',total-delivered,'#ffd181'],['Trucks',@trucks.size,'#fff'],['Open incidents',open_incidents,open_incidents.positive? ? '#ffb2b9' : '#91e4bf']].each do |label,value,color| %>
+        <div class="col-6 col-md-4 col-xl-2"><div class="rounded-3 p-3 h-100" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);"><div class="small" style="color:#c4d6e5;"><%= label %></div><strong style="font-size:26px;color:<%= color %>;font-variant-numeric:tabular-nums;"><%= number_with_delimiter(value) %></strong></div></div>
+      <% end %>
+    </div>
+    <% if planned != total %><div class="small mt-3" style="color:#ffd181;">PI quantity and imported VIN count differ. Check the latest CSV snapshot.</div><% end %>
+  </section>
+
+  <div class="row g-3 mb-3">
+    <div class="col-xl-5">
+      <section class="carops-panel h-100">
+        <div class="carops-heading"><div><div class="carops-kicker">LIVE STATUS</div><h2>Vehicle distribution</h2></div><i class="fa-solid fa-chart-pie carops-blue"></i></div>
+        <div class="row g-3 align-items-center">
+          <div class="col-sm-5"><div class="carops-ring" style="background:<%= chart %>;" role="img" aria-label="<%= total %> imported vehicle records"><div><strong><%= total %></strong><span>Vehicles</span></div></div></div>
+          <div class="col-sm-7">
+            <% ordered_statuses.each do |status| %>
+              <%= link_to car_path(@car_project, tab: 'Cars', status: status, anchor: 'project-records'), class: 'carops-bar-link' do %>
+                <div class="carops-bar-label"><span><i class="fa-solid fa-circle me-1" style="color:<%= colors.fetch(status, '#8795aa') %>;font-size:9px;"></i><%= status %></span><strong><%= statuses[status] %> <small class="text-muted">· <%= (statuses[status]*100.0/total).round(1) %>%</small></strong></div>
+              <% end %>
+            <% end %>
+            <% if statuses.empty? %><div class="small text-muted">No VIN records imported yet.</div><% end %>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="col-xl-7">
+      <section class="carops-panel h-100">
+        <div class="carops-heading"><div><div class="carops-kicker">PROCUREMENT</div><h2>PI milestones & next steps</h2></div><i class="fa-solid fa-clipboard-list carops-blue"></i></div>
+        <% @project_pis.each do |pi| %>
+          <% f = pi.fields %>
+          <article class="border rounded-3 p-3 mb-2">
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap"><strong style="color:#3c66bd;"><%= pi.external_key %></strong><small class="text-muted"><%= f['Supplier'].presence || '—' %> · <%= f['PI Date'].presence || '—' %><%= ' (Est.)' if pi.estimated?('PI Date') %></small></div>
+            <div class="row g-2 mt-2">
+              <% ['Car Advance Paid','Export Docs Ready','Car Balance Paid'].each do |column| %>
+                <% estimated = f[column].present? && pi.estimated?(column); done = f[column].present? && !estimated %>
+                <div class="col-md-4"><div class="rounded-2 p-2 h-100" style="background:<%= done ? '#e8f5ed' : '#f5f7fa' %>;"><small class="d-block text-muted"><%= column %></small><strong class="small <%= done ? 'text-success' : 'text-secondary' %>"><i class="fa-solid <%= done ? 'fa-circle-check' : 'fa-clock' %> me-1"></i><%= f[column].presence || 'Not recorded' %><% if estimated %> <span class="carops-estimate">Est.</span><% end %></strong></div></div>
+              <% end %>
+            </div>
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mt-3"><div class="small"><i class="fa-solid fa-bolt me-1 carops-amber"></i><strong><%= f['Next Step'].presence || 'No next step recorded' %></strong><div class="text-muted mt-1">Inspected: <%= f['Inspected'].nil? ? '—' : f['Inspected'] %> / <%= f['Cars'].nil? ? '—' : f['Cars'] %></div></div><%= link_to new_payment_order_path(car_pi_id: pi.id), data: {controller: 'bs-modal-form'}, class: 'btn btn-sm btn-outline-primary' do %><i class="fa-solid fa-plus me-1"></i> Payment Order<% end %></div>
+          </article>
+        <% end %>
+        <% if @project_pis.empty? %><div class="carops-empty">No active PI records.</div><% end %>
+      </section>
+    </div>
+  </div>
+
+  <section class="carops-panel mb-3" id="project-finance">
+    <header class="carops-heading"><div><div class="carops-kicker">FINANCE / PROJECT</div><h2>Financial overview</h2><small>Visible payment orders and SWIFT face amounts, grouped by original currency.</small></div><i class="fa-solid fa-wallet carops-blue"></i></header>
+    <div class="carops-table-wrap">
+      <table class="carops-table">
+        <thead><tr><% ['Currency','Confirmed SWIFTs','Pending SWIFTs','Paid payment orders','Awaiting payment','Awaiting confirmation'].each do |h| %><th scope="col"><%= h %></th><% end %></tr></thead>
+        <tbody>
+          <% currencies.each do |currency| %>
+            <tr><td class="fw-bold"><%= currency.to_s.upcase %></td>
+              <% [confirmed_swifts.select { |s| s.currency == currency },pending_swifts.select { |s| s.currency == currency },paid_pos.select { |p| p.currency == currency },pending_pos.select { |p| p.currency == currency && p.status == 'wait for payment' },pending_pos.select { |p| p.currency == currency && p.status == 'wait for confirm' }].each_with_index do |records,i| %>
+                <td class="fw-bold <%= i == 0 ? 'text-success' : i == 2 ? 'text-primary' : 'text-secondary' %>"><%= number_with_delimiter(records.sum { |r| r.amount.to_d }) %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <% if currencies.empty? %><div class="carops-empty">No visible financial records.</div><% end %>
+    <div class="small text-muted mt-3">Rejected records are excluded from totals. Deposited amounts are shown separately in bank currency; no cross-currency or profit calculation is made.</div>
+  </section>
+
+  <section class="carops-panel mb-3" id="project-swifts">
+    <header class="carops-heading">
+      <div><div class="carops-kicker">INCOMING TRANSFERS</div><h2>SWIFTs <small class="text-muted">(<%= @swifts.size %>)</small></h2></div>
+      <% if @car_project.active? && Swift.car_creation_allowed?(current_user) %><%= link_to new_car_swift_path(@car_project), data: {controller: 'bs-modal-form'}, class: 'carops-button' do %><i class="fa-solid fa-plus"></i> Add SWIFT<% end %><% end %>
+    </header>
+    <% @swifts.each do |swift| %>
+      <% rejected = swift.rejected?; confirmed = swift.confirmed? && !rejected; color = rejected ? '#c12d40' : confirmed ? '#16834f' : '#c08a28' %>
+      <article class="border rounded-3 mb-2 overflow-hidden" style="border-left:4px solid <%= color %> !important;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 border-bottom bg-light px-3 py-2"><strong class="small">SWIFT #<%= swift.id %> · <%= swift.advance? ? 'Advance' : 'Balance' %> <% if swift.announce? %><i class="fa-solid fa-bullhorn text-success ms-1"></i><% end %></strong><strong class="small" style="color:<%= color %>;"><%= rejected ? 'Rejected' : confirmed ? 'Confirmed' : 'Awaiting deposit' %></strong><small class="text-muted"><%= swift.created_at&.strftime('%d %b %Y') %></small></div>
+        <div class="p-3">
+          <div class="d-flex align-items-center gap-3 flex-wrap"><strong style="font-size:26px;color:#25344d;"><%= number_with_delimiter(swift.amount) %> <small class="fs-6 text-muted"><%= swift.currency.to_s.upcase %></small></strong><span class="small text-muted">From <strong class="text-dark"><%= swift.from.presence || '—' %></strong></span><span class="small text-muted">To <strong class="text-dark"><%= swift.bank&.name || '—' %></strong></span></div>
+          <% if swift.deposited_amount.present? %><div class="small mt-2">Deposited: <strong><%= number_with_delimiter(swift.deposited_amount) %> <%= swift.bank&.currency.to_s.upcase %></strong></div><% end %>
+          <% if (date = rejected ? swift.rejected_at : confirmed ? swift.confirm_at : nil) %><div class="small mt-1" style="color:<%= color %>;"><%= rejected ? 'Rejected' : 'Confirmed' %> at <%= date.strftime('%d %b %Y, %H:%M') %></div><% end %>
+          <% if swift.note.present? %><div class="small bg-light rounded-2 p-2 mt-2 text-break"><%= swift.note %></div><% end %>
+          <div class="d-flex flex-wrap gap-2 mt-2"><% swift.documents.each do |file| %><%= link_to rails_blob_path(file, disposition: 'attachment'), class: 'btn btn-sm btn-light border' do %><i class="fa-solid fa-paperclip me-1"></i><%= file.filename %><% end %><% end %></div>
+        </div>
+        <% if swift.confirmable_by?(current_user) || swift.editable_by?(current_user) %>
+          <footer class="d-flex justify-content-end flex-wrap gap-2 border-top bg-light p-2">
+            <% if swift.confirmable_by?(current_user) %>
+              <%= link_to 'Confirm deposit', edit_amount_before_confirm_swift_path(swift), data: {controller: 'bs-modal-form'}, class: 'btn btn-sm btn-success' %>
+              <%= button_to 'Reject', reject_swift_path(swift), method: :patch, form: {class: 'm-0', data: {turbo_confirm: 'Reject this SWIFT?'}}, class: 'btn btn-sm btn-outline-danger' %>
+              <%= button_to(swift.announce? ? 'Unannounce' : 'Announce', toggle_announce_swift_path(swift), method: :patch, form: {class: 'm-0'}, class: 'btn btn-sm btn-outline-secondary') %>
+            <% end %>
+            <% if swift.editable_by?(current_user) %>
+              <%= link_to 'Edit', edit_swift_path(swift), data: {controller: 'bs-modal-form'}, class: 'btn btn-sm btn-outline-primary' %>
+              <%= button_to 'Delete', swift_path(swift), method: :delete, form: {class: 'm-0', data: {turbo_confirm: 'Delete this SWIFT?'}}, class: 'btn btn-sm btn-outline-danger' %>
+            <% end %>
+          </footer>
+        <% end %>
+      </article>
+    <% end %>
+    <% if @swifts.empty? %><div class="carops-empty">No SWIFT transfers recorded for this project.</div><% end %>
+  </section>
+
+  <section class="carops-panel mb-3" id="project-payments">
+    <header class="carops-heading"><div><div class="carops-kicker">OUTGOING PAYMENTS</div><h2>Payment orders <small class="text-muted">(<%= @payment_orders.size %>)</small></h2><small>Orders associated with every PI of this project, including archived PIs. Your existing access rules apply.</small></div><i class="fa-solid fa-file-invoice-dollar carops-blue"></i></header>
+    <div class="carops-table-wrap"><table class="carops-table">
+      <thead><tr><% ['PO','PI','Amount','Requester / Receiver','Status','Hamed','Details'].each do |h| %><th scope="col"><%= h %></th><% end %></tr></thead>
+      <tbody>
+        <% @payment_orders.each do |po| %>
+          <% rejected = po.rejected_at.present? || po.status == 'rejected'; color = rejected ? '#c12d40' : {'wait for confirm'=>'#e3a02c','wait for payment'=>'#3678df','wait for delivery'=>'#22a06b','delivered'=>'#16834f'}.fetch(po.status,'#94a3b8'); label = rejected ? 'Rejected' : {'wait for confirm'=>'Wait confirm','wait for payment'=>'Wait payment','wait for delivery'=>'Paid · Wait delivery','delivered'=>'Delivered'}.fetch(po.status,po.status.to_s) %>
+          <tr style="background:<%= po.mahramane? ? '#e3f5e9' : po.is_rahkarsazan? ? '#fff4d1' : '#fff' %>;">
+            <td style="border-left:4px solid <%= color %>;" class="text-nowrap"><%= link_to "PO ##{po.id}", payment_order_path(po) %><div class="small text-muted"><%= po.created_at&.strftime('%d %b %y') %></div></td>
+            <td><%= po.car_pi&.external_key %><% if po.car_pi && !po.car_pi.active? %><div class="small text-muted">Archived</div><% end %></td>
+            <td class="text-nowrap fw-bold"><%= number_with_delimiter(po.amount) %> <small><%= po.currency.to_s.upcase %></small></td>
+            <td><strong><%= po.user&.name || '—' %></strong><div class="small text-muted"><%= po.receiver.presence || '—' %></div></td>
+            <td><strong style="color:<%= color %>;"><%= label %></strong><% if rejected %><div class="small"><%= po.reject_by.presence || 'Unknown' %> · <%= po.rejected_at&.strftime('%d %b %y, %H:%M') %></div><% end %></td>
+            <td><% if po.hamed_confirm? %><span class="text-success small"><i class="fa-solid fa-check-double"></i> <%= po.hamed_confirmed_at&.strftime('%d %b %y') || 'Confirmed' %></span><% elsif po.hamed_confirmable_by?(current_user) %><%= link_to 'Hamed Confirm', hamed_confirm_payment_order_path(po), data: {turbo_method: :patch, turbo_confirm: 'Save Hamed confirmation?'}, class: 'btn btn-sm btn-outline-success' %><% else %>—<% end %></td>
+            <td><% if po.details.present? %><details><summary>View note</summary><div class="small text-break"><%= po.details %></div></details><% end %><%= link_to 'Open order', payment_order_path(po), class: 'small' %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table></div>
+    <% if @payment_orders.empty? %><div class="carops-empty">No visible payment orders for this project.</div><% end %>
+  </section>
+
+  <section class="carops-panel" id="project-records">
+    <header class="carops-heading"><div><div class="carops-kicker">OPERATIONS / CSV SNAPSHOT</div><h2>Project records</h2><small>All imported fields. Estimated dates are labelled.</small></div></header>
+    <nav class="carops-tabs" aria-label="Project datasets">
+      <% @datasets.each do |tab,records| %>
+        <%= link_to car_path(@car_project, tab: tab, anchor: 'project-records'), class: (@tab == tab ? 'active' : nil), aria: {current: (@tab == tab ? 'page' : nil)} do %><%= tab == 'Cars' ? 'Vehicles' : tab %><span><%= records.size %></span><% end %>
+      <% end %>
+    </nav>
+    <%= form_with url: car_path(@car_project, anchor: 'project-records'), method: :get, local: true, class: 'carops-filters' do %>
+      <%= hidden_field_tag :tab, @tab %>
+      <% if @statuses.present? %><%= select_tag :status, options_for_select(@statuses, @status), include_blank: 'All statuses', class: 'form-select', aria: {label: 'Status'} %><% end %>
+      <%= search_field_tag :search, @query, class: 'form-control', placeholder: 'Search records...', aria: {label: 'Search records'} %>
+      <%= submit_tag 'Search', class: 'carops-button' %>
+      <%= link_to 'Reset', car_path(@car_project, tab: @tab, anchor: 'project-records'), class: 'btn btn-light' %>
+    <% end %>
+    <% if %w[Trucks Deliveries Events Incidents].include?(@tab) %><p class="small text-muted mb-3">Truck and delivery records may be shared by multiple projects. Truck-only events and incidents are included when the truck carries vehicles from this project; a VIN or PI reference takes precedence.</p><% end %>
+    <div class="carops-table-wrap"><table class="carops-table">
+      <thead><tr><% @columns.each do |column| %><th scope="col"><%= column %></th><% end %><th scope="col">All fields</th></tr></thead>
+      <tbody>
+        <% @records.each do |record| %>
+          <% f = record.fields; estimated = f['Estimated Dates'].to_s.split(';').map(&:strip) %>
+          <tr>
+            <% @columns.each do |column| %><td><%= f[column].nil? ? '—' : f[column] %><% if f[column].present? && estimated.include?(column) %> <span class="carops-estimate">Est.</span><% end %></td><% end %>
+            <td><details class="carops-record-details"><summary>View all</summary><dl><% CarImportRecord::HEADERS.fetch(@tab).each do |column| %><dt><%= column %></dt><dd><%= f[column].nil? ? '—' : f[column] %><% if f[column].present? && estimated.include?(column) %> <span class="carops-estimate">Est.</span><% end %></dd><% end %></dl></details></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table></div>
+    <% if @records.empty? %><div class="carops-empty">No matching records.</div><% end %>
+    <div class="mt-3"><%= paginate @records %></div>
+  </section>
+</div>
