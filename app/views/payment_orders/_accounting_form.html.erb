@@ -1,201 +1,466 @@
-<%= form_with model: payment_order,
-  class: "po-accounting-form" do |form| %>
+<%
+  po = payment_order
+%>
 
-  <div class="modal-body erp-form">
+<%= form_with model: po,
+  class: "po-accounting-form m-0",
+  html: { multipart: true } do |form| %>
+
+
+  <div class="p-3 p-md-4">
 
     <%= render "shared/forms/errors",
-      object: payment_order %>
+      object: po %>
 
 
-    <%= render "shared/forms/section_heading",
-      title: "Bank Payment",
-      description: "Record the bank used to make this payment and any currency conversion.",
-      icon: "fa-building-columns" %>
+    <!-- ==================================================
+         BANK TRANSACTION
+         ================================================== -->
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+
+      <i class="fa-solid fa-money-bill-transfer text-primary"></i>
+
+      <h6 class="fw-bold mb-0">
+        Bank Transaction
+      </h6>
+
+    </div>
 
 
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-3">
+
+
+      <!-- EXCHANGE RATE -->
 
       <div class="col-md-4">
 
-        <%= render "shared/forms/field",
-          form: form,
-          attribute: :exchange_rate,
-          label: "Exchange Rate",
-          type: :number_field,
-          input_options: {
+        <%= form.label :exchange_rate,
+          "Exchange Rate",
+          class: "form-label small fw-semibold text-secondary" %>
+
+        <div class="input-group">
+
+          <span class="input-group-text bg-light">
+
+            <i class="fa-solid fa-right-left text-secondary"></i>
+
+          </span>
+
+          <%= form.number_field :exchange_rate,
             min: 0,
-            step: "any"
-          } %>
+            step: "any",
+            class: "form-control",
+            placeholder: "0.00" %>
+
+        </div>
 
       </div>
 
+
+      <!-- EXCHANGE AMOUNT -->
+
       <div class="col-md-4">
 
-        <%= render "shared/forms/field",
-          form: form,
-          attribute: :exchange_amount,
-          label: "Bank Withdrawal Amount",
-          type: :number_field,
-          input_options: {
+        <%= form.label :exchange_amount,
+          "Bank Withdrawal Amount",
+          class: "form-label small fw-semibold text-secondary" %>
+
+        <div class="input-group">
+
+          <span class="input-group-text bg-light">
+
+            <i class="fa-solid fa-money-bill-wave text-secondary"></i>
+
+          </span>
+
+          <%= form.number_field :exchange_amount,
             min: 0,
-            step: "any"
-          } %>
+            step: "any",
+            class: "form-control",
+            placeholder: "0.00" %>
+
+        </div>
 
       </div>
 
+
+      <!-- BANK -->
+
       <div class="col-md-4">
 
-        <%= render "shared/forms/field",
-          form: form,
-          attribute: :bank_id,
-          label: "Bank",
-          type: :select,
-          choices: @banks.map { |bank| [bank.name, bank.id] },
-          select_options: { prompt: "Select bank" },
-          required: true %>
+        <%= form.label :bank_id,
+          "Bank",
+          class: "form-label small fw-semibold text-secondary" %>
+
+        <div class="input-group">
+
+          <span class="input-group-text bg-light">
+
+            <i class="fa-solid fa-building-columns text-secondary"></i>
+
+          </span>
+
+          <%= form.collection_select :bank_id,
+            @banks,
+            :id,
+            :name,
+            { prompt: "Select bank" },
+            {
+              class: "form-select",
+              required: true
+            } %>
+
+        </div>
 
       </div>
 
     </div>
 
 
-    <div class="po-form__switch">
+    <!-- ==================================================
+         ACCOUNTING SYSTEM INSERTED
+         ================================================== -->
 
-      <div>
-        <strong>Inserted</strong>
-        <small>Mark this payment as inserted in the accounting system.</small>
+    <div class="d-flex align-items-center
+                justify-content-between gap-3
+                rounded-3 p-3 mb-4"
+         style="background: #f5f7fa;">
+
+      <div class="d-flex align-items-center gap-3">
+
+        <div class="d-flex align-items-center
+                    justify-content-center rounded-3"
+             style="width: 38px;
+                    height: 38px;
+                    background: #e7edf5;
+                    color: #60738e;">
+
+          <i class="fa-solid fa-database"></i>
+
+        </div>
+
+        <div>
+
+          <%= form.label :inserted,
+            "Inserted in accounting",
+            class: "fw-semibold small d-block mb-1" %>
+
+          <small class="text-muted">
+
+            Payment recorded in the accounting system
+
+          </small>
+
+        </div>
+
       </div>
 
-      <%= form.check_box :inserted,
-        class: "form-check-input" %>
+
+      <div class="form-check form-switch m-0">
+
+        <%= form.check_box :inserted,
+          class: "form-check-input",
+          style: "width: 2.5rem;
+                  height: 1.3rem;
+                  cursor: pointer;" %>
+
+      </div>
 
     </div>
 
 
-    <div class="erp-form__divider"></div>
+    <!-- ==================================================
+         PAYMENT RECEIPT
+         ================================================== -->
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+
+      <i class="fa-solid fa-receipt text-success"></i>
+
+      <h6 class="fw-bold mb-0">
+        Payment Receipt
+      </h6>
+
+    </div>
 
 
-    <%= render "shared/forms/section_heading",
-      title: "Payment Receipt",
-      description: "Attach the receipt confirming the bank payment.",
-      icon: "fa-receipt" %>
+    <% if po.receipt.attached? %>
+
+      <div class="d-flex align-items-center
+                  justify-content-between flex-wrap gap-3
+                  rounded-3 p-3"
+           style="background: #eaf7ef;
+                  border: 1px solid #cce8d7;">
+
+        <div class="d-flex align-items-center gap-3"
+             style="min-width: 0;">
+
+          <div class="d-flex align-items-center
+                      justify-content-center rounded-3 flex-shrink-0"
+               style="width: 43px;
+                      height: 43px;
+                      background: #d3ecdc;
+                      color: #16834f;">
+
+            <i class="fa-solid fa-file-circle-check"></i>
+
+          </div>
+
+          <div style="min-width: 0;">
+
+            <strong class="d-block text-success small">
+
+              Receipt uploaded
+
+            </strong>
+
+            <small class="text-muted text-break">
+
+              <%= po.receipt.filename %>
+
+            </small>
+
+            <div class="small text-muted">
+
+              <%= number_to_human_size(po.receipt.byte_size) %>
+
+              <% if po.receipt_attachment&.created_at.present? %>
+
+                ·
+
+                <%= po.receipt_attachment.created_at
+                  .strftime("%d %b %Y, %H:%M") %>
+
+              <% end %>
+
+            </div>
+
+          </div>
+
+        </div>
 
 
-    <% if payment_order.receipt.attached? %>
+        <%= link_to rails_blob_path(
+          po.receipt,
+          disposition: "attachment"
+        ),
+        target: "_blank",
+        rel: "noopener",
+        class: "btn btn-sm btn-outline-success rounded-3" do %>
 
-      <div class="po-form__existing-file">
+          <i class="fa-solid fa-download me-1"></i>
 
-        <i class="fa-solid fa-file-circle-check"></i>
+          Download
 
-        <%= link_to payment_order.receipt.filename,
-          rails_blob_path(
-            payment_order.receipt,
-            disposition: "attachment"
-          ),
-          target: "_blank",
-          rel: "noopener" %>
-
-        <span>Current receipt</span>
+        <% end %>
 
       </div>
+
 
     <% else %>
 
-      <%= render "shared/forms/field",
-  form: form,
-  attribute: :receipt,
-  label: "Upload Payment Receipt",
-  type: :file_field,
-  required: true %>
+
+      <div class="rounded-3 p-4 text-center"
+           style="border: 2px dashed #cdd9e9;
+                  background: #f8fafc;">
+
+        <div class="d-inline-flex align-items-center
+                    justify-content-center rounded-3 mb-3"
+             style="width: 54px;
+                    height: 54px;
+                    color: #4774c0;
+                    background: #e9f0fd;">
+
+          <i class="fa-solid fa-cloud-arrow-up fa-lg"></i>
+
+        </div>
+
+        <%= form.label :receipt,
+          "Upload Payment Receipt",
+          class: "d-block fw-bold mb-1" %>
+
+        <p class="small text-muted mb-3">
+
+          Attach the document confirming the bank payment.
+
+        </p>
+
+        <div class="mx-auto"
+             style="max-width: 440px;">
+
+          <%= form.file_field :receipt,
+            class: "form-control",
+            required: true %>
+
+        </div>
+
+      </div>
+
 
     <% end %>
 
   </div>
 
 
-  <!-- ACCOUNTING ACTIONS -->
+  <!-- ==================================================
+       SAVE ACCOUNTING DETAILS
+       ================================================== -->
 
-  <div class="po-accounting-form__actions">
+  <div class="d-flex align-items-center
+              justify-content-between flex-wrap gap-3
+              border-top px-3 px-md-4 py-3"
+       style="background: #f8fafc;">
 
-    <%= form.submit "Save Accounting Details",
-      class: "po-show__action po-show__action--confirm" %>
+    <small class="text-muted">
 
+      <i class="fa-solid fa-shield-halved me-1"></i>
 
-    <% if payment_order.status == "wait for payment" %>
+      Accounting transaction
 
-      <%= link_to toggle_announce_payment_order_path(payment_order),
-        data: {
-          turbo: false,
-          turbo_method: :patch,
-          turbo_confirm: "Change the announcement status?"
-        },
-        class: "po-show__action po-show__action--delivery" do %>
-
-        <i class="fa-solid fa-bullhorn"></i>
-        Announce
-
-      <% end %>
-
-    <% end %>
+    </small>
 
 
-    <% if payment_order.currency == "rial" &&
-          payment_order.rial_receipt.nil? %>
+    <%= form.button type: :submit,
+      class: "btn btn-success rounded-3 px-4" do %>
 
-      <%= link_to new_payment_order_rial_receipt_path(payment_order),
-        data: { controller: "bs-modal-form" },
-        class: "po-show__action po-show__action--special" do %>
+      <i class="fa-solid fa-floppy-disk me-1"></i>
 
-        <i class="fa-solid fa-plus"></i>
-        Create Rial Receipt
-
-      <% end %>
-
-
-    <% elsif payment_order.currency == "rial" &&
-             payment_order.rial_receipt.present? %>
-
-      <%= link_to payment_order_rial_receipt_path(
-            payment_order,
-            payment_order.rial_receipt
-          ),
-        class: "po-show__action" do %>
-
-        <i class="fa-solid fa-eye"></i>
-        View Rial Receipt
-
-      <% end %>
-
-
-      <%= link_to edit_payment_order_rial_receipt_path(
-            payment_order,
-            payment_order.rial_receipt
-          ),
-        data: { controller: "bs-modal-form" },
-        class: "po-show__action po-show__action--delivery" do %>
-
-        <i class="fa-solid fa-pen"></i>
-        Edit Rial Receipt
-
-      <% end %>
-
-
-      <%= link_to payment_order_rial_receipt_path(
-            payment_order,
-            payment_order.rial_receipt
-          ),
-        data: {
-          turbo_method: :delete,
-          turbo_confirm: "Delete this Rial Receipt?"
-        },
-        class: "po-show__action po-show__action--reject" do %>
-
-        <i class="fa-solid fa-trash"></i>
-        Delete Rial Receipt
-
-      <% end %>
+      Save Accounting Details
 
     <% end %>
+
+  </div>
+
+
+<% end %>
+
+
+<!-- ==================================================
+     ADDITIONAL ACCOUNTING ACTIONS
+
+     Outside the main form to prevent nested forms.
+     ================================================== -->
+
+<% if po.status == "wait for payment" ||
+      po.currency == "rial" %>
+
+  <div class="px-3 px-md-4 py-3 border-top">
+
+    <div class="d-flex align-items-center
+                justify-content-between flex-wrap gap-3">
+
+      <small class="fw-semibold text-muted">
+
+        Additional Actions
+
+      </small>
+
+
+      <div class="d-flex align-items-center
+                  flex-wrap gap-2">
+
+
+        <!-- ANNOUNCEMENT -->
+
+        <% if po.status == "wait for payment" %>
+
+          <%= button_to toggle_announce_payment_order_path(po),
+            method: :patch,
+            class: "btn btn-sm rounded-3
+              #{po.announce? ? 'btn-outline-warning' : 'btn-outline-primary'}",
+            form: {
+              class: "m-0",
+              data: {
+                turbo_confirm: "Change the announcement status?"
+              }
+            } do %>
+
+            <i class="fa-solid fa-bullhorn me-1"></i>
+
+            <%= po.announce? ?
+              "Cancel Announcement" :
+              "Announce" %>
+
+          <% end %>
+
+        <% end %>
+
+
+        <!-- RIAL RECEIPT -->
+
+        <% if po.currency == "rial" %>
+
+          <% if po.rial_receipt.nil? %>
+
+            <%= link_to new_payment_order_rial_receipt_path(po),
+              data: {
+                controller: "bs-modal-form"
+              },
+              class: "btn btn-sm btn-outline-primary rounded-3" do %>
+
+              <i class="fa-solid fa-plus me-1"></i>
+
+              Create Rial Receipt
+
+            <% end %>
+
+
+          <% else %>
+
+
+            <%= link_to payment_order_rial_receipt_path(
+              po,
+              po.rial_receipt
+            ),
+            class: "btn btn-sm btn-outline-secondary rounded-3" do %>
+
+              <i class="fa-solid fa-eye me-1"></i>
+
+              View Rial Receipt
+
+            <% end %>
+
+
+            <%= link_to edit_payment_order_rial_receipt_path(
+              po,
+              po.rial_receipt
+            ),
+            data: {
+              controller: "bs-modal-form"
+            },
+            class: "btn btn-sm btn-outline-primary rounded-3" do %>
+
+              <i class="fa-solid fa-pen me-1"></i>
+
+              Edit Rial Receipt
+
+            <% end %>
+
+
+            <%= link_to payment_order_rial_receipt_path(
+              po,
+              po.rial_receipt
+            ),
+            data: {
+              turbo_method: :delete,
+              turbo_confirm: "Delete this Rial Receipt?"
+            },
+            class: "btn btn-sm btn-outline-danger rounded-3" do %>
+
+              <i class="fa-solid fa-trash me-1"></i>
+
+              Delete Rial Receipt
+
+            <% end %>
+
+          <% end %>
+
+        <% end %>
+
+      </div>
+
+    </div>
 
   </div>
 
