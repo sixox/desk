@@ -10,7 +10,11 @@
     incidents = snapshot.fetch('Incidents', [])
 
     counts = cars.group_by do |record|
-      record.fields['Status'].presence || 'Unknown'
+      status = record.fields['Status'].to_s.strip
+
+      status.casecmp('Delivered').zero? ?
+        'Delivered' :
+        status.presence || 'Unknown'
     end.transform_values(&:size)
 
     total = cars.size
@@ -29,7 +33,20 @@
       'To Sarakhs'         => '#168e9d'
     }
 
-    outstanding_statuses = [
+    extra_colors = [
+      '#64748b',
+      '#db7093',
+      '#6366f1',
+      '#84a52c',
+      '#d97706',
+      '#0891b2',
+      '#be185d',
+      '#7c3aed',
+      '#475569',
+      '#0d9488'
+    ]
+
+    preferred_order = [
       'Waiting for pickup',
       'To destination',
       'Docs in process',
@@ -37,39 +54,54 @@
       'To Sarakhs'
     ]
 
-    status_order = ['Delivered'] + outstanding_statuses
+    # Include every status except Delivered.
 
-    ordered_statuses =
-      status_order.select { |status| counts.key?(status) } +
-      (counts.keys - status_order).sort_by do |status|
-        -counts.fetch(status, 0)
-      end
-
-    outstanding_total = outstanding_statuses.sum do |status|
-      counts.fetch(status, 0)
+    outstanding_counts = counts.reject do |status, _|
+      status == 'Delivered'
     end
 
-    other_outstanding = total - delivered - outstanding_total
+    additional_statuses =
+      (outstanding_counts.keys - preferred_order).sort_by do |status|
+        [-outstanding_counts.fetch(status, 0), status]
+      end
+
+    outstanding_statuses =
+      preferred_order.select do |status|
+        outstanding_counts.key?(status)
+      end + additional_statuses
+
+    additional_statuses.sort.each_with_index do |status, index|
+      colors[status] = extra_colors[index % extra_colors.size]
+    end
+
+    ordered_statuses =
+      (counts.key?('Delivered') ? ['Delivered'] : []) +
+      outstanding_statuses
+
+    outstanding_total = outstanding_counts.values.sum
 
     gradient_segments = []
     cumulative = 0.0
 
     if outstanding_total.positive?
 
-      outstanding_statuses.each do |status|
+      outstanding_statuses.each_with_index do |status, index|
 
-        quantity = counts.fetch(status, 0)
-
-        next if quantity.zero?
+        quantity = outstanding_counts.fetch(status, 0)
 
         start_percent = cumulative
 
         cumulative += quantity * 100.0 / outstanding_total
 
-        end_percent = [cumulative, 100.0].min
+        end_percent =
+          if index == outstanding_statuses.size - 1
+            100.0
+          else
+            [cumulative, 100.0].min
+          end
 
         gradient_segments << [
-          colors.fetch(status),
+          colors.fetch(status, '#8695ad'),
           "#{start_percent.round(4)}%",
           "#{end_percent.round(4)}%"
         ].join(' ')
@@ -134,7 +166,7 @@
         <% [
           ['Vehicles', total, 'fa-car-side', 'blue'],
           ['Delivered', delivered, 'fa-circle-check', 'green'],
-          ['Outstanding', total - delivered, 'fa-truck-fast', 'amber'],
+          ['Outstanding', outstanding_total, 'fa-truck-fast', 'amber'],
           ['Trucks', trucks.size, 'fa-truck', 'blue'],
           [
             'Projects',
@@ -173,7 +205,7 @@
 
             <div class="carops-ring"
                  role="img"
-                 aria-label="<%= outstanding_total %> vehicles across the five outstanding statuses"
+                 aria-label="<%= outstanding_total %> outstanding vehicles"
                  style="background: <%= chart_background %>;">
 
               <div>
@@ -196,7 +228,7 @@
               <% outstanding_statuses.each do |status| %>
 
                 <%
-                  quantity = counts.fetch(status, 0)
+                  quantity = outstanding_counts.fetch(status, 0)
 
                   percentage =
                     if outstanding_total.positive?
@@ -204,6 +236,8 @@
                     else
                       0.0
                     end
+
+                  color = colors.fetch(status, '#8695ad')
                 %>
 
                 <%= link_to cars_path(
@@ -218,7 +252,7 @@
                       height: 9px;
                       border-radius: 3px;
                       flex-shrink: 0;
-                      background: <%= colors.fetch(status) %>;
+                      background: <%= color %>;
                     "></span>
 
                     <span class="flex-grow-1"
@@ -237,7 +271,7 @@
                       color: var(--co-muted);
                     ">
 
-                      <%= quantity %>
+                      <%= number_with_delimiter(quantity) %>
 
                     </span>
 
@@ -246,7 +280,7 @@
                       text-align: right;
                       font-size: 12px;
                       font-variant-numeric: tabular-nums;
-                      color: <%= colors.fetch(status) %>;
+                      color: <%= color %>;
                     ">
 
                       <%= format('%.1f', percentage) %>%
@@ -261,20 +295,22 @@
 
             </div>
 
+
             <% if outstanding_total.zero? %>
 
               <div class="text-center small text-muted mt-2">
-                No vehicles in these statuses
-              </div>
 
-            <% end %>
+                <% if total.positive? %>
 
-            <% if other_outstanding.positive? %>
+                  <i class="fa-solid fa-circle-check text-success me-1"></i>
 
-              <div class="small text-muted mt-2">
+                  All vehicles delivered
 
-                <%= other_outstanding %> other outstanding
-                vehicles excluded from this chart.
+                <% else %>
+
+                  No vehicle data available
+
+                <% end %>
 
               </div>
 
@@ -311,7 +347,9 @@
 
                   <span><%= status %></span>
 
-                  <strong><%= quantity %></strong>
+                  <strong>
+                    <%= number_with_delimiter(quantity) %>
+                  </strong>
 
                 </div>
 
